@@ -1,19 +1,65 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.coremedia.drm.isobox4j</groupId>
+  <groupId>com.googlecode.mp4parser</groupId>
   <artifactId>isoparser</artifactId>
   <packaging>jar</packaging>
   <name>ISO Parser</name>
   <description>A generic parser and writer for all ISO 14496 based files (MP4, Quicktime, DCF, PDCF, ...)</description>
+  <url>http://code.google.com/p/mp4parser/</url>
   <version>142-SNAPSHOT</version>
 
-  <repositories>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
     <repository>
-      <id>coremedia.isobox4j.repository</id>
-      <name>CoreMedia Contributions IsoBox4j Maven Repository</name>
-      <url>https://repository.coremedia.com/nexus/content/repositories/contributions-open-releases/</url>
+      <id>sonatype-nexus-staging</id>
+      <name>Nexus Release Repository</name>
+      <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
-  </repositories>
+  </distributionManagement>
+
+  <licenses>
+    <license>
+      <name>Apache 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
+
+  <profiles>
+    <profile>
+      <id>release-sign-artifacts</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
   <build>
     <plugins>
@@ -32,36 +78,8 @@
         </configuration>
 
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-
-        <executions>
-          <execution>
-            <id>signit</id>
-            <phase>package</phase>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-            <configuration>
-              <keystore>${project.basedir}/src/etc/keystore.jks</keystore>
-              <alias>isobox4j</alias>
-              <keypass>xxxxxx</keypass>
-              <storepass>xxxxxx</storepass>
-              <skip>false</skip>
-              <verbose>true</verbose>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
-
-  <parent>
-    <groupId>com.coremedia.drm</groupId>
-    <artifactId>isobox4j-parent</artifactId>
-    <version>6</version>
-  </parent>
 
   <dependencies>
     <dependency>
@@ -73,6 +91,7 @@
   </dependencies>
 
   <scm>
-    <connection>scm:svn:https://contributions.coremedia.com/svn/isobox4j/tags/isoparser-138</connection>
+    <url>http://code.google.com/p/mp4parser/source/browse/</url>
+    <connection>scm:svn: https://mp4parser.googlecode.com/svn/trunk/</connection>
   </scm>
 </project>
