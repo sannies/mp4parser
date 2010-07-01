@@ -6,8 +6,15 @@
   <name>ISO Parser</name>
   <description>A generic parser and writer for all ISO 14496 based files (MP4, Quicktime, DCF, PDCF, ...)</description>
   <url>http://code.google.com/p/mp4parser/</url>
-  <version>1.0-alpha-2-SNAPSHOT</version>
+  <version>1.0-alpha-1-SNAPSHOT</version>
 
+  <developers>
+    <developer>
+      <id>sannies</id>
+      <email>Sebastian.Annies@googlemail.com</email>
+    </developer>
+  </developers>
+  
 
   <distributionManagement>
     <snapshotRepository>
