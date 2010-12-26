@@ -22,7 +22,7 @@ import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.TrackMetaDataContainer;
 
 /**
- * aligned(8) class TrackFragmentBox extends Box(‘traf’){
+ * aligned(8) class TrackFragmentBox extends Box('traf'){
  * }
  */
 public class TrackFragmentBox extends ContainerBox implements TrackMetaDataContainer {

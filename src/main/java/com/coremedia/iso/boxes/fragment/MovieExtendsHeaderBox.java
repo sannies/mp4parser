@@ -26,7 +26,7 @@ import com.coremedia.iso.boxes.FullBox;
 import java.io.IOException;
 
 /**
- * aligned(8) class MovieExtendsHeaderBox extends FullBox(‘mehd’, version, 0) {
+ * aligned(8) class MovieExtendsHeaderBox extends FullBox('mehd', version, 0) {
  * if (version==1) {
  * unsigned int(64) fragment_duration;
  * } else { // version==0

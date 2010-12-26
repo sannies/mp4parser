@@ -20,7 +20,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.ContainerBox;
 
 /**
- * aligned(8) class MovieExtendsBox extends Box(‘mvex’){
+ * aligned(8) class MovieExtendsBox extends Box('mvex'){
  * }
  */
 public class MovieExtendsBox extends ContainerBox {

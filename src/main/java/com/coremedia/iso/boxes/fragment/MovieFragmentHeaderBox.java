@@ -27,7 +27,7 @@ import java.io.IOException;
 
 /**
  * aligned(8) class MovieFragmentHeaderBox
- * extends FullBox(‘mfhd’, 0, 0){
+ * extends FullBox('mfhd', 0, 0){
  * unsigned int(32) sequence_number;
  * }
  */
