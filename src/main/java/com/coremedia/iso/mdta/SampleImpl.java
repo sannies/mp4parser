@@ -16,11 +16,12 @@
 
 package com.coremedia.iso.mdta;
 
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.RandomAccessDataSource;
 import com.coremedia.iso.boxes.TrackMetaDataContainer;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
@@ -32,27 +33,30 @@ import java.util.List;
  * @see Sample
  */
 public final class SampleImpl<T extends TrackMetaDataContainer> implements Sample<T>, Comparable<SampleImpl<T>> {
+
+  private final Chunk<T> parent;
+  private final IsoBufferWrapper buffer;
   private final long offset;
   private final long size;
-  private final Chunk<T> parent;
-  private final RandomAccessDataSource randomAccessFile;
 
-  public SampleImpl(long offset, long size, Chunk<T> parent, RandomAccessDataSource randomAccessFile) {
-    this.randomAccessFile = randomAccessFile;
+  public SampleImpl(IsoBufferWrapper buffer, long offset, long size, Chunk<T> parent) {
+    this.parent = parent;
+    this.buffer = buffer;
     this.offset = offset;
     this.size = size;
-    this.parent = parent;
   }
 
   public void getContent(IsoOutputStream os) throws IOException {
-
-    randomAccessFile.seek(offset);
-    long written = 0;
-    byte[] buffer = new byte[1024];
-    while (written < size) {
-      int read = randomAccessFile.read(buffer, 0, buffer.length > (size - written) ? (int) (size - written) : buffer.length);
-      os.write(buffer, 0, read);
-      written += read;
+    ByteBuffer[] segments = buffer.getSegment(offset, size);
+    for (ByteBuffer segment : segments) {
+      while (segment.remaining() > 1024) {
+        byte[] buf = new byte[1024];
+        segment.get(buf);
+        os.write(buf);
+      }
+      while (segment.remaining() > 0) {
+        os.write(segment.get());
+      }
     }
   }
 

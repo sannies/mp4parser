@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.rtp;
 
 import com.coremedia.iso.BoxFactory;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 
@@ -68,7 +68,7 @@ public class HintPacketsSentBox extends Box {
 
   }
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("nump"))) {
       packetsSent = in.readUInt64();
     } else if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("npck"))) {

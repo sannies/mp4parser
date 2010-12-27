@@ -2,7 +2,7 @@ package com.coremedia.iso.boxes.apple;
 
 import com.coremedia.iso.BoxFactory;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.BoxContainer;
@@ -34,8 +34,8 @@ public abstract class AbstractAppleMetaDataBox extends Box implements BoxContain
   }
 
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    long sp = in.getStreamPosition();
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+    long sp = in.position();
     long dataBoxSize = in.readUInt32();
     String thisShouldBeData = in.readString(4);
     assert "data".equals(thisShouldBeData);

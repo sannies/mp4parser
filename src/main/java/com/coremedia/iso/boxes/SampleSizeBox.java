@@ -18,8 +18,8 @@ package com.coremedia.iso.boxes;
 
 
 import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
@@ -91,7 +91,7 @@ public class SampleSizeBox extends FullBox {
     return 8 + (sampleSize == 0 ? entrySize.length * 4 : 0);
   }
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
 
     assert ((int) size) == size;
 

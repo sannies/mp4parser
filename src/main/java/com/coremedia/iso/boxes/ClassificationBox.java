@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxFactory;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
@@ -79,7 +79,7 @@ public class ClassificationBox extends FullBox {
     return 4 + 2 + 2 + utf8StringLengthInBytes(classificationInfo) + 1;
   }
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     super.parse(in, size, boxFactory, lastMovieFragmentBox);
     classificationEntity = IsoFile.bytesToFourCC(in.read(4));
     classificationTableIndex = in.readUInt16();

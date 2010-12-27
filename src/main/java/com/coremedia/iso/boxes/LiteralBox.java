@@ -18,8 +18,8 @@ package com.coremedia.iso.boxes;
 
 
 import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.BufferedInputStream;
@@ -40,22 +40,11 @@ public abstract class LiteralBox extends Box {
     super(type);
   }
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     if (size == -1) { // length = rest of file!
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      int tmp;
-      BufferedInputStream bis = new BufferedInputStream(in);
-      try {
-        while ((tmp = bis.read()) != -1) {
-          baos.write(tmp);
-        }
-      } catch (EOFException e) {
-        // ok read until the end
-        LOG.info("Read until the end of the file");
-      }
-      content = baos.toByteArray();
+      throw new IOException("box size of -1 is not supported. Boxsize -1 means box reaches until the end of the file.");
     } else if (((int) size) != size) {
-      throw new Error("The UnknownBox cannot be larger than 2^32 bytes(Plz enhance parser!!)");
+      throw new IOException("The UnknownBox cannot be larger than 2^32 bytes(Plz enhance parser!!)");
     } else {
       content = in.read((int) size);
     }

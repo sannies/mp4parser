@@ -17,7 +17,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxFactory;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
@@ -60,21 +60,21 @@ public class SampleDescriptionBox extends FullBoxContainer {
     return size;
   }
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     parseHeader(in, size);
     long entryCount = in.readUInt32();
     if (entryCount > Integer.MAX_VALUE) {
       throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE subboxes");
     }
     boxes = new Box[(int) entryCount];
-    long sp = in.getStreamPosition();
+    long sp = in.position();
     for (int i = 0; i < entryCount; i++) {
       boxes[i] = boxFactory.parseBox(in, this, lastMovieFragmentBox);
     }
 
-    if (in.getStreamPosition() - offset < size) {
+    if (in.position() - offset < size) {
       // System.out.println("dead bytes found in " + box);
-      setDeadBytes(in.read((int) (size - (in.getStreamPosition() - offset))));
+      setDeadBytes(in.read((int) (size - (in.position() - offset))));
     }
   }
 

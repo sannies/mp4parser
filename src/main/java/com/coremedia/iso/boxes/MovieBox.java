@@ -18,7 +18,6 @@ package com.coremedia.iso.boxes;
 
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.RandomAccessDataSource;
 import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.SampleImpl;
 import com.coremedia.iso.mdta.Track;
@@ -112,7 +111,7 @@ public class MovieBox extends ContainerBox implements TrackBoxContainer<TrackBox
     throw new RuntimeException("wrong chunkOffset, the chunk's offset is in no chunk offset box of no track box");
   }
 
-  public void parseMdat(MediaDataBox<TrackBox> mdat, RandomAccessDataSource raf) {
+  public void parseMdat(MediaDataBox<TrackBox> mdat) {
     mdat.getTrackMap().clear();
 
     TreeMap<Long, Track<TrackBox>> trackIdsToTracksWithChunks = new TreeMap<Long, Track<TrackBox>>();
@@ -124,6 +123,7 @@ public class MovieBox extends ContainerBox implements TrackBoxContainer<TrackBox
     }
 
     long[] chunkOffsets = getChunkOffsets();
+
     for (long chunkOffset : chunkOffsets) {
       //chunk inside this mdat?
       if (mdat.getStartOffset() > chunkOffset || chunkOffset > mdat.getStartOffset() + mdat.getSizeIfNotParsed()) {
@@ -148,7 +148,9 @@ public class MovieBox extends ContainerBox implements TrackBoxContainer<TrackBox
 
       for (int i = 0; i < sampleOffsets.length; i++) {
         MediaDataBox.SampleHolder<TrackBox> sh =
-                new MediaDataBox.SampleHolder<TrackBox>(new SampleImpl<TrackBox>(chunkOffset + sampleOffsets[i], sampleSizes[i], chunk, raf));
+                new MediaDataBox.SampleHolder<TrackBox>(
+                        new SampleImpl<TrackBox>(getIsoFile().getFile(), chunkOffset + sampleOffsets[i],
+                                sampleSizes[i], chunk));
         mdat.getSampleList().add(sh);
         chunk.addSample(sh);
       }

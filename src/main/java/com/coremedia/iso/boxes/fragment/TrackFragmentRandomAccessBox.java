@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.BoxFactory;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullBox;
@@ -28,7 +28,7 @@ import java.util.ArrayList;
 
 /**
  * aligned(8) class TrackFragmentRandomAccessBox
- * extends FullBox(‘tfra’, version, 0) {
+ * extends FullBox(ï¿½tfraï¿½, version, 0) {
  * unsigned int(32) track_ID;
  * const unsigned int(26) reserved = 0;
  * unsigned int(2) length_size_of_traf_num;
@@ -83,7 +83,7 @@ public class TrackFragmentRandomAccessBox extends FullBox {
   }
 
   @Override
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     super.parse(in, size, boxFactory, lastMovieFragmentBox);
 
     trackId = in.readUInt32();
@@ -113,7 +113,7 @@ public class TrackFragmentRandomAccessBox extends FullBox {
     }
   }
 
-  private long getVariable(long length, IsoInputStream in) throws IOException {
+  private long getVariable(long length, IsoBufferWrapper in) throws IOException {
     long ret;
     if (((length + 1) * 8) == 8) {
       ret = in.readUInt8();

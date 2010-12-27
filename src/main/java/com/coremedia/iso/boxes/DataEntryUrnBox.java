@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxFactory;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
@@ -53,7 +53,7 @@ public class DataEntryUrnBox extends FullBox {
     return utf8StringLengthInBytes(name) + 1 + utf8StringLengthInBytes(location) + 1;
   }
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     super.parse(in, size, boxFactory, lastMovieFragmentBox);
     name = in.readString();
     location = in.readString();

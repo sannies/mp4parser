@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxFactory;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.ByteArrayOutputStream;
@@ -87,7 +87,7 @@ public abstract class Box implements BoxInterface {
   }
 
   /**
-   * Pareses the given IsoInputStream and returns the remaining bytes.
+   * Pareses the given IsoBufferWrapper and returns the remaining bytes.
    *
    * @param in                   the (part of the) iso file to parse
    * @param size                 expected size of the box
@@ -95,7 +95,7 @@ public abstract class Box implements BoxInterface {
    * @param lastMovieFragmentBox
    * @throws IOException in case of an I/O error.
    */
-  public abstract void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException;
+  public abstract void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException;
 
   /**
    * Returns the human readable name of the box.

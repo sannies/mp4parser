@@ -17,7 +17,6 @@
 package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.RandomAccessDataSource;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.MediaDataBox;
@@ -99,7 +98,7 @@ public class MovieFragmentBox extends ContainerBox implements TrackBoxContainer<
     return trackNumbers;
   }
 
-  public void parseMdat(MediaDataBox<TrackFragmentBox> mdat, RandomAccessDataSource raf) {
+  public void parseMdat(MediaDataBox<TrackFragmentBox> mdat) {
     mdat.getTrackMap().clear();
 
     List<TrackRunBox> truns = getTrunsWithRealOffsets();
@@ -143,7 +142,7 @@ public class MovieFragmentBox extends ContainerBox implements TrackBoxContainer<
 
       for (int i = 0; i < sampleSizes.length; i++) {
         MediaDataBox.SampleHolder<TrackFragmentBox> sh =
-                new MediaDataBox.SampleHolder<TrackFragmentBox>(new SampleImpl<TrackFragmentBox>(trunOffset + sampleOffsets[i], sampleSizes[i], chunk, raf));
+                new MediaDataBox.SampleHolder<TrackFragmentBox>(new SampleImpl<TrackFragmentBox>(this.getIsoFile().getFile(), trunOffset + sampleOffsets[i], sampleSizes[i], chunk));
         mdat.getSampleList().add(sh);
         chunk.addSample(sh);
       }

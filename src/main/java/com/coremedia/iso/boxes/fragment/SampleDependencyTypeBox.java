@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.BoxFactory;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.BoxContainer;
@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * aligned(8) class SampleDependencyTypeBox
- * extends FullBox(‘sdtp’, version = 0, 0) {
+ * extends FullBox(ï¿½sdtpï¿½, version = 0, 0) {
  * for (i=0; i < sample_count; i++){
  * unsigned int(2) reserved = 0;
  * unsigned int(2) sample_depends_on;
@@ -104,7 +104,7 @@ public class SampleDependencyTypeBox extends FullBox {
   }
 
   @Override
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     super.parse(in, size, boxFactory, lastMovieFragmentBox);
     long sampleCount = getSampleCount();
 

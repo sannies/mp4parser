@@ -17,8 +17,8 @@
 package com.coremedia.iso.boxes.odf;
 
 import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullBox;
@@ -48,7 +48,7 @@ public class OmaDrmIconUriBox extends FullBox {
     return utf8StringLengthInBytes(iconUri);
   }
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     super.parse(in, size, boxFactory, lastMovieFragmentBox);
     iconUri = in.readString((int) size - 4);
   }

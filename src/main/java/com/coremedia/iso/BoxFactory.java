@@ -157,7 +157,7 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 /**
- * A factory for Iso Boxes. In general it is instanciated and its {@link BoxFactory#parseBox(IsoInputStream,com.coremedia.iso.boxes.BoxInterface,com.coremedia.iso.boxes.Box)}
+ * A factory for Iso Boxes. In general it is instanciated and its {@link BoxFactory#parseBox(IsoBufferWrapper,com.coremedia.iso.boxes.BoxInterface,com.coremedia.iso.boxes.Box)}
  * is called to create the boxes and their subboxes.
  */
 public class BoxFactory {
@@ -703,21 +703,21 @@ public class BoxFactory {
   /**
    * Parses the next size and type, creates a box instance and parses the box's content.
    *
-   * @param in                   the IsoInputStream pointing to the ISO file
+   * @param in                   the IsoBufferWrapper pointing to the ISO file
    * @param parent               the current box's parent (null if no parent)
    * @param lastMovieFragmentBox
    * @return the box just parsed
    * @throws IOException if reading from <code>in</code> fails
    */
-  public Box parseBox(IsoInputStream in, BoxInterface parent, Box lastMovieFragmentBox) throws IOException {
-    long offset = in.getStreamPosition();
+  public Box parseBox(IsoBufferWrapper in, BoxInterface parent, Box lastMovieFragmentBox) throws IOException {
+    long offset = in.position();
 
     long size = in.readUInt32();
     // do plausibility check
     if (size < 8 && size > 1) {
       LOG.severe("Plausibility check failed: size < 8 (size = " + size + "). Stop parsing!");
       return null;
-    } else if ((offset + size) > parent.getIsoFile().getOriginalIso().length()) {
+    } else if ((offset + size) > parent.getIsoFile().getFile().size()) {
       LOG.severe("Plausibility check failed: offset + size > file size (size = " + size + "). Stop parsing!");
       return null;
     }
@@ -750,9 +750,9 @@ public class BoxFactory {
     // System.out.println("parsing " + Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
     box.parse(in, contentSize, this, lastMovieFragmentBox);
     // System.out.println("box = " + box);
-    if (in.getStreamPosition() - offset < size && contentSize != -1) {
+    if (in.position() - offset < size && contentSize != -1) {
       // System.out.println("dead bytes found in " + box);
-      box.setDeadBytes(in.read((int) (size - (in.getStreamPosition() - offset))));
+      box.setDeadBytes(in.read((int) (size - (in.position() - offset))));
     }
 
     /*if (box.getSize() < 10000000) {

@@ -46,25 +46,23 @@ import java.util.List;
 
 /**
  * The most upper container for ISO Boxes. It is a container box that is a file.
- * Uses {@link com.coremedia.iso.RandomAccessDataSource}s to access the underlying file.
- *
- * @see com.coremedia.iso.FileRandomAccessDataSource
- * @see com.coremedia.iso.ByteArrayRandomAccessDataSource
+ * Uses IsoBufferWrapper  to access the underlying file.
  */
 public class IsoFile implements BoxContainer, BoxInterface {
   private Box[] boxes = new Box[0];
   private BoxFactory boxFactory = new BoxFactory();
-  private RandomAccessDataSource originalIso;
+  private IsoBufferWrapper originalIso;
 
 
-  public IsoFile(RandomAccessDataSource originalIso) {
+  public IsoFile(IsoBufferWrapper originalIso) {
     this.originalIso = originalIso;
   }
 
-
-  public RandomAccessDataSource getOriginalIso() {
+  public IsoBufferWrapper getFile() {
     return originalIso;
+
   }
+
 
   public BoxContainer getParent() {
     return null;
@@ -122,23 +120,19 @@ public class IsoFile implements BoxContainer, BoxInterface {
 
 
   public void parse() throws IOException {
-    IsoInputStream isoIn = new IsoInputStream(originalIso);
+    IsoBufferWrapper isoIn = originalIso;
     List<Box> boxeList = new LinkedList<Box>();
     boolean done = false;
     Box lastMovieFragmentBox = null;
     while (!done) {
-      try {
-        long sp = isoIn.getStreamPosition();
+      long sp = isoIn.position();
+      if (isoIn.remaining() >= 8) {
         Box box = boxFactory.parseBox(isoIn, this, lastMovieFragmentBox);
-        if (box != null) {
-          if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
-          boxeList.add(box);
-          this.boxes = boxeList.toArray(new Box[boxeList.size()]);
-          assert box.calculateOffset() == sp : "calculated offset differs from offset in file";
-        } else {
-          done = true;
-        }
-      } catch (EOFException e) {
+        if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
+        boxeList.add(box);
+        this.boxes = boxeList.toArray(new Box[boxeList.size()]);
+        assert box.calculateOffset() == sp : "calculated offset differs from offset in file";
+      } else {
         done = true;
       }
     }

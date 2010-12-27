@@ -17,7 +17,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxFactory;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
@@ -76,13 +76,13 @@ public abstract class ContainerBox extends Box implements BoxContainer {
     boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
   }
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     List<Box> boxeList = new LinkedList<Box>();
 
     while (size > 8) {
-      long sp = in.getStreamPosition();
+      long sp = in.position();
       Box box = boxFactory.parseBox(in, this, lastMovieFragmentBox);
-      long parsedBytes = in.getStreamPosition() - sp;
+      long parsedBytes = in.position() - sp;
       assert parsedBytes == box.getSize() :
               "number of parsed bytes (" + parsedBytes + ") of " + box.getDisplayName() + " doesn't match getSize (" + box.getSize() + ")";
       size -= box.getSize();

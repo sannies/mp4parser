@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxFactory;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
@@ -68,7 +68,7 @@ public class SchemeTypeBox extends FullBox {
     return 8 + (((getFlags() & 1) == 1) ? utf8StringLengthInBytes(schemeUri) + 1 : 0);
   }
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     super.parse(in, size, boxFactory, lastMovieFragmentBox);
     schemeType[0] = (byte) in.readUInt8();
     schemeType[1] = (byte) in.readUInt8();

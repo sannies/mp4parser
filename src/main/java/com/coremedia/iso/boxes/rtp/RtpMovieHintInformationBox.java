@@ -19,7 +19,7 @@ package com.coremedia.iso.boxes.rtp;
 
 import com.coremedia.iso.BoxFactory;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.assistui.multiline;
 import com.coremedia.iso.boxes.Box;
@@ -63,7 +63,7 @@ public class RtpMovieHintInformationBox extends Box {
     return utf8StringLengthInBytes(sdpText) + 4;
   }
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     descriptionFormat = IsoFile.bytesToFourCC(in.read(4));
     sdpText = in.readString((int) size - 4);
   }

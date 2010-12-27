@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes;
 
 
 import com.coremedia.iso.BoxFactory;
-import com.coremedia.iso.IsoInputStream;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
@@ -49,7 +49,7 @@ public class DataReferenceBox extends FullBoxContainer {
     return super.getContentSize() + 4;
   }
 
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     setVersion(in.readUInt8());
     setFlags(in.readUInt24());
     in.readUInt32();

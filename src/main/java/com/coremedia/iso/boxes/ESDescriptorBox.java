@@ -1,8 +1,8 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoInputStream;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
@@ -42,7 +42,7 @@ public class ESDescriptorBox extends FullBox {
   }
 
   @Override
-  public void parse(IsoInputStream in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     super.parse(in, size, boxFactory, lastMovieFragmentBox);
     size -= 4; // header since we are dealing with a full box
     eSDescriptorType = in.readUInt8();
