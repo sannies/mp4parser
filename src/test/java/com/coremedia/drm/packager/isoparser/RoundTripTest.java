@@ -68,7 +68,7 @@ public class RoundTripTest extends TestCase {
         fos.write(content);
         fos.close();
 
-        IsoFile isoFile = new IsoFile(InputStreamIsoBufferHelper.get(getClass().getResourceAsStream(resource)));
+        IsoFile isoFile = new IsoFile(InputStreamIsoBufferHelper.get(getClass().getResourceAsStream(resource), 20000));
         isoFile.parse();
         Walk.through(isoFile);
         isoFile.parseMdats();

@@ -11,7 +11,7 @@ import java.io.IOException;
 public class TestUtf8MetaDataInDcf extends TestCase {
     public void testUtf8() throws IOException {
 
-        IsoFile isoFile = new IsoFile(InputStreamIsoBufferHelper.get(getClass().getResourceAsStream("/file6141.odf")));
+        IsoFile isoFile = new IsoFile(InputStreamIsoBufferHelper.get(getClass().getResourceAsStream("/file6141.odf"), -1));
         isoFile.parse();
         System.err.println(isoFile);
     }

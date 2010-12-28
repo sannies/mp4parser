@@ -84,7 +84,7 @@ public abstract class ContainerBox extends Box implements BoxContainer {
       Box box = boxFactory.parseBox(in, this, lastMovieFragmentBox);
       long parsedBytes = in.position() - sp;
       assert parsedBytes == box.getSize() :
-              "number of parsed bytes (" + parsedBytes + ") of " + box.getDisplayName() + " doesn't match getSize (" + box.getSize() + ")";
+              box.getDisplayName() +  " didn't parse well. number of parsed bytes (" + parsedBytes + ") of " + box.getDisplayName() + " doesn't match getSize (" + box.getSize() + ")";
       size -= box.getSize();
 
       boxeList.add(box);

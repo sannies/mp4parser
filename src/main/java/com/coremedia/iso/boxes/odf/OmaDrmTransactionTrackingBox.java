@@ -58,7 +58,7 @@ public class OmaDrmTransactionTrackingBox extends FullBox {
 
   public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
     super.parse(in, size, boxFactory, lastMovieFragmentBox);
-    int a = in.read(transactionId, 0, 16);
+    int a = in.read(transactionId);
     assert a == 16;
   }
 
