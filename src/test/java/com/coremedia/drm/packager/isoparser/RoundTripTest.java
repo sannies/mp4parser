@@ -72,8 +72,8 @@ public class RoundTripTest extends TestCase {
         isoFile.parse();
         Walk.through(isoFile);
         isoFile.parseMdats();
-//		isoFile.switchToAutomaticChunkOffsetBox();
-//		isoFile.getBoxes(MediaDataBox.class)[0].getSample(0).toString();
+		isoFile.switchToAutomaticChunkOffsetBox();
+		isoFile.getBoxes(MediaDataBox.class)[0].getSample(0).toString();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         isoFile.write(baos);
 
