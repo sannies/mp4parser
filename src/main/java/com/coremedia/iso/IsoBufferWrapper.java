@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A <code>FilterInputStream</code> enriched with helper methods to ease writing of
@@ -35,6 +36,9 @@ public class IsoBufferWrapper {
 
     public IsoBufferWrapper(ByteBuffer[] parents) {
         this.parents = parents;
+    }
+    public IsoBufferWrapper(List<ByteBuffer> parents) {
+        this.parents = parents.toArray(new ByteBuffer[parents.size()]);
     }
 
     public long position() {
