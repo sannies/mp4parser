@@ -38,11 +38,11 @@ public final class AppleCoverBox extends AbstractAppleMetaDataBox {
 
     @Override
     public void setValue(String value) {
-        LOG.warning("Ignored setter");
+        LOG.warning("---");
     }
 
     @Override
     public String getValue() {
-        return "Value is ignored";
+        return "---";
     }
 }
