@@ -196,9 +196,7 @@ public class IsoBufferWrapper {
      * @in case of an error in the underlying stream
      */
     public String readString() {
-//    int size = readUInt8();
-//    String result =  new String(read(size), "UTF-8");
-//    return result;
+
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         int read;
         while ((read = read()) != 0) {

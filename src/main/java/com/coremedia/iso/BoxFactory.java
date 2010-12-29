@@ -273,6 +273,17 @@ public class BoxFactory {
                 return new AppleSOALBox();
             }
 
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleStoreAccountTypeBox.TYPE))) {
+                return new AppleStoreAccountTypeBox();
+            }
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleStoreCountryCodeBox.TYPE))) {
+                return new AppleStoreCountryCodeBox();
+            }
+
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleMediaTypeBox.TYPE))) {
+                return new AppleMediaTypeBox();
+            }
+
 
 
         }

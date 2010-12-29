@@ -6,6 +6,7 @@ import com.coremedia.iso.boxes.BoxContainer;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.logging.Logger;
@@ -66,7 +67,11 @@ public abstract class AbstractAppleMetaDataBox extends Box implements BoxContain
                 '}';
     }
 
-    public void setValue(String value)  {
+    static long toLong(byte b) {
+        return b < 0 ? b + 256 : b;
+    }
+
+    public void setValue(String value) {
         if (appleDataBox.getFlags() == 1) {
             appleDataBox = new AppleDataBox();
             appleDataBox.setVersion(0);
@@ -74,11 +79,29 @@ public abstract class AbstractAppleMetaDataBox extends Box implements BoxContain
             appleDataBox.setFourBytes(new byte[4]);
             appleDataBox.setContent(Utf8.convert(value));
         } else if (appleDataBox.getFlags() == 21) {
+            byte[] content = appleDataBox.getContent();
             appleDataBox = new AppleDataBox();
             appleDataBox.setVersion(0);
             appleDataBox.setFlags(21);
             appleDataBox.setFourBytes(new byte[4]);
-            appleDataBox.setContent(new byte[]{(byte) (Byte.parseByte(value) & 0xFF)});
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IsoOutputStream isoOutputStream = new IsoOutputStream(baos, false);
+            try {
+                if (content.length == 1) {
+                    isoOutputStream.writeUInt8((Byte.parseByte(value) & 0xFF));
+                } else if (content.length == 2) {
+                    isoOutputStream.writeUInt16(Integer.parseInt(value));
+                } else if (content.length == 4) {
+                    isoOutputStream.writeUInt32(Long.parseLong(value));
+                } else if (content.length == 8) {
+                    isoOutputStream.writeUInt64(Long.parseLong(value));
+                } else {
+                    throw new Error("The content length within the appleDataBox is neither 1, 2, 4 or 8. I can't handle that!");
+                }
+            } catch (IOException e) {
+                throw new Error(e);
+            }
+            appleDataBox.setContent(content);
         } else if (appleDataBox.getFlags() == 0) {
             appleDataBox = new AppleDataBox();
             appleDataBox.setVersion(0);
@@ -99,8 +122,15 @@ public abstract class AbstractAppleMetaDataBox extends Box implements BoxContain
         if (appleDataBox.getFlags() == 1) {
             return Utf8.convert(appleDataBox.getContent());
         } else if (appleDataBox.getFlags() == 21) {
-            return "" + appleDataBox.getContent()[0];
-        }  else if (appleDataBox.getFlags() == 0) {
+            byte[] content = appleDataBox.getContent();
+            long l = 0;
+            int current = 1;
+            int length = content.length;
+            for (byte b : content) {
+                l += toLong(b)<< (8*(length - current++));
+            }
+            return "" + l;
+        } else if (appleDataBox.getFlags() == 0) {
             return Hex.encodeHexString(appleDataBox.getContent());
         } else {
             return "unknown";
