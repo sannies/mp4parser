@@ -123,7 +123,6 @@ import com.coremedia.iso.boxes.threegpp26244.LocationInformationBox;
 import com.coremedia.iso.boxes.vodafone.AlbumArtistBox;
 import com.coremedia.iso.boxes.vodafone.ContentDistributorIdBox;
 
-import java.applet.AppletStub;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -269,8 +268,8 @@ public class BoxFactory {
             if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleTvEpisodeNumberBox.TYPE))) {
                 return new AppleTvEpisodeNumberBox();
             }
-            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleSOALBox.TYPE))) {
-                return new AppleSOALBox();
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleSortAlbumBox.TYPE))) {
+                return new AppleSortAlbumBox();
             }
 
             if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleStoreAccountTypeBox.TYPE))) {

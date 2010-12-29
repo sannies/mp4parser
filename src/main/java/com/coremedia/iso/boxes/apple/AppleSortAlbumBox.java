@@ -3,16 +3,16 @@ package com.coremedia.iso.boxes.apple;
 /**
  *
  */
-public final class AppleSOALBox extends AbstractAppleMetaDataBox {
+public final class AppleSortAlbumBox extends AbstractAppleMetaDataBox {
   public static final String TYPE = "soal";
 
 
-  public AppleSOALBox() {
+  public AppleSortAlbumBox() {
     super(TYPE);
   }
 
   public String getDisplayName() {
-    return "iTunes SOAL(?) Box";
+    return "iTunes Sort Album Box";
   }
 
 
