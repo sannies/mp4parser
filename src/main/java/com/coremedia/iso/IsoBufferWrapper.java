@@ -229,8 +229,6 @@ public class IsoBufferWrapper {
     }
 
     public ByteBuffer[] getSegment(long startPos, long length) {
-        // todo make long safe
-        // todo make it safe across bytebuffers
         ArrayList<ByteBuffer> segments = new ArrayList<ByteBuffer>();
         position(startPos);
         while (length > 0) {
