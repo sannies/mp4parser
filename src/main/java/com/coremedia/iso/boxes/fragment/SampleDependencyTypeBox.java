@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * aligned(8) class SampleDependencyTypeBox
- * extends FullBox(�sdtp�, version = 0, 0) {
+ * extends FullBox('sdtp', version = 0, 0) {
  * for (i=0; i < sample_count; i++){
  * unsigned int(2) reserved = 0;
  * unsigned int(2) sample_depends_on;
@@ -42,139 +42,155 @@ import java.util.List;
  * }
  */
 public class SampleDependencyTypeBox extends FullBox {
-  public static final String TYPE = "sdtp";
+    public static final String TYPE = "sdtp";
 
-  private List<Entry> sampleEntries = new ArrayList<Entry>();
+    private List<Entry> sampleEntries = new ArrayList<Entry>();
 
-  public static class Entry {
-    private int reserved;
-    private int sampleDependsOn;
-    private int sampleIsDependentOn;
-    private int sampleHasRedundancy;
+    public static class Entry {
+        private int reserved;
+        private int sampleDependsOn;
+        private int sampleIsDependentOn;
+        private int sampleHasRedundancy;
 
-    public int getReserved() {
-      return reserved;
+        public int getReserved() {
+            return reserved;
+        }
+
+        public int getSampleDependsOn() {
+            return sampleDependsOn;
+        }
+
+        public int getSampleIsDependentOn() {
+            return sampleIsDependentOn;
+        }
+
+        public int getSampleHasRedundancy() {
+            return sampleHasRedundancy;
+        }
+
+        @Override
+        public String toString() {
+            return "Entry{" +
+                    "reserved=" + reserved +
+                    ", sampleDependsOn=" + sampleDependsOn +
+                    ", sampleIsDependentOn=" + sampleIsDependentOn +
+                    ", sampleHasRedundancy=" + sampleHasRedundancy +
+                    '}';
+        }
     }
 
-    public int getSampleDependsOn() {
-      return sampleDependsOn;
+    public SampleDependencyTypeBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public int getSampleIsDependentOn() {
-      return sampleIsDependentOn;
+    public String getDisplayName() {
+        return "Independent and Disposable Samples Box";
     }
 
-    public int getSampleHasRedundancy() {
-      return sampleHasRedundancy;
+    protected long getContentSize() {
+        return sampleEntries.size();
+    }
+
+    protected void getContent(IsoOutputStream os) throws IOException {
+        for (Entry entry : sampleEntries) {
+            int temp = entry.reserved << 6;
+
+            temp = temp | (entry.sampleDependsOn << 4);
+            temp = temp | (entry.sampleIsDependentOn << 2);
+            temp = temp | entry.sampleHasRedundancy;
+
+            os.write(temp);
+        }
     }
 
     @Override
-    public String toString() {
-      return "Entry{" +
-              "reserved=" + reserved +
-              ", sampleDependsOn=" + sampleDependsOn +
-              ", sampleIsDependentOn=" + sampleIsDependentOn +
-              ", sampleHasRedundancy=" + sampleHasRedundancy +
-              '}';
-    }
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxFactory, lastMovieFragmentBox);
+        long remainingBytes = size - getHeaderSize();
 
-  public SampleDependencyTypeBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+        while (remainingBytes > 0) {
+            Entry entry = new Entry();
+            int temp = in.readUInt8();
 
-  public String getDisplayName() {
-    return "Independent and Disposable Samples Box";
-  }
+            entry.reserved = (temp & 0xC0) >> 6;
+            entry.sampleDependsOn = (temp & 0x30) >> 4;
+            entry.sampleIsDependentOn = (temp & 0xC) >> 2;
+            entry.sampleHasRedundancy = temp & 0x3;
 
-  protected long getContentSize() {
-    return getSampleCount();
-  }
+            sampleEntries.add(entry);
+            remainingBytes--;
+        }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    for (Entry entry : sampleEntries) {
-      int temp = entry.reserved << 6;
+        /*
+        long sampleCount = getSampleCount();
 
-      temp = temp | (entry.sampleDependsOn << 4);
-      temp = temp | (entry.sampleIsDependentOn << 2);
-      temp = temp | entry.sampleHasRedundancy;
+        for (int i = 0; i < sampleCount; i++) {
+            Entry entry = new Entry();
+            int temp = in.readUInt8();
 
-      os.write(temp);
-    }
-  }
+            entry.reserved = (temp & 0xC0) >> 6;
+            entry.sampleDependsOn = (temp & 0x30) >> 4;
+            entry.sampleIsDependentOn = (temp & 0xC) >> 2;
+            entry.sampleHasRedundancy = temp & 0x3;
 
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxFactory, lastMovieFragmentBox);
-    long sampleCount = getSampleCount();
+            sampleEntries.add(entry);
+        }*/
 
-    for (int i = 0; i < sampleCount; i++) {
-      Entry entry = new Entry();
-      int temp = in.readUInt8();
-
-      entry.reserved = (temp & 0xC0) >> 6;
-      entry.sampleDependsOn = (temp & 0x30) >> 4;
-      entry.sampleIsDependentOn = (temp & 0xC) >> 2;
-      entry.sampleHasRedundancy = temp & 0x3;
-
-      sampleEntries.add(entry);
     }
 
-  }
+    private long getSampleCount() {
+        BoxContainer traf = this.getParent();
+        TrackRunBox[] trackRunBoxes = traf.getBoxes(TrackRunBox.class);
+        if (trackRunBoxes.length > 1) {
+            for (TrackRunBox trackRunBox : trackRunBoxes) {
+                System.out.println("Found (additional) Track Run Box: " + trackRunBox + " in " + traf);
+            }
+            throw new RuntimeException("More than one Track Fragment Header Box in Track Fragment Box.");
+        } else if (trackRunBoxes.length == 1) {
+            return trackRunBoxes[0].getSampleCount();
+        }
 
-  private long getSampleCount() {
-    BoxContainer traf = this.getParent();
-    TrackRunBox[] trackRunBoxes = traf.getBoxes(TrackRunBox.class);
-    if (trackRunBoxes.length > 1) {
-      for (TrackRunBox trackRunBox : trackRunBoxes) {
-        System.out.println("Found (additional) Track Run Box: " + trackRunBox + " in " + traf);
-      }
-      throw new RuntimeException("More than one Track Fragment Header Box in Track Fragment Box.");
-    } else if (trackRunBoxes.length == 1) {
-      return trackRunBoxes[0].getSampleCount();
+        System.out.println("Couldn't find Track Run Box. Trying to determine sample count by looking up Sample Size Boxes");
+        BoxContainer bc = this.getParent();
+        while (bc.getParent() != null) {
+            bc = bc.getParent();
+        }
+        MovieBox[] movieBoxes = bc.getBoxes(MovieBox.class);
+        if (movieBoxes.length == 0) {
+            System.out.println("No Movie Box found in " + bc);
+            return 0;
+        }
+        MovieBox movieBox = movieBoxes[0];
+
+        SampleSizeBox[] sampleSizeBoxes = movieBox.getBoxes(SampleSizeBox.class);
+
+        long sampleCount = 0;
+        if (sampleSizeBoxes.length > 1) {
+            System.out.println("Found more than one Sample Size Box in movie box. Taking first.");
+            for (SampleSizeBox sampleSizeBox : sampleSizeBoxes) {
+                System.out.println("found Sample Size Box " + sampleSizeBox + " in " + movieBox);
+            }
+        } else if (sampleSizeBoxes.length > 0) {
+            sampleCount = sampleSizeBoxes[0].getSampleCount();
+        } else {
+            System.out.println("No Sample Size Box found in " + movieBox.getDisplayName());
+        }
+        return sampleCount;
     }
 
-    System.out.println("Couldn't find Track Run Box. Trying to determine sample count by looking up Sample Size Boxes");
-    BoxContainer bc = this.getParent();
-    while (bc.getParent() != null) {
-      bc = bc.getParent();
+    public List<Entry> getSampleEntries() {
+        return sampleEntries;
     }
-    MovieBox[] movieBoxes = bc.getBoxes(MovieBox.class);
-    if (movieBoxes.length == 0) {
-      System.out.println("No Movie Box found in " + bc);
-      return 0;
+
+    public int getSampleEntriesCount() {
+        return sampleEntries.size();
     }
-    MovieBox movieBox = movieBoxes[0];
 
-    SampleSizeBox[] sampleSizeBoxes = movieBox.getBoxes(SampleSizeBox.class);
-
-    long sampleCount = 0;
-    if (sampleSizeBoxes.length > 1) {
-      System.out.println("Found more than one Sample Size Box in movie box. Taking first.");
-      for (SampleSizeBox sampleSizeBox : sampleSizeBoxes) {
-        System.out.println("found Sample Size Box " + sampleSizeBox + " in " + movieBox);
-      }
-    } else if (sampleSizeBoxes.length > 0) {
-      sampleCount = sampleSizeBoxes[0].getSampleCount();
-    } else {
-      System.out.println("No Sample Size Box found in " + movieBox.getDisplayName());
+    public String getSampleEntriesAsString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Entry sampleEntry : sampleEntries) {
+            stringBuilder.append(sampleEntry);
+        }
+        return stringBuilder.toString();
     }
-    return sampleCount;
-  }
-
-  public List<Entry> getSampleEntries() {
-    return sampleEntries;
-  }
-
-  public int getSampleEntriesCount() {
-    return sampleEntries.size();
-  }
-
-  public String getSampleEntriesAsString() {
-    StringBuilder stringBuilder = new StringBuilder();
-    for (Entry sampleEntry : sampleEntries) {
-      stringBuilder.append(sampleEntry);
-    }
-    return stringBuilder.toString();
-  }
 }
