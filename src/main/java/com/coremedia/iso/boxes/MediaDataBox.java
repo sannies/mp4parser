@@ -87,7 +87,13 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Box {
         os.write(getHeader());
         os.write(getDeadBytesBefore());
         getContent(os);
-        os.write(getDeadBytes());
+        for (ByteBuffer buffer : deadBytes) {
+            buffer.rewind();
+            byte[] bufAsAr = new byte[buffer.limit()];
+            buffer.get(bufAsAr);
+            os.write(bufAsAr);
+        }
+
     }
 
     public long getSize() {

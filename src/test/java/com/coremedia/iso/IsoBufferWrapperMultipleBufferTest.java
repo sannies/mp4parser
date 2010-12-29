@@ -48,7 +48,8 @@ public class IsoBufferWrapperMultipleBufferTest extends TestCase {
     }
     public void testPositionAfterLast() {
         isoBufferWrapper.position(6);
-        assertEquals(5, isoBufferWrapper.position());
+        assertEquals(6, isoBufferWrapper.position());
+        assertEquals(0, isoBufferWrapper.remaining());
     }
     public void testRemaining() {
 

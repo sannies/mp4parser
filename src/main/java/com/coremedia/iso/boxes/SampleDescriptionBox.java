@@ -46,60 +46,61 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.rtp.HintSampleEntry
  */
 public class SampleDescriptionBox extends FullBoxContainer {
-  public static final String TYPE = "stsd";
+    public static final String TYPE = "stsd";
 
-  public SampleDescriptionBox() {
-    super(TYPE);
-  }
-
-  protected long getContentSize() {
-    long size = 4;
-    for (Box box : boxes) {
-      size += box.getSize();
-    }
-    return size;
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    parseHeader(in, size);
-    long entryCount = in.readUInt32();
-    if (entryCount > Integer.MAX_VALUE) {
-      throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE subboxes");
-    }
-    boxes = new Box[(int) entryCount];
-    long sp = in.position();
-    for (int i = 0; i < entryCount; i++) {
-      boxes[i] = boxFactory.parseBox(in, this, lastMovieFragmentBox);
+    public SampleDescriptionBox() {
+        super(TYPE);
     }
 
-    if (in.position() - offset < size) {
-      // System.out.println("dead bytes found in " + box);
-      setDeadBytes(in.read((int) (size - (in.position() - offset))));
+    protected long getContentSize() {
+        long size = 4;
+        for (Box box : boxes) {
+            size += box.getSize();
+        }
+        return size;
     }
-  }
 
-  public String getDisplayName() {
-    return "Sample Description Box";
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+        parseHeader(in, size);
+        long entryCount = in.readUInt32();
+        if (entryCount > Integer.MAX_VALUE) {
+            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE subboxes");
+        }
+        boxes = new Box[(int) entryCount];
+        long sp = in.position();
+        for (int i = 0; i < entryCount; i++) {
+            boxes[i] = boxFactory.parseBox(in, this, lastMovieFragmentBox);
+        }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeUInt32(boxes.length);
-    for (Box boxe : boxes) {
-      boxe.getBox(isos);
+        if (in.position() - offset < size) {
+            // System.out.println("dead bytes found in " + box);
+            long length = (size - (in.position() - offset));
+            setDeadBytes(in.getSegment(in.position(), length));
+        }
     }
-  }
 
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("SampleDescriptionBox[");
-    Box[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i]);
+    public String getDisplayName() {
+        return "Sample Description Box";
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeUInt32(boxes.length);
+        for (Box boxe : boxes) {
+            boxe.getBox(isos);
+        }
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("SampleDescriptionBox[");
+        Box[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i]);
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

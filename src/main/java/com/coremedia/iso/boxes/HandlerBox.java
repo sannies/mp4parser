@@ -23,6 +23,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,97 +38,99 @@ import java.util.Map;
  * @see MediaBox
  */
 public class HandlerBox extends FullBox {
-  public static final String TYPE = "hdlr";
-  public static final Map<String, String> readableTypes;
+    public static final String TYPE = "hdlr";
+    public static final Map<String, String> readableTypes;
 
-  static {
-    HashMap<String, String> hm = new HashMap<String, String>();
-    hm.put("odsm", "ObjectDescriptorStream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
-    hm.put("crsm", "ClockReferenceStream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
-    hm.put("sdsm", "SceneDescriptionStream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
-    hm.put("m7sm", "MPEG7Stream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
-    hm.put("ocsm", "ObjectContentInfoStream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
-    hm.put("ipsm", "IPMP Stream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
-    hm.put("mjsm", "MPEG-J Stream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
-    hm.put("mdir", "Apple Meta Data iTunes Reader");
-    hm.put("mp7b", "MPEG-7 binary XML");
-    hm.put("mp7t", "MPEG-7 XML");
-    hm.put("vide", "Video Track");
-    hm.put("soun", "Sound Track");
-    hm.put("hint", "Hint Track");
-    hm.put("appl", "Apple specific");
-    hm.put("meta", "Timed Metadata track - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
+    static {
+        HashMap<String, String> hm = new HashMap<String, String>();
+        hm.put("odsm", "ObjectDescriptorStream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
+        hm.put("crsm", "ClockReferenceStream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
+        hm.put("sdsm", "SceneDescriptionStream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
+        hm.put("m7sm", "MPEG7Stream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
+        hm.put("ocsm", "ObjectContentInfoStream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
+        hm.put("ipsm", "IPMP Stream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
+        hm.put("mjsm", "MPEG-J Stream - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
+        hm.put("mdir", "Apple Meta Data iTunes Reader");
+        hm.put("mp7b", "MPEG-7 binary XML");
+        hm.put("mp7t", "MPEG-7 XML");
+        hm.put("vide", "Video Track");
+        hm.put("soun", "Sound Track");
+        hm.put("hint", "Hint Track");
+        hm.put("appl", "Apple specific");
+        hm.put("meta", "Timed Metadata track - defined in ISO/IEC JTC1/SC29/WG11 - CODING OF MOVING PICTURES AND AUDIO");
 
-    readableTypes = Collections.unmodifiableMap(hm);
+        readableTypes = Collections.unmodifiableMap(hm);
 
-  }
-
-  private String handlerType;
-  private String name;
-  private long a, b, c;
-
-  public HandlerBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-    name = "";
-  }
-
-  public String getHandlerType() {
-    return handlerType;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public void setHandlerType(String handlerType) {
-    this.handlerType = handlerType;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getHumanReadableTrackType() {
-    return readableTypes.get(handlerType) != null ? readableTypes.get(handlerType) : "Unknown Handler Type";
-  }
-
-  public String getDisplayName() {
-    return "Handler Reference Box";
-  }
-
-  protected long getContentSize() {
-    return 21 + utf8StringLengthInBytes(name);
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxFactory, lastMovieFragmentBox);
-    in.readUInt32();
-    handlerType = IsoFile.bytesToFourCC(in.read(4));
-    a = in.readUInt32();
-    b = in.readUInt32();
-    c = in.readUInt32();
-    name = in.readString((int) (size - 24));
-    if (name.contains("\0")) {
-      if (name.indexOf("\0") != name.length() - 1) {
-        deadBytes = name.substring(name.indexOf('\0') + 1).getBytes("UTF-8");
-        name = name.substring(0, name.indexOf('\0') + 1);
-      }
-      name = name.substring(0, name.indexOf('\0'));
-    } else {
-      name = name.substring(1);
     }
-  }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeUInt32(0);
-    isos.write(IsoFile.fourCCtoBytes(handlerType));
-    isos.writeUInt32(a);
-    isos.writeUInt32(b);
-    isos.writeUInt32(c);
-    isos.writeStringZeroTerm(name);
-  }
+    private String handlerType;
+    private String name;
+    private long a, b, c;
 
-  public String toString() {
-    return "HandlerBox[handlerType=" + getHandlerType() + ";name=" + getName() + "]";
-  }
+    public HandlerBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+        name = "";
+    }
+
+    public String getHandlerType() {
+        return handlerType;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setHandlerType(String handlerType) {
+        this.handlerType = handlerType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getHumanReadableTrackType() {
+        return readableTypes.get(handlerType) != null ? readableTypes.get(handlerType) : "Unknown Handler Type";
+    }
+
+    public String getDisplayName() {
+        return "Handler Reference Box";
+    }
+
+    protected long getContentSize() {
+        return 21 + utf8StringLengthInBytes(name);
+    }
+
+    public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxFactory, lastMovieFragmentBox);
+        in.readUInt32();
+        handlerType = IsoFile.bytesToFourCC(in.read(4));
+        a = in.readUInt32();
+        b = in.readUInt32();
+        c = in.readUInt32();
+        name = in.readString((int) (size - 24));
+        if (name.contains("\0")) {
+            if (name.indexOf("\0") != name.length() - 1) {
+                // todo this is in a way correcting. I should be able to turn it off!
+                deadBytes = new ByteBuffer[1];
+                deadBytes[0] = ByteBuffer.wrap(name.substring(name.indexOf('\0') + 1).getBytes("UTF-8"));
+                name = name.substring(0, name.indexOf('\0') + 1);
+            }
+            name = name.substring(0, name.indexOf('\0'));
+        } else {
+            name = name.substring(1);
+        }
+    }
+
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeUInt32(0);
+        isos.write(IsoFile.fourCCtoBytes(handlerType));
+        isos.writeUInt32(a);
+        isos.writeUInt32(b);
+        isos.writeUInt32(c);
+        isos.writeStringZeroTerm(name);
+    }
+
+    public String toString() {
+        return "HandlerBox[handlerType=" + getHandlerType() + ";name=" + getName() + "]";
+    }
 }
