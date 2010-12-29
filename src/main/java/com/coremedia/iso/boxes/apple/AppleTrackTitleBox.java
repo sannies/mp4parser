@@ -18,15 +18,4 @@ public final class AppleTrackTitleBox extends AbstractAppleMetaDataBox {
   }
 
 
-  public void setTrackTitle(String trackTitle) {
-    appleDataBox = new AppleDataBox();
-    appleDataBox.setVersion(0);
-    appleDataBox.setFlags(1);
-    appleDataBox.setFourBytes(new byte[4]);
-    appleDataBox.setContent(Utf8.convert(trackTitle));
-  }
-
-  public String getTrackTitle() {
-    return Utf8.convert(appleDataBox.getContent());
-  }
 }

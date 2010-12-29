@@ -18,15 +18,4 @@ public final class AppleCommentBox extends AbstractAppleMetaDataBox {
   }
 
 
-  public void setComment(String comment) {
-    appleDataBox = new AppleDataBox();
-    appleDataBox.setVersion(0);
-    appleDataBox.setFlags(1);
-    appleDataBox.setFourBytes(new byte[4]);
-    appleDataBox.setContent(Utf8.convert(comment));
-  }
-
-  public String getComment() {
-    return Utf8.convert(appleDataBox.getContent());
-  }
 }

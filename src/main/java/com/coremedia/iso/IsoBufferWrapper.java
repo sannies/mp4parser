@@ -109,7 +109,8 @@ public class IsoBufferWrapper {
     }
 
     public int readUInt8() {
-        return read();
+        byte b = read();
+        return b < 0 ? b + 256 : b;
     }
 
     public byte[] read(int byteCount) {
@@ -132,14 +133,13 @@ public class IsoBufferWrapper {
         }
     }
 
-    public int read() {
+    public byte read() {
         if (parents[activeParent].remaining() == 0) {
             activeParent++;
             parents[activeParent].rewind();
             return read();
         }
-        byte b = parents[activeParent].get();
-        return b < 0 ? b + 256 : b;
+        return parents[activeParent].get();
     }
 
     public int read(byte[] b) {

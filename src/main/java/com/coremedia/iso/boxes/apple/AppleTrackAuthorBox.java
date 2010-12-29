@@ -18,15 +18,4 @@ public final class AppleTrackAuthorBox extends AbstractAppleMetaDataBox {
   }
 
 
-  public void setTrackAuthor(String trackAuthor) {
-    appleDataBox = new AppleDataBox();
-    appleDataBox.setVersion(0);
-    appleDataBox.setFlags(1);
-    appleDataBox.setFourBytes(new byte[4]);
-    appleDataBox.setContent(Utf8.convert(trackAuthor));
-  }
-
-  public String getTrackAuthor() {
-    return Utf8.convert(appleDataBox.getContent());
-  }
 }

@@ -74,36 +74,7 @@ import com.coremedia.iso.boxes.UnknownBox;
 import com.coremedia.iso.boxes.UserBox;
 import com.coremedia.iso.boxes.UserDataBox;
 import com.coremedia.iso.boxes.VideoMediaHeaderBox;
-import com.coremedia.iso.boxes.apple.AppleAlbumArtistBox;
-import com.coremedia.iso.boxes.apple.AppleAlbumBox;
-import com.coremedia.iso.boxes.apple.AppleArtistBox;
-import com.coremedia.iso.boxes.apple.AppleCommentBox;
-import com.coremedia.iso.boxes.apple.AppleCompilationBox;
-import com.coremedia.iso.boxes.apple.AppleCopyrightBox;
-import com.coremedia.iso.boxes.apple.AppleCoverBox;
-import com.coremedia.iso.boxes.apple.AppleCustomGenreBox;
-import com.coremedia.iso.boxes.apple.AppleDataBox;
-import com.coremedia.iso.boxes.apple.AppleDataRateBox;
-import com.coremedia.iso.boxes.apple.AppleDataReferenceBox;
-import com.coremedia.iso.boxes.apple.AppleEncoderBox;
-import com.coremedia.iso.boxes.apple.AppleGaplessPlaybackBox;
-import com.coremedia.iso.boxes.apple.AppleGenericBox;
-import com.coremedia.iso.boxes.apple.AppleGroupingBox;
-import com.coremedia.iso.boxes.apple.AppleItemListBox;
-import com.coremedia.iso.boxes.apple.AppleLosslessSpecificBox;
-import com.coremedia.iso.boxes.apple.AppleMeanBox;
-import com.coremedia.iso.boxes.apple.AppleNameBox;
-import com.coremedia.iso.boxes.apple.AppleRatingBox;
-import com.coremedia.iso.boxes.apple.AppleRecordingYearBox;
-import com.coremedia.iso.boxes.apple.AppleReferenceMovieBox;
-import com.coremedia.iso.boxes.apple.AppleReferenceMovieDescriptorBox;
-import com.coremedia.iso.boxes.apple.AppleStandardGenreBox;
-import com.coremedia.iso.boxes.apple.AppleTempBox;
-import com.coremedia.iso.boxes.apple.AppleTrackAuthorBox;
-import com.coremedia.iso.boxes.apple.AppleTrackNumberBox;
-import com.coremedia.iso.boxes.apple.AppleTrackTitleBox;
-import com.coremedia.iso.boxes.apple.AppleTvEpisodeBox;
-import com.coremedia.iso.boxes.apple.AppleTvSeasonBox;
+import com.coremedia.iso.boxes.apple.*;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieExtendsHeaderBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
@@ -152,6 +123,7 @@ import com.coremedia.iso.boxes.threegpp26244.LocationInformationBox;
 import com.coremedia.iso.boxes.vodafone.AlbumArtistBox;
 import com.coremedia.iso.boxes.vodafone.ContentDistributorIdBox;
 
+import java.applet.AppletStub;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -275,6 +247,32 @@ public class BoxFactory {
             if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleRecordingYearBox.TYPE))) {
                 return new AppleRecordingYearBox();
             }
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleIdBox.TYPE))) {
+                return new AppleIdBox();
+            }
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleNetworkBox.TYPE))) {
+                return new AppleNetworkBox();
+            }
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleShowBox.TYPE))) {
+                return new AppleShowBox();
+            }
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleDescriptionBox.TYPE))) {
+                return new AppleDescriptionBox();
+            }
+
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleSynopsisBox.TYPE))) {
+                return new AppleSynopsisBox();
+            }
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(ApplePurchaseDateBox.TYPE))) {
+                return new ApplePurchaseDateBox();
+            }
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleTvEpisodeNumberBox.TYPE))) {
+                return new AppleTvEpisodeNumberBox();
+            }
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleSOALBox.TYPE))) {
+                return new AppleSOALBox();
+            }
+
 
 
         }
@@ -755,6 +753,7 @@ public class BoxFactory {
             LOG.info(IsoFile.bytesToFourCC(type) +  " has dead bytes");
             long length = (size - (in.position() - offset));
             box.setDeadBytes(in.getSegment(in.position(), length));
+            in.skip(length);
         }
 
 

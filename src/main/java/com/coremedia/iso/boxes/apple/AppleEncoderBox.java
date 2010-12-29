@@ -17,16 +17,4 @@ public final class AppleEncoderBox extends AbstractAppleMetaDataBox {
     return "iTunes Encoder Box";
   }
 
-
-  public void setEncoder(String comment) {
-    appleDataBox = new AppleDataBox();
-    appleDataBox.setVersion(0);
-    appleDataBox.setFlags(1);
-    appleDataBox.setFourBytes(new byte[4]);
-    appleDataBox.setContent(Utf8.convert(comment));
-  }
-
-  public String getEncoder() {
-    return Utf8.convert(appleDataBox.getContent());
-  }
 }

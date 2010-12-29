@@ -18,15 +18,4 @@ public class AppleRecordingYearBox extends AbstractAppleMetaDataBox {
   }
 
 
-  public void setRecordingYear(String recordingYear) {
-    appleDataBox = new AppleDataBox();
-    appleDataBox.setVersion(0);
-    appleDataBox.setFlags(0);
-    appleDataBox.setFourBytes(new byte[4]);
-    appleDataBox.setContent(recordingYear.getBytes());
-  }
-
-  public String getRecordingYear() {
-    return Utf8.convert(appleDataBox.getContent());
-  }
 }

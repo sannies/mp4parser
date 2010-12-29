@@ -17,16 +17,4 @@ public final class AppleGroupingBox extends AbstractAppleMetaDataBox {
     return "iTunes Grouping Box";
   }
 
-
-  public void setGrouping(String grouping) {
-    appleDataBox = new AppleDataBox();
-    appleDataBox.setVersion(0);
-    appleDataBox.setFlags(1);
-    appleDataBox.setFourBytes(new byte[4]);
-    appleDataBox.setContent(Utf8.convert(grouping));
-  }
-
-  public String getGrouping() {
-    return Utf8.convert(appleDataBox.getContent());
-  }
 }

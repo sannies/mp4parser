@@ -39,7 +39,7 @@ public class TestItunesMetaDataEnrichment extends TestCase {
 
     AppleItemListBox ilst = new AppleItemListBox();
     AppleRecordingYearBox appleRecordingYearBox = new AppleRecordingYearBox();
-    appleRecordingYearBox.setRecordingYear("2008");
+    appleRecordingYearBox.setValue("2008");
     ilst.addBox(appleRecordingYearBox);
     mb.addBox(ilst);
 
