@@ -17,11 +17,14 @@
 package com.coremedia.iso.boxes;
 
 
+import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.SampleImpl;
 import com.coremedia.iso.mdta.Track;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,6 +37,7 @@ import java.util.TreeMap;
  */
 public class MovieBox extends ContainerBox implements TrackBoxContainer<TrackBox> {
     public static final String TYPE = "moov";
+    private IsoBufferWrapper isoBufferWrapper;
 
     public MovieBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -41,6 +45,13 @@ public class MovieBox extends ContainerBox implements TrackBoxContainer<TrackBox
 
     public String getDisplayName() {
         return "Movie Box";
+    }
+
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxFactory, lastMovieFragmentBox);
+        // super does everything fine but we need the IsoBufferWrapper for later
+        this.isoBufferWrapper = in;
     }
 
     public long[] getChunkOffsets() {
@@ -151,7 +162,7 @@ public class MovieBox extends ContainerBox implements TrackBoxContainer<TrackBox
             for (int i = 0; i < sampleOffsets.length; i++) {
                 MediaDataBox.SampleHolder<TrackBox> sh =
                         new MediaDataBox.SampleHolder<TrackBox>(
-                                new SampleImpl<TrackBox>(getIsoFile().getFile(), chunkOffset + sampleOffsets[i],
+                                new SampleImpl<TrackBox>(isoBufferWrapper, chunkOffset + sampleOffsets[i],
                                         sampleSizes[i], chunk));
                 mdat.getSampleList().add(sh);
                 chunk.addSample(sh);

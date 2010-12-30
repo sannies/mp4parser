@@ -769,7 +769,7 @@ public class OldBoxFactoryImpl implements BoxFactory {
         if (size < 8 && size > 1) {
             LOG.severe("Plausibility check failed: size < 8 (size = " + size + "). Stop parsing!");
             return null;
-        } else if ((offset + size) > parent.getIsoFile().getFile().size()) {
+        } else if ((offset + size) > in.size()) {
             LOG.severe("Plausibility check failed: offset + size > file size (size = " + size + "). Stop parsing!");
             return null;
         }

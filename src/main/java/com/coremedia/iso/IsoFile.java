@@ -54,11 +54,6 @@ public class IsoFile implements BoxContainer, BoxInterface {
         this.originalIso = originalIso;
     }
 
-    public IsoBufferWrapper getFile() {
-        return originalIso;
-    }
-
-
     public BoxContainer getParent() {
         return null;
     }

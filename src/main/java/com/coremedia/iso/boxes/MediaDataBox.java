@@ -16,8 +16,10 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.BoxFactory;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.mdta.Chunk;
@@ -25,14 +27,8 @@ import com.coremedia.iso.mdta.Sample;
 import com.coremedia.iso.mdta.SampleImpl;
 import com.coremedia.iso.mdta.Track;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,6 +64,7 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Box {
 
     private List<SampleHolder<T>> sampleList = new ArrayList<SampleHolder<T>>();
     private TrackBoxContainer<TrackFragmentBox> movieFragmentBoxBefore;
+    private IsoBufferWrapper isoBufferWrapper;
 
     public MediaDataBox(MovieFragmentBox lastMovieFragmentBox) {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -153,6 +150,7 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Box {
 
     public void parse(final IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
         this.movieFragmentBoxBefore = (MovieFragmentBox) lastMovieFragmentBox;
+        this.isoBufferWrapper = in;
         startOffset = in.position();
         sizeIfNotParsed = size;
         in.skip(size);
@@ -192,8 +190,8 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Box {
                     deadBytesBefore = new byte[0];
                 } else {
                     deadBytesBefore = new byte[bytesToFirstSample];
-                    this.getIsoFile().getFile().position(offset + getHeaderSize());
-                    this.getIsoFile().getFile().read(deadBytesBefore);
+                    isoBufferWrapper.position(offset + getHeaderSize());
+                    isoBufferWrapper.read(deadBytesBefore);
                 }
             } else {
                 deadBytesBefore = new byte[0];
@@ -230,7 +228,7 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Box {
             }
             assert getContentSize() == os.getStreamPosition() - sp;
         } else {
-            ByteBuffer[] segments = getIsoFile().getFile().getSegment(startOffset, sizeIfNotParsed);
+            ByteBuffer[] segments = isoBufferWrapper.getSegment(startOffset, sizeIfNotParsed);
             for (ByteBuffer segment : segments) {
                 while (segment.remaining() > 1024) {
                     byte[] buf = new byte[1024];
