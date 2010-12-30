@@ -23,7 +23,7 @@ import com.coremedia.iso.IsoFile;
  * A free box. Just a placeholder to enable editing without rewriting the whole file.
  */
 public class FreeBox extends LiteralBox {
-  public static String TYPE = "free";
+  public static final String TYPE = "free";
 
   public FreeBox() {
     super(IsoFile.fourCCtoBytes(TYPE));

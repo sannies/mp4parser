@@ -464,9 +464,6 @@ public class BoxFactory {
         if (Arrays.equals(type, IsoFile.fourCCtoBytes(HintMediaHeaderBox.TYPE))) {
             return new HintMediaHeaderBox();
         }
-        if (Arrays.equals(type, IsoFile.fourCCtoBytes(HintTrackReferenceBox.TYPE))) {
-            return new HintTrackReferenceBox();
-        }
         if (Arrays.equals(type, IsoFile.fourCCtoBytes(DataInformationBox.TYPE))) {
             return new DataInformationBox();
         }
