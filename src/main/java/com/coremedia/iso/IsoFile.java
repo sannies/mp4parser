@@ -30,17 +30,13 @@ import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.TrackMetaDataContainer;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.boxes.odf.MutableDrmInformationBox;
-import com.coremedia.iso.boxes.odf.OmaDrmTransactionTrackingBox;
 import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.Sample;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -50,7 +46,7 @@ import java.util.List;
  */
 public class IsoFile implements BoxContainer, BoxInterface {
     private Box[] boxes = new Box[0];
-    private BoxFactory boxFactory = new BoxFactory();
+    private BoxFactory boxFactory = new OldBoxFactoryImpl();
     private IsoBufferWrapper originalIso;
 
 
@@ -60,7 +56,6 @@ public class IsoFile implements BoxContainer, BoxInterface {
 
     public IsoBufferWrapper getFile() {
         return originalIso;
-
     }
 
 
@@ -77,19 +72,7 @@ public class IsoFile implements BoxContainer, BoxInterface {
         return movieExtendsBoxes != null && movieExtendsBoxes.length > 0;
     }
 
-    public void addOmaDrmTransactionTrackingBox(OmaDrmTransactionTrackingBox omaDrmTransactionTrackingBox) {
 
-        MutableDrmInformationBox informationBox =
-                getBoxes(MutableDrmInformationBox.class).length > 0 ?
-                        getBoxes(MutableDrmInformationBox.class)[0] : null;
-        if (informationBox == null) {
-            List<Box> l = new LinkedList<Box>(Arrays.asList(boxes));
-            informationBox = new MutableDrmInformationBox();
-            l.add(informationBox);
-            boxes = l.toArray(new Box[l.size()]);
-        }
-        informationBox.addBox(omaDrmTransactionTrackingBox);
-    }
 
     public Box[] getBoxes() {
         return boxes;
@@ -106,28 +89,16 @@ public class IsoFile implements BoxContainer, BoxInterface {
         return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
     }
 
-    public void addBox(Box b) {
-        List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-        listOfBoxes.add(b);
-        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
-    }
-
-    public void removeBox(Box b) {
-        List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-        listOfBoxes.remove(b);
-        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
-    }
-
 
     public void parse() throws IOException {
-        IsoBufferWrapper isoIn = originalIso;
+
         List<Box> boxeList = new LinkedList<Box>();
         boolean done = false;
         Box lastMovieFragmentBox = null;
         while (!done) {
-            long sp = isoIn.position();
-            if (isoIn.remaining() >= 8) {
-                Box box = boxFactory.parseBox(isoIn, this, lastMovieFragmentBox);
+            long sp = originalIso.position();
+            if (originalIso.remaining() >= 8) {
+                Box box = boxFactory.parseBox(originalIso, this, lastMovieFragmentBox);
                 if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
                 boxeList.add(box);
                 this.boxes = boxeList.toArray(new Box[boxeList.size()]);
@@ -182,17 +153,6 @@ public class IsoFile implements BoxContainer, BoxInterface {
         return new String(result);
     }
 
-    public byte[] writeAndCalculateHash(OutputStream os) throws IOException {
-        IsoOutputStream isos = new IsoOutputStream(os, true);
-        try {
-            for (Box box : boxes) {
-                box.getBox(isos);
-            }
-        } finally {
-            isos.flush();
-        }
-        return isos.getHash();
-    }
 
 
     /**
