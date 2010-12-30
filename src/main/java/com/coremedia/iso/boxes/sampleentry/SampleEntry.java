@@ -19,8 +19,8 @@ package com.coremedia.iso.boxes.sampleentry;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
 import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -35,7 +35,7 @@ import java.util.List;
  * @see com.coremedia.iso.boxes.rtp.HintSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  */
-public abstract class SampleEntry extends Box implements BoxContainer {
+public abstract class SampleEntry extends Box implements ContainerBox {
   private int dataReferenceIndex;
   protected Box[] boxes;
   byte[] type;

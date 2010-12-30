@@ -36,7 +36,7 @@ import java.util.List;
  * @see com.coremedia.iso.boxes.DataEntryUrlBox
  * @see com.coremedia.iso.boxes.DataEntryUrnBox
  */
-public class DataReferenceBox extends FullBoxContainer {
+public class DataReferenceBox extends FullContainerBox {
 
   public static final String TYPE = "dref";
 

@@ -17,9 +17,9 @@
 package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ChunkOffsetBox;
+import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.DynamicChunkOffsetBox;
 import com.coremedia.iso.boxes.MediaBox;
 import com.coremedia.iso.boxes.MediaDataBox;
@@ -44,7 +44,7 @@ import java.util.List;
  * The most upper container for ISO Boxes. It is a container box that is a file.
  * Uses IsoBufferWrapper  to access the underlying file.
  */
-public class IsoFile implements BoxContainer, BoxInterface {
+public class IsoFile implements ContainerBox, BoxInterface {
     private Box[] boxes = new Box[0];
     private BoxParser boxParser = new OldBoxFactoryImpl();
     private IsoBufferWrapper originalIso;
@@ -54,7 +54,7 @@ public class IsoFile implements BoxContainer, BoxInterface {
         this.originalIso = originalIso;
     }
 
-    public BoxContainer getParent() {
+    public ContainerBox getParent() {
         return null;
     }
 

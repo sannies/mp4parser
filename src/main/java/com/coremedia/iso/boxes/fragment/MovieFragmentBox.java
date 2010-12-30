@@ -19,8 +19,8 @@ package com.coremedia.iso.boxes.fragment;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.MediaDataBox;
 import com.coremedia.iso.boxes.TrackBoxContainer;
 import com.coremedia.iso.boxes.TrackMetaData;
@@ -38,7 +38,7 @@ import java.util.TreeMap;
  * }
  */
 
-public class MovieFragmentBox extends ContainerBox implements TrackBoxContainer<TrackFragmentBox> {
+public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxContainer<TrackFragmentBox> {
     public static final String TYPE = "moof";
     private IsoBufferWrapper  isoBufferWrapper;
 

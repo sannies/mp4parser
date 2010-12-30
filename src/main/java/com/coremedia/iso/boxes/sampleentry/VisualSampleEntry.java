@@ -21,7 +21,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
+import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -51,7 +51,7 @@ import java.util.Arrays;
  * <p/>
  * Format-specific informationis appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */
-public class VisualSampleEntry extends SampleEntry implements BoxContainer {
+public class VisualSampleEntry extends SampleEntry implements ContainerBox {
   public static final String TYPE1 = "mp4v";
   public static final String TYPE2 = "s263";
   public static final String TYPE3 = "avc1";

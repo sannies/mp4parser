@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
+import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 
 import java.io.IOException;
@@ -33,7 +33,7 @@ import java.util.List;
  * Contains basic information about the (rtp-) hint samples in this track. Actually this <code>Box</code> class
  * should be named <code>RtpHintSampleEntry</code>.
  */
-public class HintSampleEntry extends SampleEntry implements BoxContainer {
+public class HintSampleEntry extends SampleEntry implements ContainerBox {
   public static final String TYPE1 = "rtp ";
 
   private int hintTrackVersion;

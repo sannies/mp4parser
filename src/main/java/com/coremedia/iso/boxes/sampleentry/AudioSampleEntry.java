@@ -21,7 +21,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
+import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -31,7 +31,7 @@ import java.util.ArrayList;
  * Contains basic information about the audio samples in this track. Format-specific information
  * is appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */
-public class AudioSampleEntry extends SampleEntry implements BoxContainer {
+public class AudioSampleEntry extends SampleEntry implements ContainerBox {
 
   public static final String TYPE1 = "samr";
   public static final String TYPE2 = "sawb";

@@ -25,7 +25,7 @@ import com.coremedia.iso.IsoFile;
  * tracks shall remain in the file, even if the media data within them is not referenced by the hint tracks; after
  * deleting all hint tracks, the entire un-hinted presentation shall remain.
  */
-public class TrackBox extends ContainerBox implements TrackMetaDataContainer {
+public class TrackBox extends AbstractContainerBox implements TrackMetaDataContainer {
   public static final String TYPE = "trak";
 
   public TrackBox() {

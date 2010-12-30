@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.FullBoxContainer;
+import com.coremedia.iso.boxes.FullContainerBox;
 import com.coremedia.iso.boxes.UserDataBox;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ import java.util.List;
  * {@link com.coremedia.iso.boxes.odf.OmaDrmCommonHeadersBox}, followed by an optional
  * {@link com.coremedia.iso.boxes.UserDataBox}.
  */
-public class OmaDrmDiscreteHeadersBox extends FullBoxContainer {
+public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
   public static final String TYPE = "odhe";
 
   private Box[] boxes;

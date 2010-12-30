@@ -32,7 +32,7 @@ import com.coremedia.iso.IsoFile;
  * If this box is not present, the track is not referencing any other track in any way. The reference array is sized
  * to fill the reference type box.
  */
-public class TrackReferenceBox extends ContainerBox {
+public class TrackReferenceBox extends AbstractContainerBox {
   public static final String TYPE = "tref";
 
   public TrackReferenceBox() {

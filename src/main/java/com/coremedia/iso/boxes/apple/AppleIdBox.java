@@ -1,8 +1,6 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.Utf8;
-import com.coremedia.iso.boxes.ContainerBox;
 
 /**
  *

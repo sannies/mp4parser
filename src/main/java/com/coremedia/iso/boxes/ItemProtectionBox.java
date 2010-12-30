@@ -27,7 +27,7 @@ import java.io.IOException;
  *
  * @see com.coremedia.iso.boxes.ItemProtectionBox
  */
-public class ItemProtectionBox extends FullBoxContainer {
+public class ItemProtectionBox extends FullContainerBox {
   int protectionCount;
 
   public static final String TYPE = "ipro";

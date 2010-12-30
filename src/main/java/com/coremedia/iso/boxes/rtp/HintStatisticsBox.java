@@ -17,8 +17,8 @@
 package com.coremedia.iso.boxes.rtp;
 
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
 
 /**
  * Parent box for various hint statistics. Defined in ISO/IEC 14496-1.
@@ -26,7 +26,7 @@ import com.coremedia.iso.boxes.ContainerBox;
  * @see com.coremedia.iso.boxes.rtp.HintStatisticBoxes
  * @see com.coremedia.iso.boxes.rtp.HintPacketsSentBox
  */
-public class HintStatisticsBox extends ContainerBox {
+public class HintStatisticsBox extends AbstractContainerBox {
   public static final String TYPE = "hinf";
 
   public HintStatisticsBox() {

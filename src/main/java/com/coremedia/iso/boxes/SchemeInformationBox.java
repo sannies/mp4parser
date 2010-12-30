@@ -23,7 +23,7 @@ import com.coremedia.iso.IsoFile;
  * Any information the encryption system needs is stored here. The content of this box is a series of
  * boxexes whose type annd format are defined by the scheme declared in the {@link com.coremedia.iso.boxes.SchemeTypeBox}.
  */
-public class SchemeInformationBox extends ContainerBox {
+public class SchemeInformationBox extends AbstractContainerBox {
   public static final String TYPE = "schi";
 
   public SchemeInformationBox() {

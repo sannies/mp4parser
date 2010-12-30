@@ -17,8 +17,8 @@
 package com.coremedia.iso.boxes.odf;
 
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
 
 /**
  * A mutable DRM information box may appear in both DCF and PDCF. In the OMA DRM system,
@@ -26,7 +26,7 @@ import com.coremedia.iso.boxes.ContainerBox;
  * device, and thus is protected for integrity. A device MUST ignore the box when
  * calculating the DCF Hash.
  */
-public class MutableDrmInformationBox extends ContainerBox {
+public class MutableDrmInformationBox extends AbstractContainerBox {
   public static final String TYPE = "mdri";
 
   public MutableDrmInformationBox() {

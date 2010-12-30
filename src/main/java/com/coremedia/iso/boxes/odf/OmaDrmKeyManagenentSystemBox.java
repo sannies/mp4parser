@@ -19,7 +19,7 @@ package com.coremedia.iso.boxes.odf;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.FullBoxContainer;
+import com.coremedia.iso.boxes.FullContainerBox;
 import com.coremedia.iso.boxes.OmaDrmAccessUnitFormatBox;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.io.IOException;
  * There may be several instnaces of the 'odkm' box in a PDCF file, and one can appear either at the movie
  * level or exactly one per each rpotected track.
  */
-public class OmaDrmKeyManagenentSystemBox extends FullBoxContainer {
+public class OmaDrmKeyManagenentSystemBox extends FullContainerBox {
   public static final String TYPE = "odkm";
 
   public OmaDrmKeyManagenentSystemBox() {

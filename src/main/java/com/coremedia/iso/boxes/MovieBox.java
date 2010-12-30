@@ -35,7 +35,7 @@ import java.util.TreeMap;
  * The metadata for a presentation is stored in the single Movie Box which occurs at the top-level of a file.
  * Normally this box is close to the beginning or end of the file, though this is not required.
  */
-public class MovieBox extends ContainerBox implements TrackBoxContainer<TrackBox> {
+public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<TrackBox> {
     public static final String TYPE = "moov";
     private IsoBufferWrapper isoBufferWrapper;
 

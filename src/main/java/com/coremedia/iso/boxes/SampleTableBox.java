@@ -33,7 +33,7 @@ import com.coremedia.iso.IsoFile;
  * Annex A provides a narrative description of random access using the structures defined in the Sample Table
  * Box.
  */
-public class SampleTableBox extends ContainerBox {
+public class SampleTableBox extends AbstractContainerBox {
   public static final String TYPE = "stbl";
 
   public SampleTableBox() {

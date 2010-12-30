@@ -17,13 +17,13 @@
 package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.AbstractContainerBox;
 
 /**
  * aligned(8) class MovieExtendsBox extends Box('mvex'){
  * }
  */
-public class MovieExtendsBox extends ContainerBox {
+public class MovieExtendsBox extends AbstractContainerBox {
   public static final String TYPE = "mvex";
 
   public MovieExtendsBox() {

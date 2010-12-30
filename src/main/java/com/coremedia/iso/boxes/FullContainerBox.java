@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Abstract base class for a full iso box only containing ither boxes.
  */
-public abstract class FullBoxContainer extends FullBox implements BoxContainer {
+public abstract class FullContainerBox extends FullBox implements ContainerBox {
   protected Box[] boxes;
 
 
@@ -66,7 +66,7 @@ public abstract class FullBoxContainer extends FullBox implements BoxContainer {
     boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
   }
 
-  public FullBoxContainer(String type) {
+  public FullContainerBox(String type) {
     super(IsoFile.fourCCtoBytes(type));
     boxes = new Box[0];
   }

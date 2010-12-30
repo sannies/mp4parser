@@ -53,7 +53,7 @@ public abstract class Box implements BoxInterface {
 
     private byte[] type;
     private byte[] userType;
-    private BoxContainer parent;
+    private ContainerBox parent;
 
     protected Box(byte[] type) {
         this.type = type;
@@ -71,7 +71,7 @@ public abstract class Box implements BoxInterface {
         this.userType = userType;
     }
 
-    public BoxContainer getParent() {
+    public ContainerBox getParent() {
         return parent;
     }
 
@@ -79,7 +79,7 @@ public abstract class Box implements BoxInterface {
         return offset;
     }
 
-    public void setParent(BoxContainer parent) {
+    public void setParent(ContainerBox parent) {
         this.parent = parent;
     }
 

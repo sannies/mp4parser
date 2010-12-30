@@ -166,7 +166,7 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Box {
         if (!contentsParsed) {
 
 
-            BoxContainer bc = this.getParent();
+            ContainerBox bc = this.getParent();
             while (bc.getParent() != null) {
                 bc = bc.getParent();
             }

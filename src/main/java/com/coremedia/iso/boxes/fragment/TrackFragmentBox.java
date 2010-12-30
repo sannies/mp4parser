@@ -17,15 +17,15 @@
 package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.TrackMetaDataContainer;
 
 /**
  * aligned(8) class TrackFragmentBox extends Box('traf'){
  * }
  */
-public class TrackFragmentBox extends ContainerBox implements TrackMetaDataContainer {
+public class TrackFragmentBox extends AbstractContainerBox implements TrackMetaDataContainer {
   public static final String TYPE = "traf";
 
   public TrackFragmentBox() {

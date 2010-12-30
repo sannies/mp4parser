@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
+import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 /**
  * Entry type for timed text samples defined in the timed text specification (ISO/IEC 14496-17).
  */
-public class TextSampleEntry extends SampleEntry implements BoxContainer {
+public class TextSampleEntry extends SampleEntry implements ContainerBox {
 
   public static final String TYPE1 = "tx3g";
 

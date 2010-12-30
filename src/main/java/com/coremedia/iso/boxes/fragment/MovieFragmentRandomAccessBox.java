@@ -17,7 +17,7 @@
 package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.AbstractContainerBox;
 
 /**
  * aligned(8) class MovieFragmentRandomAccessBox
@@ -25,7 +25,7 @@ import com.coremedia.iso.boxes.ContainerBox;
  * {
  * }
  */
-public class MovieFragmentRandomAccessBox extends ContainerBox {
+public class MovieFragmentRandomAccessBox extends AbstractContainerBox {
   public static final String TYPE = "mfra";
 
   public MovieFragmentRandomAccessBox() {

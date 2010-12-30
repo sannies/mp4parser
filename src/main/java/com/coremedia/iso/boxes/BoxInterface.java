@@ -22,7 +22,7 @@ import com.coremedia.iso.IsoFile;
  * Defines basic interaction possibilities for any ISO box. Each box has a parent box and a type.
  */
 public interface BoxInterface {
-  BoxContainer getParent();
+  ContainerBox getParent();
 
   long getSize();
 

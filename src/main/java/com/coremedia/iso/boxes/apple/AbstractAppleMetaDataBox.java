@@ -6,7 +6,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
+import com.coremedia.iso.boxes.ContainerBox;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 /**
  *
  */
-public abstract class AbstractAppleMetaDataBox extends Box implements BoxContainer {
+public abstract class AbstractAppleMetaDataBox extends Box implements ContainerBox {
     private static Logger LOG = Logger.getLogger(AbstractAppleMetaDataBox.class.getName());
     AppleDataBox appleDataBox = new AppleDataBox();
 

@@ -26,7 +26,7 @@ import com.coremedia.iso.IsoFile;
  * Quantity: Exactly one<br><br></code>
  * The data information box contains objects that declare the location of the media information in a track.
  */
-public class DataInformationBox extends ContainerBox {
+public class DataInformationBox extends AbstractContainerBox {
   public static final String TYPE = "dinf";
 
   public DataInformationBox() {

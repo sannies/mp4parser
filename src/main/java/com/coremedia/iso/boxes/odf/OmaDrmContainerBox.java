@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.odf;
 
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.FullBoxContainer;
+import com.coremedia.iso.boxes.FullContainerBox;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,7 +27,7 @@ import java.io.IOException;
  * The OMA DRM Container box is the container for a single content object in a OMA DCF file.
  * See OMA DCF Specification for details.
  */
-public class OmaDrmContainerBox extends FullBoxContainer {
+public class OmaDrmContainerBox extends FullContainerBox {
   public static final String TYPE = "odrm";
 
   protected long getHeaderSize() {

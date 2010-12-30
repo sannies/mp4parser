@@ -20,7 +20,7 @@ package com.coremedia.iso.boxes;
 /**
  * A common base structure to contain general metadata. See ISO/IEC 14496-12 Ch. 8.44.1.
  */
-public class MetaBox extends FullBoxContainer {
+public class MetaBox extends FullContainerBox {
 
   public static final String TYPE = "meta";
 

@@ -20,10 +20,10 @@ import com.coremedia.iso.boxes.AlbumBox;
 import com.coremedia.iso.boxes.AuthorBox;
 import com.coremedia.iso.boxes.BitRateBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ClassificationBox;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.CopyrightBox;
 import com.coremedia.iso.boxes.DataEntryUrlBox;
 import com.coremedia.iso.boxes.DataEntryUrnBox;
@@ -797,7 +797,7 @@ public class OldBoxFactoryImpl implements BoxParser {
         Box box = createBox(type, usertype,
                 parent.getType(), lastMovieFragmentBox);
         box.offset = offset;
-        box.setParent((BoxContainer) parent);
+        box.setParent((ContainerBox) parent);
         LOG.finest("Creating " + IsoFile.bytesToFourCC(box.getType()) + " box: (" + box.getDisplayName() + ")");
         // System.out.println("parsing " + Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
         box.parse(in, contentSize, this, lastMovieFragmentBox);

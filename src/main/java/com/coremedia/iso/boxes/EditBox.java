@@ -24,7 +24,7 @@ import com.coremedia.iso.IsoFile;
  *
  * @see EditListBox
  */
-public class EditBox extends ContainerBox {
+public class EditBox extends AbstractContainerBox {
   public static final String TYPE = "edts";
 
   public EditBox() {

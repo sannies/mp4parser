@@ -30,7 +30,7 @@ import com.coremedia.iso.IsoFile;
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry#TYPE_ENCRYPTED
  * @see com.coremedia.iso.boxes.sampleentry.VisualSampleEntry#TYPE_ENCRYPTED
  */
-public class ProtectionSchemeInformationBox extends ContainerBox {
+public class ProtectionSchemeInformationBox extends AbstractContainerBox {
   public static final String TYPE = "sinf";
 
   public ProtectionSchemeInformationBox() {

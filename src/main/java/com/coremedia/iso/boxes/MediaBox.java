@@ -23,7 +23,7 @@ import com.coremedia.iso.IsoFile;
  * The media declaration container contains all the objects that declare information about the media data within a
  * track.
  */
-public class MediaBox extends ContainerBox {
+public class MediaBox extends AbstractContainerBox {
   public static final String TYPE = "mdia";
 
   public MediaBox() {

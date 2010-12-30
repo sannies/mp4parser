@@ -16,104 +16,38 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
-
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
-
 /**
- * Abstract base class suitable for most boxes acting purely as container for other boxes.
+ * Interface for all ISO boxes that may contain other boxes.
  */
-public abstract class ContainerBox extends Box implements BoxContainer {
-  protected Box[] boxes;
+public interface ContainerBox extends BoxInterface {
 
-  protected long getContentSize() {
-    long contentSize = 0;
-    for (Box boxe : boxes) {
-      contentSize += boxe.getSize();
-    }
-    return contentSize;
-  }
+  /**
+   * Gets all child boxes. May not return <code>null</code>.
+   *
+   * @return an array of boxes, empty array in case of no children.
+   */
+  Box[] getBoxes();
 
-  public ContainerBox(byte[] type) {
-    super(type);
-    boxes = new Box[0];
-  }
+  /**
+   * Gets all child boxes of the given type. May not return <code>null</code>.
+   *
+   * @param clazz child box's type
+   * @return an array of boxes, empty array in case of no children.
+   */
+  <T extends Box> T[] getBoxes(Class<T> clazz);
 
-  public Box[] getBoxes() {
-    return boxes;
-  }
+  /**
+   * Gets the parent box. May be <code>null</code> in case of the
+   * {@link com.coremedia.iso.IsoFile} itself.
+   *
+   * @return a <code>ContainerBox</code> that contains <code>this</code>
+   */
+  ContainerBox getParent();
 
-  @SuppressWarnings("unchecked")
-  public <T extends Box> T[] getBoxes(Class<T> clazz) {
-    List<T> boxesToBeReturned = new ArrayList<T>(2);
-    for (Box boxe : boxes) {
-      if (clazz == boxe.getClass()) {
-        boxesToBeReturned.add((T) boxe);
-      }
-    }
-    // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
-    return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
-    //return (T[]) boxesToBeReturned.toArray();
-  }
-
-  public void addBox(Box b) {
-    List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-    listOfBoxes.add(b);
-    boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
-  }
-
-  public void removeBox(Box b) {
-    List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-    listOfBoxes.remove(b);
-    boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    List<Box> boxeList = new LinkedList<Box>();
-
-    while (size > 8) {
-      long sp = in.position();
-      Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-      long parsedBytes = in.position() - sp;
-      assert parsedBytes == box.getSize() :
-              box.getDisplayName() +  " didn't parse well. number of parsed bytes (" + parsedBytes + ") of " + box.getDisplayName() + " doesn't match getSize (" + box.getSize() + ")";
-      size -= box.getSize();
-
-      boxeList.add(box);
-      //update field after each box
-      this.boxes = boxeList.toArray(new Box[boxeList.size()]);
-    }
-
-  }
-
-  protected void getContent(IsoOutputStream os) throws IOException {
-    for (Box boxe : boxes) {
-      boxe.getBox(os);
-    }
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append(this.getClass().getSimpleName()).append("[");
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
-    }
-    buffer.append("]");
-    return buffer.toString();
-  }
-
-  public long getNumOfBytesToFirstChild() {
-    return 8;
-  }
+  /**
+   * Returns the number of bytes from the start of the box to start of the first child.
+   *
+   * @return offset of first child from box start
+   */
+  long getNumOfBytesToFirstChild();
 }

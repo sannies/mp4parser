@@ -17,9 +17,9 @@
 package com.coremedia.iso.boxes.apple;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.AbstractContainerBox;
 
-public class AppleReferenceMovieDescriptorBox extends ContainerBox {
+public class AppleReferenceMovieDescriptorBox extends AbstractContainerBox {
   public static final String TYPE = "rmda";
 
   public AppleReferenceMovieDescriptorBox() {

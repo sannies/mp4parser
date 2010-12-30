@@ -24,7 +24,7 @@ import com.coremedia.iso.IsoFile;
  * The User Data Box is a container box for informative user-data. This user data is formatted as a set of boxes
  * with more specific box types, which declare more precisely their content
  */
-public class UserDataBox extends ContainerBox {
+public class UserDataBox extends AbstractContainerBox {
   public static final String TYPE = "udta";
 
   public UserDataBox() {

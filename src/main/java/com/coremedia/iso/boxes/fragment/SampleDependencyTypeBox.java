@@ -21,7 +21,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
+import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.FullBox;
 import com.coremedia.iso.boxes.MovieBox;
 import com.coremedia.iso.boxes.SampleSizeBox;
@@ -139,7 +139,7 @@ public class SampleDependencyTypeBox extends FullBox {
     }
 
     private long getSampleCount() {
-        BoxContainer traf = this.getParent();
+        ContainerBox traf = this.getParent();
         TrackRunBox[] trackRunBoxes = traf.getBoxes(TrackRunBox.class);
         if (trackRunBoxes.length > 1) {
             for (TrackRunBox trackRunBox : trackRunBoxes) {
@@ -151,7 +151,7 @@ public class SampleDependencyTypeBox extends FullBox {
         }
 
         System.out.println("Couldn't find Track Run Box. Trying to determine sample count by looking up Sample Size Boxes");
-        BoxContainer bc = this.getParent();
+        ContainerBox bc = this.getParent();
         while (bc.getParent() != null) {
             bc = bc.getParent();
         }

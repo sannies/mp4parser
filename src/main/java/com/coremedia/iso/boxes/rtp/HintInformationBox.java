@@ -17,8 +17,8 @@
 package com.coremedia.iso.boxes.rtp;
 
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
 
 /**
  * Contains SDP information to be used by a streaming server. <br>
@@ -60,7 +60,7 @@ import com.coremedia.iso.boxes.ContainerBox;
  * </pre></code>
  * The sdptext is correctly formatted as a series of lines, each terminated by  &lt;crlf>, as required by SDP.
  */
-public class HintInformationBox extends ContainerBox {
+public class HintInformationBox extends AbstractContainerBox {
   public static final String TYPE = "hnti";
 
   public HintInformationBox() {

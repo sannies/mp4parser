@@ -22,7 +22,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
+import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -37,7 +37,7 @@ import java.util.Map;
  * The Common Headers Box defines a structure for required headers in a DCF file.
  * See OMA-TS-DRM-DCF-V2_0-*  specification for details.
  */
-public class OmaDrmCommonHeadersBox extends FullBox implements BoxContainer {
+public class OmaDrmCommonHeadersBox extends FullBox implements ContainerBox {
   public static final String TYPE = "ohdr";
 
   private Box[] extendedHeaders;

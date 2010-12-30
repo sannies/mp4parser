@@ -17,7 +17,7 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
+import com.coremedia.iso.boxes.ContainerBox;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Walks through a BoxContainer and its children to see that no getter throws any exception.
+ * Walks through a ContainerBox and its children to see that no getter throws any exception.
  */
 public final class Walk {
   private static final Collection<String> skipList = Arrays.asList("class",
@@ -55,10 +55,10 @@ public final class Walk {
   private Walk() {
   }
 
-  public static void through(BoxContainer container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
+  public static void through(ContainerBox container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
     for (Box b : container.getBoxes()) {
-      if (b instanceof BoxContainer) {
-        Walk.through((BoxContainer) b);
+      if (b instanceof ContainerBox) {
+        Walk.through((ContainerBox) b);
       }
       if (b.offset != b.calculateOffset()) {
         throw new RuntimeException("Real offset " + b.offset + " vs. calculated " + b.calculateOffset() + " Box: " + b);

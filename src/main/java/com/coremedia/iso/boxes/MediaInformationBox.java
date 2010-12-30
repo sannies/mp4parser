@@ -21,7 +21,7 @@ import com.coremedia.iso.IsoFile;
 /**
  * This box contains all the objects that declare characteristic information of the media in the track.
  */
-public class MediaInformationBox extends ContainerBox {
+public class MediaInformationBox extends AbstractContainerBox {
   public static final String TYPE = "minf";
 
   public MediaInformationBox() {
