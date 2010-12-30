@@ -17,8 +17,8 @@
 package com.coremedia.iso.boxes.odf;
 
 import com.coremedia.iso.BoxFactory;
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullBox;
@@ -34,7 +34,7 @@ public class OmaDrmContentObjectBox extends FullBox {
   public byte[] getHeader() {
     try {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      IsoOutputStream ios = new IsoOutputStream(baos, false);
+      IsoOutputStream ios = new IsoOutputStream(baos);
       ios.writeUInt32(1);
       ios.write(getType());
       ios.writeUInt64(getSize());

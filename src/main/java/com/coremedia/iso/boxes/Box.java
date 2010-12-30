@@ -17,8 +17,8 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxFactory;
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.ByteArrayOutputStream;
@@ -119,7 +119,7 @@ public abstract class Box implements BoxInterface {
     public byte[] getHeader() {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IsoOutputStream ios = new IsoOutputStream(baos, false);
+            IsoOutputStream ios = new IsoOutputStream(baos);
             if (isSmallBox()) {
                 ios.writeUInt32((int) this.getSize());
                 ios.write(getType());

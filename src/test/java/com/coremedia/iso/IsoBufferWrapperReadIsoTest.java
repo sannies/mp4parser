@@ -1,14 +1,10 @@
 package com.coremedia.iso;
 
 import com.coremedia.drm.packager.isoparser.InputStreamIsoBufferHelper;
-import com.coremedia.iso.IsoBufferWrapper;
 import junit.framework.TestCase;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
-import com.coremedia.iso.IsoOutputStream;
 
 /**
  * Test symmetrie of IsoBufferWrapper and Iso
@@ -17,7 +13,7 @@ public class IsoBufferWrapperReadIsoTest extends TestCase {
 
     public void testIntAsFailedDuringDevelop() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IsoOutputStream ios = new IsoOutputStream(baos, false);
+        IsoOutputStream ios = new IsoOutputStream(baos);
         ios.write(0);
         ios.write(0);
         ios.write(0x50);
@@ -30,7 +26,7 @@ public class IsoBufferWrapperReadIsoTest extends TestCase {
 
     public void testInt() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IsoOutputStream ios = new IsoOutputStream(baos, false);
+        IsoOutputStream ios = new IsoOutputStream(baos);
         ios.writeUInt8(0);
         ios.writeUInt8(255);
         ios.writeUInt16(0);
@@ -57,7 +53,7 @@ public class IsoBufferWrapperReadIsoTest extends TestCase {
 
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IsoOutputStream ios = new IsoOutputStream(baos, false);
+        IsoOutputStream ios = new IsoOutputStream(baos);
         ios.writeFixedPont1616(fixedPointTest1);
         ios.writeFixedPont1616(fixedPointTest2);
         ios.close();
@@ -72,7 +68,7 @@ public class IsoBufferWrapperReadIsoTest extends TestCase {
 
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IsoOutputStream ios = new IsoOutputStream(baos, false);
+        IsoOutputStream ios = new IsoOutputStream(baos);
         ios.writeFixedPont88(fixedPointTest1);
         ios.writeFixedPont88(fixedPointTest2);
         ios.close();

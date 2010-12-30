@@ -1,6 +1,10 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.BoxContainer;
 import org.apache.commons.codec.DecoderException;
@@ -85,7 +89,7 @@ public abstract class AbstractAppleMetaDataBox extends Box implements BoxContain
             appleDataBox.setFlags(21);
             appleDataBox.setFourBytes(new byte[4]);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IsoOutputStream isoOutputStream = new IsoOutputStream(baos, false);
+            IsoOutputStream isoOutputStream = new IsoOutputStream(baos);
             try {
                 if (content.length == 1) {
                     isoOutputStream.writeUInt8((Byte.parseByte(value) & 0xFF));

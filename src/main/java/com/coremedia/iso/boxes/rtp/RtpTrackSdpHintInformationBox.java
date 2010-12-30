@@ -64,6 +64,6 @@ public class RtpTrackSdpHintInformationBox extends Box {
   }
 
   protected void getContent(IsoOutputStream os) throws IOException {
-    new IsoOutputStream(os, false).writeStringNoTerm(sdpText);
+    os.writeStringNoTerm(sdpText);
   }
 }

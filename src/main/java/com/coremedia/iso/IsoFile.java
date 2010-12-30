@@ -163,7 +163,7 @@ public class IsoFile implements BoxContainer, BoxInterface {
      * @throws IOException in case of any error caused by the target stream or by reading the original ISO file.
      */
     public void write(OutputStream os) throws IOException {
-        IsoOutputStream isos = new IsoOutputStream(os, false);
+        IsoOutputStream isos = new IsoOutputStream(os);
         try {
             for (Box box : boxes) {
                 box.getBox(isos);

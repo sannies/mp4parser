@@ -71,7 +71,7 @@ public abstract class FullBox extends Box {
     try {
       //TODO this is nearly identical to overriden method
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      IsoOutputStream ios = new IsoOutputStream(baos, false);
+      IsoOutputStream ios = new IsoOutputStream(baos);
       if (this.getSize() < 4294967296L) {
         ios.writeUInt32((int) this.getSize());
         ios.write(getType());

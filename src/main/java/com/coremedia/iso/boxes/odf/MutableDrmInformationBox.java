@@ -17,11 +17,8 @@
 package com.coremedia.iso.boxes.odf;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
-
-import java.io.IOException;
 
 /**
  * A mutable DRM information box may appear in both DCF and PDCF. In the OMA DRM system,
@@ -54,9 +51,4 @@ public class MutableDrmInformationBox extends ContainerBox {
     return buffer.toString();
   }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.stopHashCalculation();
-    super.getContent(os);
-    os.startHashCalculation();
-  }
 }

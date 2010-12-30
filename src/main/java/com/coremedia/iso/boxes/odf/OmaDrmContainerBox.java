@@ -37,7 +37,7 @@ public class OmaDrmContainerBox extends FullBoxContainer {
   public byte[] getHeader() {
     try {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      IsoOutputStream ios = new IsoOutputStream(baos, false);
+      IsoOutputStream ios = new IsoOutputStream(baos);
       ios.writeUInt32(1);
       ios.write(getType());
       ios.writeUInt64(getSize());

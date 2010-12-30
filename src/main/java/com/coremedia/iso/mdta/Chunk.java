@@ -80,7 +80,7 @@ public class Chunk<T extends TrackMetaDataContainer> {
   private int getSizeByWriting(Sample<T> currentSample) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     try {
-      currentSample.getContent(new IsoOutputStream(baos, false));
+      currentSample.getContent(new IsoOutputStream(baos));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
