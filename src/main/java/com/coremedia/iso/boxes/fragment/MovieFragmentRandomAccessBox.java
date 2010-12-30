@@ -21,7 +21,7 @@ import com.coremedia.iso.boxes.ContainerBox;
 
 /**
  * aligned(8) class MovieFragmentRandomAccessBox
- * extends Box(‘mfra’)
+ * extends Box('mfra')
  * {
  * }
  */
