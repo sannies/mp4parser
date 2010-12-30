@@ -20,6 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 
@@ -44,12 +45,12 @@ public class HintSampleEntry extends SampleEntry implements ContainerBox {
     super(type);
   }
 
-  public Box[] getBoxes() {
+  public BoxInterface[] getBoxes() {
     return boxes;
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Box> T[] getBoxes(Class<T> clazz) {
+  public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
     ArrayList<T> boxesToBeReturned = new ArrayList<T>();
     for (Box boxe : boxes) {
       if (clazz.isInstance(boxe)) {
@@ -115,7 +116,7 @@ public class HintSampleEntry extends SampleEntry implements ContainerBox {
     buffer.append("hintTrackVersion=").append(getHintTrackVersion()).append(";");
     buffer.append("highestCompatibleVersion=").append(getHighestCompatibleVersion()).append(";");
     buffer.append("maxPacketSize=").append(getMaxPacketSize());
-    Box[] boxes = getBoxes();
+    BoxInterface[] boxes = getBoxes();
     for (int i = 0; i < boxes.length; i++) {
       if (i > 0) {
         buffer.append(";");

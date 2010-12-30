@@ -22,6 +22,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.FullBox;
 
@@ -49,7 +50,7 @@ public class OmaDrmCommonHeadersBox extends FullBox implements ContainerBox {
   private String textualHeaders;
 
   @SuppressWarnings("unchecked")
-  public <T extends Box> T[] getBoxes(Class<T> clazz) {
+  public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
     ArrayList<T> boxesToBeReturned = new ArrayList<T>();
     for (Box boxe : extendedHeaders) {
       if (clazz.isInstance(boxe)) {
@@ -67,7 +68,7 @@ public class OmaDrmCommonHeadersBox extends FullBox implements ContainerBox {
     extendedHeaders = new Box[0];
   }
 
-  public Box[] getBoxes() {
+  public BoxInterface[] getBoxes() {
     return extendedHeaders;
   }
 
@@ -200,7 +201,7 @@ public class OmaDrmCommonHeadersBox extends FullBox implements ContainerBox {
     buffer.append("contentId=").append(getContentId()).append(";");
     buffer.append("rightsIssuerUrl=").append(getRightsIssuerUrl()).append(";");
     buffer.append("textualHeaders=").append(getTextualHeaders());
-    for (Box box : getBoxes()) {
+    for (BoxInterface box : getBoxes()) {
       buffer.append(";");
       buffer.append(box.toString());
     }

@@ -45,7 +45,7 @@ public class ProtectionSchemeInformationBox extends AbstractContainerBox {
   public String toString() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("Protection Scheme Information Box[");
-    Box[] boxes = getBoxes();
+    BoxInterface[] boxes = getBoxes();
     for (int i = 0; i < boxes.length; i++) {
       if (i > 0) {
         buffer.append(";");

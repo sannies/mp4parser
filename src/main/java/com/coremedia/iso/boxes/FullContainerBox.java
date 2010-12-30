@@ -71,7 +71,7 @@ public abstract class FullContainerBox extends FullBox implements ContainerBox {
     boxes = new Box[0];
   }
 
-  public Box[] getBoxes() {
+  public BoxInterface[] getBoxes() {
     return boxes;
   }
 
@@ -95,7 +95,7 @@ public abstract class FullContainerBox extends FullBox implements ContainerBox {
   public String toString() {
     StringBuffer buffer = new StringBuffer();
     buffer.append(getDisplayName()).append("[");
-    Box[] boxes2 = getBoxes();
+    BoxInterface[] boxes2 = getBoxes();
     for (int i = 0; i < boxes2.length; i++) {
       if (i > 0) {
         buffer.append(";");

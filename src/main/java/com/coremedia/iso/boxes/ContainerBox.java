@@ -26,7 +26,7 @@ public interface ContainerBox extends BoxInterface {
    *
    * @return an array of boxes, empty array in case of no children.
    */
-  Box[] getBoxes();
+  BoxInterface[] getBoxes();
 
   /**
    * Gets all child boxes of the given type. May not return <code>null</code>.
@@ -34,7 +34,7 @@ public interface ContainerBox extends BoxInterface {
    * @param clazz child box's type
    * @return an array of boxes, empty array in case of no children.
    */
-  <T extends Box> T[] getBoxes(Class<T> clazz);
+  <T extends BoxInterface> T[] getBoxes(Class<T> clazz);
 
   /**
    * Gets the parent box. May be <code>null</code> in case of the

@@ -56,17 +56,17 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
 
     public long[] getChunkOffsets() {
         List<Long> offsets = new ArrayList<Long>();
-        for (Box trackBoxe : this.getBoxes()) {
+        for (BoxInterface trackBoxe : this.getBoxes()) {
             if (trackBoxe instanceof TrackBox) {
                 TrackBox trackBox = (TrackBox) trackBoxe;
                 SampleTableBox sampleTableBox = null;
                 // Do not find the way to the sampleTableBox by many getBoxes(Class) calls since they need to much
                 // object instantiation. Going this way here speeds up the process.
-                for (Box mediaBoxe : trackBox.getBoxes()) {
+                for (BoxInterface mediaBoxe : trackBox.getBoxes()) {
                     if (mediaBoxe instanceof MediaBox) {
-                        for (Box mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
+                        for (BoxInterface mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
                             if (mediaInformationBoxe instanceof MediaInformationBox) {
-                                for (Box sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
+                                for (BoxInterface sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
                                     if (sampleTableBoxe instanceof SampleTableBox) {
                                         sampleTableBox = (SampleTableBox) sampleTableBoxe;
                                     }
@@ -97,17 +97,17 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
     }
 
     public long getTrackIdForChunk(long chunkOffset) {
-        for (Box trackBoxe : this.getBoxes()) {
+        for (BoxInterface trackBoxe : this.getBoxes()) {
             if (trackBoxe instanceof TrackBox) {
                 TrackBox trackBox = (TrackBox) trackBoxe;
                 SampleTableBox sampleTableBox = null;
                 // Do not find the way to the sampleTableBox by many getBoxes(Class) calls since they need to much
                 // object instantiation. Going this way here speeds up the process.
-                for (Box mediaBoxe : trackBox.getBoxes()) {
+                for (BoxInterface mediaBoxe : trackBox.getBoxes()) {
                     if (mediaBoxe instanceof MediaBox) {
-                        for (Box mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
+                        for (BoxInterface mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
                             if (mediaInformationBoxe instanceof MediaInformationBox) {
-                                for (Box sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
+                                for (BoxInterface sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
                                     if (sampleTableBoxe instanceof SampleTableBox) {
                                         sampleTableBox = (SampleTableBox) sampleTableBoxe;
                                     }
@@ -172,17 +172,17 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
 
     public long[] getSampleSizesForChunk(long chunkOffset) {
 
-        for (Box trackBoxe : this.getBoxes()) {
+        for (BoxInterface trackBoxe : this.getBoxes()) {
             if (trackBoxe instanceof TrackBox) {
                 TrackBox trackBox = (TrackBox) trackBoxe;
                 SampleTableBox sampleTableBox = null;
                 // Do not find the way to the sampleTableBox by many getBoxes(Class) calls since they need to much
                 // object instantiation. Going this way here speeds up the process.
-                for (Box mediaBoxe : trackBox.getBoxes()) {
+                for (BoxInterface mediaBoxe : trackBox.getBoxes()) {
                     if (mediaBoxe instanceof MediaBox) {
-                        for (Box mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
+                        for (BoxInterface mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
                             if (mediaInformationBoxe instanceof MediaInformationBox) {
-                                for (Box sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
+                                for (BoxInterface sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
                                     if (sampleTableBoxe instanceof SampleTableBox) {
                                         sampleTableBox = (SampleTableBox) sampleTableBoxe;
                                     }
@@ -269,7 +269,7 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append("MovieBox[");
-        Box[] boxes = getBoxes();
+        BoxInterface[] boxes = getBoxes();
         for (int i = 0; i < boxes.length; i++) {
             if (i > 0) {
                 buffer.append(";");

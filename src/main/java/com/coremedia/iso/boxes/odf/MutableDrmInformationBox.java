@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.odf;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 
 /**
  * A mutable DRM information box may appear in both DCF and PDCF. In the OMA DRM system,
@@ -40,7 +40,7 @@ public class MutableDrmInformationBox extends AbstractContainerBox {
   public String toString() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("MutableDrmInformationBox[");
-    Box[] boxes = getBoxes();
+    BoxInterface[] boxes = getBoxes();
     for (int i = 0; i < boxes.length; i++) {
       if (i > 0) {
         buffer.append(";");

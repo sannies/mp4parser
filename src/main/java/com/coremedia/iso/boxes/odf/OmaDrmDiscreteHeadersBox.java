@@ -20,6 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullContainerBox;
 import com.coremedia.iso.boxes.UserDataBox;
 
@@ -44,12 +45,12 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
     super(TYPE);
   }
 
-  public Box[] getBoxes() {
+  public BoxInterface[] getBoxes() {
     return boxes;
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Box> T[] getBoxes(Class<T> clazz) {
+  public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
     ArrayList<T> boxesToBeReturned = new ArrayList<T>();
     for (Box boxe : boxes) {
       if (clazz.isInstance(boxe)) {
@@ -103,8 +104,8 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
     StringBuffer buffer = new StringBuffer();
     buffer.append("OmaDrmDiscreteHeadersBox[");
     buffer.append("contentType=").append(getContentType());
-    Box[] boxes2 = getBoxes();
-    for (Box aBoxes2 : boxes2) {
+    BoxInterface[] boxes2 = getBoxes();
+    for (BoxInterface aBoxes2 : boxes2) {
       buffer.append(";");
       buffer.append(aBoxes2.toString());
     }

@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.rtp;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 
 /**
  * Parent box for various hint statistics. Defined in ISO/IEC 14496-1.
@@ -40,7 +40,7 @@ public class HintStatisticsBox extends AbstractContainerBox {
   public String toString() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("HintStatisticsBox[");
-    Box[] boxes = getBoxes();
+    BoxInterface[] boxes = getBoxes();
     for (int i = 0; i < boxes.length; i++) {
       if (i > 0) {
         buffer.append(";");

@@ -47,12 +47,12 @@ public abstract class AbstractContainerBox extends Box implements ContainerBox {
     boxes = new Box[0];
   }
 
-  public Box[] getBoxes() {
+  public BoxInterface[] getBoxes() {
     return boxes;
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Box> T[] getBoxes(Class<T> clazz) {
+  public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
     List<T> boxesToBeReturned = new ArrayList<T>(2);
     for (Box boxe : boxes) {
       if (clazz == boxe.getClass()) {

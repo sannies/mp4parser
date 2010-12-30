@@ -93,7 +93,7 @@ public class SampleDescriptionBox extends FullContainerBox {
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("SampleDescriptionBox[");
-        Box[] boxes = getBoxes();
+        BoxInterface[] boxes = getBoxes();
         for (int i = 0; i < boxes.length; i++) {
             if (i > 0) {
                 buffer.append(";");

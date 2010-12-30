@@ -69,12 +69,12 @@ public class IsoFile implements ContainerBox, BoxInterface {
 
 
 
-    public Box[] getBoxes() {
+    public BoxInterface[] getBoxes() {
         return boxes;
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Box> T[] getBoxes(Class<T> clazz) {
+    public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
         ArrayList<T> boxesToBeReturned = new ArrayList<T>();
         for (Box boxe : boxes) {
             if (clazz.isInstance(boxe)) {
@@ -211,11 +211,11 @@ public class IsoFile implements ContainerBox, BoxInterface {
                 SampleTableBox sampleTableBox = null;
                 // Do not find the way to the sampleTableBox by many getBoxes(Class) calls since they need to much
                 // object instantiation. Going this way here speeds up the process.
-                for (Box mediaBoxe : trackBox.getBoxes()) {
+                for (BoxInterface mediaBoxe : trackBox.getBoxes()) {
                     if (mediaBoxe instanceof MediaBox) {
-                        for (Box mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
+                        for (BoxInterface mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
                             if (mediaInformationBoxe instanceof MediaInformationBox) {
-                                for (Box sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
+                                for (BoxInterface sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
                                     if (sampleTableBoxe instanceof SampleTableBox) {
                                         sampleTableBox = (SampleTableBox) sampleTableBoxe;
                                     }

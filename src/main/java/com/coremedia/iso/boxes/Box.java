@@ -187,8 +187,8 @@ public abstract class Box implements BoxInterface {
     public long calculateOffset() {
         //todo: doesn't work for fragmented files as it doesn't take mdats into account (as they are not in the parent structure)
         long offsetFromParentBoxStart = parent.getNumOfBytesToFirstChild();
-        Box[] boxes = this.getParent().getBoxes();
-        for (Box box : boxes) {
+        BoxInterface[] boxes = this.getParent().getBoxes();
+        for (BoxInterface box : boxes) {
             if (box.equals(this)) {
                 return parent.calculateOffset() + offsetFromParentBoxStart;
             }

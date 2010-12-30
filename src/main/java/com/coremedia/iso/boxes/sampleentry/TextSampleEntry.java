@@ -20,6 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
@@ -79,7 +80,7 @@ public class TextSampleEntry extends SampleEntry implements ContainerBox {
 
 
   @SuppressWarnings("unchecked")
-  public <T extends Box> T[] getBoxes(Class<T> clazz) {
+  public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
     ArrayList<T> boxesToBeReturned = new ArrayList<T>();
     for (Box boxe : boxes) {
       if (clazz.isInstance(boxe)) {
@@ -89,7 +90,7 @@ public class TextSampleEntry extends SampleEntry implements ContainerBox {
     return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
   }
 
-  public Box[] getBoxes() {
+  public BoxInterface[] getBoxes() {
     return boxes;
   }
 

@@ -21,6 +21,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.MediaDataBox;
 import com.coremedia.iso.boxes.TrackBoxContainer;
 import com.coremedia.iso.boxes.TrackMetaData;
@@ -176,7 +177,7 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("MovieFragmentBox[");
-        Box[] boxes = getBoxes();
+        BoxInterface[] boxes = getBoxes();
         for (int i = 0; i < boxes.length; i++) {
             if (i > 0) {
                 builder.append(";");
