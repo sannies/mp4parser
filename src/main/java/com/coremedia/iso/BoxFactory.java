@@ -16,64 +16,7 @@
 
 package com.coremedia.iso;
 
-import com.coremedia.iso.boxes.AlbumBox;
-import com.coremedia.iso.boxes.AuthorBox;
-import com.coremedia.iso.boxes.BitRateBox;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
-import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.ClassificationBox;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.CopyrightBox;
-import com.coremedia.iso.boxes.DataEntryUrlBox;
-import com.coremedia.iso.boxes.DataEntryUrnBox;
-import com.coremedia.iso.boxes.DataInformationBox;
-import com.coremedia.iso.boxes.DataReferenceBox;
-import com.coremedia.iso.boxes.DescriptionBox;
-import com.coremedia.iso.boxes.ESDescriptorBox;
-import com.coremedia.iso.boxes.EditBox;
-import com.coremedia.iso.boxes.EditListBox;
-import com.coremedia.iso.boxes.FileTypeBox;
-import com.coremedia.iso.boxes.FreeBox;
-import com.coremedia.iso.boxes.FreeSpaceBox;
-import com.coremedia.iso.boxes.GenreBox;
-import com.coremedia.iso.boxes.HandlerBox;
-import com.coremedia.iso.boxes.HintMediaHeaderBox;
-import com.coremedia.iso.boxes.HintTrackReferenceBox;
-import com.coremedia.iso.boxes.ItemProtectionBox;
-import com.coremedia.iso.boxes.KeywordsBox;
-import com.coremedia.iso.boxes.MediaBox;
-import com.coremedia.iso.boxes.MediaDataBox;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.MediaInformationBox;
-import com.coremedia.iso.boxes.MetaBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.MovieHeaderBox;
-import com.coremedia.iso.boxes.OmaDrmAccessUnitFormatBox;
-import com.coremedia.iso.boxes.OriginalFormatBox;
-import com.coremedia.iso.boxes.PerformerBox;
-import com.coremedia.iso.boxes.ProtectionSchemeInformationBox;
-import com.coremedia.iso.boxes.RatingBox;
-import com.coremedia.iso.boxes.RecordingYearBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.SchemeInformationBox;
-import com.coremedia.iso.boxes.SchemeTypeBox;
-import com.coremedia.iso.boxes.SoundMediaHeaderBox;
-import com.coremedia.iso.boxes.StaticChunkOffsetBox;
-import com.coremedia.iso.boxes.SyncSampleBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.TitleBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
-import com.coremedia.iso.boxes.TrackReferenceBox;
-import com.coremedia.iso.boxes.TrackReferenceTypeBox;
-import com.coremedia.iso.boxes.UnknownBox;
-import com.coremedia.iso.boxes.UserBox;
-import com.coremedia.iso.boxes.UserDataBox;
-import com.coremedia.iso.boxes.VideoMediaHeaderBox;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.apple.*;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieExtendsHeaderBox;
@@ -102,19 +45,7 @@ import com.coremedia.iso.boxes.odf.OmaDrmKeyManagenentSystemBox;
 import com.coremedia.iso.boxes.odf.OmaDrmLyricsUriBox;
 import com.coremedia.iso.boxes.odf.OmaDrmRightsObjectBox;
 import com.coremedia.iso.boxes.odf.OmaDrmTransactionTrackingBox;
-import com.coremedia.iso.boxes.rtp.HintInformationBox;
-import com.coremedia.iso.boxes.rtp.HintPacketsSentBox;
-import com.coremedia.iso.boxes.rtp.HintSampleEntry;
-import com.coremedia.iso.boxes.rtp.HintStatisticBoxes;
-import com.coremedia.iso.boxes.rtp.HintStatisticsBox;
-import com.coremedia.iso.boxes.rtp.LargestHintPacketBox;
-import com.coremedia.iso.boxes.rtp.LargestHintPacketDurationBox;
-import com.coremedia.iso.boxes.rtp.LargestRelativeTransmissionTimeBox;
-import com.coremedia.iso.boxes.rtp.MaximumDataRateBox;
-import com.coremedia.iso.boxes.rtp.RtpMovieHintInformationBox;
-import com.coremedia.iso.boxes.rtp.RtpTrackSdpHintInformationBox;
-import com.coremedia.iso.boxes.rtp.SmallestRelativeTransmissionTimeBox;
-import com.coremedia.iso.boxes.rtp.TimeScaleEntry;
+import com.coremedia.iso.boxes.rtp.*;
 import com.coremedia.iso.boxes.sampleentry.AmrSpecificBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.TextSampleEntry;
@@ -404,6 +335,10 @@ public class BoxFactory {
             }
             if (Arrays.equals(type, IsoFile.fourCCtoBytes(HintStatisticBoxes.TYPE7))) {
                 return new HintStatisticBoxes(type);
+            }
+
+            if (Arrays.equals(type, IsoFile.fourCCtoBytes(PayloadTypeBox.TYPE))) {
+                return new PayloadTypeBox();
             }
         }
         if (Arrays.equals(parent, IsoFile.fourCCtoBytes(SampleDescriptionBox.TYPE))) {
@@ -697,6 +632,9 @@ public class BoxFactory {
         if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleDataReferenceBox.TYPE))) {
             return new AppleDataReferenceBox();
         }
+       /* if (Arrays.equals(type, IsoFile.fourCCtoBytes(NameBox.TYPE))) {
+            return new NameBox();
+        }*/
 
         String hexType = Integer.toHexString((type[0] >> 4) & 0xf) + Integer.toHexString(type[0] & 0xf) +
                 Integer.toHexString((type[1] >> 4) & 0xf) + Integer.toHexString(type[1] & 0xf) +
