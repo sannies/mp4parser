@@ -27,7 +27,7 @@ import java.io.IOException;
 
 /**
  * aligned(8) class MovieFragmentRandomAccessOffsetBox
- * extends FullBox(�mfro�, version, 0) {
+ * extends FullBox('mfro', version, 0) {
  * unsigned int(32) size;
  * }
  */

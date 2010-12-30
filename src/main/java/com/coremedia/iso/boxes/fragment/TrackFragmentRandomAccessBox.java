@@ -28,7 +28,7 @@ import java.util.ArrayList;
 
 /**
  * aligned(8) class TrackFragmentRandomAccessBox
- * extends FullBox(�tfra�, version, 0) {
+ * extends FullBox('tfra', version, 0) {
  * unsigned int(32) track_ID;
  * const unsigned int(26) reserved = 0;
  * unsigned int(2) length_size_of_traf_num;
