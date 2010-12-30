@@ -17,7 +17,7 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
@@ -94,7 +94,7 @@ public abstract class FullBox extends Box {
     return null;
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     parseHeader(in, size);
   }
 

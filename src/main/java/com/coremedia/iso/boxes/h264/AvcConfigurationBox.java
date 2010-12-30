@@ -16,9 +16,9 @@
 
 package com.coremedia.iso.boxes.h264;
 
-import com.coremedia.iso.BoxFactory;
-import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 
@@ -69,7 +69,7 @@ public final class AvcConfigurationBox extends Box {
     return rest;
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     /*
     unsigned int(8) configurationVersion = 1;
     unsigned int(8) AVCProfileIndication;

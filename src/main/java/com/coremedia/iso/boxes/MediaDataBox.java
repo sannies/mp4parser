@@ -16,7 +16,7 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
@@ -148,7 +148,7 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Box {
     }
 
 
-    public void parse(final IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+    public void parse(final IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         this.movieFragmentBoxBefore = (MovieFragmentBox) lastMovieFragmentBox;
         this.isoBufferWrapper = in;
         startOffset = in.position();

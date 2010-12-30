@@ -16,9 +16,9 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.BoxFactory;
-import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.BoxContainer;
@@ -69,8 +69,8 @@ public class AudioSampleEntry extends SampleEntry implements BoxContainer {
     return sampleRate;
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxFactory, lastMovieFragmentBox);
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    super.parse(in, size, boxParser, lastMovieFragmentBox);
     in.readUInt32();
     in.readUInt32();
     channelCount = in.readUInt16();
@@ -85,7 +85,7 @@ public class AudioSampleEntry extends SampleEntry implements BoxContainer {
         //microsoft garbage
         break;
       }
-      Box b = boxFactory.parseBox(in, this, lastMovieFragmentBox);
+      Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
       someBoxes.add(b);
       size -= b.getSize();
     }

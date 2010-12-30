@@ -17,7 +17,7 @@
 package com.coremedia.iso.boxes.rtp;
 
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
@@ -170,7 +170,7 @@ public class HintStatisticBoxes extends Box {
 
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE1)) ||
             Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE3)) ||
             Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE5)) ||

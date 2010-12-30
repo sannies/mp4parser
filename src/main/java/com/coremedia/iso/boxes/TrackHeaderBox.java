@@ -17,9 +17,9 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxFactory;
-import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.assistui.isDate;
 
@@ -110,8 +110,8 @@ public class TrackHeaderBox extends FullBox {
     return contentSize;
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxFactory, lastMovieFragmentBox); //172
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    super.parse(in, size, boxParser, lastMovieFragmentBox); //172
     if (getVersion() == 1) {
       creationTime = in.readUInt64();
       modificationTime = in.readUInt64();

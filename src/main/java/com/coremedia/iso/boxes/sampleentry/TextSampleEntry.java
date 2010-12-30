@@ -16,7 +16,7 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
@@ -56,8 +56,8 @@ public class TextSampleEntry extends SampleEntry implements BoxContainer {
   }
 
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxFactory, lastMovieFragmentBox);
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    super.parse(in, size, boxParser, lastMovieFragmentBox);
     displayFlags = in.readUInt32();
     horizontalJustification = in.readUInt8();
     verticalJustification = in.readUInt8();
@@ -69,7 +69,7 @@ public class TextSampleEntry extends SampleEntry implements BoxContainer {
     size -= 18;
     ArrayList<Box> someBoxes = new ArrayList<Box>();
     while (size > 0) {
-      Box b = boxFactory.parseBox(in, this, lastMovieFragmentBox);
+      Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
       someBoxes.add(b);
       size -= b.getSize();
     }

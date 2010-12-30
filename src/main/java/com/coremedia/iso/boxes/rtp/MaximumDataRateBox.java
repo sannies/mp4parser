@@ -1,8 +1,8 @@
 package com.coremedia.iso.boxes.rtp;
 
-import com.coremedia.iso.BoxFactory;
-import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 
@@ -51,7 +51,7 @@ public class MaximumDataRateBox extends Box {
     return 8;
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     g = in.readUInt32();
     m = in.readUInt32();
   }

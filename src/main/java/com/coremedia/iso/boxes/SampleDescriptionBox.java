@@ -16,7 +16,7 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
@@ -60,7 +60,7 @@ public class SampleDescriptionBox extends FullBoxContainer {
         return size;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         parseHeader(in, size);
         long entryCount = in.readUInt32();
         if (entryCount > Integer.MAX_VALUE) {
@@ -69,7 +69,7 @@ public class SampleDescriptionBox extends FullBoxContainer {
         boxes = new Box[(int) entryCount];
         long sp = in.position();
         for (int i = 0; i < entryCount; i++) {
-            boxes[i] = boxFactory.parseBox(in, this, lastMovieFragmentBox);
+            boxes[i] = boxParser.parseBox(in, this, lastMovieFragmentBox);
         }
 
         if (in.position() - offset < size) {

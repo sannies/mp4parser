@@ -16,7 +16,7 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
@@ -76,16 +76,16 @@ public abstract class FullBoxContainer extends FullBox implements BoxContainer {
   }
 
   @Override
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     parseHeader(in, size);
-    parseBoxes(size, in, boxFactory, lastMovieFragmentBox);
+    parseBoxes(size, in, boxParser, lastMovieFragmentBox);
   }
 
-  protected void parseBoxes(long size, IsoBufferWrapper in, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  protected void parseBoxes(long size, IsoBufferWrapper in, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     List<Box> boxeList = new LinkedList<Box>();
     long remainingContentSize = size - 4;
     while (remainingContentSize > 0) {
-      Box box = boxFactory.parseBox(in, this, lastMovieFragmentBox);
+      Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
       remainingContentSize -= box.getSize();
       boxeList.add(box);
     }

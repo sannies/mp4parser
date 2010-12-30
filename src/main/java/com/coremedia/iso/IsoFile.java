@@ -46,7 +46,7 @@ import java.util.List;
  */
 public class IsoFile implements BoxContainer, BoxInterface {
     private Box[] boxes = new Box[0];
-    private BoxFactory boxFactory = new OldBoxFactoryImpl();
+    private BoxParser boxParser = new OldBoxFactoryImpl();
     private IsoBufferWrapper originalIso;
 
 
@@ -93,7 +93,7 @@ public class IsoFile implements BoxContainer, BoxInterface {
         while (!done) {
             long sp = originalIso.position();
             if (originalIso.remaining() >= 8) {
-                Box box = boxFactory.parseBox(originalIso, this, lastMovieFragmentBox);
+                Box box = boxParser.parseBox(originalIso, this, lastMovieFragmentBox);
                 if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
                 boxeList.add(box);
                 this.boxes = boxeList.toArray(new Box[boxeList.size()]);

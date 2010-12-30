@@ -171,7 +171,7 @@ import java.util.logging.Logger;
  * A factory for Iso Boxes. In general it is instanciated and its {@link OldBoxFactoryImpl#parseBox(IsoBufferWrapper, com.coremedia.iso.boxes.BoxInterface, com.coremedia.iso.boxes.Box)}
  * is called to create the boxes and their subboxes.
  */
-public class OldBoxFactoryImpl implements BoxFactory {
+public class OldBoxFactoryImpl implements BoxParser {
     private static Logger LOG = Logger.getLogger(OldBoxFactoryImpl.class.getName());
 
 

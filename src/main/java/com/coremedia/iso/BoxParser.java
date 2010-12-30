@@ -8,6 +8,6 @@ import java.io.IOException;
 /**
  * Basic interface to create boxes from a <code>IsoBufferWrapper</code> and its parent.
  */
-public interface BoxFactory {
+public interface BoxParser {
     Box parseBox(IsoBufferWrapper in, BoxInterface parent, Box lastMovieFragmentBox) throws IOException;
 }

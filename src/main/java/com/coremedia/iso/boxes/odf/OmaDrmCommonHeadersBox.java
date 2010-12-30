@@ -17,9 +17,9 @@
 package com.coremedia.iso.boxes.odf;
 
 
-import com.coremedia.iso.BoxFactory;
-import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.BoxContainer;
@@ -150,8 +150,8 @@ public class OmaDrmCommonHeadersBox extends FullBox implements BoxContainer {
     return contentLength;
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxFactory, lastMovieFragmentBox);
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    super.parse(in, size, boxParser, lastMovieFragmentBox);
     encryptionMethod = in.readUInt8();
     paddingScheme = in.readUInt8();
     plaintextLength = in.readUInt64();
@@ -166,7 +166,7 @@ public class OmaDrmCommonHeadersBox extends FullBox implements BoxContainer {
     remainingContentSize -= 4 + 1 + 1 + 8 + 2 + 2 + 2;
     remainingContentSize -= contentIdLength + rightsIssuerUrlLength + textualHeadersLength;
     while (remainingContentSize > 0) {
-      Box box = boxFactory.parseBox(in, this, lastMovieFragmentBox);
+      Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
       remainingContentSize -= box.getSize();
       boxeList.add(box);
     }

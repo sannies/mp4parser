@@ -1,7 +1,10 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullBox;
 
@@ -41,8 +44,8 @@ public final class AppleMeanBox extends FullBox {
   }
 
   @Override
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxFactory, lastMovieFragmentBox);
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    super.parse(in, size, boxParser, lastMovieFragmentBox);
     setMeaning(in.readString((int) (size - 4)));
   }
 }

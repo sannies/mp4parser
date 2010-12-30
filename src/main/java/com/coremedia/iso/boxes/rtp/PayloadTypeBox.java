@@ -1,6 +1,6 @@
 package com.coremedia.iso.boxes.rtp;
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
@@ -25,7 +25,7 @@ public class PayloadTypeBox extends Box {
         return utf8StringLengthInBytes(rtpMapString) + 5;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         this.payloadNumber = in.readUInt32();
         int count = in.readUInt8();
         this.rtpMapString = in.readString(count);

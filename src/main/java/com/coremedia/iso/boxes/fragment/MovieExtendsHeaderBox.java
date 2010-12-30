@@ -16,7 +16,7 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
@@ -60,8 +60,8 @@ public class MovieExtendsHeaderBox extends FullBox {
   }
 
   @Override
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxFactory, lastMovieFragmentBox);
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    super.parse(in, size, boxParser, lastMovieFragmentBox);
 
     fragmentDuration = getVersion() == 1 ? in.readUInt64() : in.readUInt32();
   }

@@ -16,9 +16,9 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.BoxFactory;
-import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.BoxContainer;
@@ -111,8 +111,8 @@ public class VisualSampleEntry extends SampleEntry implements BoxContainer {
     return depth;
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxFactory, lastMovieFragmentBox);
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    super.parse(in, size, boxParser, lastMovieFragmentBox);
     if (TYPE4.equals(IsoFile.bytesToFourCC(type))) {
       byte[] vc1 = new byte[(int) size - 8]; //substract reserved and dataReferenceIndex (see super#parse)
       in.read(vc1);
@@ -146,7 +146,7 @@ public class VisualSampleEntry extends SampleEntry implements BoxContainer {
       size -= 78;
       ArrayList<Box> someBoxes = new ArrayList<Box>();
       while (size > 8) { // If there are just some stupid dead bytes don't try to make a new box
-        Box b = boxFactory.parseBox(in, this, lastMovieFragmentBox);
+        Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
         someBoxes.add(b);
         size -= b.getSize();
       }

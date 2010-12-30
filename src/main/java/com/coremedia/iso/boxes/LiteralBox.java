@@ -17,14 +17,11 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -40,7 +37,7 @@ public abstract class LiteralBox extends Box {
     super(type);
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     if (size == -1) { // length = rest of file!
       throw new IOException("box size of -1 is not supported. Boxsize -1 means box reaches until the end of the file.");
     } else if (((int) size) != size) {

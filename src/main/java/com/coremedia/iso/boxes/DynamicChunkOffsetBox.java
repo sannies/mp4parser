@@ -1,6 +1,6 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.mdta.Chunk;
 
@@ -51,7 +51,7 @@ public class DynamicChunkOffsetBox extends ChunkOffsetBox {
 
 
   @Override
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     throw new RuntimeException("A DynamicChunkOffsetBox cannot be filled with content by parsing. " +
             "It needs to be constructed from a StaticChunkOffsetBox");
   }

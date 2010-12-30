@@ -16,7 +16,7 @@
 
 package com.coremedia.iso.boxes.odf;
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
@@ -75,14 +75,14 @@ public class OmaDrmDiscreteHeadersBox extends FullBoxContainer {
     return size + 1 + utf8StringLengthInBytes(contentType);
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     parseHeader(in, size);
     int contentTypeLength = in.readUInt8();
     contentType = new String(in.read(contentTypeLength), "UTF-8");
     List<Box> boxList = new LinkedList<Box>();
     long remainingContentSize = size - 4 - 1 - contentTypeLength;
     while (remainingContentSize > 0) {
-      Box box = boxFactory.parseBox(in, this, lastMovieFragmentBox);
+      Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
       remainingContentSize -= box.getSize();
       boxList.add(box);
     }

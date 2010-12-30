@@ -16,7 +16,7 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.BoxContainer;
@@ -70,7 +70,7 @@ public abstract class SampleEntry extends Box implements BoxContainer {
     return rc;
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     byte[] tmp = in.read(6);
     assert Arrays.equals(new byte[6], tmp) : "reserved byte not 0";
     dataReferenceIndex = in.readUInt16();

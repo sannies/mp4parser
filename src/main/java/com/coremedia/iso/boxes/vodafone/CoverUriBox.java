@@ -16,7 +16,7 @@
 
 package com.coremedia.iso.boxes.vodafone;
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
@@ -53,8 +53,8 @@ public class CoverUriBox extends FullBox {
     return utf8StringLengthInBytes(coverUri) + 1;
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxFactory, lastMovieFragmentBox);   // 4 bytes are parsed in here
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    super.parse(in, size, boxParser, lastMovieFragmentBox);   // 4 bytes are parsed in here
     coverUri = in.readString((int) (size - 4));
   }
 

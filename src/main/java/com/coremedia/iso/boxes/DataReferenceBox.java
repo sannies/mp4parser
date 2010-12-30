@@ -17,7 +17,7 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
@@ -49,14 +49,14 @@ public class DataReferenceBox extends FullBoxContainer {
     return super.getContentSize() + 4;
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     setVersion(in.readUInt8());
     setFlags(in.readUInt24());
     in.readUInt32();
     List<Box> boxes = new LinkedList<Box>();
     long remainingContentSize = size - 8;
     while (remainingContentSize > 0) {
-      Box box = boxFactory.parseBox(in, this, lastMovieFragmentBox);
+      Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
       remainingContentSize -= box.getSize();
       boxes.add(box);
     }

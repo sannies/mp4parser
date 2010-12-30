@@ -16,7 +16,7 @@
 
 package com.coremedia.iso.boxes.rtp;
 
-import com.coremedia.iso.BoxFactory;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
@@ -79,15 +79,15 @@ public class HintSampleEntry extends SampleEntry implements BoxContainer {
     return 16 + contentLength;
   }
 
-  public void parse(IsoBufferWrapper in, long size, BoxFactory boxFactory, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxFactory, lastMovieFragmentBox);
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    super.parse(in, size, boxParser, lastMovieFragmentBox);
     hintTrackVersion = in.readUInt16();
     highestCompatibleVersion = in.readUInt16();
     maxPacketSize = in.readUInt32();
     size -= 16;
     List<Box> boxes = new LinkedList<Box>();
     while (size > 0) {
-      Box box = boxFactory.parseBox(in, this, lastMovieFragmentBox);
+      Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
       size -= box.getSize();
       boxes.add(box);
     }
