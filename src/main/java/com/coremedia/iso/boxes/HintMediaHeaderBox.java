@@ -30,59 +30,59 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.MediaInformationBox
  */
 public class HintMediaHeaderBox extends FullBox {
-  private int maxPduSize;
-  private int avgPduSize;
-  private long maxBitrate;
-  private long avgBitrate;
-  public static final String TYPE = "hmhd";
+    private int maxPduSize;
+    private int avgPduSize;
+    private long maxBitrate;
+    private long avgBitrate;
+    public static final String TYPE = "hmhd";
 
-  public HintMediaHeaderBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public HintMediaHeaderBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public int getMaxPduSize() {
-    return maxPduSize;
-  }
+    public int getMaxPduSize() {
+        return maxPduSize;
+    }
 
-  public int getAvgPduSize() {
-    return avgPduSize;
-  }
+    public int getAvgPduSize() {
+        return avgPduSize;
+    }
 
-  public long getMaxBitrate() {
-    return maxBitrate;
-  }
+    public long getMaxBitrate() {
+        return maxBitrate;
+    }
 
-  public long getAvgBitrate() {
-    return avgBitrate;
-  }
+    public long getAvgBitrate() {
+        return avgBitrate;
+    }
 
-  protected long getContentSize() {
-    return 16;
-  }
+    protected long getContentSize() {
+        return 16;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    maxPduSize = in.readUInt16();
-    avgPduSize = in.readUInt16();
-    maxBitrate = in.readUInt32();
-    avgBitrate = in.readUInt32();
-    in.readUInt32();    // reserved!
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        maxPduSize = in.readUInt16();
+        avgPduSize = in.readUInt16();
+        maxBitrate = in.readUInt32();
+        avgBitrate = in.readUInt32();
+        in.readUInt32();    // reserved!
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeUInt16(maxPduSize);
-    isos.writeUInt16(avgPduSize);
-    isos.writeUInt32(maxBitrate);
-    isos.writeUInt32(avgBitrate);
-    isos.writeUInt32(0);
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeUInt16(maxPduSize);
+        isos.writeUInt16(avgPduSize);
+        isos.writeUInt32(maxBitrate);
+        isos.writeUInt32(avgBitrate);
+        isos.writeUInt32(0);
 
-  }
+    }
 
-  public String getDisplayName() {
-    return "Hint Media Header Box";
-  }
+    public String getDisplayName() {
+        return "Hint Media Header Box";
+    }
 
-  public String toString() {
-    return "HintMediaHeaderBox[]";
-  }
+    public String toString() {
+        return "HintMediaHeaderBox[]";
+    }
 }

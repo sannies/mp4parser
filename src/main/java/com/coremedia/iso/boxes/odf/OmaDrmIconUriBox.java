@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -29,35 +29,35 @@ import java.io.IOException;
  * The IconURI box contains a URI where an appropriate icon for this content may be retrieved from.
  */
 public class OmaDrmIconUriBox extends FullBox {
-  public static final String TYPE = "icnu";
-  private String iconUri;
+    public static final String TYPE = "icnu";
+    private String iconUri;
 
-  public OmaDrmIconUriBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public OmaDrmIconUriBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getIconUri() {
-    return iconUri;
-  }
+    public String getIconUri() {
+        return iconUri;
+    }
 
-  public String getDisplayName() {
-    return "Icon URI Box";
-  }
+    public String getDisplayName() {
+        return "Icon URI Box";
+    }
 
-  protected long getContentSize() {
-    return utf8StringLengthInBytes(iconUri);
-  }
+    protected long getContentSize() {
+        return utf8StringLengthInBytes(iconUri);
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    iconUri = in.readString((int) size - 4);
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        iconUri = in.readString((int) size - 4);
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeStringNoTerm(iconUri);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeStringNoTerm(iconUri);
+    }
 
-  public String toString() {
-    return "OmaDrmIconUriBox[iconUri=" + getIconUri() + "]";
-  }
+    public String toString() {
+        return "OmaDrmIconUriBox[iconUri=" + getIconUri() + "]";
+    }
 }

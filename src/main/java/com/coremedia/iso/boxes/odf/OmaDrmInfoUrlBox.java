@@ -21,7 +21,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -35,36 +35,36 @@ import java.io.IOException;
  * continuing until the end of the box is reached.
  */
 public class OmaDrmInfoUrlBox extends FullBox {
-  public static final String TYPE = "infu";
+    public static final String TYPE = "infu";
 
-  private String infoUrl;
+    private String infoUrl;
 
-  protected long getContentSize() {
-    return utf8StringLengthInBytes(infoUrl);
-  }
+    protected long getContentSize() {
+        return utf8StringLengthInBytes(infoUrl);
+    }
 
-  public OmaDrmInfoUrlBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public OmaDrmInfoUrlBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getInfoUrl() {
-    return infoUrl;
-  }
+    public String getInfoUrl() {
+        return infoUrl;
+    }
 
-  public String getDisplayName() {
-    return "Info URL Box";
-  }
+    public String getDisplayName() {
+        return "Info URL Box";
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    infoUrl = in.readString((int) (size - 4));
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        infoUrl = in.readString((int) (size - 4));
+    }
 
-  public String toString() {
-    return "OmaDrmInfoUrlBox[infoUrl=" + getInfoUrl() + "]";
-  }
+    public String toString() {
+        return "OmaDrmInfoUrlBox[infoUrl=" + getInfoUrl() + "]";
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeStringNoTerm(infoUrl);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeStringNoTerm(infoUrl);
+    }
 }

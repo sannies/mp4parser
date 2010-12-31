@@ -38,56 +38,56 @@ import java.io.IOException;
  * The Edit List Box provides the initial CT value if it is non-empty (non-zero).
  */
 public class TimeToSampleBox extends FullBox {
-  private long[] sampleCount;
-  private long[] sampleDelta;
-  public static final String TYPE = "stts";
+    private long[] sampleCount;
+    private long[] sampleDelta;
+    public static final String TYPE = "stts";
 
-  public TimeToSampleBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public long[] getSampleCount() {
-    return sampleCount;
-  }
-
-  public long[] getSampleDelta() {
-    return sampleDelta;
-  }
-
-  public String getDisplayName() {
-    return "Decoding Time to Sample Box";
-  }
-
-  protected long getContentSize() {
-    return 4 +
-            sampleCount.length * 4 +
-            sampleDelta.length * 4;
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    long entryCount = in.readUInt32();
-    if (entryCount > Integer.MAX_VALUE) {
-      throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
+    public TimeToSampleBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    sampleCount = new long[(int) entryCount];
-    sampleDelta = new long[(int) entryCount];
-    for (int i = 0; i < entryCount; i++) {
-      sampleCount[i] = in.readUInt32();
-      sampleDelta[i] = in.readUInt32();
+
+    public long[] getSampleCount() {
+        return sampleCount;
     }
-  }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeUInt32(sampleCount.length);
-    for (int i = 0; i < sampleCount.length; i++) {
-      isos.writeUInt32(sampleCount[i]);
-      isos.writeUInt32(sampleDelta[i]);
-
+    public long[] getSampleDelta() {
+        return sampleDelta;
     }
-  }
 
-  public String toString() {
-    return "TimeToSampleBox[entryCount=" + sampleCount.length + "]";
-  }
+    public String getDisplayName() {
+        return "Decoding Time to Sample Box";
+    }
+
+    protected long getContentSize() {
+        return 4 +
+                sampleCount.length * 4 +
+                sampleDelta.length * 4;
+    }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        long entryCount = in.readUInt32();
+        if (entryCount > Integer.MAX_VALUE) {
+            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
+        }
+        sampleCount = new long[(int) entryCount];
+        sampleDelta = new long[(int) entryCount];
+        for (int i = 0; i < entryCount; i++) {
+            sampleCount[i] = in.readUInt32();
+            sampleDelta[i] = in.readUInt32();
+        }
+    }
+
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeUInt32(sampleCount.length);
+        for (int i = 0; i < sampleCount.length; i++) {
+            isos.writeUInt32(sampleCount[i]);
+            isos.writeUInt32(sampleDelta[i]);
+
+        }
+    }
+
+    public String toString() {
+        return "TimeToSampleBox[entryCount=" + sampleCount.length + "]";
+    }
 }

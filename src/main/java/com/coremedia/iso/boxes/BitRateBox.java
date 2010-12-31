@@ -38,33 +38,33 @@ import java.io.IOException;
  */
 
 public final class BitRateBox extends Box {
-  public static final String TYPE = "btrt";
+    public static final String TYPE = "btrt";
 
-  private long bufferSizeDb;
-  private long maxBitrate;
-  private long avgBitrate;
+    private long bufferSizeDb;
+    private long maxBitrate;
+    private long avgBitrate;
 
-  public BitRateBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public BitRateBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  protected long getContentSize() {
-    return 12;
-  }
+    protected long getContentSize() {
+        return 12;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    bufferSizeDb = in.readUInt32();
-    maxBitrate = in.readUInt32();
-    avgBitrate = in.readUInt32();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        bufferSizeDb = in.readUInt32();
+        maxBitrate = in.readUInt32();
+        avgBitrate = in.readUInt32();
+    }
 
-  public String getDisplayName() {
-    return "Bit Rate Box";
-  }
+    public String getDisplayName() {
+        return "Bit Rate Box";
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt32(bufferSizeDb);
-    os.writeUInt32(maxBitrate);
-    os.writeUInt32(avgBitrate);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt32(bufferSizeDb);
+        os.writeUInt32(maxBitrate);
+        os.writeUInt32(avgBitrate);
+    }
 }

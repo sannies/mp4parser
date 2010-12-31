@@ -5,6 +5,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
 
@@ -23,45 +24,45 @@ import java.io.IOException;
  * (but does include 12-byte RTP headers).
  */
 public class MaximumDataRateBox extends Box {
-  public static final String TYPE = "maxr";
+    public static final String TYPE = "maxr";
 
-  public MaximumDataRateBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public MaximumDataRateBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  private long g, m;
+    private long g, m;
 
-  public long getG() {
-    return g;
-  }
+    public long getG() {
+        return g;
+    }
 
-  public void setG(long g) {
-    this.g = g;
-  }
+    public void setG(long g) {
+        this.g = g;
+    }
 
-  public long getM() {
-    return m;
-  }
+    public long getM() {
+        return m;
+    }
 
-  public void setM(long m) {
-    this.m = m;
-  }
+    public void setM(long m) {
+        this.m = m;
+    }
 
-  protected long getContentSize() {
-    return 8;
-  }
+    protected long getContentSize() {
+        return 8;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    g = in.readUInt32();
-    m = in.readUInt32();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        g = in.readUInt32();
+        m = in.readUInt32();
+    }
 
-  public String getDisplayName() {
-    return "Maximum Data Rate";
-  }
+    public String getDisplayName() {
+        return "Maximum Data Rate";
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt32(g);
-    os.writeUInt32(m);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt32(g);
+        os.writeUInt32(m);
+    }
 }

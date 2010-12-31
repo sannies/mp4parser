@@ -20,39 +20,39 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
 public class AppleDataRateBox extends FullBox {
-  public static final String TYPE = "rmdr";
-  private long dataRate;
+    public static final String TYPE = "rmdr";
+    private long dataRate;
 
-  public AppleDataRateBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public AppleDataRateBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  @Override
-  public String getDisplayName() {
-    return "Apple Data Rate Box";
-  }
+    @Override
+    public String getDisplayName() {
+        return "Apple Data Rate Box";
+    }
 
-  protected long getContentSize() {
-    return 4;
-  }
+    protected long getContentSize() {
+        return 4;
+    }
 
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    dataRate = in.readUInt32();
-  }
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        dataRate = in.readUInt32();
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt32(dataRate);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt32(dataRate);
+    }
 
-  public long getDataRate() {
-    return dataRate;
-  }
+    public long getDataRate() {
+        return dataRate;
+    }
 }

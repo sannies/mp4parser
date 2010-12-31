@@ -34,74 +34,74 @@ import com.coremedia.iso.IsoFile;
  * Box.
  */
 public class SampleTableBox extends AbstractContainerBox {
-  public static final String TYPE = "stbl";
+    public static final String TYPE = "stbl";
 
-  public SampleTableBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Sample Table Box";
-  }
-
-
-  public SampleDescriptionBox getSampleDescriptionBox() {
-    for (Box box : boxes) {
-      if (box instanceof SampleDescriptionBox) {
-        return (SampleDescriptionBox) box;
-      }
+    public SampleTableBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    return null;
-  }
 
-  public SampleSizeBox getSampleSizeBox() {
-    for (Box box : boxes) {
-      if (box instanceof SampleSizeBox) {
-        return (SampleSizeBox) box;
-      }
+    public String getDisplayName() {
+        return "Sample Table Box";
     }
-    return null;
-  }
 
-  public SampleToChunkBox getSampleToChunkBox() {
-    for (Box box : boxes) {
-      if (box instanceof SampleToChunkBox) {
-        return (SampleToChunkBox) box;
-      }
+
+    public SampleDescriptionBox getSampleDescriptionBox() {
+        for (BoxInterface box : boxes) {
+            if (box instanceof SampleDescriptionBox) {
+                return (SampleDescriptionBox) box;
+            }
+        }
+        return null;
     }
-    return null;
-  }
 
-  public ChunkOffsetBox getChunkOffsetBox() {
-    for (Box box : boxes) {
-      if (box instanceof ChunkOffsetBox) {
-        return (ChunkOffsetBox) box;
-      }
+    public SampleSizeBox getSampleSizeBox() {
+        for (BoxInterface box : boxes) {
+            if (box instanceof SampleSizeBox) {
+                return (SampleSizeBox) box;
+            }
+        }
+        return null;
     }
-    return null;
-  }
 
-  public void setChunkOffsetBox(ChunkOffsetBox b) {
-    for (int i = 0; i < boxes.length; i++) {
-      Box box = boxes[i];
-      if (box instanceof ChunkOffsetBox) {
-        boxes[i] = b;
-      }
+    public SampleToChunkBox getSampleToChunkBox() {
+        for (BoxInterface box : boxes) {
+            if (box instanceof SampleToChunkBox) {
+                return (SampleToChunkBox) box;
+            }
+        }
+        return null;
     }
-  }
 
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("SampleTableBox[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public ChunkOffsetBox getChunkOffsetBox() {
+        for (BoxInterface box : boxes) {
+            if (box instanceof ChunkOffsetBox) {
+                return (ChunkOffsetBox) box;
+            }
+        }
+        return null;
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public void setChunkOffsetBox(ChunkOffsetBox b) {
+        for (int i = 0; i < boxes.length; i++) {
+            BoxInterface box = boxes[i];
+            if (box instanceof ChunkOffsetBox) {
+                boxes[i] = b;
+            }
+        }
+    }
+
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("SampleTableBox[");
+        BoxInterface[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

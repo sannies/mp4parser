@@ -41,7 +41,7 @@ public abstract class AbstractAppleMetaDataBox extends Box implements ContainerB
     }
 
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
         long sp = in.position();
         long dataBoxSize = in.readUInt32();
         String thisShouldBeData = in.readString(4);

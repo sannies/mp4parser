@@ -26,37 +26,37 @@ import com.coremedia.iso.IsoFile;
  * deleting all hint tracks, the entire un-hinted presentation shall remain.
  */
 public class TrackBox extends AbstractContainerBox implements TrackMetaDataContainer {
-  public static final String TYPE = "trak";
+    public static final String TYPE = "trak";
 
-  public TrackBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Track Box (trackId=" + (getTrackHeaderBox() != null ? getTrackHeaderBox().getTrackId() : "? (will be parsed later)") + ")";
-  }
-
-  public TrackHeaderBox getTrackHeaderBox() {
-    for (Box box : boxes) {
-      if (box instanceof TrackHeaderBox) {
-        return (TrackHeaderBox) box;
-      }
+    public TrackBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    return null;
-  }
 
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("TrackBox[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public String getDisplayName() {
+        return "Track Box (trackId=" + (getTrackHeaderBox() != null ? getTrackHeaderBox().getTrackId() : "? (will be parsed later)") + ")";
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public TrackHeaderBox getTrackHeaderBox() {
+        for (BoxInterface box : boxes) {
+            if (box instanceof TrackHeaderBox) {
+                return (TrackHeaderBox) box;
+            }
+        }
+        return null;
+    }
+
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("TrackBox[");
+        BoxInterface[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

@@ -31,44 +31,44 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.SampleTableBox
  */
 public class FreeSpaceBox extends Box {
-  public static final String TYPE = "skip";
+    public static final String TYPE = "skip";
 
-  byte[] content;
+    byte[] content;
 
-  protected long getContentSize() {
-    return content.length;
-  }
-
-  public FreeSpaceBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    if (((int) size) != size) {
-      throw new RuntimeException("The FreeSpaceBox cannot be larger than 2^32 bytes!");
+    protected long getContentSize() {
+        return content.length;
     }
-    content = in.read((int) size);
 
-  }
+    public FreeSpaceBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public void setData(byte[] data) {
-    this.content = data;
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        if (((int) size) != size) {
+            throw new RuntimeException("The FreeSpaceBox cannot be larger than 2^32 bytes!");
+        }
+        content = in.read((int) size);
 
-  public byte[] getData() {
-    return content;
-  }
+    }
+
+    public void setData(byte[] data) {
+        this.content = data;
+    }
+
+    public byte[] getData() {
+        return content;
+    }
 
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.write(content);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.write(content);
+    }
 
-  public String getDisplayName() {
-    return "Free Space Box";
-  }
+    public String getDisplayName() {
+        return "Free Space Box";
+    }
 
-  public String toString() {
-    return "FreeSpaceBox[size=" + content.length + ";type=" + IsoFile.bytesToFourCC(getType()) + "]";
-  }
+    public String toString() {
+        return "FreeSpaceBox[size=" + content.length + ";type=" + IsoFile.bytesToFourCC(getType()) + "]";
+    }
 }

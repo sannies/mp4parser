@@ -29,51 +29,51 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.UserDataBox
  */
 public class GenreBox extends FullBox {
-  public static final String TYPE = "gnre";
+    public static final String TYPE = "gnre";
 
-  private String language;
-  private String genre;
+    private String language;
+    private String genre;
 
-  public GenreBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public GenreBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getLanguage() {
-    return language;
-  }
+    public String getLanguage() {
+        return language;
+    }
 
-  public String getGenre() {
-    return genre;
-  }
+    public String getGenre() {
+        return genre;
+    }
 
-  public void setLanguage(String language) {
-    this.language = language;
-  }
+    public void setLanguage(String language) {
+        this.language = language;
+    }
 
-  public void setGenre(String genre) {
-    this.genre = genre;
-  }
+    public void setGenre(String genre) {
+        this.genre = genre;
+    }
 
-  public String getDisplayName() {
-    return "Genre Box";
-  }
+    public String getDisplayName() {
+        return "Genre Box";
+    }
 
-  protected long getContentSize() {
-    return 2 + utf8StringLengthInBytes(genre) + 1;
-  }
+    protected long getContentSize() {
+        return 2 + utf8StringLengthInBytes(genre) + 1;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    language = in.readIso639();
-    genre = in.readString();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        language = in.readIso639();
+        genre = in.readString();
+    }
 
-  public String toString() {
-    return "GenreBox[language=" + getLanguage() + ";genre=" + getGenre() + "]";
-  }
+    public String toString() {
+        return "GenreBox[language=" + getLanguage() + ";genre=" + getGenre() + "]";
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeIso639(language);
-    os.writeStringZeroTerm(genre);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeIso639(language);
+        os.writeStringZeroTerm(genre);
+    }
 }

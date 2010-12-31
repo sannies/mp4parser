@@ -29,64 +29,64 @@ import java.io.IOException;
  * contains a sample, its position, and the associated sample description. Defined in ISO/IEC 14496-12.
  */
 public class SampleToChunkBox extends FullBox {
-  private long[] firstChunk;
-  private long[] samplesPerChunk;
-  private long[] sampleDescriptionIndex;
-  public static final String TYPE = "stsc";
+    private long[] firstChunk;
+    private long[] samplesPerChunk;
+    private long[] sampleDescriptionIndex;
+    public static final String TYPE = "stsc";
 
-  public SampleToChunkBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public long[] getFirstChunk() {
-    return firstChunk;
-  }
-
-  public long[] getSamplesPerChunk() {
-    return samplesPerChunk;
-  }
-
-  public long[] getSampleDescriptionIndex() {
-    return sampleDescriptionIndex;
-  }
-
-  public String getDisplayName() {
-    return "Sample to Chunk Box";
-  }
-
-  protected long getContentSize() {
-    return firstChunk.length * 12 + 4;
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    long entryCount = in.readUInt32();
-    if (entryCount > Integer.MAX_VALUE) {
-      throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
+    public SampleToChunkBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    firstChunk = new long[(int) entryCount];
-    samplesPerChunk = new long[(int) entryCount];
-    sampleDescriptionIndex = new long[(int) entryCount];
-    for (int i = 0; i < entryCount; i++) {
-      firstChunk[i] = in.readUInt32();
-      samplesPerChunk[i] = in.readUInt32();
-      sampleDescriptionIndex[i] = in.readUInt32();
+    public long[] getFirstChunk() {
+        return firstChunk;
     }
-  }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    long l = isos.getStreamPosition();
-    isos.writeUInt32(firstChunk.length);
-    for (int i = 0; i < firstChunk.length; i++) {
-      isos.writeUInt32(firstChunk[i]);
-      isos.writeUInt32(samplesPerChunk[i]);
-      isos.writeUInt32(sampleDescriptionIndex[i]);
+    public long[] getSamplesPerChunk() {
+        return samplesPerChunk;
     }
-    assert getContentSize() == (isos.getStreamPosition() - l);
-  }
 
-  public String toString() {
-    return "SampleToChunkBox[entryCount=" + firstChunk.length + "]";
-  }
+    public long[] getSampleDescriptionIndex() {
+        return sampleDescriptionIndex;
+    }
+
+    public String getDisplayName() {
+        return "Sample to Chunk Box";
+    }
+
+    protected long getContentSize() {
+        return firstChunk.length * 12 + 4;
+    }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        long entryCount = in.readUInt32();
+        if (entryCount > Integer.MAX_VALUE) {
+            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
+        }
+
+        firstChunk = new long[(int) entryCount];
+        samplesPerChunk = new long[(int) entryCount];
+        sampleDescriptionIndex = new long[(int) entryCount];
+        for (int i = 0; i < entryCount; i++) {
+            firstChunk[i] = in.readUInt32();
+            samplesPerChunk[i] = in.readUInt32();
+            sampleDescriptionIndex[i] = in.readUInt32();
+        }
+    }
+
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        long l = isos.getStreamPosition();
+        isos.writeUInt32(firstChunk.length);
+        for (int i = 0; i < firstChunk.length; i++) {
+            isos.writeUInt32(firstChunk[i]);
+            isos.writeUInt32(samplesPerChunk[i]);
+            isos.writeUInt32(sampleDescriptionIndex[i]);
+        }
+        assert getContentSize() == (isos.getStreamPosition() - l);
+    }
+
+    public String toString() {
+        return "SampleToChunkBox[entryCount=" + firstChunk.length + "]";
+    }
 }

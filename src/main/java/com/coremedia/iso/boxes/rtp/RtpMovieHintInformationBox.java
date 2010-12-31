@@ -23,57 +23,58 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.assistui.multiline;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
 
 public class RtpMovieHintInformationBox extends Box {
-  public static final String TYPE = "rtp ";
+    public static final String TYPE = "rtp ";
 
-  private String descriptionFormat;
+    private String descriptionFormat;
 
-  @multiline(linebreak = "\r\n")
-  private String sdpText;
+    @multiline(linebreak = "\r\n")
+    private String sdpText;
 
-  public RtpMovieHintInformationBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public RtpMovieHintInformationBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getDescriptionFormat() {
-    return descriptionFormat;
-  }
+    public String getDescriptionFormat() {
+        return descriptionFormat;
+    }
 
-  public String getSdpText() {
-    return sdpText;
-  }
+    public String getSdpText() {
+        return sdpText;
+    }
 
-  public void setDescriptionFormat(String descriptionFormat) {
-    this.descriptionFormat = descriptionFormat;
-  }
+    public void setDescriptionFormat(String descriptionFormat) {
+        this.descriptionFormat = descriptionFormat;
+    }
 
-  public void setSdpText(String sdpText) {
-    this.sdpText = sdpText;
-  }
+    public void setSdpText(String sdpText) {
+        this.sdpText = sdpText;
+    }
 
-  public String getDisplayName() {
-    return "RTP Movie Hint Information";
-  }
+    public String getDisplayName() {
+        return "RTP Movie Hint Information";
+    }
 
 
-  protected long getContentSize() {
-    return utf8StringLengthInBytes(sdpText) + 4;
-  }
+    protected long getContentSize() {
+        return utf8StringLengthInBytes(sdpText) + 4;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    descriptionFormat = IsoFile.bytesToFourCC(in.read(4));
-    sdpText = in.readString((int) size - 4);
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        descriptionFormat = IsoFile.bytesToFourCC(in.read(4));
+        sdpText = in.readString((int) size - 4);
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.write(IsoFile.fourCCtoBytes(descriptionFormat));
-    isos.writeStringNoTerm(sdpText);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.write(IsoFile.fourCCtoBytes(descriptionFormat));
+        isos.writeStringNoTerm(sdpText);
+    }
 
-  public String toString() {
-    return "RtpMovieHintInformationBox[descriptionFormat=" + getDescriptionFormat() + ";sdpText=" + getSdpText() + "]";
-  }
+    public String toString() {
+        return "RtpMovieHintInformationBox[descriptionFormat=" + getDescriptionFormat() + ";sdpText=" + getSdpText() + "]";
+    }
 }

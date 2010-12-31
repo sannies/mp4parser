@@ -20,7 +20,6 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
-import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.MediaDataBox;
 import com.coremedia.iso.boxes.TrackBoxContainer;
@@ -41,7 +40,7 @@ import java.util.TreeMap;
 
 public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxContainer<TrackFragmentBox> {
     public static final String TYPE = "moof";
-    private IsoBufferWrapper  isoBufferWrapper;
+    private IsoBufferWrapper isoBufferWrapper;
 
     public MovieFragmentBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -52,7 +51,7 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         // super does everything right but we need the IsoBufferWrapper for later
         this.isoBufferWrapper = in;

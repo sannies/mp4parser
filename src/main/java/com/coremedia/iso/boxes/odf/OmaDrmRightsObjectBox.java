@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -31,40 +31,40 @@ import java.io.IOException;
  * treated as binary data and a Device MAY add or delete Rights Object boxes in the parent free space box.
  */
 public class OmaDrmRightsObjectBox extends FullBox {
-  public static final String TYPE = "odrb";
+    public static final String TYPE = "odrb";
 
-  private byte[] rightsObject;
+    private byte[] rightsObject;
 
-  public OmaDrmRightsObjectBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public OmaDrmRightsObjectBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public byte[] getRightsObject() {
-    return rightsObject;
-  }
+    public byte[] getRightsObject() {
+        return rightsObject;
+    }
 
-  public String getDisplayName() {
-    return "OMA DRM Rights Object Box";
-  }
+    public String getDisplayName() {
+        return "OMA DRM Rights Object Box";
+    }
 
-  protected long getContentSize() {
-    return rightsObject.length;
-  }
+    protected long getContentSize() {
+        return rightsObject.length;
+    }
 
-  public void setRightsObject(byte[] rightsObject) {
-    this.rightsObject = rightsObject;
-  }
+    public void setRightsObject(byte[] rightsObject) {
+        this.rightsObject = rightsObject;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    rightsObject = in.read((int) size - 4);
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        rightsObject = in.read((int) size - 4);
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.write(rightsObject);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.write(rightsObject);
+    }
 
-  public String toString() {
-    return "OmaDrmRightsObjectBox[rightsObject=" + getRightsObject() + "]";
-  }
+    public String toString() {
+        return "OmaDrmRightsObjectBox[rightsObject=" + getRightsObject() + "]";
+    }
 }

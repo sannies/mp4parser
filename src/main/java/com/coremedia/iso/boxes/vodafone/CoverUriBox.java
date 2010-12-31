@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -29,41 +29,41 @@ import java.io.IOException;
  * A vodafone specific box.
  */
 public class CoverUriBox extends FullBox {
-  public static final String TYPE = "cvru";
+    public static final String TYPE = "cvru";
 
-  private String coverUri;
+    private String coverUri;
 
-  public CoverUriBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public CoverUriBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getCoverUri() {
-    return coverUri;
-  }
+    public String getCoverUri() {
+        return coverUri;
+    }
 
-  public void setCoverUri(String coverUri) {
-    this.coverUri = coverUri;
-  }
+    public void setCoverUri(String coverUri) {
+        this.coverUri = coverUri;
+    }
 
-  public String getDisplayName() {
-    return "Cover URI Box";
-  }
+    public String getDisplayName() {
+        return "Cover URI Box";
+    }
 
-  protected long getContentSize() {
-    return utf8StringLengthInBytes(coverUri) + 1;
-  }
+    protected long getContentSize() {
+        return utf8StringLengthInBytes(coverUri) + 1;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);   // 4 bytes are parsed in here
-    coverUri = in.readString((int) (size - 4));
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);   // 4 bytes are parsed in here
+        coverUri = in.readString((int) (size - 4));
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeStringZeroTerm(coverUri);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeStringZeroTerm(coverUri);
+    }
 
 
-  public String toString() {
-    return "CoverUriBox[coverUri=" + getCoverUri() + "]";
-  }
+    public String toString() {
+        return "CoverUriBox[coverUri=" + getCoverUri() + "]";
+    }
 }

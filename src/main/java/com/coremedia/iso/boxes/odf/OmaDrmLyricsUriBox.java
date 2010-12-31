@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -30,36 +30,36 @@ import java.io.IOException;
  * Invented by Vodafone.
  */
 public class OmaDrmLyricsUriBox extends FullBox {
-  public static final String TYPE = "lrcu";
+    public static final String TYPE = "lrcu";
 
-  private String lyricsUri;
+    private String lyricsUri;
 
-  public OmaDrmLyricsUriBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public OmaDrmLyricsUriBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getLyricsUri() {
-    return lyricsUri;
-  }
+    public String getLyricsUri() {
+        return lyricsUri;
+    }
 
-  public String getDisplayName() {
-    return "Lyrics URI Box";
-  }
+    public String getDisplayName() {
+        return "Lyrics URI Box";
+    }
 
-  protected long getContentSize() {
-    return utf8StringLengthInBytes(lyricsUri);
-  }
+    protected long getContentSize() {
+        return utf8StringLengthInBytes(lyricsUri);
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    lyricsUri = in.readString((int) (size - 4));
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        lyricsUri = in.readString((int) (size - 4));
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeStringNoTerm(lyricsUri);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeStringNoTerm(lyricsUri);
+    }
 
-  public String toString() {
-    return "OmaDrmLyricsUriBox[lyricsUri=" + getLyricsUri() + "]";
-  }
+    public String toString() {
+        return "OmaDrmLyricsUriBox[lyricsUri=" + getLyricsUri() + "]";
+    }
 }

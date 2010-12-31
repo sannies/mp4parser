@@ -36,51 +36,51 @@ import java.util.List;
  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  */
 public abstract class SampleEntry extends Box implements ContainerBox {
-  private int dataReferenceIndex;
-  protected Box[] boxes;
-  byte[] type;
+    private int dataReferenceIndex;
+    protected BoxInterface[] boxes;
+    byte[] type;
 
-  protected SampleEntry(byte[] type) {
-    super(type);
-    this.type = type;
-  }
-
-  public byte[] getType() {
-    return type;
-  }
-
-  public void setType(byte[] type) {
-    this.type = type;
-  }
-
-  public int getDataReferenceIndex() {
-    return dataReferenceIndex;
-  }
-
-  public void addBox(Box b) {
-    List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-    listOfBoxes.add(b);
-    boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
-  }
-
-  public boolean removeBox(BoxInterface b) {
-    List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-    boolean rc = listOfBoxes.remove(b);
-    boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
-    return rc;
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    byte[] tmp = in.read(6);
-    assert Arrays.equals(new byte[6], tmp) : "reserved byte not 0";
-    dataReferenceIndex = in.readUInt16();
-  }
-
-  public long getNumOfBytesToFirstChild() {
-    long sizeOfChildren = 0;
-    for (Box box : boxes) {
-      sizeOfChildren += box.getSize();
+    protected SampleEntry(byte[] type) {
+        super(type);
+        this.type = type;
     }
-    return getSize() - sizeOfChildren;
-  }
+
+    public byte[] getType() {
+        return type;
+    }
+
+    public void setType(byte[] type) {
+        this.type = type;
+    }
+
+    public int getDataReferenceIndex() {
+        return dataReferenceIndex;
+    }
+
+    public void addBox(Box b) {
+        List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
+        listOfBoxes.add(b);
+        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
+    }
+
+    public boolean removeBox(BoxInterface b) {
+        List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
+        boolean rc = listOfBoxes.remove(b);
+        boxes = listOfBoxes.toArray(new BoxInterface[listOfBoxes.size()]);
+        return rc;
+    }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        byte[] tmp = in.read(6);
+        assert Arrays.equals(new byte[6], tmp) : "reserved byte not 0";
+        dataReferenceIndex = in.readUInt16();
+    }
+
+    public long getNumOfBytesToFirstChild() {
+        long sizeOfChildren = 0;
+        for (BoxInterface box : boxes) {
+            sizeOfChildren += box.getSize();
+        }
+        return getSize() - sizeOfChildren;
+    }
 }

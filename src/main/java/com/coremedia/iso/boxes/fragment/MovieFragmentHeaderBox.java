@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -33,39 +33,39 @@ import java.io.IOException;
  */
 
 public class MovieFragmentHeaderBox extends FullBox {
-  public static final String TYPE = "mfhd";
-  private long sequenceNumber;
+    public static final String TYPE = "mfhd";
+    private long sequenceNumber;
 
-  public MovieFragmentHeaderBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public MovieFragmentHeaderBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getDisplayName() {
-    return "Movie Fragment Header Box";
-  }
+    public String getDisplayName() {
+        return "Movie Fragment Header Box";
+    }
 
-  protected long getContentSize() {
-    return 4;
-  }
+    protected long getContentSize() {
+        return 4;
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt32(sequenceNumber);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt32(sequenceNumber);
+    }
 
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    sequenceNumber = in.readUInt32();
-  }
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        sequenceNumber = in.readUInt32();
+    }
 
-  public long getSequenceNumber() {
-    return sequenceNumber;
-  }
+    public long getSequenceNumber() {
+        return sequenceNumber;
+    }
 
-  @Override
-  public String toString() {
-    return "MovieFragmentHeaderBox{" +
-            "sequenceNumber=" + sequenceNumber +
-            '}';
-  }
+    @Override
+    public String toString() {
+        return "MovieFragmentHeaderBox{" +
+                "sequenceNumber=" + sequenceNumber +
+                '}';
+    }
 }

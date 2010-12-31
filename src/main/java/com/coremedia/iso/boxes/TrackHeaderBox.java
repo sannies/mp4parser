@@ -36,161 +36,161 @@ import java.io.IOException;
  */
 public class TrackHeaderBox extends FullBox {
 
-  public static final String TYPE = "tkhd";
+    public static final String TYPE = "tkhd";
 
-  private long creationTime;
-  private long modificationTime;
-  private long trackId;
-  private long duration;
-  private int layer;
-  private int alternateGroup;
-  private float volume;
-  private long[] matrix;
-  private double width;
-  private double height;
+    private long creationTime;
+    private long modificationTime;
+    private long trackId;
+    private long duration;
+    private int layer;
+    private int alternateGroup;
+    private float volume;
+    private long[] matrix;
+    private double width;
+    private double height;
 
-  public TrackHeaderBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  @isDate
-  public long getCreationTime() {
-    return creationTime;
-  }
-
-  @isDate
-  public long getModificationTime() {
-    return modificationTime;
-  }
-
-  public long getTrackId() {
-    return trackId;
-  }
-
-  public long getDuration() {
-    return duration;
-  }
-
-  public int getLayer() {
-    return layer;
-  }
-
-  public int getAlternateGroup() {
-    return alternateGroup;
-  }
-
-  public float getVolume() {
-    return volume;
-  }
-
-  public long[] getMatrix() {
-    return matrix;
-  }
-
-  public double getWidth() {
-    return width;
-  }
-
-  public double getHeight() {
-    return height;
-  }
-
-  public String getDisplayName() {
-    return "Track Header Box";
-  }
-
-  protected long getContentSize() {
-    long contentSize = 0;
-    if (getVersion() == 1) {
-      contentSize += 32;
-    } else {
-      contentSize += 20;
+    public TrackHeaderBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    contentSize += 60;
-    return contentSize;
-  }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox); //172
-    if (getVersion() == 1) {
-      creationTime = in.readUInt64();
-      modificationTime = in.readUInt64();
-      trackId = in.readUInt32();
-      in.readUInt32();
-      duration = in.readUInt64();
-    } else {
-      creationTime = in.readUInt32();
-      modificationTime = in.readUInt32();
-      trackId = in.readUInt32();
-      in.readUInt32();
-      duration = in.readUInt32();
-    } // 196
-    in.readUInt32();
-    in.readUInt32();
-    layer = in.readUInt16();    // 204
-    alternateGroup = in.readUInt16();
-    volume = in.readFixedPoint88();
-    in.readUInt16();     // 212
-    matrix = new long[9];
-    for (int i = 0; i < 9; i++) {
-      matrix[i] = in.readUInt32();
+    @isDate
+    public long getCreationTime() {
+        return creationTime;
     }
-    width = in.readFixedPoint1616();    // 248
-    height = in.readFixedPoint1616();
-  }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    if (getVersion() == 1) {
-      isos.writeUInt64(creationTime);
-      isos.writeUInt64(modificationTime);
-      isos.writeUInt32(trackId);
-      isos.writeUInt32(0);
-      isos.writeUInt64(duration);
-    } else {
-      isos.writeUInt32((int) creationTime);
-      isos.writeUInt32((int) modificationTime);
-      isos.writeUInt32(trackId);
-      isos.writeUInt32(0);
-      isos.writeUInt32((int) duration);
-    } // 196
-    isos.writeUInt32(0);
-    isos.writeUInt32(0);
-    isos.writeUInt16(layer);
-    isos.writeUInt16(alternateGroup);
-    isos.writeFixedPont88(volume);
-    isos.writeUInt16(0);
-    for (int i = 0; i < 9; i++) {
-      isos.writeUInt32(matrix[i]);
+    @isDate
+    public long getModificationTime() {
+        return modificationTime;
     }
-    isos.writeFixedPont1616(width);
-    isos.writeFixedPont1616(height);
-  }
 
-  public String toString() {
-    StringBuffer result = new StringBuffer();
-    result.append("TrackHeaderBox[");
-    result.append("creationTime=").append(getCreationTime());
-    result.append(";");
-    result.append("modificationTime=").append(getModificationTime());
-    result.append(";");
-    result.append("trackId=").append(getTrackId());
-    result.append(";");
-    result.append("duration=").append(getDuration());
-    result.append(";");
-    result.append("layer=").append(getLayer());
-    result.append(";");
-    result.append("alternateGroup=").append(getAlternateGroup());
-    result.append(";");
-    result.append("volume=").append(getVolume());
-    for (int i = 0; i < matrix.length; i++) {
-      result.append(";");
-      result.append("matrix").append(i).append("=").append(matrix[i]);
+    public long getTrackId() {
+        return trackId;
     }
-    result.append(";");
-    result.append("width=").append(getWidth());
-    result.append(";");
-    result.append("height=").append(getHeight());
-    result.append("]");
-    return result.toString();
-  }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public int getLayer() {
+        return layer;
+    }
+
+    public int getAlternateGroup() {
+        return alternateGroup;
+    }
+
+    public float getVolume() {
+        return volume;
+    }
+
+    public long[] getMatrix() {
+        return matrix;
+    }
+
+    public double getWidth() {
+        return width;
+    }
+
+    public double getHeight() {
+        return height;
+    }
+
+    public String getDisplayName() {
+        return "Track Header Box";
+    }
+
+    protected long getContentSize() {
+        long contentSize = 0;
+        if (getVersion() == 1) {
+            contentSize += 32;
+        } else {
+            contentSize += 20;
+        }
+        contentSize += 60;
+        return contentSize;
+    }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox); //172
+        if (getVersion() == 1) {
+            creationTime = in.readUInt64();
+            modificationTime = in.readUInt64();
+            trackId = in.readUInt32();
+            in.readUInt32();
+            duration = in.readUInt64();
+        } else {
+            creationTime = in.readUInt32();
+            modificationTime = in.readUInt32();
+            trackId = in.readUInt32();
+            in.readUInt32();
+            duration = in.readUInt32();
+        } // 196
+        in.readUInt32();
+        in.readUInt32();
+        layer = in.readUInt16();    // 204
+        alternateGroup = in.readUInt16();
+        volume = in.readFixedPoint88();
+        in.readUInt16();     // 212
+        matrix = new long[9];
+        for (int i = 0; i < 9; i++) {
+            matrix[i] = in.readUInt32();
+        }
+        width = in.readFixedPoint1616();    // 248
+        height = in.readFixedPoint1616();
+    }
+
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        if (getVersion() == 1) {
+            isos.writeUInt64(creationTime);
+            isos.writeUInt64(modificationTime);
+            isos.writeUInt32(trackId);
+            isos.writeUInt32(0);
+            isos.writeUInt64(duration);
+        } else {
+            isos.writeUInt32((int) creationTime);
+            isos.writeUInt32((int) modificationTime);
+            isos.writeUInt32(trackId);
+            isos.writeUInt32(0);
+            isos.writeUInt32((int) duration);
+        } // 196
+        isos.writeUInt32(0);
+        isos.writeUInt32(0);
+        isos.writeUInt16(layer);
+        isos.writeUInt16(alternateGroup);
+        isos.writeFixedPont88(volume);
+        isos.writeUInt16(0);
+        for (int i = 0; i < 9; i++) {
+            isos.writeUInt32(matrix[i]);
+        }
+        isos.writeFixedPont1616(width);
+        isos.writeFixedPont1616(height);
+    }
+
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        result.append("TrackHeaderBox[");
+        result.append("creationTime=").append(getCreationTime());
+        result.append(";");
+        result.append("modificationTime=").append(getModificationTime());
+        result.append(";");
+        result.append("trackId=").append(getTrackId());
+        result.append(";");
+        result.append("duration=").append(getDuration());
+        result.append(";");
+        result.append("layer=").append(getLayer());
+        result.append(";");
+        result.append("alternateGroup=").append(getAlternateGroup());
+        result.append(";");
+        result.append("volume=").append(getVolume());
+        for (int i = 0; i < matrix.length; i++) {
+            result.append(";");
+            result.append("matrix").append(i).append("=").append(matrix[i]);
+        }
+        result.append(";");
+        result.append("width=").append(getWidth());
+        result.append(";");
+        result.append("height=").append(getHeight());
+        result.append("]");
+        return result.toString();
+    }
 }

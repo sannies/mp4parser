@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.odf;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullContainerBox;
 import com.coremedia.iso.boxes.OmaDrmAccessUnitFormatBox;
 
@@ -30,45 +30,45 @@ import java.io.IOException;
  * level or exactly one per each rpotected track.
  */
 public class OmaDrmKeyManagenentSystemBox extends FullContainerBox {
-  public static final String TYPE = "odkm";
+    public static final String TYPE = "odkm";
 
-  public OmaDrmKeyManagenentSystemBox() {
-    super(TYPE);
-    boxes = new Box[2];
-  }
-
-  public String getDisplayName() {
-    return "Oma Drm Key Managenent System Box";
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    assert boxes[0] instanceof OmaDrmCommonHeadersBox;
-    assert boxes.length == 1 || boxes[1] instanceof OmaDrmAccessUnitFormatBox;
-  }
-
-  public OmaDrmCommonHeadersBox getOmaDrmCommonHeadersBox() {
-    return (OmaDrmCommonHeadersBox) boxes[0];
-  }
-
-  public OmaDrmAccessUnitFormatBox getDrmAccessUnitFormatBox() {
-    if (boxes.length < 2) {
-      OmaDrmAccessUnitFormatBox box = new OmaDrmAccessUnitFormatBox();
-      box.setAllBits((byte) 1);
-      box.setKeyIndicatorLength(0);
-      box.setInitVectorLength(16);
-      return box;
+    public OmaDrmKeyManagenentSystemBox() {
+        super(TYPE);
+        boxes = new BoxInterface[2];
     }
-    return (OmaDrmAccessUnitFormatBox) boxes[1];
-  }
 
-  public void setOmaDrmCommonHeadersBox(OmaDrmCommonHeadersBox box) {
-    boxes[0] = box;
-  }
+    public String getDisplayName() {
+        return "Oma Drm Key Managenent System Box";
+    }
 
-  public void setDrmAccessUnitFormatBox(OmaDrmAccessUnitFormatBox box) {
-    boxes[1] = box;
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        assert boxes[0] instanceof OmaDrmCommonHeadersBox;
+        assert boxes.length == 1 || boxes[1] instanceof OmaDrmAccessUnitFormatBox;
+    }
+
+    public OmaDrmCommonHeadersBox getOmaDrmCommonHeadersBox() {
+        return (OmaDrmCommonHeadersBox) boxes[0];
+    }
+
+    public OmaDrmAccessUnitFormatBox getDrmAccessUnitFormatBox() {
+        if (boxes.length < 2) {
+            OmaDrmAccessUnitFormatBox box = new OmaDrmAccessUnitFormatBox();
+            box.setAllBits((byte) 1);
+            box.setKeyIndicatorLength(0);
+            box.setInitVectorLength(16);
+            return box;
+        }
+        return (OmaDrmAccessUnitFormatBox) boxes[1];
+    }
+
+    public void setOmaDrmCommonHeadersBox(OmaDrmCommonHeadersBox box) {
+        boxes[0] = box;
+    }
+
+    public void setDrmAccessUnitFormatBox(OmaDrmAccessUnitFormatBox box) {
+        boxes[1] = box;
+    }
 
 
 }

@@ -48,7 +48,7 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         // super does everything fine but we need the IsoBufferWrapper for later
         this.isoBufferWrapper = in;

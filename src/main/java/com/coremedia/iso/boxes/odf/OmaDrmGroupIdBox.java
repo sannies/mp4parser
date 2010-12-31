@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -31,66 +31,66 @@ import java.io.IOException;
  * Rights Objects. Located in extended headers in {@link OmaDrmCommonHeadersBox}.
  */
 public class OmaDrmGroupIdBox extends FullBox {
-  public static final String TYPE = "grpi";
+    public static final String TYPE = "grpi";
 
-  private int gkEncryptionMethod;
-  private String groupId;
-  private byte[] groupKey;
+    private int gkEncryptionMethod;
+    private String groupId;
+    private byte[] groupKey;
 
-  public OmaDrmGroupIdBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public OmaDrmGroupIdBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public void setGkEncryptionMethod(int gkEncryptionMethod) {
-    this.gkEncryptionMethod = gkEncryptionMethod;
-  }
+    public void setGkEncryptionMethod(int gkEncryptionMethod) {
+        this.gkEncryptionMethod = gkEncryptionMethod;
+    }
 
-  public int getGkEncryptionMethod() {
-    return gkEncryptionMethod;
-  }
+    public int getGkEncryptionMethod() {
+        return gkEncryptionMethod;
+    }
 
-  public void setGroupId(String groupId) {
-    this.groupId = groupId;
-  }
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
 
-  public String getGroupId() {
-    return groupId;
-  }
+    public String getGroupId() {
+        return groupId;
+    }
 
-  public void setGroupKey(byte[] groupKey) {
-    this.groupKey = groupKey;
-  }
+    public void setGroupKey(byte[] groupKey) {
+        this.groupKey = groupKey;
+    }
 
-  public byte[] getGroupKey() {
-    return groupKey;
-  }
+    public byte[] getGroupKey() {
+        return groupKey;
+    }
 
-  public String getDisplayName() {
-    return "OMA DRM Group ID Box";
-  }
+    public String getDisplayName() {
+        return "OMA DRM Group ID Box";
+    }
 
-  protected long getContentSize() {
-    return 5 + utf8StringLengthInBytes(groupId) + groupKey.length;
-  }
+    protected long getContentSize() {
+        return 5 + utf8StringLengthInBytes(groupId) + groupKey.length;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    int groupIdLength = in.readUInt16();
-    gkEncryptionMethod = in.readUInt8();
-    int gkLength = in.readUInt16();
-    groupId = new String(in.read(groupIdLength), "UTF-8");
-    groupKey = in.read(gkLength);
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        int groupIdLength = in.readUInt16();
+        gkEncryptionMethod = in.readUInt8();
+        int gkLength = in.readUInt16();
+        groupId = new String(in.read(groupIdLength), "UTF-8");
+        groupKey = in.read(gkLength);
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeUInt16(utf8StringLengthInBytes(groupId));
-    isos.writeUInt8(gkEncryptionMethod);
-    isos.writeUInt16(groupKey.length);
-    isos.writeStringNoTerm(groupId);
-    isos.write(groupKey);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeUInt16(utf8StringLengthInBytes(groupId));
+        isos.writeUInt8(gkEncryptionMethod);
+        isos.writeUInt16(groupKey.length);
+        isos.writeStringNoTerm(groupId);
+        isos.write(groupKey);
+    }
 
-  public String toString() {
-    return "OmaDrmGroupIdBox[gkEncryptionMethod=" + getGkEncryptionMethod() + ";groupId=" + getGroupId() + "]";
-  }
+    public String toString() {
+        return "OmaDrmGroupIdBox[gkEncryptionMethod=" + getGkEncryptionMethod() + ";groupId=" + getGroupId() + "]";
+    }
 }

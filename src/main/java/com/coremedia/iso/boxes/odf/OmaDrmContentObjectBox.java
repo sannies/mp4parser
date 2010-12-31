@@ -20,72 +20,72 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class OmaDrmContentObjectBox extends FullBox {
-  private long omaDrmDataLength;
-  private byte[] omaDrmData;
-  public static final String TYPE = "odda";
+    private long omaDrmDataLength;
+    private byte[] omaDrmData;
+    public static final String TYPE = "odda";
 
-  public byte[] getHeader() {
-    try {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      IsoOutputStream ios = new IsoOutputStream(baos);
-      ios.writeUInt32(1);
-      ios.write(getType());
-      ios.writeUInt64(getSize());
-      ios.writeUInt8(getVersion());
-      ios.writeUInt24(getFlags());
+    public byte[] getHeader() {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IsoOutputStream ios = new IsoOutputStream(baos);
+            ios.writeUInt32(1);
+            ios.write(getType());
+            ios.writeUInt64(getSize());
+            ios.writeUInt8(getVersion());
+            ios.writeUInt24(getFlags());
 
-      assert baos.size() == getHeaderSize();
-      return baos.toByteArray();
-    } catch (IOException e) {
-      e.printStackTrace();
+            assert baos.size() == getHeaderSize();
+            return baos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
-    return null;
-  }
 
-  protected long getHeaderSize() {
-    return 20;
-  }
+    protected long getHeaderSize() {
+        return 20;
+    }
 
-  public OmaDrmContentObjectBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public OmaDrmContentObjectBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public long getOmaDrmDataLength() {
-    return omaDrmDataLength;
-  }
+    public long getOmaDrmDataLength() {
+        return omaDrmDataLength;
+    }
 
-  public byte[] getOmaDrmData() {
-    return omaDrmData;
-  }
+    public byte[] getOmaDrmData() {
+        return omaDrmData;
+    }
 
-  public String getDisplayName() {
-    return "OMA DRM Content Object Box";
-  }
+    public String getDisplayName() {
+        return "OMA DRM Content Object Box";
+    }
 
-  protected long getContentSize() {
-    return 8 + omaDrmDataLength;
-  }
+    protected long getContentSize() {
+        return 8 + omaDrmDataLength;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    omaDrmDataLength = in.readUInt64();
-    omaDrmData = in.read((int) omaDrmDataLength);
-    assert size == 12 + omaDrmDataLength;
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        omaDrmDataLength = in.readUInt64();
+        omaDrmData = in.read((int) omaDrmDataLength);
+        assert size == 12 + omaDrmDataLength;
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt64(omaDrmDataLength);
-    os.write(omaDrmData);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt64(omaDrmDataLength);
+        os.write(omaDrmData);
+    }
 
-  public String toString() {
-    return "OmaDrmContentObjectBox[omaDrmDataLength=" + getOmaDrmDataLength() + "]";
-  }
+    public String toString() {
+        return "OmaDrmContentObjectBox[omaDrmDataLength=" + getOmaDrmDataLength() + "]";
+    }
 }

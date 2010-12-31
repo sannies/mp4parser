@@ -21,7 +21,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -31,51 +31,51 @@ import java.io.IOException;
  * containing music. Resides in the {@link com.coremedia.iso.boxes.UserDataBox}.
  */
 public class AlbumArtistBox extends FullBox {
-  public static final String TYPE = "albr";
+    public static final String TYPE = "albr";
 
-  private String language;
-  private String albumArtist;
+    private String language;
+    private String albumArtist;
 
-  public AlbumArtistBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public AlbumArtistBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getLanguage() {
-    return language;
-  }
+    public String getLanguage() {
+        return language;
+    }
 
-  public String getAlbumArtist() {
-    return albumArtist;
-  }
+    public String getAlbumArtist() {
+        return albumArtist;
+    }
 
-  public void setLanguage(String language) {
-    this.language = language;
-  }
+    public void setLanguage(String language) {
+        this.language = language;
+    }
 
-  public void setAlbumArtist(String albumArtist) {
-    this.albumArtist = albumArtist;
-  }
+    public void setAlbumArtist(String albumArtist) {
+        this.albumArtist = albumArtist;
+    }
 
-  public String getDisplayName() {
-    return "Album Artist Box";
-  }
+    public String getDisplayName() {
+        return "Album Artist Box";
+    }
 
-  protected long getContentSize() {
-    return 2 + utf8StringLengthInBytes(albumArtist) + 1;
-  }
+    protected long getContentSize() {
+        return 2 + utf8StringLengthInBytes(albumArtist) + 1;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    language = in.readIso639();
-    albumArtist = in.readString();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        language = in.readIso639();
+        albumArtist = in.readString();
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeIso639(language);
-    isos.writeStringZeroTerm(albumArtist);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeIso639(language);
+        isos.writeStringZeroTerm(albumArtist);
+    }
 
-  public String toString() {
-    return "AlbumArtistBox[language=" + getLanguage() + ";albumArtist=" + getAlbumArtist() + "]";
-  }
+    public String toString() {
+        return "AlbumArtistBox[language=" + getLanguage() + ";albumArtist=" + getAlbumArtist() + "]";
+    }
 }

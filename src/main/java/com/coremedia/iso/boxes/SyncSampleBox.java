@@ -28,52 +28,52 @@ import java.io.IOException;
  * strictly decreasinf order of sample number. Defined in ISO/IEC 14496-12.
  */
 public class SyncSampleBox extends FullBox {
-  public static final String TYPE = "stss";
+    public static final String TYPE = "stss";
 
-  private long[] sampleNumber;
+    private long[] sampleNumber;
 
-  public SyncSampleBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  /**
-   * Gives the numbers of the samples that are random access points in the stream.
-   *
-   * @return random access sample numbers.
-   */
-  public long[] getSampleNumber() {
-    return sampleNumber;
-  }
-
-  public String getDisplayName() {
-    return "Sync Sample Box";
-  }
-
-  protected long getContentSize() {
-    return sampleNumber.length * 4 + 4;
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    long entryCount = in.readUInt32();
-    if (entryCount > Integer.MAX_VALUE) {
-      throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
+    public SyncSampleBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    sampleNumber = new long[(int) entryCount];
-    for (int i = 0; i < entryCount; i++) {
-      sampleNumber[i] = in.readUInt32();
+    /**
+     * Gives the numbers of the samples that are random access points in the stream.
+     *
+     * @return random access sample numbers.
+     */
+    public long[] getSampleNumber() {
+        return sampleNumber;
     }
-  }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeUInt32(sampleNumber.length);
-    for (long aSampleNumber : sampleNumber) {
-      isos.writeUInt32(aSampleNumber);
+    public String getDisplayName() {
+        return "Sync Sample Box";
     }
-  }
 
-  public String toString() {
-    return "SyncSampleBox[entryCount=" + sampleNumber.length + "]";
-  }
+    protected long getContentSize() {
+        return sampleNumber.length * 4 + 4;
+    }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        long entryCount = in.readUInt32();
+        if (entryCount > Integer.MAX_VALUE) {
+            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
+        }
+
+        sampleNumber = new long[(int) entryCount];
+        for (int i = 0; i < entryCount; i++) {
+            sampleNumber[i] = in.readUInt32();
+        }
+    }
+
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeUInt32(sampleNumber.length);
+        for (long aSampleNumber : sampleNumber) {
+            isos.writeUInt32(aSampleNumber);
+        }
+    }
+
+    public String toString() {
+        return "SyncSampleBox[entryCount=" + sampleNumber.length + "]";
+    }
 }

@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -32,33 +32,33 @@ import java.io.IOException;
  * }
  */
 public class MovieFragmentRandomAccessOffsetBox extends FullBox {
-  public static final String TYPE = "mfro";
-  private long mfraSize;
+    public static final String TYPE = "mfro";
+    private long mfraSize;
 
-  public MovieFragmentRandomAccessOffsetBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public MovieFragmentRandomAccessOffsetBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getDisplayName() {
-    return "Movie Fragment Random Access Offset Box";
-  }
+    public String getDisplayName() {
+        return "Movie Fragment Random Access Offset Box";
+    }
 
-  protected long getContentSize() {
-    return 4;
-  }
+    protected long getContentSize() {
+        return 4;
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt32(mfraSize);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt32(mfraSize);
+    }
 
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
 
-    mfraSize = in.readUInt32();
-  }
+        mfraSize = in.readUInt32();
+    }
 
-  public long getMfraSize() {
-    return mfraSize;
-  }
+    public long getMfraSize() {
+        return mfraSize;
+    }
 }

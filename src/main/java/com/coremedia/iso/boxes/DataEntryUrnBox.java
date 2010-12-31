@@ -29,42 +29,42 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.DataReferenceBox
  */
 public class DataEntryUrnBox extends FullBox {
-  private String name;
-  private String location;
-  public static final String TYPE = "urn ";
+    private String name;
+    private String location;
+    public static final String TYPE = "urn ";
 
-  public DataEntryUrnBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public DataEntryUrnBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public String getLocation() {
-    return location;
-  }
+    public String getLocation() {
+        return location;
+    }
 
-  public String getDisplayName() {
-    return "Data Entry URN Box";
-  }
+    public String getDisplayName() {
+        return "Data Entry URN Box";
+    }
 
-  protected long getContentSize() {
-    return utf8StringLengthInBytes(name) + 1 + utf8StringLengthInBytes(location) + 1;
-  }
+    protected long getContentSize() {
+        return utf8StringLengthInBytes(name) + 1 + utf8StringLengthInBytes(location) + 1;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    name = in.readString();
-    location = in.readString();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        name = in.readString();
+        location = in.readString();
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeStringZeroTerm(name);
-    isos.writeStringZeroTerm(location);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeStringZeroTerm(name);
+        isos.writeStringZeroTerm(location);
+    }
 
-  public String toString() {
-    return "DataEntryUrlBox[name=" + getName() + ";location=" + getLocation() + "]";
-  }
+    public String toString() {
+        return "DataEntryUrlBox[name=" + getName() + ";location=" + getLocation() + "]";
+    }
 }

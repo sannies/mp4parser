@@ -21,6 +21,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
 
@@ -31,35 +32,35 @@ import java.io.IOException;
  * @see HintSampleEntry
  */
 public class TimeScaleEntry extends Box {
-  private long timescale;
-  public static final String TYPE = "tims";
+    private long timescale;
+    public static final String TYPE = "tims";
 
-  public TimeScaleEntry() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public TimeScaleEntry() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public long getTimescale() {
-    return timescale;
-  }
+    public long getTimescale() {
+        return timescale;
+    }
 
-  public String getDisplayName() {
-    return "Time Scale Entry";
-  }
+    public String getDisplayName() {
+        return "Time Scale Entry";
+    }
 
-  protected long getContentSize() {
-    return 4;
-  }
+    protected long getContentSize() {
+        return 4;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    assert size == 4;
-    timescale = in.readUInt32();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        assert size == 4;
+        timescale = in.readUInt32();
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt32(timescale);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt32(timescale);
+    }
 
-  public String toString() {
-    return "TimeScaleEntry[timescale=" + getTimescale() + "]";
-  }
+    public String toString() {
+        return "TimeScaleEntry[timescale=" + getTimescale() + "]";
+    }
 }

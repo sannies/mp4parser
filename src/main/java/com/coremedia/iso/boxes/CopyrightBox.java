@@ -34,57 +34,57 @@ import java.io.UnsupportedEncodingException;
  * @see TrackBox
  */
 public class CopyrightBox extends FullBox {
-  public static final String TYPE = "cprt";
+    public static final String TYPE = "cprt";
 
-  private String language;
-  private String copyright;
+    private String language;
+    private String copyright;
 
-  public CopyrightBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getLanguage() {
-    return language;
-  }
-
-  public String getCopyright() {
-    return copyright;
-  }
-
-  public void setLanguage(String language) {
-    this.language = language;
-  }
-
-  public void setCopyright(String copyright) {
-    this.copyright = copyright;
-  }
-
-  public String getDisplayName() {
-    return "Copyright Box";
-  }
-
-  protected long getContentSize() {
-    try {
-      return 2 + copyright.getBytes("UTF-8").length + 1;
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException();
+    public CopyrightBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-  }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    language = in.readIso639();
-    copyright = in.readString();
-  }
+    public String getLanguage() {
+        return language;
+    }
 
-  public String toString() {
-    return "CopyrightBox[language=" + getLanguage() + ";copyright=" + getCopyright() + "]";
-  }
+    public String getCopyright() {
+        return copyright;
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeIso639(language);
-    os.writeStringZeroTerm(copyright);
-  }
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public void setCopyright(String copyright) {
+        this.copyright = copyright;
+    }
+
+    public String getDisplayName() {
+        return "Copyright Box";
+    }
+
+    protected long getContentSize() {
+        try {
+            return 2 + copyright.getBytes("UTF-8").length + 1;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException();
+        }
+    }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        language = in.readIso639();
+        copyright = in.readString();
+    }
+
+    public String toString() {
+        return "CopyrightBox[language=" + getLanguage() + ";copyright=" + getCopyright() + "]";
+    }
+
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeIso639(language);
+        os.writeStringZeroTerm(copyright);
+    }
 
 
 }

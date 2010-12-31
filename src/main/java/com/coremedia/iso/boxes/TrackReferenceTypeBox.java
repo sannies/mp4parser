@@ -28,52 +28,52 @@ import java.io.IOException;
  */
 public class TrackReferenceTypeBox extends Box {
 
-  public static final String TYPE1 = "hint";
-  public static final String TYPE2 = "cdsc";
+    public static final String TYPE1 = "hint";
+    public static final String TYPE2 = "cdsc";
 
-  private long[] trackIds;
+    private long[] trackIds;
 
-  public TrackReferenceTypeBox(byte[] type) {
-    super(type);
-  }
-
-  public long[] getTrackIds() {
-    return trackIds;
-  }
-
-  public String getDisplayName() {
-    return "Track Reference Type Box";
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    int count = (int) (size / 4);
-    trackIds = new long[count];
-    for (int i = 0; i < count; i++) {
-      trackIds[i] = in.readUInt32();
-
+    public TrackReferenceTypeBox(byte[] type) {
+        super(type);
     }
-  }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    for (long trackId : trackIds) {
-      os.writeUInt32(trackId);
+    public long[] getTrackIds() {
+        return trackIds;
     }
-  }
 
-  protected long getContentSize() {
-    return trackIds.length * 4;
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("TrackReferenceTypeBox[type=").append(IsoFile.bytesToFourCC(getType()));
-    for (int i = 0; i < trackIds.length; i++) {
-      buffer.append(";trackId");
-      buffer.append(i);
-      buffer.append("=");
-      buffer.append(trackIds[i]);
+    public String getDisplayName() {
+        return "Track Reference Type Box";
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        int count = (int) (size / 4);
+        trackIds = new long[count];
+        for (int i = 0; i < count; i++) {
+            trackIds[i] = in.readUInt32();
+
+        }
+    }
+
+    protected void getContent(IsoOutputStream os) throws IOException {
+        for (long trackId : trackIds) {
+            os.writeUInt32(trackId);
+        }
+    }
+
+    protected long getContentSize() {
+        return trackIds.length * 4;
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("TrackReferenceTypeBox[type=").append(IsoFile.bytesToFourCC(getType()));
+        for (int i = 0; i < trackIds.length; i++) {
+            buffer.append(";trackId");
+            buffer.append(i);
+            buffer.append("=");
+            buffer.append(trackIds[i]);
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

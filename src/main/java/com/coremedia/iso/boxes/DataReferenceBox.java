@@ -38,51 +38,51 @@ import java.util.List;
  */
 public class DataReferenceBox extends FullContainerBox {
 
-  public static final String TYPE = "dref";
+    public static final String TYPE = "dref";
 
-  public DataReferenceBox() {
-    super(TYPE);
+    public DataReferenceBox() {
+        super(TYPE);
 
-  }
-
-  protected long getContentSize() {
-    return super.getContentSize() + 4;
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    setVersion(in.readUInt8());
-    setFlags(in.readUInt24());
-    in.readUInt32();
-    List<Box> boxes = new LinkedList<Box>();
-    long remainingContentSize = size - 8;
-    while (remainingContentSize > 0) {
-      Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-      remainingContentSize -= box.getSize();
-      boxes.add(box);
     }
-    this.boxes = boxes.toArray(new Box[0]);
-  }
 
-  public String getDisplayName() {
-    return "Data Reference Box";
-  }
-
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt32(getBoxes().length);
-    super.getContent(os);
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("DataReferenceBox[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    protected long getContentSize() {
+        return super.getContentSize() + 4;
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        setVersion(in.readUInt8());
+        setFlags(in.readUInt24());
+        in.readUInt32();
+        List<BoxInterface> boxes = new LinkedList<BoxInterface>();
+        long remainingContentSize = size - 8;
+        while (remainingContentSize > 0) {
+            BoxInterface box = boxParser.parseBox(in, this, lastMovieFragmentBox);
+            remainingContentSize -= box.getSize();
+            boxes.add(box);
+        }
+        this.boxes = boxes.toArray(new BoxInterface[boxes.size()]);
+    }
+
+    public String getDisplayName() {
+        return "Data Reference Box";
+    }
+
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt32(getBoxes().length);
+        super.getContent(os);
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("DataReferenceBox[");
+        BoxInterface[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

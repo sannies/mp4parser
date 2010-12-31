@@ -28,48 +28,48 @@ import java.io.IOException;
  * media. Note that the flags field has the value 1.
  */
 public class VideoMediaHeaderBox extends FullBox {
-  private int graphicsmode;
-  private int[] opcolor;
-  public static final String TYPE = "vmhd";
+    private int graphicsmode;
+    private int[] opcolor;
+    public static final String TYPE = "vmhd";
 
-  public VideoMediaHeaderBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public int getGraphicsmode() {
-    return graphicsmode;
-  }
-
-  public int[] getOpcolor() {
-    return opcolor;
-  }
-
-  public String getDisplayName() {
-    return "Video Media Header Box";
-  }
-
-  protected long getContentSize() {
-    return opcolor.length * 2 + 2;
-  }
-
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    graphicsmode = in.readUInt16();
-    opcolor = new int[3];
-    for (int i = 0; i < 3; i++) {
-      opcolor[i] = in.readUInt16();
+    public VideoMediaHeaderBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-  }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeUInt16(graphicsmode);
-    for (int anOpcolor : opcolor) {
-      isos.writeUInt16(anOpcolor);
+    public int getGraphicsmode() {
+        return graphicsmode;
     }
-  }
 
-  public String toString() {
-    return "VideoMediaHeaderBox[graphicsmode=" + getGraphicsmode() + ";opcolor0=" + getOpcolor()[0] + ";opcolor1=" + getOpcolor()[1] + ";opcolor2=" + getOpcolor()[2] + "]";
-  }
+    public int[] getOpcolor() {
+        return opcolor;
+    }
+
+    public String getDisplayName() {
+        return "Video Media Header Box";
+    }
+
+    protected long getContentSize() {
+        return opcolor.length * 2 + 2;
+    }
+
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        graphicsmode = in.readUInt16();
+        opcolor = new int[3];
+        for (int i = 0; i < 3; i++) {
+            opcolor[i] = in.readUInt16();
+        }
+    }
+
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeUInt16(graphicsmode);
+        for (int anOpcolor : opcolor) {
+            isos.writeUInt16(anOpcolor);
+        }
+    }
+
+    public String toString() {
+        return "VideoMediaHeaderBox[graphicsmode=" + getGraphicsmode() + ";opcolor0=" + getOpcolor()[0] + ";opcolor1=" + getOpcolor()[1] + ";opcolor2=" + getOpcolor()[2] + "]";
+    }
 }

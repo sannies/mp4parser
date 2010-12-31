@@ -100,7 +100,7 @@ public class HandlerBox extends FullBox {
         return 21 + utf8StringLengthInBytes(name);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         in.readUInt32();
         handlerType = IsoFile.bytesToFourCC(in.read(4));

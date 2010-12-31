@@ -5,6 +5,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
 
@@ -12,35 +13,35 @@ import java.io.IOException;
  * The largest packet, in bytes; includes 12-byte RTP header.
  */
 public class LargestHintPacketBox extends Box {
-  public static final String TYPE = "pmax";
+    public static final String TYPE = "pmax";
 
-  private long maxSize;
+    private long maxSize;
 
-  public LargestHintPacketBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public LargestHintPacketBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  protected long getContentSize() {
-    return 4;
-  }
+    protected long getContentSize() {
+        return 4;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    this.maxSize = in.readUInt32();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        this.maxSize = in.readUInt32();
+    }
 
-  public String getDisplayName() {
-    return "Largest Hint Packet";
-  }
+    public String getDisplayName() {
+        return "Largest Hint Packet";
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt32(maxSize);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt32(maxSize);
+    }
 
-  public long getmaxSize() {
-    return maxSize;
-  }
+    public long getmaxSize() {
+        return maxSize;
+    }
 
-  public void setMaxSize(long maxSize) {
-    this.maxSize = maxSize;
-  }
+    public void setMaxSize(long maxSize) {
+        this.maxSize = maxSize;
+    }
 }

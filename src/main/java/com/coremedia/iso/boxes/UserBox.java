@@ -27,40 +27,40 @@ import java.io.IOException;
  * A user specifc box. See ISO/IEC 14496-12 for details.
  */
 public class UserBox extends Box {
-  byte[] content;
-  public static final String TYPE = "uuid";
+    byte[] content;
+    public static final String TYPE = "uuid";
 
-  public UserBox(byte[] userType) {
-    super(IsoFile.fourCCtoBytes(TYPE));
-    setUserType(userType);
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    if (((int) size) != size) {
-      throw new RuntimeException("The UserBox cannot be larger than 2^32 bytes (Plz enhance the parser!!!)");
+    public UserBox(byte[] userType) {
+        super(IsoFile.fourCCtoBytes(TYPE));
+        setUserType(userType);
     }
-    content = in.read((int) size);
-  }
 
-  public String getDisplayName() {
-    return "User Box " + new String(getUserType());
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        if (((int) size) != size) {
+            throw new RuntimeException("The UserBox cannot be larger than 2^32 bytes (Plz enhance the parser!!!)");
+        }
+        content = in.read((int) size);
+    }
 
-  protected long getContentSize() {
-    return content.length;
-  }
+    public String getDisplayName() {
+        return "User Box " + new String(getUserType());
+    }
 
-  public String toString() {
-    return "UserBox[type=" + IsoFile.bytesToFourCC(getType()) +
-            ";userType=" + new String(getUserType()) +
-            ";contentLength=" + content.length + "]";
-  }
+    protected long getContentSize() {
+        return content.length;
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.write(content);
-  }
+    public String toString() {
+        return "UserBox[type=" + IsoFile.bytesToFourCC(getType()) +
+                ";userType=" + new String(getUserType()) +
+                ";contentLength=" + content.length + "]";
+    }
 
-  public byte[] getBox() {
-    return content;
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.write(content);
+    }
+
+    public byte[] getBox() {
+        return content;
+    }
 }

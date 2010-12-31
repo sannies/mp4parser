@@ -27,52 +27,52 @@ import java.io.IOException;
  * Gives a language dependent description of the media contained in the ISO file.
  */
 public class DescriptionBox extends FullBox {
-  public static final String TYPE = "dscp";
+    public static final String TYPE = "dscp";
 
-  private String language;
-  private String description;
+    private String language;
+    private String description;
 
-  public DescriptionBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public DescriptionBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getLanguage() {
-    return language;
-  }
+    public String getLanguage() {
+        return language;
+    }
 
-  public String getDescription() {
-    return description;
-  }
+    public String getDescription() {
+        return description;
+    }
 
-  public String getDisplayName() {
-    return "Description Box";
-  }
+    public String getDisplayName() {
+        return "Description Box";
+    }
 
-  protected long getContentSize() {
-    return 2 + utf8StringLengthInBytes(description) + 1;
-  }
+    protected long getContentSize() {
+        return 2 + utf8StringLengthInBytes(description) + 1;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    language = in.readIso639();
-    description = in.readString();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        language = in.readIso639();
+        description = in.readString();
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeIso639(language);
-    isos.writeStringZeroTerm(description);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeIso639(language);
+        isos.writeStringZeroTerm(description);
+    }
 
 
-  public String toString() {
-    return "DescriptionBox[language=" + getLanguage() + ";description=" + getDescription() + "]";
-  }
+    public String toString() {
+        return "DescriptionBox[language=" + getLanguage() + ";description=" + getDescription() + "]";
+    }
 
-  public void setLanguage(String language) {
-    this.language = language;
-  }
+    public void setLanguage(String language) {
+        this.language = language;
+    }
 
-  public void setDescription(String description) {
-    this.description = description;
-  }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

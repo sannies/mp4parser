@@ -31,64 +31,64 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.UserDataBox
  */
 public class AuthorBox extends FullBox {
-  public static final String TYPE = "auth";
+    public static final String TYPE = "auth";
 
-  private String language;
-  private String author;
+    private String language;
+    private String author;
 
-  public AuthorBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public AuthorBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  /**
-   * Declares the language code for the {@link #getAuthor()} return value. See ISO 639-2/T for the set of three
-   * character codes.Each character is packed as the difference between its ASCII value and 0x60. The code is
-   * confined to being three lower-case letters, so these values are strictly positive.
-   *
-   * @return the language code
-   */
-  public String getLanguage() {
-    return language;
-  }
+    /**
+     * Declares the language code for the {@link #getAuthor()} return value. See ISO 639-2/T for the set of three
+     * character codes.Each character is packed as the difference between its ASCII value and 0x60. The code is
+     * confined to being three lower-case letters, so these values are strictly positive.
+     *
+     * @return the language code
+     */
+    public String getLanguage() {
+        return language;
+    }
 
-  /**
-   * Author information.
-   *
-   * @return the author
-   */
-  public String getAuthor() {
-    return author;
-  }
+    /**
+     * Author information.
+     *
+     * @return the author
+     */
+    public String getAuthor() {
+        return author;
+    }
 
-  public void setLanguage(String language) {
-    this.language = language;
-  }
+    public void setLanguage(String language) {
+        this.language = language;
+    }
 
-  public void setAuthor(String author) {
-    this.author = author;
-  }
+    public void setAuthor(String author) {
+        this.author = author;
+    }
 
-  public String getDisplayName() {
-    return "Author Box";
-  }
+    public String getDisplayName() {
+        return "Author Box";
+    }
 
-  protected long getContentSize() {
-    return 2 + utf8StringLengthInBytes(author) + 1;
-  }
+    protected long getContentSize() {
+        return 2 + utf8StringLengthInBytes(author) + 1;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    language = in.readIso639();
-    author = in.readString();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        language = in.readIso639();
+        author = in.readString();
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeIso639(language);
-    isos.writeStringZeroTerm(author);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeIso639(language);
+        isos.writeStringZeroTerm(author);
+    }
 
 
-  public String toString() {
-    return "AuthorBox[language=" + getLanguage() + ";author=" + getAuthor() + "]";
-  }
+    public String toString() {
+        return "AuthorBox[language=" + getLanguage() + ";author=" + getAuthor() + "]";
+    }
 }

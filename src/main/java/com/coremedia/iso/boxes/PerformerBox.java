@@ -28,51 +28,51 @@ import java.io.IOException;
  * See 3GPP 26.234 for details.
  */
 public class PerformerBox extends FullBox {
-  public static final String TYPE = "perf";
+    public static final String TYPE = "perf";
 
-  private String language;
-  private String performer;
+    private String language;
+    private String performer;
 
-  public PerformerBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public PerformerBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getLanguage() {
-    return language;
-  }
+    public String getLanguage() {
+        return language;
+    }
 
-  public String getPerformer() {
-    return performer;
-  }
+    public String getPerformer() {
+        return performer;
+    }
 
-  public String getDisplayName() {
-    return "Performer Box";
-  }
+    public String getDisplayName() {
+        return "Performer Box";
+    }
 
-  public void setLanguage(String language) {
-    this.language = language;
-  }
+    public void setLanguage(String language) {
+        this.language = language;
+    }
 
-  public void setPerformer(String performer) {
-    this.performer = performer;
-  }
+    public void setPerformer(String performer) {
+        this.performer = performer;
+    }
 
-  protected long getContentSize() {
-    return 2 + utf8StringLengthInBytes(performer) + 1;
-  }
+    protected long getContentSize() {
+        return 2 + utf8StringLengthInBytes(performer) + 1;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    language = in.readIso639();
-    performer = in.readString();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        language = in.readIso639();
+        performer = in.readString();
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeIso639(language);
-    isos.writeStringZeroTerm(performer);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeIso639(language);
+        isos.writeStringZeroTerm(performer);
+    }
 
-  public String toString() {
-    return "PerformerBox[language=" + getLanguage() + ";performer=" + getPerformer() + "]";
-  }
+    public String toString() {
+        return "PerformerBox[language=" + getLanguage() + ";performer=" + getPerformer() + "]";
+    }
 }

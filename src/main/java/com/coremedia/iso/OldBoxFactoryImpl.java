@@ -176,7 +176,7 @@ public class OldBoxFactoryImpl implements BoxParser {
 
 
     //TODO there are better ways than one millions if-statements,  I'm sure --sma
-    public Box createBox(byte[] type, byte[] userType, byte[] parent, Box lastMovieFragmentBox) {
+    public Box createBox(byte[] type, byte[] userType, byte[] parent, BoxInterface lastMovieFragmentBox) {
         //  System.err.println("Box: " + IsoFile.bytesToFourCC(type) + " Parent: " + ((parent!=null&&parent.length==4)?IsoFile.bytesToFourCC(parent):"IsoFile"));
 
         if (Arrays.equals(parent, IsoFile.fourCCtoBytes(TrackReferenceTypeBox.TYPE1)) ||
@@ -322,7 +322,6 @@ public class OldBoxFactoryImpl implements BoxParser {
             if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleMediaTypeBox.TYPE))) {
                 return new AppleMediaTypeBox();
             }
-
 
 
         }
@@ -738,7 +737,7 @@ public class OldBoxFactoryImpl implements BoxParser {
         if (Arrays.equals(type, IsoFile.fourCCtoBytes(AppleDataReferenceBox.TYPE))) {
             return new AppleDataReferenceBox();
         }
-       /* if (Arrays.equals(type, IsoFile.fourCCtoBytes(NameBox.TYPE))) {
+        /* if (Arrays.equals(type, IsoFile.fourCCtoBytes(NameBox.TYPE))) {
             return new NameBox();
         }*/
 
@@ -761,7 +760,7 @@ public class OldBoxFactoryImpl implements BoxParser {
      * @return the box just parsed
      * @throws IOException if reading from <code>in</code> fails
      */
-    public Box parseBox(IsoBufferWrapper in, BoxInterface parent, Box lastMovieFragmentBox) throws IOException {
+    public Box parseBox(IsoBufferWrapper in, BoxInterface parent, BoxInterface lastMovieFragmentBox) throws IOException {
         long offset = in.position();
 
         long size = in.readUInt32();
@@ -804,7 +803,7 @@ public class OldBoxFactoryImpl implements BoxParser {
         // System.out.println("box = " + box);
         if (in.position() - offset < size && contentSize != -1) {
             // System.out.println("dead bytes found in " + box);
-            LOG.info(IsoFile.bytesToFourCC(type) +  " has dead bytes");
+            LOG.info(IsoFile.bytesToFourCC(type) + " has dead bytes");
             long length = (size - (in.position() - offset));
             box.setDeadBytes(in.getSegment(in.position(), length));
             in.skip(length);

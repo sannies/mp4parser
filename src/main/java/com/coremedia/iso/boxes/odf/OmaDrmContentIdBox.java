@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -32,42 +32,42 @@ import java.io.UnsupportedEncodingException;
  * There MUST be exactly one ContentID sub-box per User-Data box, as the first sub-box in the container.
  */
 public class OmaDrmContentIdBox extends FullBox {
-  public static final String TYPE = "ccid";
-  String contentId;
+    public static final String TYPE = "ccid";
+    String contentId;
 
-  public OmaDrmContentIdBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  protected long getContentSize() {
-    try {
-      return 2 + contentId.getBytes("UTF-8").length;
-    } catch (UnsupportedEncodingException e) {
-      throw new Error(e);
+    public OmaDrmContentIdBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-  }
 
-  public String getContentId() {
-    return contentId;
-  }
+    protected long getContentSize() {
+        try {
+            return 2 + contentId.getBytes("UTF-8").length;
+        } catch (UnsupportedEncodingException e) {
+            throw new Error(e);
+        }
+    }
 
-  public void setContentId(String contentId) {
-    this.contentId = contentId;
-  }
+    public String getContentId() {
+        return contentId;
+    }
 
-  public String getDisplayName() {
-    return "Content Id Sub Box";
-  }
+    public void setContentId(String contentId) {
+        this.contentId = contentId;
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt16(contentId.getBytes("UTF-8").length);
-    os.write(contentId.getBytes("UTF-8"));
-  }
+    public String getDisplayName() {
+        return "Content Id Sub Box";
+    }
 
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    int length = in.readUInt16();
-    contentId = in.readString(length);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt16(contentId.getBytes("UTF-8").length);
+        os.write(contentId.getBytes("UTF-8"));
+    }
+
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        int length = in.readUInt16();
+        contentId = in.readString(length);
+    }
 }

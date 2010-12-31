@@ -22,6 +22,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
 
@@ -31,72 +32,72 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry
  */
 public class AmrSpecificBox extends Box {
-  public static final String TYPE = "damr";
+    public static final String TYPE = "damr";
 
-  private String vendor;
-  private int decoderVersion;
-  private int modeSet;
-  private int modeChangePeriod;
-  private int framesPerSample;
+    private String vendor;
+    private int decoderVersion;
+    private int modeSet;
+    private int modeChangePeriod;
+    private int framesPerSample;
 
-  public AmrSpecificBox() {
-    super(IsoFile.fourCCtoBytes("damr"));
-  }
+    public AmrSpecificBox() {
+        super(IsoFile.fourCCtoBytes("damr"));
+    }
 
-  public String getVendor() {
-    return vendor;
-  }
+    public String getVendor() {
+        return vendor;
+    }
 
-  public int getDecoderVersion() {
-    return decoderVersion;
-  }
+    public int getDecoderVersion() {
+        return decoderVersion;
+    }
 
-  public int getModeSet() {
-    return modeSet;
-  }
+    public int getModeSet() {
+        return modeSet;
+    }
 
-  public int getModeChangePeriod() {
-    return modeChangePeriod;
-  }
+    public int getModeChangePeriod() {
+        return modeChangePeriod;
+    }
 
-  public int getFramesPerSample() {
-    return framesPerSample;
-  }
+    public int getFramesPerSample() {
+        return framesPerSample;
+    }
 
-  public String getDisplayName() {
-    return "AMR Specific Box";
-  }
+    public String getDisplayName() {
+        return "AMR Specific Box";
+    }
 
-  protected long getContentSize() {
-    return 9;
-  }
+    protected long getContentSize() {
+        return 9;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    assert size == 9;
-    vendor = IsoFile.bytesToFourCC(in.read(4));
-    decoderVersion = in.readUInt8();
-    modeSet = in.readUInt16();
-    modeChangePeriod = in.readUInt8();
-    framesPerSample = in.readUInt8();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        assert size == 9;
+        vendor = IsoFile.bytesToFourCC(in.read(4));
+        decoderVersion = in.readUInt8();
+        modeSet = in.readUInt16();
+        modeChangePeriod = in.readUInt8();
+        framesPerSample = in.readUInt8();
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.write(IsoFile.fourCCtoBytes(vendor));
-    isos.writeUInt8(decoderVersion);
-    isos.writeUInt16(modeSet);
-    isos.writeUInt8(modeChangePeriod);
-    isos.writeUInt8(framesPerSample);
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.write(IsoFile.fourCCtoBytes(vendor));
+        isos.writeUInt8(decoderVersion);
+        isos.writeUInt16(modeSet);
+        isos.writeUInt8(modeChangePeriod);
+        isos.writeUInt8(framesPerSample);
 
-  }
+    }
 
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("AmrSpecificBox[vendor=").append(getVendor());
-    buffer.append(";decoderVersion=").append(getDecoderVersion());
-    buffer.append(";modeSet=").append(getModeSet());
-    buffer.append(";modeChangePeriod=").append(getModeChangePeriod());
-    buffer.append(";framesPerSample=").append(getFramesPerSample());
-    buffer.append("]");
-    return buffer.toString();
-  }
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("AmrSpecificBox[vendor=").append(getVendor());
+        buffer.append(";decoderVersion=").append(getDecoderVersion());
+        buffer.append(";modeSet=").append(getModeSet());
+        buffer.append(";modeChangePeriod=").append(getModeChangePeriod());
+        buffer.append(";framesPerSample=").append(getFramesPerSample());
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

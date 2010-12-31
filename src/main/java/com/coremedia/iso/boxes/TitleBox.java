@@ -35,61 +35,61 @@ import java.io.UnsupportedEncodingException;
  * Title for the media.
  */
 public class TitleBox extends FullBox {
-  public static final String TYPE = "titl";
+    public static final String TYPE = "titl";
 
-  private String language;
-  private String title;
+    private String language;
+    private String title;
 
-  public TitleBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getLanguage() {
-    return language;
-  }
-
-  public String getTitle() {
-    return title;
-  }
-
-  /**
-   * Sets the 3-letter ISO-639 language for this title.
-   *
-   * @param language 3-letter ISO-639 code
-   */
-  public void setLanguage(String language) {
-    this.language = language;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
-  }
-
-  public String getDisplayName() {
-    return "Title Box";
-  }
-
-  protected long getContentSize() {
-    try {
-      return 3 + title.getBytes("UTF-8").length;
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException();
+    public TitleBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-  }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Sets the 3-letter ISO-639 language for this title.
+     *
+     * @param language 3-letter ISO-639 code
+     */
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDisplayName() {
+        return "Title Box";
+    }
+
+    protected long getContentSize() {
+        try {
+            return 3 + title.getBytes("UTF-8").length;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException();
+        }
+    }
 
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeIso639(language);
-    isos.writeStringZeroTerm(title);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeIso639(language);
+        isos.writeStringZeroTerm(title);
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    language = in.readIso639();
-    title = in.readString();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        language = in.readIso639();
+        title = in.readString();
+    }
 
-  public String toString() {
-    return "TitleBox[language=" + getLanguage() + ";title=" + getTitle() + "]";
-  }
+    public String toString() {
+        return "TitleBox[language=" + getLanguage() + ";title=" + getTitle() + "]";
+    }
 }

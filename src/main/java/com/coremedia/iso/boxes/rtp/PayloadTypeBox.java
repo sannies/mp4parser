@@ -5,6 +5,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
 
@@ -25,7 +26,7 @@ public class PayloadTypeBox extends Box {
         return utf8StringLengthInBytes(rtpMapString) + 5;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
         this.payloadNumber = in.readUInt32();
         int count = in.readUInt8();
         this.rtpMapString = in.readString(count);

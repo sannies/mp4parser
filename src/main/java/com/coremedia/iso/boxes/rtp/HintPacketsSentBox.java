@@ -21,6 +21,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -41,55 +42,55 @@ import java.util.Arrays;
  * @see HintStatisticsBox
  */
 public class HintPacketsSentBox extends Box {
-  private long packetsSent;
-  public static final String TYPE1 = "nump";
-  public static final String TYPE2 = "npck";
+    private long packetsSent;
+    public static final String TYPE1 = "nump";
+    public static final String TYPE2 = "npck";
 
-  public HintPacketsSentBox(byte[] type) {
-    super(type);
-  }
-
-  public long getPacketsSent() {
-    return packetsSent;
-  }
-
-  public String getDisplayName() {
-    return "Hint Packets Sent Box";
-  }
-
-  protected long getContentSize() {
-    if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("nump"))) {
-      return 8;
-    } else if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("npck"))) {
-      return 4;
-    } else {
-      throw new UnsupportedOperationException();
+    public HintPacketsSentBox(byte[] type) {
+        super(type);
     }
 
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("nump"))) {
-      packetsSent = in.readUInt64();
-    } else if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("npck"))) {
-      packetsSent = in.readUInt32();
-    } else {
-      throw new UnsupportedOperationException();
-    }
-  }
-
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("nump"))) {
-      isos.writeUInt64(packetsSent);
-    } else if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("npck"))) {
-      isos.writeUInt32((int) packetsSent);
-    } else {
-      throw new UnsupportedOperationException();
+    public long getPacketsSent() {
+        return packetsSent;
     }
 
-  }
+    public String getDisplayName() {
+        return "Hint Packets Sent Box";
+    }
 
-  public String toString() {
-    return "HintPacketsSentBox[packetsSent=" + getPacketsSent() + "]";
-  }
+    protected long getContentSize() {
+        if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("nump"))) {
+            return 8;
+        } else if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("npck"))) {
+            return 4;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+
+    }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("nump"))) {
+            packetsSent = in.readUInt64();
+        } else if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("npck"))) {
+            packetsSent = in.readUInt32();
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("nump"))) {
+            isos.writeUInt64(packetsSent);
+        } else if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("npck"))) {
+            isos.writeUInt32((int) packetsSent);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+
+    }
+
+    public String toString() {
+        return "HintPacketsSentBox[packetsSent=" + getPacketsSent() + "]";
+    }
 }

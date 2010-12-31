@@ -5,7 +5,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.Utf8;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -16,36 +16,36 @@ import java.io.IOException;
  * @see AppleGenericBox
  */
 public final class AppleNameBox extends FullBox {
-  public static final String TYPE = "name";
-  private String name;
+    public static final String TYPE = "name";
+    private String name;
 
-  public AppleNameBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public AppleNameBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  protected long getContentSize() {
-    return Utf8.convert(name).length;
-  }
+    protected long getContentSize() {
+        return Utf8.convert(name).length;
+    }
 
-  public String getDisplayName() {
-    return "Apple Name Box";
-  }
+    public String getDisplayName() {
+        return "Apple Name Box";
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeStringNoTerm(name);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeStringNoTerm(name);
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    setName(in.readString((int) (size - 4)));
-  }
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        setName(in.readString((int) (size - 4)));
+    }
 }

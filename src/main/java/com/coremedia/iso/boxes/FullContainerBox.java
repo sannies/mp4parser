@@ -76,20 +76,20 @@ public abstract class FullContainerBox extends FullBox implements ContainerBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
         parseHeader(in, size);
         parseBoxes(size, in, boxParser, lastMovieFragmentBox);
     }
 
-    protected void parseBoxes(long size, IsoBufferWrapper in, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        List<Box> boxeList = new LinkedList<Box>();
+    protected void parseBoxes(long size, IsoBufferWrapper in, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        List<BoxInterface> boxeList = new LinkedList<BoxInterface>();
         long remainingContentSize = size - 4;
         while (remainingContentSize > 0) {
-            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
+            BoxInterface box = boxParser.parseBox(in, this, lastMovieFragmentBox);
             remainingContentSize -= box.getSize();
             boxeList.add(box);
         }
-        this.boxes = boxeList.toArray(new Box[boxeList.size()]);
+        this.boxes = boxeList.toArray(new BoxInterface[boxeList.size()]);
     }
 
     public String toString() {

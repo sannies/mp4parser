@@ -29,39 +29,39 @@ import java.util.logging.Logger;
  * A box with no internal structure. We read it and write it without looking into the content.
  */
 public abstract class LiteralBox extends Box {
-  private static Logger LOG = Logger.getLogger(LiteralBox.class.getName());
+    private static Logger LOG = Logger.getLogger(LiteralBox.class.getName());
 
-  byte[] content;
+    byte[] content;
 
-  public LiteralBox(byte[] type) {
-    super(type);
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    if (size == -1) { // length = rest of file!
-      throw new IOException("box size of -1 is not supported. Boxsize -1 means box reaches until the end of the file.");
-    } else if (((int) size) != size) {
-      throw new IOException("The UnknownBox cannot be larger than 2^32 bytes(Plz enhance parser!!)");
-    } else {
-      content = in.read((int) size);
+    public LiteralBox(byte[] type) {
+        super(type);
     }
-  }
 
-  public String getDisplayName() {
-    return "Unknown Box";
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        if (size == -1) { // length = rest of file!
+            throw new IOException("box size of -1 is not supported. Boxsize -1 means box reaches until the end of the file.");
+        } else if (((int) size) != size) {
+            throw new IOException("The UnknownBox cannot be larger than 2^32 bytes(Plz enhance parser!!)");
+        } else {
+            content = in.read((int) size);
+        }
+    }
 
-  protected long getContentSize() {
-    return content.length;
-  }
+    public String getDisplayName() {
+        return "Unknown Box";
+    }
 
-  public String toString() {
-    return "UnknownBox[type=" + IsoFile.bytesToFourCC(getType()) + ";contentLength=" + (content != null ? content.length : "?") + "]";
-  }
+    protected long getContentSize() {
+        return content.length;
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.write(content);
-  }
+    public String toString() {
+        return "UnknownBox[type=" + IsoFile.bytesToFourCC(getType()) + ";contentLength=" + (content != null ? content.length : "?") + "]";
+    }
+
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.write(content);
+    }
 
 
 }

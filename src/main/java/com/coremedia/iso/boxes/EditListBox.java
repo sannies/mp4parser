@@ -50,79 +50,79 @@ import java.io.IOException;
  * <li>Media-Rate = 1</li>
  */
 public class EditListBox extends FullBox {
-  private long[] segmentDurations;
-  private long[] mediaTimes;
-  private double[] mediaRates;
-  public static final String TYPE = "elst";
+    private long[] segmentDurations;
+    private long[] mediaTimes;
+    private double[] mediaRates;
+    public static final String TYPE = "elst";
 
-  public EditListBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public long[] getSegmentDurations() {
-    return segmentDurations;
-  }
-
-  public long[] getMediaTimes() {
-    return mediaTimes;
-  }
-
-  public double[] getMediaRates() {
-    return mediaRates;
-  }
-
-  public String getDisplayName() {
-    return "Edit List Box";
-  }
-
-  protected long getContentSize() {
-    long contentSize = 4;
-    if (getVersion() == 1) {
-      contentSize += mediaRates.length * 16;
-    } else {
-      contentSize += mediaRates.length * 8;
-    }
-    contentSize += mediaRates.length * 4;
-    return contentSize;
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    long entryCount = in.readUInt32();
-    if (entryCount > Integer.MAX_VALUE) {
-      throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
-    }
-    segmentDurations = new long[(int) entryCount];
-    mediaTimes = new long[(int) entryCount];
-    mediaRates = new double[(int) entryCount];
-    for (int i = 0; i < entryCount; i++) {
-      if (getVersion() == 1) {
-        segmentDurations[i] = in.readUInt64();
-        mediaTimes[i] = in.readUInt64();
-      } else {
-        segmentDurations[i] = in.readUInt32();
-        mediaTimes[i] = in.readUInt32();
-      }
-      mediaRates[i] = in.readFixedPoint1616();
-    }
-  }
-
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeUInt32(segmentDurations.length);
-    for (int i = 0; i < segmentDurations.length; i++) {
-      if (getVersion() == 1) {
-        isos.writeUInt64(segmentDurations[i]);
-        isos.writeUInt64(mediaTimes[i]);
-      } else {
-        isos.writeUInt32((int) segmentDurations[i]);
-        isos.writeUInt32((int) mediaTimes[i]);
-      }
-      isos.writeFixedPont1616(mediaRates[i]);
+    public EditListBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-  }
+    public long[] getSegmentDurations() {
+        return segmentDurations;
+    }
 
-  public String toString() {
-    return "EditListBox[entryCount=" + segmentDurations.length + "]";
-  }
+    public long[] getMediaTimes() {
+        return mediaTimes;
+    }
+
+    public double[] getMediaRates() {
+        return mediaRates;
+    }
+
+    public String getDisplayName() {
+        return "Edit List Box";
+    }
+
+    protected long getContentSize() {
+        long contentSize = 4;
+        if (getVersion() == 1) {
+            contentSize += mediaRates.length * 16;
+        } else {
+            contentSize += mediaRates.length * 8;
+        }
+        contentSize += mediaRates.length * 4;
+        return contentSize;
+    }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        long entryCount = in.readUInt32();
+        if (entryCount > Integer.MAX_VALUE) {
+            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
+        }
+        segmentDurations = new long[(int) entryCount];
+        mediaTimes = new long[(int) entryCount];
+        mediaRates = new double[(int) entryCount];
+        for (int i = 0; i < entryCount; i++) {
+            if (getVersion() == 1) {
+                segmentDurations[i] = in.readUInt64();
+                mediaTimes[i] = in.readUInt64();
+            } else {
+                segmentDurations[i] = in.readUInt32();
+                mediaTimes[i] = in.readUInt32();
+            }
+            mediaRates[i] = in.readFixedPoint1616();
+        }
+    }
+
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeUInt32(segmentDurations.length);
+        for (int i = 0; i < segmentDurations.length; i++) {
+            if (getVersion() == 1) {
+                isos.writeUInt64(segmentDurations[i]);
+                isos.writeUInt64(mediaTimes[i]);
+            } else {
+                isos.writeUInt32((int) segmentDurations[i]);
+                isos.writeUInt32((int) mediaTimes[i]);
+            }
+            isos.writeFixedPont1616(mediaRates[i]);
+        }
+
+    }
+
+    public String toString() {
+        return "EditListBox[entryCount=" + segmentDurations.length + "]";
+    }
 }

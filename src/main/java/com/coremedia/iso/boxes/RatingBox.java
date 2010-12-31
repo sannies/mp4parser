@@ -29,94 +29,94 @@ import java.io.IOException;
  * PG13or FSK16.
  */
 public class RatingBox extends FullBox {
-  public static final String TYPE = "rtng";
+    public static final String TYPE = "rtng";
 
-  private String ratingEntity;
-  private String ratingCriteria;
-  private String language;
-  private String ratingInfo;
+    private String ratingEntity;
+    private String ratingCriteria;
+    private String language;
+    private String ratingInfo;
 
-  public RatingBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public RatingBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
 
-  public void setRatingEntity(String ratingEntity) {
-    this.ratingEntity = ratingEntity;
-  }
+    public void setRatingEntity(String ratingEntity) {
+        this.ratingEntity = ratingEntity;
+    }
 
-  public void setRatingCriteria(String ratingCriteria) {
-    this.ratingCriteria = ratingCriteria;
-  }
+    public void setRatingCriteria(String ratingCriteria) {
+        this.ratingCriteria = ratingCriteria;
+    }
 
-  public void setLanguage(String language) {
-    this.language = language;
-  }
+    public void setLanguage(String language) {
+        this.language = language;
+    }
 
-  public void setRatingInfo(String ratingInfo) {
-    this.ratingInfo = ratingInfo;
-  }
+    public void setRatingInfo(String ratingInfo) {
+        this.ratingInfo = ratingInfo;
+    }
 
-  public String getLanguage() {
-    return language;
-  }
+    public String getLanguage() {
+        return language;
+    }
 
-  /**
-   * Gets a four-character code that indicates the rating entity grading the asset, e.g., 'BBFC'. The values of this
-   * field should follow common names of worldwide movie rating systems, such as those mentioned in
-   * [http://www.movie-ratings.net/, October 2002].
-   *
-   * @return the rating organization
-   */
-  public String getRatingEntity() {
-    return ratingEntity;
-  }
+    /**
+     * Gets a four-character code that indicates the rating entity grading the asset, e.g., 'BBFC'. The values of this
+     * field should follow common names of worldwide movie rating systems, such as those mentioned in
+     * [http://www.movie-ratings.net/, October 2002].
+     *
+     * @return the rating organization
+     */
+    public String getRatingEntity() {
+        return ratingEntity;
+    }
 
-  /**
-   * Gets the four-character code that indicates which rating criteria are being used for the corresponding rating
-   * entity, e.g., 'PG13'.
-   *
-   * @return the actual rating
-   */
-  public String getRatingCriteria() {
-    return ratingCriteria;
-  }
+    /**
+     * Gets the four-character code that indicates which rating criteria are being used for the corresponding rating
+     * entity, e.g., 'PG13'.
+     *
+     * @return the actual rating
+     */
+    public String getRatingCriteria() {
+        return ratingCriteria;
+    }
 
-  public String getRatingInfo() {
-    return ratingInfo;
-  }
+    public String getRatingInfo() {
+        return ratingInfo;
+    }
 
-  public String getDisplayName() {
-    return "Rating Box";
-  }
+    public String getDisplayName() {
+        return "Rating Box";
+    }
 
-  protected long getContentSize() {
-    return 4 + 4 + 2 + utf8StringLengthInBytes(ratingInfo) + 1;
-  }
+    protected long getContentSize() {
+        return 4 + 4 + 2 + utf8StringLengthInBytes(ratingInfo) + 1;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    ratingEntity = IsoFile.bytesToFourCC(in.read(4));
-    ratingCriteria = IsoFile.bytesToFourCC(in.read(4));
-    language = in.readIso639();
-    ratingInfo = in.readString();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        ratingEntity = IsoFile.bytesToFourCC(in.read(4));
+        ratingCriteria = IsoFile.bytesToFourCC(in.read(4));
+        language = in.readIso639();
+        ratingInfo = in.readString();
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.write(IsoFile.fourCCtoBytes(ratingEntity));
-    isos.write(IsoFile.fourCCtoBytes(ratingCriteria));
-    isos.writeIso639(language);
-    isos.writeStringZeroTerm(ratingInfo);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.write(IsoFile.fourCCtoBytes(ratingEntity));
+        isos.write(IsoFile.fourCCtoBytes(ratingCriteria));
+        isos.writeIso639(language);
+        isos.writeStringZeroTerm(ratingInfo);
+    }
 
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("RatingBox[language=").append(getLanguage());
-    buffer.append("ratingEntity=").append(getRatingEntity());
-    buffer.append(";ratingCriteria=").append(getRatingCriteria());
-    buffer.append(";language=").append(getLanguage());
-    buffer.append(";ratingInfo=").append(getRatingInfo());
-    buffer.append("]");
-    return buffer.toString();
-  }
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("RatingBox[language=").append(getLanguage());
+        buffer.append("ratingEntity=").append(getRatingEntity());
+        buffer.append(";ratingCriteria=").append(getRatingCriteria());
+        buffer.append(";language=").append(getLanguage());
+        buffer.append(";ratingInfo=").append(getRatingInfo());
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

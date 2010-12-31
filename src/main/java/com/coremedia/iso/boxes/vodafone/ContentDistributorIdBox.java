@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -29,43 +29,43 @@ import java.io.IOException;
  * Vodafone specific box. Usage unclear.
  */
 public class ContentDistributorIdBox extends FullBox {
-  public static final String TYPE = "cdis";
+    public static final String TYPE = "cdis";
 
-  private String language;
-  private String contentDistributorId;
+    private String language;
+    private String contentDistributorId;
 
-  public ContentDistributorIdBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public ContentDistributorIdBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getLanguage() {
-    return language;
-  }
+    public String getLanguage() {
+        return language;
+    }
 
-  public String getContentDistributorId() {
-    return contentDistributorId;
-  }
+    public String getContentDistributorId() {
+        return contentDistributorId;
+    }
 
-  public String getDisplayName() {
-    return "Content Distributor ID Box";
-  }
+    public String getDisplayName() {
+        return "Content Distributor ID Box";
+    }
 
-  protected long getContentSize() {
-    return 2 + utf8StringLengthInBytes(contentDistributorId) + 1;
-  }
+    protected long getContentSize() {
+        return 2 + utf8StringLengthInBytes(contentDistributorId) + 1;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    language = in.readIso639();
-    contentDistributorId = in.readString();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        language = in.readIso639();
+        contentDistributorId = in.readString();
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeIso639(language);
-    isos.writeStringZeroTerm(contentDistributorId);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeIso639(language);
+        isos.writeStringZeroTerm(contentDistributorId);
+    }
 
-  public String toString() {
-    return "ContentDistributorIdBox[language=" + getLanguage() + ";contentDistributorId=" + getContentDistributorId() + "]";
-  }
+    public String toString() {
+        return "ContentDistributorIdBox[language=" + getLanguage() + ";contentDistributorId=" + getContentDistributorId() + "]";
+    }
 }

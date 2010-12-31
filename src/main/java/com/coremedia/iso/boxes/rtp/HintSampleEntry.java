@@ -35,95 +35,95 @@ import java.util.List;
  * should be named <code>RtpHintSampleEntry</code>.
  */
 public class HintSampleEntry extends SampleEntry implements ContainerBox {
-  public static final String TYPE1 = "rtp ";
+    public static final String TYPE1 = "rtp ";
 
-  private int hintTrackVersion;
-  private int highestCompatibleVersion;
-  private long maxPacketSize;
+    private int hintTrackVersion;
+    private int highestCompatibleVersion;
+    private long maxPacketSize;
 
-  public HintSampleEntry(byte[] type) {
-    super(type);
-  }
-
-  public BoxInterface[] getBoxes() {
-    return boxes;
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
-    ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-    for (Box boxe : boxes) {
-      if (clazz.isInstance(boxe)) {
-        boxesToBeReturned.add(clazz.cast(boxe));
-      }
+    public HintSampleEntry(byte[] type) {
+        super(type);
     }
-    return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
-  }
 
-  public int getHintTrackVersion() {
-    return hintTrackVersion;
-  }
-
-  public int getHighestCompatibleVersion() {
-    return highestCompatibleVersion;
-  }
-
-  public long getMaxPacketSize() {
-    return maxPacketSize;
-  }
-
-  protected long getContentSize() {
-    long contentLength = 0;
-    for (Box box : boxes) {
-      contentLength += box.getSize();
+    public BoxInterface[] getBoxes() {
+        return boxes;
     }
-    return 16 + contentLength;
-  }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    hintTrackVersion = in.readUInt16();
-    highestCompatibleVersion = in.readUInt16();
-    maxPacketSize = in.readUInt32();
-    size -= 16;
-    List<Box> boxes = new LinkedList<Box>();
-    while (size > 0) {
-      Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-      size -= box.getSize();
-      boxes.add(box);
+    @SuppressWarnings("unchecked")
+    public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
+        ArrayList<T> boxesToBeReturned = new ArrayList<T>();
+        for (BoxInterface boxe : boxes) {
+            if (clazz.isInstance(boxe)) {
+                boxesToBeReturned.add(clazz.cast(boxe));
+            }
+        }
+        return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
     }
-    this.boxes = boxes.toArray(new Box[0]);
-  }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.write(new byte[6]);
-    isos.writeUInt16(getDataReferenceIndex());
-    isos.writeUInt16(hintTrackVersion);
-    isos.writeUInt16(highestCompatibleVersion);
-    isos.writeUInt32(maxPacketSize);
-    for (Box boxe : boxes) {
-      boxe.getBox(isos);
+    public int getHintTrackVersion() {
+        return hintTrackVersion;
     }
-  }
 
-  public String getDisplayName() {
-    return "Hint Samply Entry";
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("HintSampleEntry[");
-    buffer.append("hintTrackVersion=").append(getHintTrackVersion()).append(";");
-    buffer.append("highestCompatibleVersion=").append(getHighestCompatibleVersion()).append(";");
-    buffer.append("maxPacketSize=").append(getMaxPacketSize());
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public int getHighestCompatibleVersion() {
+        return highestCompatibleVersion;
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public long getMaxPacketSize() {
+        return maxPacketSize;
+    }
+
+    protected long getContentSize() {
+        long contentLength = 0;
+        for (BoxInterface box : boxes) {
+            contentLength += box.getSize();
+        }
+        return 16 + contentLength;
+    }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        hintTrackVersion = in.readUInt16();
+        highestCompatibleVersion = in.readUInt16();
+        maxPacketSize = in.readUInt32();
+        size -= 16;
+        List<BoxInterface> boxes = new LinkedList<BoxInterface>();
+        while (size > 0) {
+            BoxInterface box = boxParser.parseBox(in, this, lastMovieFragmentBox);
+            size -= box.getSize();
+            boxes.add(box);
+        }
+        this.boxes = boxes.toArray(new Box[0]);
+    }
+
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.write(new byte[6]);
+        isos.writeUInt16(getDataReferenceIndex());
+        isos.writeUInt16(hintTrackVersion);
+        isos.writeUInt16(highestCompatibleVersion);
+        isos.writeUInt32(maxPacketSize);
+        for (BoxInterface boxe : boxes) {
+            boxe.getBox(isos);
+        }
+    }
+
+    public String getDisplayName() {
+        return "Hint Samply Entry";
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("HintSampleEntry[");
+        buffer.append("hintTrackVersion=").append(getHintTrackVersion()).append(";");
+        buffer.append("highestCompatibleVersion=").append(getHighestCompatibleVersion()).append(";");
+        buffer.append("maxPacketSize=").append(getMaxPacketSize());
+        BoxInterface[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

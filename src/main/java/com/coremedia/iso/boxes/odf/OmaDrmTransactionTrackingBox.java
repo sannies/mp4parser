@@ -21,7 +21,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -31,42 +31,42 @@ import java.io.IOException;
  * {@link com.coremedia.iso.boxes.odf.MutableDrmInformationBox}.
  */
 public class OmaDrmTransactionTrackingBox extends FullBox {
-  public static final String TYPE = "odtt";
+    public static final String TYPE = "odtt";
 
-  private byte[] transactionId = new byte[16];
+    private byte[] transactionId = new byte[16];
 
-  public OmaDrmTransactionTrackingBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public OmaDrmTransactionTrackingBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public void setTransactionId(byte[] transactionId) {
-    assert transactionId.length == 16;
-    this.transactionId = transactionId;
-  }
+    public void setTransactionId(byte[] transactionId) {
+        assert transactionId.length == 16;
+        this.transactionId = transactionId;
+    }
 
-  public byte[] getTransactionId() {
-    return transactionId;
-  }
+    public byte[] getTransactionId() {
+        return transactionId;
+    }
 
-  public String getDisplayName() {
-    return "OMA DRM Tranaction Tracking Box";
-  }
+    public String getDisplayName() {
+        return "OMA DRM Tranaction Tracking Box";
+    }
 
-  protected long getContentSize() {
-    return 16;
-  }
+    protected long getContentSize() {
+        return 16;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    int a = in.read(transactionId);
-    assert a == 16;
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        int a = in.read(transactionId);
+        assert a == 16;
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.write(transactionId);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.write(transactionId);
+    }
 
-  public String toString() {
-    return "OmaDrmTransactionTrackingBox[transactionId=" + getTransactionId() + "]";
-  }
+    public String toString() {
+        return "OmaDrmTransactionTrackingBox[transactionId=" + getTransactionId() + "]";
+    }
 }

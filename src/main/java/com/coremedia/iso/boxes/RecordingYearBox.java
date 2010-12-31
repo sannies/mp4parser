@@ -27,37 +27,37 @@ import java.io.IOException;
  *
  */
 public class RecordingYearBox extends FullBox {
-  public static final String TYPE = "yrrc";
+    public static final String TYPE = "yrrc";
 
-  int recordingYear;
+    int recordingYear;
 
-  public RecordingYearBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public RecordingYearBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
 
-  protected long getContentSize() {
-    return 2;
-  }
+    protected long getContentSize() {
+        return 2;
+    }
 
-  public String getDisplayName() {
-    return "RecordingYearBox";
-  }
+    public String getDisplayName() {
+        return "RecordingYearBox";
+    }
 
-  public int getRecordingYear() {
-    return recordingYear;
-  }
+    public int getRecordingYear() {
+        return recordingYear;
+    }
 
-  public void setRecordingYear(int recordingYear) {
-    this.recordingYear = recordingYear;
-  }
+    public void setRecordingYear(int recordingYear) {
+        this.recordingYear = recordingYear;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    recordingYear = in.readUInt16();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        recordingYear = in.readUInt16();
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeUInt16(recordingYear);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeUInt16(recordingYear);
+    }
 }

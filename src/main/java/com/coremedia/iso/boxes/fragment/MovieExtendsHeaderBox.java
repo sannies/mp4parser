@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -35,38 +35,38 @@ import java.io.IOException;
  * }
  */
 public class MovieExtendsHeaderBox extends FullBox {
-  public static final String TYPE = "mehd";
-  private long fragmentDuration;
+    public static final String TYPE = "mehd";
+    private long fragmentDuration;
 
-  public MovieExtendsHeaderBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Movie Extends Header Box";
-  }
-
-  @Override
-  protected long getContentSize() {
-    return getVersion() == 1 ? 8 : 4;
-  }
-
-  protected void getContent(IsoOutputStream os) throws IOException {
-    if (getVersion() == 1) {
-      os.writeUInt64(fragmentDuration);
-    } else {
-      os.writeUInt32(fragmentDuration);
+    public MovieExtendsHeaderBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-  }
 
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
+    public String getDisplayName() {
+        return "Movie Extends Header Box";
+    }
 
-    fragmentDuration = getVersion() == 1 ? in.readUInt64() : in.readUInt32();
-  }
+    @Override
+    protected long getContentSize() {
+        return getVersion() == 1 ? 8 : 4;
+    }
 
-  public long getFragmentDuration() {
-    return fragmentDuration;
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        if (getVersion() == 1) {
+            os.writeUInt64(fragmentDuration);
+        } else {
+            os.writeUInt32(fragmentDuration);
+        }
+    }
+
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+
+        fragmentDuration = getVersion() == 1 ? in.readUInt64() : in.readUInt32();
+    }
+
+    public long getFragmentDuration() {
+        return fragmentDuration;
+    }
 }

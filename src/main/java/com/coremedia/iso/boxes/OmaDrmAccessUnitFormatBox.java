@@ -27,64 +27,64 @@ import java.io.IOException;
  * Describes the format of media access units in PDCF files.
  */
 public final class OmaDrmAccessUnitFormatBox extends FullBox {
-  public static final String TYPE = "odaf";
+    public static final String TYPE = "odaf";
 
-  private boolean selectiveEncryption;
-  private byte allBits;
+    private boolean selectiveEncryption;
+    private byte allBits;
 
-  private int keyIndicatorLength;
-  private int initVectorLength;
+    private int keyIndicatorLength;
+    private int initVectorLength;
 
-  protected long getContentSize() {
-    return 3;
-  }
+    protected long getContentSize() {
+        return 3;
+    }
 
-  public OmaDrmAccessUnitFormatBox() {
-    super(IsoFile.fourCCtoBytes("odaf"));
-  }
+    public OmaDrmAccessUnitFormatBox() {
+        super(IsoFile.fourCCtoBytes("odaf"));
+    }
 
-  public String getDisplayName() {
-    return "OMA DRM Access Unit Format Box";
-  }
+    public String getDisplayName() {
+        return "OMA DRM Access Unit Format Box";
+    }
 
-  public boolean isSelectiveEncryption() {
-    return selectiveEncryption;
-  }
+    public boolean isSelectiveEncryption() {
+        return selectiveEncryption;
+    }
 
-  public int getKeyIndicatorLength() {
-    return keyIndicatorLength;
-  }
+    public int getKeyIndicatorLength() {
+        return keyIndicatorLength;
+    }
 
-  public int getInitVectorLength() {
-    return initVectorLength;
-  }
+    public int getInitVectorLength() {
+        return initVectorLength;
+    }
 
-  public void setInitVectorLength(int initVectorLength) {
-    this.initVectorLength = initVectorLength;
-  }
+    public void setInitVectorLength(int initVectorLength) {
+        this.initVectorLength = initVectorLength;
+    }
 
-  public void setKeyIndicatorLength(int keyIndicatorLength) {
-    this.keyIndicatorLength = keyIndicatorLength;
-  }
+    public void setKeyIndicatorLength(int keyIndicatorLength) {
+        this.keyIndicatorLength = keyIndicatorLength;
+    }
 
-  public void setAllBits(byte allBits) {
-    this.allBits = allBits;
-    selectiveEncryption = (allBits & 0x80) == 0x80;
-  }
+    public void setAllBits(byte allBits) {
+        this.allBits = allBits;
+        selectiveEncryption = (allBits & 0x80) == 0x80;
+    }
 
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeUInt8(allBits);
-    isos.writeUInt8(keyIndicatorLength);
-    isos.writeUInt8(initVectorLength);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeUInt8(allBits);
+        isos.writeUInt8(keyIndicatorLength);
+        isos.writeUInt8(initVectorLength);
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    allBits = (byte) in.readUInt8();
-    selectiveEncryption = (allBits & 0x80) == 0x80;
-    keyIndicatorLength = in.readUInt8();
-    initVectorLength = in.readUInt8();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        allBits = (byte) in.readUInt8();
+        selectiveEncryption = (allBits & 0x80) == 0x80;
+        keyIndicatorLength = in.readUInt8();
+        initVectorLength = in.readUInt8();
+    }
 
 }

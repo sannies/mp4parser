@@ -148,7 +148,7 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Box {
     }
 
 
-    public void parse(final IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    public void parse(final IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
         this.movieFragmentBoxBefore = (MovieFragmentBox) lastMovieFragmentBox;
         this.isoBufferWrapper = in;
         startOffset = in.position();

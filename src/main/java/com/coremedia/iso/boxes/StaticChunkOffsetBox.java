@@ -25,32 +25,32 @@ import java.io.IOException;
  * The chunk offset table gives the index of each chunk into the containing file. Defined in ISO/IEC 14496-12.
  */
 public class StaticChunkOffsetBox extends ChunkOffsetBox {
-  public static final String TYPE = "stco";
+    public static final String TYPE = "stco";
 
-  private long[] chunkOffsets;
+    private long[] chunkOffsets;
 
-  public long[] getChunkOffsets() {
-    return chunkOffsets;
-  }
-
-  protected long getContentSize() {
-    return getChunkOffsets().length * 4 + 4;
-  }
-
-  public void setChunkOffsets(long[] chunkOffsets) {
-    this.chunkOffsets = chunkOffsets;
-  }
-
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    long entryCount = in.readUInt32();
-    if (entryCount > Integer.MAX_VALUE) {
-      throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
+    public long[] getChunkOffsets() {
+        return chunkOffsets;
     }
-    chunkOffsets = new long[(int) entryCount];
-    for (int i = 0; i < entryCount; i++) {
-      chunkOffsets[i] = in.readUInt32();
+
+    protected long getContentSize() {
+        return getChunkOffsets().length * 4 + 4;
     }
-  }
+
+    public void setChunkOffsets(long[] chunkOffsets) {
+        this.chunkOffsets = chunkOffsets;
+    }
+
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        long entryCount = in.readUInt32();
+        if (entryCount > Integer.MAX_VALUE) {
+            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
+        }
+        chunkOffsets = new long[(int) entryCount];
+        for (int i = 0; i < entryCount; i++) {
+            chunkOffsets[i] = in.readUInt32();
+        }
+    }
 }

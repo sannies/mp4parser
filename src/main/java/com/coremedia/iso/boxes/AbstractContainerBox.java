@@ -32,88 +32,88 @@ import java.util.List;
  * Abstract base class suitable for most boxes acting purely as container for other boxes.
  */
 public abstract class AbstractContainerBox extends Box implements ContainerBox {
-  protected Box[] boxes;
+    protected BoxInterface[] boxes;
 
-  protected long getContentSize() {
-    long contentSize = 0;
-    for (Box boxe : boxes) {
-      contentSize += boxe.getSize();
-    }
-    return contentSize;
-  }
-
-  public AbstractContainerBox(byte[] type) {
-    super(type);
-    boxes = new Box[0];
-  }
-
-  public BoxInterface[] getBoxes() {
-    return boxes;
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
-    List<T> boxesToBeReturned = new ArrayList<T>(2);
-    for (Box boxe : boxes) {
-      if (clazz == boxe.getClass()) {
-        boxesToBeReturned.add((T) boxe);
-      }
-    }
-    // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
-    return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
-    //return (T[]) boxesToBeReturned.toArray();
-  }
-
-  public void addBox(Box b) {
-    List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-    listOfBoxes.add(b);
-    boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
-  }
-
-  public void removeBox(Box b) {
-    List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-    listOfBoxes.remove(b);
-    boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    List<Box> boxeList = new LinkedList<Box>();
-
-    while (size > 8) {
-      long sp = in.position();
-      Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-      long parsedBytes = in.position() - sp;
-      assert parsedBytes == box.getSize() :
-              box.getDisplayName() +  " didn't parse well. number of parsed bytes (" + parsedBytes + ") of " + box.getDisplayName() + " doesn't match getSize (" + box.getSize() + ")";
-      size -= box.getSize();
-
-      boxeList.add(box);
-      //update field after each box
-      this.boxes = boxeList.toArray(new Box[boxeList.size()]);
+    protected long getContentSize() {
+        long contentSize = 0;
+        for (BoxInterface boxe : boxes) {
+            contentSize += boxe.getSize();
+        }
+        return contentSize;
     }
 
-  }
-
-  protected void getContent(IsoOutputStream os) throws IOException {
-    for (Box boxe : boxes) {
-      boxe.getBox(os);
+    public AbstractContainerBox(byte[] type) {
+        super(type);
+        boxes = new Box[0];
     }
-  }
 
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append(this.getClass().getSimpleName()).append("[");
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public BoxInterface[] getBoxes() {
+        return boxes;
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
 
-  public long getNumOfBytesToFirstChild() {
-    return 8;
-  }
+    @SuppressWarnings("unchecked")
+    public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
+        List<T> boxesToBeReturned = new ArrayList<T>(2);
+        for (BoxInterface boxe : boxes) {
+            if (clazz == boxe.getClass()) {
+                boxesToBeReturned.add((T) boxe);
+            }
+        }
+        // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
+        return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
+        //return (T[]) boxesToBeReturned.toArray();
+    }
+
+    public void addBox(BoxInterface b) {
+        List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
+        listOfBoxes.add(b);
+        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
+    }
+
+    public void removeBox(BoxInterface b) {
+        List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
+        listOfBoxes.remove(b);
+        boxes = listOfBoxes.toArray(new BoxInterface[listOfBoxes.size()]);
+    }
+
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        List<BoxInterface> boxeList = new LinkedList<BoxInterface>();
+
+        while (size > 8) {
+            long sp = in.position();
+            BoxInterface box = boxParser.parseBox(in, this, lastMovieFragmentBox);
+            long parsedBytes = in.position() - sp;
+            assert parsedBytes == box.getSize() :
+                    box + " didn't parse well. number of parsed bytes (" + parsedBytes + ") doesn't match getSize (" + box.getSize() + ")";
+            size -= box.getSize();
+
+            boxeList.add(box);
+            //update field after each box
+            this.boxes = boxeList.toArray(new BoxInterface[boxeList.size()]);
+        }
+
+    }
+
+    protected void getContent(IsoOutputStream os) throws IOException {
+        for (BoxInterface boxe : boxes) {
+            boxe.getBox(os);
+        }
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append(this.getClass().getSimpleName()).append("[");
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
+
+    public long getNumOfBytesToFirstChild() {
+        return 8;
+    }
 }

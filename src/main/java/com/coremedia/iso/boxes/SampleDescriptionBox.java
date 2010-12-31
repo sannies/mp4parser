@@ -60,7 +60,7 @@ public class SampleDescriptionBox extends FullContainerBox {
         return size;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
         parseHeader(in, size);
         long entryCount = in.readUInt32();
         if (entryCount > Integer.MAX_VALUE) {

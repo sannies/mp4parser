@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -35,62 +35,62 @@ import java.io.IOException;
  * }
  */
 public class TrackExtendsBox extends FullBox {
-  public static final String TYPE = "trex";
-  private long trackId;
-  private long defaultSampleDescriptionIndex;
-  private long defaultSampleDuration;
-  private long defaultSampleSize;
-  private SampleFlags defaultSampleFlags;
+    public static final String TYPE = "trex";
+    private long trackId;
+    private long defaultSampleDescriptionIndex;
+    private long defaultSampleDuration;
+    private long defaultSampleSize;
+    private SampleFlags defaultSampleFlags;
 
-  public TrackExtendsBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public TrackExtendsBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getDisplayName() {
-    return "Track Extends Box";
-  }
+    public String getDisplayName() {
+        return "Track Extends Box";
+    }
 
-  @Override
-  protected long getContentSize() {
-    return 5 * 4;
-  }
+    @Override
+    protected long getContentSize() {
+        return 5 * 4;
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt32(trackId);
-    os.writeUInt32(defaultSampleDescriptionIndex);
-    os.writeUInt32(defaultSampleDuration);
-    os.writeUInt32(defaultSampleSize);
-    defaultSampleFlags.getContent(os);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt32(trackId);
+        os.writeUInt32(defaultSampleDescriptionIndex);
+        os.writeUInt32(defaultSampleDuration);
+        os.writeUInt32(defaultSampleSize);
+        defaultSampleFlags.getContent(os);
+    }
 
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
 
-    trackId = in.readUInt32();
-    defaultSampleDescriptionIndex = in.readUInt32();
-    defaultSampleDuration = in.readUInt32();
-    defaultSampleSize = in.readUInt32();
-    defaultSampleFlags = new SampleFlags(in.readUInt32());
-  }
+        trackId = in.readUInt32();
+        defaultSampleDescriptionIndex = in.readUInt32();
+        defaultSampleDuration = in.readUInt32();
+        defaultSampleSize = in.readUInt32();
+        defaultSampleFlags = new SampleFlags(in.readUInt32());
+    }
 
-  public long getTrackId() {
-    return trackId;
-  }
+    public long getTrackId() {
+        return trackId;
+    }
 
-  public long getDefaultSampleDescriptionIndex() {
-    return defaultSampleDescriptionIndex;
-  }
+    public long getDefaultSampleDescriptionIndex() {
+        return defaultSampleDescriptionIndex;
+    }
 
-  public long getDefaultSampleDuration() {
-    return defaultSampleDuration;
-  }
+    public long getDefaultSampleDuration() {
+        return defaultSampleDuration;
+    }
 
-  public long getDefaultSampleSize() {
-    return defaultSampleSize;
-  }
+    public long getDefaultSampleSize() {
+        return defaultSampleSize;
+    }
 
-  public String getDefaultSampleFlags() {
-    return defaultSampleFlags.toString();
-  }
+    public String getDefaultSampleFlags() {
+        return defaultSampleFlags.toString();
+    }
 }

@@ -29,40 +29,40 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.DataReferenceBox
  */
 public class DataEntryUrlBox extends FullBox {
-  public static final String TYPE = "url ";
+    public static final String TYPE = "url ";
 
-  private String location;
+    private String location;
 
-  public DataEntryUrlBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getLocation() {
-    return location;
-  }
-
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    if ((getFlags() & 0x1) != 0x1) {
-      throw new UnsupportedOperationException();
+    public DataEntryUrlBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-  }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    if ((getFlags() & 0x1) != 0x1) {
-      throw new UnsupportedOperationException();
+    public String getLocation() {
+        return location;
     }
-  }
 
-  protected long getContentSize() {
-    return 0;
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        if ((getFlags() & 0x1) != 0x1) {
+            throw new UnsupportedOperationException();
+        }
+    }
 
-  public String getDisplayName() {
-    return "Data Entry Url Box";
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        if ((getFlags() & 0x1) != 0x1) {
+            throw new UnsupportedOperationException();
+        }
+    }
 
-  public String toString() {
-    return "DataEntryUrlBox[location=" + getLocation() + "]";
-  }
+    protected long getContentSize() {
+        return 0;
+    }
+
+    public String getDisplayName() {
+        return "Data Entry Url Box";
+    }
+
+    public String toString() {
+        return "DataEntryUrlBox[location=" + getLocation() + "]";
+    }
 }

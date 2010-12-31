@@ -25,37 +25,37 @@ import java.io.IOException;
 
 public class SoundMediaHeaderBox extends FullBox {
 
-  public static final String TYPE = "smhd";
-  private float balance;
+    public static final String TYPE = "smhd";
+    private float balance;
 
-  public SoundMediaHeaderBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public SoundMediaHeaderBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public float getBalance() {
-    return balance;
-  }
+    public float getBalance() {
+        return balance;
+    }
 
-  protected long getContentSize() {
-    return 2 + 2;
-  }
+    protected long getContentSize() {
+        return 2 + 2;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    balance = in.readFixedPoint88();
-    in.readUInt16();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        balance = in.readFixedPoint88();
+        in.readUInt16();
+    }
 
-  protected void getContent(IsoOutputStream isos) throws IOException {
-    isos.writeFixedPont88(balance);
-    isos.writeUInt16(0);
-  }
+    protected void getContent(IsoOutputStream isos) throws IOException {
+        isos.writeFixedPont88(balance);
+        isos.writeUInt16(0);
+    }
 
-  public String getDisplayName() {
-    return "Sound Media Header Box";
-  }
+    public String getDisplayName() {
+        return "Sound Media Header Box";
+    }
 
-  public String toString() {
-    return "SoundMediaHeaderBox[balance=" + getBalance() + "]";
-  }
+    public String toString() {
+        return "SoundMediaHeaderBox[balance=" + getBalance() + "]";
+    }
 }

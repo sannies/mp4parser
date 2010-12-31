@@ -5,6 +5,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
 
@@ -12,35 +13,35 @@ import java.io.IOException;
  * The smallest relative transmission time, in milliseconds.
  */
 public class SmallestRelativeTransmissionTimeBox extends Box {
-  public static final String TYPE = "tmin";
+    public static final String TYPE = "tmin";
 
-  long time;
+    long time;
 
-  public SmallestRelativeTransmissionTimeBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public SmallestRelativeTransmissionTimeBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  protected long getContentSize() {
-    return 4;
-  }
+    protected long getContentSize() {
+        return 4;
+    }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    time = in.readUInt32();
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        time = in.readUInt32();
+    }
 
-  public String getDisplayName() {
-    return "Smallest Relative Transmission Time";
-  }
+    public String getDisplayName() {
+        return "Smallest Relative Transmission Time";
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt32(time);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt32(time);
+    }
 
-  public long getTime() {
-    return time;
-  }
+    public long getTime() {
+        return time;
+    }
 
-  public void setTime(long time) {
-    this.time = time;
-  }
+    public void setTime(long time) {
+        this.time = time;
+    }
 }

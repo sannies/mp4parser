@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -38,124 +38,124 @@ import java.io.IOException;
  * }
  */
 public class TrackFragmentHeaderBox extends FullBox {
-  public static final String TYPE = "tfhd";
+    public static final String TYPE = "tfhd";
 
-  private long trackId;
-  private long baseDataOffset;
-  private long sampleDescriptionIndex;
-  private long defaultSampleDuration;
-  private long defaultSampleSize;
-  private SampleFlags defaultSampleFlags;
-  private boolean durationIsEmpty;
+    private long trackId;
+    private long baseDataOffset;
+    private long sampleDescriptionIndex;
+    private long defaultSampleDuration;
+    private long defaultSampleSize;
+    private SampleFlags defaultSampleFlags;
+    private boolean durationIsEmpty;
 
-  public TrackFragmentHeaderBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public TrackFragmentHeaderBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getDisplayName() {
-    return "Track Fragment Header Box";
-  }
+    public String getDisplayName() {
+        return "Track Fragment Header Box";
+    }
 
-  protected long getContentSize() {
-    long size = 4;
-    if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
-      size += 8;
+    protected long getContentSize() {
+        long size = 4;
+        if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
+            size += 8;
+        }
+        if ((getFlags() & 0x2) == 0x2) { //sampleDescriptionIndexPresent
+            size += 4;
+        }
+        if ((getFlags() & 0x8) == 0x8) { //defaultSampleDurationPresent
+            size += 4;
+        }
+        if ((getFlags() & 0x10) == 0x10) { //defaultSampleSizePresent
+            size += 4;
+        }
+        if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
+            size += 4;
+        }
+        return size;
     }
-    if ((getFlags() & 0x2) == 0x2) { //sampleDescriptionIndexPresent
-      size += 4;
-    }
-    if ((getFlags() & 0x8) == 0x8) { //defaultSampleDurationPresent
-      size += 4;
-    }
-    if ((getFlags() & 0x10) == 0x10) { //defaultSampleSizePresent
-      size += 4;
-    }
-    if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
-      size += 4;
-    }
-    return size;
-  }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt32(trackId);
-    if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
-      os.writeUInt64(baseDataOffset);
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt32(trackId);
+        if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
+            os.writeUInt64(baseDataOffset);
+        }
+        if ((getFlags() & 0x2) == 0x2) { //sampleDescriptionIndexPresent
+            os.writeUInt32(sampleDescriptionIndex);
+        }
+        if ((getFlags() & 0x8) == 0x8) { //defaultSampleDurationPresent
+            os.writeUInt32(defaultSampleDuration);
+        }
+        if ((getFlags() & 0x10) == 0x10) { //defaultSampleSizePresent
+            os.writeUInt32(defaultSampleSize);
+        }
+        if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
+            defaultSampleFlags.getContent(os);
+        }
     }
-    if ((getFlags() & 0x2) == 0x2) { //sampleDescriptionIndexPresent
-      os.writeUInt32(sampleDescriptionIndex);
-    }
-    if ((getFlags() & 0x8) == 0x8) { //defaultSampleDurationPresent
-      os.writeUInt32(defaultSampleDuration);
-    }
-    if ((getFlags() & 0x10) == 0x10) { //defaultSampleSizePresent
-      os.writeUInt32(defaultSampleSize);
-    }
-    if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
-      defaultSampleFlags.getContent(os);
-    }
-  }
 
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    trackId = in.readUInt32();
-    if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
-      baseDataOffset = in.readUInt64();
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        trackId = in.readUInt32();
+        if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
+            baseDataOffset = in.readUInt64();
+        }
+        if ((getFlags() & 0x2) == 0x2) { //sampleDescriptionIndexPresent
+            sampleDescriptionIndex = in.readUInt32();
+        }
+        if ((getFlags() & 0x8) == 0x8) { //defaultSampleDurationPresent
+            defaultSampleDuration = in.readUInt32();
+        }
+        if ((getFlags() & 0x10) == 0x10) { //defaultSampleSizePresent
+            defaultSampleSize = in.readUInt32();
+        }
+        if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
+            defaultSampleFlags = new SampleFlags(in.readUInt32());
+        }
+        if ((getFlags() & 0x10000) == 0x10000) { //durationIsEmpty
+            durationIsEmpty = true;
+        }
     }
-    if ((getFlags() & 0x2) == 0x2) { //sampleDescriptionIndexPresent
-      sampleDescriptionIndex = in.readUInt32();
+
+    public long getTrackId() {
+        return trackId;
     }
-    if ((getFlags() & 0x8) == 0x8) { //defaultSampleDurationPresent
-      defaultSampleDuration = in.readUInt32();
+
+    public long getBaseDataOffset() {
+        if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
+            return baseDataOffset;
+        } else {
+            //todo: fix it. for now 0 is fine. see MovieFragmentBox#parseMdat
+            return 0;
+            //return getParent().calculateOffset();
+            //Todo only works for first tfhd. Subsequent should be "inherited" according to the spec:
+            /**
+             * the base-dataoffset for the first track in the movie fragment is the position
+             * of the first byte of the enclosing Movie Fragment Box, and for second and subsequent track fragments,
+             * the default is the end of the data defined by the preceding fragment.
+             */
+        }
     }
-    if ((getFlags() & 0x10) == 0x10) { //defaultSampleSizePresent
-      defaultSampleSize = in.readUInt32();
+
+    public long getSampleDescriptionIndex() {
+        return sampleDescriptionIndex;
     }
-    if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
-      defaultSampleFlags = new SampleFlags(in.readUInt32());
+
+    public long getDefaultSampleDuration() {
+        return defaultSampleDuration;
     }
-    if ((getFlags() & 0x10000) == 0x10000) { //durationIsEmpty
-      durationIsEmpty = true;
+
+    public long getDefaultSampleSize() {
+        return defaultSampleSize;
     }
-  }
 
-  public long getTrackId() {
-    return trackId;
-  }
-
-  public long getBaseDataOffset() {
-    if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
-      return baseDataOffset;
-    } else {
-      //todo: fix it. for now 0 is fine. see MovieFragmentBox#parseMdat
-      return 0;
-      //return getParent().calculateOffset();
-      //Todo only works for first tfhd. Subsequent should be "inherited" according to the spec:
-      /**
-       * the base-dataoffset for the first track in the movie fragment is the position
-       * of the first byte of the enclosing Movie Fragment Box, and for second and subsequent track fragments,
-       * the default is the end of the data defined by the preceding fragment.
-       */
+    public String getDefaultSampleFlags() {
+        return defaultSampleFlags.toString();
     }
-  }
 
-  public long getSampleDescriptionIndex() {
-    return sampleDescriptionIndex;
-  }
-
-  public long getDefaultSampleDuration() {
-    return defaultSampleDuration;
-  }
-
-  public long getDefaultSampleSize() {
-    return defaultSampleSize;
-  }
-
-  public String getDefaultSampleFlags() {
-    return defaultSampleFlags.toString();
-  }
-
-  public boolean isDurationIsEmpty() {
-    return durationIsEmpty;
-  }
+    public boolean isDurationIsEmpty() {
+        return durationIsEmpty;
+    }
 }

@@ -85,13 +85,13 @@ public class IsoFile implements ContainerBox, BoxInterface {
 
     public void parse() throws IOException {
 
-        List<Box> boxeList = new LinkedList<Box>();
+        List<BoxInterface> boxeList = new LinkedList<BoxInterface>();
         boolean done = false;
-        Box lastMovieFragmentBox = null;
+        BoxInterface lastMovieFragmentBox = null;
         while (!done) {
             long sp = originalIso.position();
             if (originalIso.remaining() >= 8) {
-                Box box = boxParser.parseBox(originalIso, this, lastMovieFragmentBox);
+                BoxInterface box = boxParser.parseBox(originalIso, this, lastMovieFragmentBox);
                 if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
                 boxeList.add(box);
                 this.boxes = boxeList.toArray(new Box[boxeList.size()]);

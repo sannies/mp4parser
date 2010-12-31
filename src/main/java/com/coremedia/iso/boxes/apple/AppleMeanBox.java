@@ -5,7 +5,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.Utf8;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
@@ -16,36 +16,36 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.apple.AppleGenericBox
  */
 public final class AppleMeanBox extends FullBox {
-  public static final String TYPE = "mean";
-  private String meaning;
+    public static final String TYPE = "mean";
+    private String meaning;
 
-  public AppleMeanBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public AppleMeanBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  protected long getContentSize() {
-    return Utf8.convert(meaning).length;
-  }
+    protected long getContentSize() {
+        return Utf8.convert(meaning).length;
+    }
 
-  public String getDisplayName() {
-    return "Apple Meaning Box";
-  }
+    public String getDisplayName() {
+        return "Apple Meaning Box";
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeStringNoTerm(meaning);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeStringNoTerm(meaning);
+    }
 
-  public String getMeaning() {
-    return meaning;
-  }
+    public String getMeaning() {
+        return meaning;
+    }
 
-  public void setMeaning(String meaning) {
-    this.meaning = meaning;
-  }
+    public void setMeaning(String meaning) {
+        this.meaning = meaning;
+    }
 
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    setMeaning(in.readString((int) (size - 4)));
-  }
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        setMeaning(in.readString((int) (size - 4)));
+    }
 }
