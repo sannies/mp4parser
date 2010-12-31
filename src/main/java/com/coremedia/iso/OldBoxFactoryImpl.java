@@ -16,10 +16,10 @@
 
 package com.coremedia.iso;
 
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.AlbumBox;
 import com.coremedia.iso.boxes.AuthorBox;
 import com.coremedia.iso.boxes.BitRateBox;
-import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ClassificationBox;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
@@ -168,7 +168,7 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 /**
- * A factory for Iso Boxes. In general it is instanciated and its {@link OldBoxFactoryImpl#parseBox(IsoBufferWrapper, com.coremedia.iso.boxes.BoxInterface, com.coremedia.iso.boxes.Box)}
+ * A factory for Iso Boxes. In general it is instanciated and its {@link OldBoxFactoryImpl#parseBox(IsoBufferWrapper, com.coremedia.iso.boxes.BoxInterface, com.coremedia.iso.boxes.BoxInterface)}
  * is called to create the boxes and their subboxes.
  */
 public class OldBoxFactoryImpl implements BoxParser {
@@ -176,7 +176,7 @@ public class OldBoxFactoryImpl implements BoxParser {
 
 
     //TODO there are better ways than one millions if-statements,  I'm sure --sma
-    public Box createBox(byte[] type, byte[] userType, byte[] parent, BoxInterface lastMovieFragmentBox) {
+    public AbstractBox createBox(byte[] type, byte[] userType, byte[] parent, BoxInterface lastMovieFragmentBox) {
         //  System.err.println("Box: " + IsoFile.bytesToFourCC(type) + " Parent: " + ((parent!=null&&parent.length==4)?IsoFile.bytesToFourCC(parent):"IsoFile"));
 
         if (Arrays.equals(parent, IsoFile.fourCCtoBytes(TrackReferenceTypeBox.TYPE1)) ||
@@ -760,7 +760,7 @@ public class OldBoxFactoryImpl implements BoxParser {
      * @return the box just parsed
      * @throws IOException if reading from <code>in</code> fails
      */
-    public Box parseBox(IsoBufferWrapper in, BoxInterface parent, BoxInterface lastMovieFragmentBox) throws IOException {
+    public AbstractBox parseBox(IsoBufferWrapper in, BoxInterface parent, BoxInterface lastMovieFragmentBox) throws IOException {
         long offset = in.position();
 
         long size = in.readUInt32();
@@ -793,7 +793,7 @@ public class OldBoxFactoryImpl implements BoxParser {
             usertype = in.read(16);
             contentSize -= 16;
         }
-        Box box = createBox(type, usertype,
+        AbstractBox box = createBox(type, usertype,
                 parent.getType(), lastMovieFragmentBox);
         box.offset = offset;
         box.setParent((ContainerBox) parent);

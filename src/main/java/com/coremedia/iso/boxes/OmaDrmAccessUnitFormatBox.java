@@ -26,7 +26,7 @@ import java.io.IOException;
 /**
  * Describes the format of media access units in PDCF files.
  */
-public final class OmaDrmAccessUnitFormatBox extends FullBox {
+public final class OmaDrmAccessUnitFormatBox extends AbstractFullBox {
     public static final String TYPE = "odaf";
 
     private boolean selectiveEncryption;

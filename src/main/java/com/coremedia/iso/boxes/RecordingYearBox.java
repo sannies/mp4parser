@@ -26,7 +26,7 @@ import java.io.IOException;
 /**
  *
  */
-public class RecordingYearBox extends FullBox {
+public class RecordingYearBox extends AbstractFullBox {
     public static final String TYPE = "yrrc";
 
     int recordingYear;

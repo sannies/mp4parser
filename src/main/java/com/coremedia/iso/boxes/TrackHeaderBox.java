@@ -34,7 +34,7 @@ import java.io.IOException;
  * tracks shall be treated as if both flags were set on all tracks. Hint tracks should have the track header flags set
  * to 0, so that they are ignored for local playback and preview.
  */
-public class TrackHeaderBox extends FullBox {
+public class TrackHeaderBox extends AbstractFullBox {
 
     public static final String TYPE = "tkhd";
 

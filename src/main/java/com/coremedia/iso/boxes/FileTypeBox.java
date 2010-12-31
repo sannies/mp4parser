@@ -28,7 +28,7 @@ import java.io.IOException;
  * Each brand is a printable four-character code, registered with ISO, that
  * identifies a precise specification.
  */
-public class FileTypeBox extends Box {
+public class FileTypeBox extends AbstractBox {
     public static final String TYPE = "ftyp";
 
     private String majorBrand;

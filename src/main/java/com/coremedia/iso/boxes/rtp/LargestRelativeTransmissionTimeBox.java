@@ -4,7 +4,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.io.IOException;
 /**
  * The largest relative transmission time, in milliseconds.
  */
-public class LargestRelativeTransmissionTimeBox extends Box {
+public class LargestRelativeTransmissionTimeBox extends AbstractBox {
     public static final String TYPE = "tmax";
 
     long time;

@@ -34,7 +34,7 @@ import java.io.UnsupportedEncodingException;
  * <p/>
  * Title for the media.
  */
-public class TitleBox extends FullBox {
+public class TitleBox extends AbstractFullBox {
     public static final String TYPE = "titl";
 
     private String language;

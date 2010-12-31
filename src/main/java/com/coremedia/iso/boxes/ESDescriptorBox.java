@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * ES Descriptor Box.
  */
-public class ESDescriptorBox extends FullBox {
+public class ESDescriptorBox extends AbstractFullBox {
     public static final String TYPE = "esds";
 
 

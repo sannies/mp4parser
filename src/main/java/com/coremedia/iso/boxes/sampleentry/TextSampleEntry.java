@@ -19,7 +19,7 @@ package com.coremedia.iso.boxes.sampleentry;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ContainerBox;
 
@@ -74,7 +74,7 @@ public class TextSampleEntry extends SampleEntry implements ContainerBox {
             someBoxes.add(b);
             size -= b.getSize();
         }
-        boxes = someBoxes.toArray(new Box[someBoxes.size()]);
+        boxes = someBoxes.toArray(new AbstractBox[someBoxes.size()]);
         assert size == 0 : "After parsing all boxes there are " + size + " bytes left. 0 bytes required";
     }
 

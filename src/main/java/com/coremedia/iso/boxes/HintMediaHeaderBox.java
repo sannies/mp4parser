@@ -29,7 +29,7 @@ import java.io.IOException;
  *
  * @see com.coremedia.iso.boxes.MediaInformationBox
  */
-public class HintMediaHeaderBox extends FullBox {
+public class HintMediaHeaderBox extends AbstractFullBox {
     private int maxPduSize;
     private int avgPduSize;
     private long maxBitrate;

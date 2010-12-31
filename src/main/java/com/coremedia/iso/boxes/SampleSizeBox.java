@@ -28,7 +28,7 @@ import java.io.IOException;
  * This box containes the sample count and a table giving the size in bytes of each sample.
  * Defined in ISO/IEC 14496-12.
  */
-public class SampleSizeBox extends FullBox {
+public class SampleSizeBox extends AbstractFullBox {
     private long sampleSize;
     private long sampleCount;
     private long[] entrySize;

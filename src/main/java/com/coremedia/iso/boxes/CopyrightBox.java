@@ -33,7 +33,7 @@ import java.io.UnsupportedEncodingException;
  * @see MovieBox
  * @see TrackBox
  */
-public class CopyrightBox extends FullBox {
+public class CopyrightBox extends AbstractFullBox {
     public static final String TYPE = "cprt";
 
     private String language;

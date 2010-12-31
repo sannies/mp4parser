@@ -5,8 +5,8 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.Utf8;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
@@ -15,7 +15,7 @@ import java.io.IOException;
  *
  * @see com.coremedia.iso.boxes.apple.AppleGenericBox
  */
-public final class AppleMeanBox extends FullBox {
+public final class AppleMeanBox extends AbstractFullBox {
     public static final String TYPE = "mean";
     private String meaning;
 

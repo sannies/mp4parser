@@ -37,7 +37,7 @@ import java.util.Map;
  * @see MetaBox
  * @see MediaBox
  */
-public class HandlerBox extends FullBox {
+public class HandlerBox extends AbstractFullBox {
     public static final String TYPE = "hdlr";
     public static final Map<String, String> readableTypes;
 

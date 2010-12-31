@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Abstract base class suitable for most boxes acting purely as container for other boxes.
  */
-public abstract class AbstractContainerBox extends Box implements ContainerBox {
+public abstract class AbstractContainerBox extends AbstractBox implements ContainerBox {
     protected BoxInterface[] boxes;
 
     protected long getContentSize() {
@@ -44,7 +44,7 @@ public abstract class AbstractContainerBox extends Box implements ContainerBox {
 
     public AbstractContainerBox(byte[] type) {
         super(type);
-        boxes = new Box[0];
+        boxes = new AbstractBox[0];
     }
 
     public BoxInterface[] getBoxes() {
@@ -67,7 +67,7 @@ public abstract class AbstractContainerBox extends Box implements ContainerBox {
     public void addBox(BoxInterface b) {
         List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
         listOfBoxes.add(b);
-        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
+        boxes = listOfBoxes.toArray(new AbstractBox[listOfBoxes.size()]);
     }
 
     public void removeBox(BoxInterface b) {

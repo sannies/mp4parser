@@ -27,7 +27,7 @@ import java.io.IOException;
  * Used to give information about the performer. Mostly used in confunction with music files.
  * See 3GPP 26.234 for details.
  */
-public class PerformerBox extends FullBox {
+public class PerformerBox extends AbstractFullBox {
     public static final String TYPE = "perf";
 
     private String language;

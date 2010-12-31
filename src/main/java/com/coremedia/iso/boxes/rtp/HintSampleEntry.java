@@ -19,7 +19,7 @@ package com.coremedia.iso.boxes.rtp;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
@@ -92,7 +92,7 @@ public class HintSampleEntry extends SampleEntry implements ContainerBox {
             size -= box.getSize();
             boxes.add(box);
         }
-        this.boxes = boxes.toArray(new Box[0]);
+        this.boxes = boxes.toArray(new AbstractBox[0]);
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {

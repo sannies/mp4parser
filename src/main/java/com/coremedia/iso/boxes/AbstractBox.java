@@ -30,7 +30,7 @@ import java.util.Arrays;
 /**
  * A basic ISO box. No full box.
  */
-public abstract class Box implements BoxInterface {
+public abstract class AbstractBox implements BoxInterface {
     public long offset;
 
     public long getSize() {
@@ -55,7 +55,7 @@ public abstract class Box implements BoxInterface {
     private byte[] userType;
     private ContainerBox parent;
 
-    protected Box(byte[] type) {
+    protected AbstractBox(byte[] type) {
         this.type = type;
     }
 

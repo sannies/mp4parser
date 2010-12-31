@@ -20,15 +20,15 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
 /**
  * A vodafone specific box.
  */
-public class CoverUriBox extends FullBox {
+public class CoverUriBox extends AbstractFullBox {
     public static final String TYPE = "cvru";
 
     private String coverUri;

@@ -4,7 +4,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.io.IOException;
 /**
  * The largest packet, in bytes; includes 12-byte RTP header.
  */
-public class LargestHintPacketBox extends Box {
+public class LargestHintPacketBox extends AbstractBox {
     public static final String TYPE = "pmax";
 
     private long maxSize;

@@ -20,9 +20,9 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ContainerBox;
-import com.coremedia.iso.boxes.FullBox;
 import com.coremedia.iso.boxes.MovieBox;
 import com.coremedia.iso.boxes.SampleSizeBox;
 
@@ -41,7 +41,7 @@ import java.util.List;
  * }
  * }
  */
-public class SampleDependencyTypeBox extends FullBox {
+public class SampleDependencyTypeBox extends AbstractFullBox {
     public static final String TYPE = "sdtp";
 
     private List<Entry> sampleEntries = new ArrayList<Entry>();

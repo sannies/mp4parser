@@ -16,7 +16,7 @@
 
 package com.coremedia.iso;
 
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ChunkOffsetBox;
 import com.coremedia.iso.boxes.ContainerBox;
@@ -44,7 +44,7 @@ import java.util.List;
  * Uses IsoBufferWrapper  to access the underlying file.
  */
 public class IsoFile implements ContainerBox, BoxInterface {
-    private Box[] boxes = new Box[0];
+    private AbstractBox[] boxes = new AbstractBox[0];
     private BoxParser boxParser = new OldBoxFactoryImpl();
     private IsoBufferWrapper originalIso;
 
@@ -74,7 +74,7 @@ public class IsoFile implements ContainerBox, BoxInterface {
     @SuppressWarnings("unchecked")
     public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
         ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (Box boxe : boxes) {
+        for (AbstractBox boxe : boxes) {
             if (clazz.isInstance(boxe)) {
                 boxesToBeReturned.add(clazz.cast(boxe));
             }
@@ -94,7 +94,7 @@ public class IsoFile implements ContainerBox, BoxInterface {
                 BoxInterface box = boxParser.parseBox(originalIso, this, lastMovieFragmentBox);
                 if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
                 boxeList.add(box);
-                this.boxes = boxeList.toArray(new Box[boxeList.size()]);
+                this.boxes = boxeList.toArray(new AbstractBox[boxeList.size()]);
                 assert box.calculateOffset() == sp : "calculated offset differs from offset in file";
             } else {
                 done = true;
@@ -157,7 +157,7 @@ public class IsoFile implements ContainerBox, BoxInterface {
     public void getBox(IsoOutputStream isos) throws IOException {
 
         try {
-            for (Box box : boxes) {
+            for (AbstractBox box : boxes) {
                 box.getBox(isos);
             }
         } finally {
@@ -190,7 +190,7 @@ public class IsoFile implements ContainerBox, BoxInterface {
 
     public long getSize() {
         long size = 0;
-        for (Box box : boxes) {
+        for (AbstractBox box : boxes) {
             size += box.getSize();
         }
         return size;

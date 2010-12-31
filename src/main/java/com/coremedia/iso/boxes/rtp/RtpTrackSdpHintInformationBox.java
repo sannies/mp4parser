@@ -21,7 +21,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.assistui.multiline;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.io.IOException;
 /**
  * Contains the information that will be used by the streaming server to create the SDP file.
  */
-public class RtpTrackSdpHintInformationBox extends Box {
+public class RtpTrackSdpHintInformationBox extends AbstractBox {
     public static final String TYPE = "sdp ";
 
     @multiline(linebreak = "\r\n")

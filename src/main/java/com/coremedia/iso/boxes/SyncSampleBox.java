@@ -27,7 +27,7 @@ import java.io.IOException;
  * This box provides a compact marking of the random access points withinthe stream. The table is arranged in
  * strictly decreasinf order of sample number. Defined in ISO/IEC 14496-12.
  */
-public class SyncSampleBox extends FullBox {
+public class SyncSampleBox extends AbstractFullBox {
     public static final String TYPE = "stss";
 
     private long[] sampleNumber;

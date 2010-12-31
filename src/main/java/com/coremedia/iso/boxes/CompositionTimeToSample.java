@@ -15,7 +15,7 @@ import java.io.IOException;
  * time to sample table is optional and must only be present if DT and CT
  * differ for any samples. Hint tracks do not use this box.
  */
-public class CompositionTimeToSample extends FullBox {
+public class CompositionTimeToSample extends AbstractFullBox {
     public static final String TYPE = "ctts";
 
     long[] sampleCount = new long[]{};

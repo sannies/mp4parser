@@ -20,13 +20,13 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
 /**
- * aligned(8) class TrackExtendsBox extends FullBox(�trex�, 0, 0){
+ * aligned(8) class TrackExtendsBox extends FullBox('trex', 0, 0){
  * unsigned int(32) track_ID;
  * unsigned int(32) default_sample_description_index;
  * unsigned int(32) default_sample_duration;
@@ -34,7 +34,7 @@ import java.io.IOException;
  * unsigned int(32) default_sample_flags
  * }
  */
-public class TrackExtendsBox extends FullBox {
+public class TrackExtendsBox extends AbstractFullBox {
     public static final String TYPE = "trex";
     private long trackId;
     private long defaultSampleDescriptionIndex;

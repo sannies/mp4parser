@@ -37,7 +37,7 @@ import java.io.IOException;
  * any edit list).    <br>
  * The Edit List Box provides the initial CT value if it is non-empty (non-zero).
  */
-public class TimeToSampleBox extends FullBox {
+public class TimeToSampleBox extends AbstractFullBox {
     private long[] sampleCount;
     private long[] sampleDelta;
     public static final String TYPE = "stts";

@@ -28,7 +28,7 @@ import java.io.IOException;
  * Contained a the <code>UserDataBox</code> and containing information about the media's rating. E.g.
  * PG13or FSK16.
  */
-public class RatingBox extends FullBox {
+public class RatingBox extends AbstractFullBox {
     public static final String TYPE = "rtng";
 
     private String ratingEntity;

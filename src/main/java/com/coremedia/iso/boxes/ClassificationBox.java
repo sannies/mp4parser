@@ -26,7 +26,7 @@ import java.io.IOException;
 /**
  * Classification of the media according to 3GPP 26.244.
  */
-public class ClassificationBox extends FullBox {
+public class ClassificationBox extends AbstractFullBox {
     public static final String TYPE = "clsf";
 
 

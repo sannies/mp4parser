@@ -19,7 +19,7 @@ package com.coremedia.iso.boxes.odf;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullContainerBox;
 import com.coremedia.iso.boxes.UserDataBox;
@@ -87,7 +87,7 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
             remainingContentSize -= box.getSize();
             boxList.add(box);
         }
-        this.boxes = boxList.toArray(new Box[boxList.size()]);
+        this.boxes = boxList.toArray(new AbstractBox[boxList.size()]);
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {

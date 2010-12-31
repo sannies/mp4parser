@@ -28,7 +28,7 @@ import java.io.IOException;
  * samples within a chunk can have different sizes. This table can be used to find the chunk that
  * contains a sample, its position, and the associated sample description. Defined in ISO/IEC 14496-12.
  */
-public class SampleToChunkBox extends FullBox {
+public class SampleToChunkBox extends AbstractFullBox {
     private long[] firstChunk;
     private long[] samplesPerChunk;
     private long[] sampleDescriptionIndex;

@@ -26,7 +26,7 @@ import java.io.IOException;
 /**
  * Gives a language dependent description of the media contained in the ISO file.
  */
-public class DescriptionBox extends FullBox {
+public class DescriptionBox extends AbstractFullBox {
     public static final String TYPE = "dscp";
 
     private String language;

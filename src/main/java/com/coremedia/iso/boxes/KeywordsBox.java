@@ -26,7 +26,7 @@ import java.io.IOException;
 /**
  * List of keywords according to 3GPP 26.244.
  */
-public class KeywordsBox extends FullBox {
+public class KeywordsBox extends AbstractFullBox {
     public static final String TYPE = "kywd";
 
     private String language;

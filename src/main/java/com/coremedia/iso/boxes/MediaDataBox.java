@@ -48,7 +48,7 @@ import java.util.Map;
  * so Media Data Box headers and free space may easily be skipped, and files without any box structure may
  * also be referenced and used.
  */
-public final class MediaDataBox<T extends TrackMetaDataContainer> extends Box {
+public final class MediaDataBox<T extends TrackMetaDataContainer> extends AbstractBox {
     public static final String TYPE = "mdat";
 
     private boolean contentsParsed = false;

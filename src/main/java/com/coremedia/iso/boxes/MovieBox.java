@@ -246,10 +246,10 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
      */
     public long[] getTrackNumbers() {
 
-        Box[] trackBoxes = this.getBoxes(TrackBox.class);
+        AbstractBox[] trackBoxes = this.getBoxes(TrackBox.class);
         long[] trackNumbers = new long[trackBoxes.length];
         for (int trackCounter = 0; trackCounter < trackBoxes.length; trackCounter++) {
-            Box trackBoxe = trackBoxes[trackCounter];
+            AbstractBox trackBoxe = trackBoxes[trackCounter];
             TrackBox trackBox = (TrackBox) trackBoxe;
             trackNumbers[trackCounter] = trackBox.getTrackHeaderBox().getTrackId();
         }

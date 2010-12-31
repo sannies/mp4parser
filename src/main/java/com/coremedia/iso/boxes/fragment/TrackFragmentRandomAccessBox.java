@@ -20,8 +20,8 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ import java.util.ArrayList;
  * }
  * }
  */
-public class TrackFragmentRandomAccessBox extends FullBox {
+public class TrackFragmentRandomAccessBox extends AbstractFullBox {
     public static final String TYPE = "tfra";
 
     private long trackId;

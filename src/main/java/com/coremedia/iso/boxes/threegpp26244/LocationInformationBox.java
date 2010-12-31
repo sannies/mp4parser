@@ -5,15 +5,15 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.Utf8;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
 /**
  * Location Information Box as specified in TS 26.244.
  */
-public class LocationInformationBox extends FullBox {
+public class LocationInformationBox extends AbstractFullBox {
     public static final String TYPE = "loci";
 
     private String language;

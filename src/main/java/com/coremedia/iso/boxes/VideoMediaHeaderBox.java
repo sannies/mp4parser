@@ -27,7 +27,7 @@ import java.io.IOException;
  * The video media header contains general presentation information, independent of the coding, for video
  * media. Note that the flags field has the value 1.
  */
-public class VideoMediaHeaderBox extends FullBox {
+public class VideoMediaHeaderBox extends AbstractFullBox {
     private int graphicsmode;
     private int[] opcolor;
     public static final String TYPE = "vmhd";

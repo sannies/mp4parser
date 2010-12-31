@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.sampleentry;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ContainerBox;
 
@@ -35,7 +35,7 @@ import java.util.List;
  * @see com.coremedia.iso.boxes.rtp.HintSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  */
-public abstract class SampleEntry extends Box implements ContainerBox {
+public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     private int dataReferenceIndex;
     protected BoxInterface[] boxes;
     byte[] type;
@@ -57,10 +57,10 @@ public abstract class SampleEntry extends Box implements ContainerBox {
         return dataReferenceIndex;
     }
 
-    public void addBox(Box b) {
+    public void addBox(AbstractBox b) {
         List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
         listOfBoxes.add(b);
-        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
+        boxes = listOfBoxes.toArray(new AbstractBox[listOfBoxes.size()]);
     }
 
     public boolean removeBox(BoxInterface b) {

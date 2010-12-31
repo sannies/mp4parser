@@ -20,8 +20,8 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -31,7 +31,7 @@ import java.io.UnsupportedEncodingException;
  * The value of the ContentID MUST be the value of the ContentID stored in the Common Headers for this Content Object.
  * There MUST be exactly one ContentID sub-box per User-Data box, as the first sub-box in the container.
  */
-public class OmaDrmContentIdBox extends FullBox {
+public class OmaDrmContentIdBox extends AbstractFullBox {
     public static final String TYPE = "ccid";
     String contentId;
 

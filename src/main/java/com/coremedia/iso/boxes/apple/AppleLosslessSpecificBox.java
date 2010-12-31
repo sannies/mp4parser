@@ -4,15 +4,15 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
 /**
  *
  */
-public final class AppleLosslessSpecificBox extends FullBox {
+public final class AppleLosslessSpecificBox extends AbstractFullBox {
 
     public static final String TYPE = "alac";
     /*

@@ -4,7 +4,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.io.IOException;
  * g. The maximum data rate calculation does not include any network headers
  * (but does include 12-byte RTP headers).
  */
-public class MaximumDataRateBox extends Box {
+public class MaximumDataRateBox extends AbstractBox {
     public static final String TYPE = "maxr";
 
     public MaximumDataRateBox() {

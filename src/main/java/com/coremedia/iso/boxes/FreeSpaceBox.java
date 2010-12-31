@@ -30,7 +30,7 @@ import java.io.IOException;
  *
  * @see com.coremedia.iso.boxes.SampleTableBox
  */
-public class FreeSpaceBox extends Box {
+public class FreeSpaceBox extends AbstractBox {
     public static final String TYPE = "skip";
 
     byte[] content;

@@ -66,7 +66,7 @@ public class SampleDescriptionBox extends FullContainerBox {
         if (entryCount > Integer.MAX_VALUE) {
             throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE subboxes");
         }
-        boxes = new Box[(int) entryCount];
+        boxes = new AbstractBox[(int) entryCount];
         long sp = in.position();
         for (int i = 0; i < entryCount; i++) {
             boxes[i] = boxParser.parseBox(in, this, lastMovieFragmentBox);

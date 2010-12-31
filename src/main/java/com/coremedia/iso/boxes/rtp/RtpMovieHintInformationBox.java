@@ -22,12 +22,12 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.assistui.multiline;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
 
-public class RtpMovieHintInformationBox extends Box {
+public class RtpMovieHintInformationBox extends AbstractBox {
     public static final String TYPE = "rtp ";
 
     private String descriptionFormat;

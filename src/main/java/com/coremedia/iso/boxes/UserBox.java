@@ -26,7 +26,7 @@ import java.io.IOException;
 /**
  * A user specifc box. See ISO/IEC 14496-12 for details.
  */
-public class UserBox extends Box {
+public class UserBox extends AbstractBox {
     byte[] content;
     public static final String TYPE = "uuid";
 

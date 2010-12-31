@@ -27,7 +27,7 @@ import java.io.IOException;
  * This box defines overall information which is media-independent, and relevant to the entire presentation
  * considered as a whole.
  */
-public class MediaHeaderBox extends FullBox {
+public class MediaHeaderBox extends AbstractFullBox {
     public static final String TYPE = "mdhd";
 
 

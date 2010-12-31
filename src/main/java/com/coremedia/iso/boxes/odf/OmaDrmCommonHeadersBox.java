@@ -21,10 +21,10 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ContainerBox;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -38,10 +38,10 @@ import java.util.Map;
  * The Common Headers Box defines a structure for required headers in a DCF file.
  * See OMA-TS-DRM-DCF-V2_0-*  specification for details.
  */
-public class OmaDrmCommonHeadersBox extends FullBox implements ContainerBox {
+public class OmaDrmCommonHeadersBox extends AbstractFullBox implements ContainerBox {
     public static final String TYPE = "ohdr";
 
-    private Box[] extendedHeaders;
+    private AbstractBox[] extendedHeaders;
     private int encryptionMethod;
     private int paddingScheme;
     private long plaintextLength;
@@ -52,7 +52,7 @@ public class OmaDrmCommonHeadersBox extends FullBox implements ContainerBox {
     @SuppressWarnings("unchecked")
     public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
         ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (Box boxe : extendedHeaders) {
+        for (AbstractBox boxe : extendedHeaders) {
             if (clazz.isInstance(boxe)) {
                 boxesToBeReturned.add(clazz.cast(boxe));
             }
@@ -65,7 +65,7 @@ public class OmaDrmCommonHeadersBox extends FullBox implements ContainerBox {
         contentId = "";
         rightsIssuerUrl = "";
         textualHeaders = "";
-        extendedHeaders = new Box[0];
+        extendedHeaders = new AbstractBox[0];
     }
 
     public BoxInterface[] getBoxes() {
@@ -144,7 +144,7 @@ public class OmaDrmCommonHeadersBox extends FullBox implements ContainerBox {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-        for (Box boxe : extendedHeaders) {
+        for (AbstractBox boxe : extendedHeaders) {
             contentLength += boxe.getSize();
         }
 
@@ -172,7 +172,7 @@ public class OmaDrmCommonHeadersBox extends FullBox implements ContainerBox {
             boxeList.add(box);
         }
         assert remainingContentSize == 0;
-        this.extendedHeaders = boxeList.toArray(new Box[boxeList.size()]);
+        this.extendedHeaders = boxeList.toArray(new AbstractBox[boxeList.size()]);
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {
@@ -186,7 +186,7 @@ public class OmaDrmCommonHeadersBox extends FullBox implements ContainerBox {
         isos.writeStringNoTerm(rightsIssuerUrl);
         isos.writeStringNoTerm(textualHeaders);
 
-        for (Box boxe : extendedHeaders) {
+        for (AbstractBox boxe : extendedHeaders) {
             boxe.getBox(isos);
         }
 
@@ -209,13 +209,13 @@ public class OmaDrmCommonHeadersBox extends FullBox implements ContainerBox {
         return buffer.toString();
     }
 
-    public void setExtendedHeaders(Box[] extendedHeaders) {
+    public void setExtendedHeaders(AbstractBox[] extendedHeaders) {
         this.extendedHeaders = extendedHeaders;
     }
 
     public long getNumOfBytesToFirstChild() {
         long sizeOfChildren = 0;
-        for (Box extendedHeader : extendedHeaders) {
+        for (AbstractBox extendedHeader : extendedHeaders) {
             sizeOfChildren += extendedHeader.getSize();
         }
         return getSize() - sizeOfChildren;

@@ -28,7 +28,7 @@ import java.io.IOException;
  *
  * @see com.coremedia.iso.boxes.UserDataBox
  */
-public class GenreBox extends FullBox {
+public class GenreBox extends AbstractFullBox {
     public static final String TYPE = "gnre";
 
     private String language;

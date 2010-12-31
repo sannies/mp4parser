@@ -21,8 +21,8 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
@@ -34,7 +34,7 @@ import java.io.IOException;
  * to [RFC2396] and MUST be an absolute identifier. It is a string encoded using UTF-8 characters,
  * continuing until the end of the box is reached.
  */
-public class OmaDrmInfoUrlBox extends FullBox {
+public class OmaDrmInfoUrlBox extends AbstractFullBox {
     public static final String TYPE = "infu";
 
     private String infoUrl;

@@ -26,7 +26,7 @@ import java.io.IOException;
 /**
  * Contains a reference to a track. The type of the box gives the kind of reference.
  */
-public class TrackReferenceTypeBox extends Box {
+public class TrackReferenceTypeBox extends AbstractBox {
 
     public static final String TYPE1 = "hint";
     public static final String TYPE2 = "cdsc";

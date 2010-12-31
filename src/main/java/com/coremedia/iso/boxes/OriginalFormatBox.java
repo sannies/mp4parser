@@ -31,7 +31,7 @@ import java.util.Arrays;
  * @see ProtectionSchemeInformationBox
  */
 
-public class OriginalFormatBox extends Box {
+public class OriginalFormatBox extends AbstractBox {
     public static final String TYPE = "frma";
 
     private byte[] dataFormat = new byte[4];

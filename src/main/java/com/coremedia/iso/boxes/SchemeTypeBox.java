@@ -29,7 +29,7 @@ import java.io.IOException;
  *
  * @see com.coremedia.iso.boxes.SchemeInformationBox
  */
-public class SchemeTypeBox extends FullBox {
+public class SchemeTypeBox extends AbstractFullBox {
     public static final String TYPE = "schm";
     byte[] schemeType = new byte[4];
     long schemeVersion;

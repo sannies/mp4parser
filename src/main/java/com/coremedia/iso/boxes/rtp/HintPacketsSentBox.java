@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
@@ -41,7 +41,7 @@ import java.util.Arrays;
  * @see com.coremedia.iso.boxes.rtp.HintStatisticBoxes
  * @see HintStatisticsBox
  */
-public class HintPacketsSentBox extends Box {
+public class HintPacketsSentBox extends AbstractBox {
     private long packetsSent;
     public static final String TYPE1 = "nump";
     public static final String TYPE2 = "npck";

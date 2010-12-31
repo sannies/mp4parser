@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Abstract base class for a full iso box only containing ither boxes.
  */
-public abstract class FullContainerBox extends FullBox implements ContainerBox {
+public abstract class FullContainerBox extends AbstractFullBox implements ContainerBox {
     protected BoxInterface[] boxes;
 
 
@@ -57,18 +57,18 @@ public abstract class FullContainerBox extends FullBox implements ContainerBox {
     public void addBox(BoxInterface b) {
         List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
         listOfBoxes.add(b);
-        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
+        boxes = listOfBoxes.toArray(new AbstractBox[listOfBoxes.size()]);
     }
 
     public void removeBox(BoxInterface b) {
         List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
         listOfBoxes.remove(b);
-        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
+        boxes = listOfBoxes.toArray(new AbstractBox[listOfBoxes.size()]);
     }
 
     public FullContainerBox(String type) {
         super(IsoFile.fourCCtoBytes(type));
-        boxes = new Box[0];
+        boxes = new AbstractBox[0];
     }
 
     public BoxInterface[] getBoxes() {

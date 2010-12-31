@@ -21,7 +21,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.io.IOException;
  *
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry
  */
-public class AmrSpecificBox extends Box {
+public class AmrSpecificBox extends AbstractBox {
     public static final String TYPE = "damr";
 
     private String vendor;

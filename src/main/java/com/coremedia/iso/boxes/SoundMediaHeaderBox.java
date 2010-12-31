@@ -23,7 +23,7 @@ import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
 
-public class SoundMediaHeaderBox extends FullBox {
+public class SoundMediaHeaderBox extends AbstractFullBox {
 
     public static final String TYPE = "smhd";
     private float balance;

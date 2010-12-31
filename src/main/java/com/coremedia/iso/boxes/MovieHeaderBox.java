@@ -33,7 +33,7 @@ import java.io.IOException;
  * This box defines overall information which is media-independent, and relevant to the entire presentation
  * considered as a whole.
  */
-public class MovieHeaderBox extends FullBox {
+public class MovieHeaderBox extends AbstractFullBox {
     private long creationTime;
     private long modificationTime;
     private long timescale;

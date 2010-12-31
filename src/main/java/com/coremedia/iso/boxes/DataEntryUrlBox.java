@@ -28,7 +28,7 @@ import java.io.IOException;
  *
  * @see com.coremedia.iso.boxes.DataReferenceBox
  */
-public class DataEntryUrlBox extends FullBox {
+public class DataEntryUrlBox extends AbstractFullBox {
     public static final String TYPE = "url ";
 
     private String location;

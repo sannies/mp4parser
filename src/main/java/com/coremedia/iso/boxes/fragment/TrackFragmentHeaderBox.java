@@ -20,8 +20,8 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
@@ -37,7 +37,7 @@ import java.io.IOException;
  * unsigned int(32) default_sample_flags
  * }
  */
-public class TrackFragmentHeaderBox extends FullBox {
+public class TrackFragmentHeaderBox extends AbstractFullBox {
     public static final String TYPE = "tfhd";
 
     private long trackId;

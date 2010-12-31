@@ -16,7 +16,7 @@
 
 package com.coremedia.drm.packager.isoparser;
 
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ContainerBox;
 
@@ -72,13 +72,13 @@ public final class Walk {
             if (b instanceof ContainerBox) {
                 Walk.through((ContainerBox) b);
             }
-            if (b instanceof Box) {
-                if (((Box) b).offset != b.calculateOffset()) {
-                    throw new RuntimeException("Real offset " + ((Box) b).offset + " vs. calculated " + b.calculateOffset() + " Box: " + b);
+            if (b instanceof AbstractBox) {
+                if (((AbstractBox) b).offset != b.calculateOffset()) {
+                    throw new RuntimeException("Real offset " + ((AbstractBox) b).offset + " vs. calculated " + b.calculateOffset() + " Box: " + b);
                 }
                 b.toString(); // Just test if some execption is trown
-                ((Box) b).getDisplayName(); // Just test if some execption is trown
-                ((Box) b).getUserType();
+                ((AbstractBox) b).getDisplayName(); // Just test if some execption is trown
+                ((AbstractBox) b).getUserType();
 
                 BeanInfo beanInfo = Introspector.getBeanInfo(b.getClass());
                 PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
@@ -87,7 +87,7 @@ public final class Walk {
                     String name = propertyDescriptor.getName();
                     if (!Walk.skipList.contains(name) &&
                             propertyDescriptor.getReadMethod() != null &&
-                            !Box.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
+                            !AbstractBox.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
                         propertyDescriptor.getReadMethod().invoke(b, (Object[]) null);
                     }
                 }

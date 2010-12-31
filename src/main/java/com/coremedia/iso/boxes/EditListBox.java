@@ -49,7 +49,7 @@ import java.io.IOException;
  * <li>Media-Time = 0 seconds</li>
  * <li>Media-Rate = 1</li>
  */
-public class EditListBox extends FullBox {
+public class EditListBox extends AbstractFullBox {
     private long[] segmentDurations;
     private long[] mediaTimes;
     private double[] mediaRates;

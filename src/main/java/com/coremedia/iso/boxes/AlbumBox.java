@@ -29,7 +29,7 @@ import java.io.IOException;
  *
  * @see com.coremedia.iso.boxes.UserDataBox
  */
-public class AlbumBox extends FullBox {
+public class AlbumBox extends AbstractFullBox {
     public static final String TYPE = "albm";
 
     private String language;

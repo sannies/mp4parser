@@ -4,15 +4,15 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
 /**
  * Most stupid box of the world. Encapsulates actual data within
  */
-public final class AppleDataBox extends FullBox {
+public final class AppleDataBox extends AbstractFullBox {
     public static final String TYPE = "data";
 
     private byte[] fourBytes = new byte[4];

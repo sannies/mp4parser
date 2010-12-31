@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 /**
  * A box with no internal structure. We read it and write it without looking into the content.
  */
-public abstract class LiteralBox extends Box {
+public abstract class LiteralBox extends AbstractBox {
     private static Logger LOG = Logger.getLogger(LiteralBox.class.getName());
 
     byte[] content;

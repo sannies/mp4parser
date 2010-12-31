@@ -20,8 +20,8 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
@@ -30,7 +30,7 @@ import java.io.IOException;
  * nto a DCF or PDCF. A free space box MAY include zero or more Rrights Oobject boxes. The Rights Object is
  * treated as binary data and a Device MAY add or delete Rights Object boxes in the parent free space box.
  */
-public class OmaDrmRightsObjectBox extends FullBox {
+public class OmaDrmRightsObjectBox extends AbstractFullBox {
     public static final String TYPE = "odrb";
 
     private byte[] rightsObject;

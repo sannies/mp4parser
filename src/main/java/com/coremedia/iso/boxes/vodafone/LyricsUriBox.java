@@ -20,8 +20,8 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
@@ -29,7 +29,7 @@ import java.io.IOException;
  * A box in the {@link com.coremedia.iso.boxes.UserDataBox} containing information about the lyric location.
  * Invented by Vodafone.
  */
-public class LyricsUriBox extends FullBox {
+public class LyricsUriBox extends AbstractFullBox {
     public static final String TYPE = "lrcu";
 
     private String lyricsUri;

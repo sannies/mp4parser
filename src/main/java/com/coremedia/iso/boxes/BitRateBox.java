@@ -37,7 +37,7 @@ import java.io.IOException;
  * }</code>
  */
 
-public final class BitRateBox extends Box {
+public final class BitRateBox extends AbstractBox {
     public static final String TYPE = "btrt";
 
     private long bufferSizeDb;

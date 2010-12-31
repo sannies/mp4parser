@@ -21,8 +21,8 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.BoxInterface;
-import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 
@@ -30,7 +30,7 @@ import java.io.IOException;
  * The OMA DRM Transaction Tracking Box enables transaction tracking as defined OMA DRM 2.0. Resides in a
  * {@link com.coremedia.iso.boxes.odf.MutableDrmInformationBox}.
  */
-public class OmaDrmTransactionTrackingBox extends FullBox {
+public class OmaDrmTransactionTrackingBox extends AbstractFullBox {
     public static final String TYPE = "odtt";
 
     private byte[] transactionId = new byte[16];
