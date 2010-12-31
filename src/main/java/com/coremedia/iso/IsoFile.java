@@ -44,7 +44,7 @@ import java.util.List;
  * Uses IsoBufferWrapper  to access the underlying file.
  */
 public class IsoFile implements ContainerBox, Box {
-    private AbstractBox[] boxes = new AbstractBox[0];
+    private Box[] boxes = new Box[0];
     private BoxParser boxParser = new OldBoxFactoryImpl();
     private IsoBufferWrapper originalIso;
 
@@ -74,7 +74,7 @@ public class IsoFile implements ContainerBox, Box {
     @SuppressWarnings("unchecked")
     public <T extends Box> T[] getBoxes(Class<T> clazz) {
         ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (AbstractBox boxe : boxes) {
+        for (Box boxe : boxes) {
             if (clazz.isInstance(boxe)) {
                 boxesToBeReturned.add(clazz.cast(boxe));
             }
@@ -157,7 +157,7 @@ public class IsoFile implements ContainerBox, Box {
     public void getBox(IsoOutputStream isos) throws IOException {
 
         try {
-            for (AbstractBox box : boxes) {
+            for (Box box : boxes) {
                 box.getBox(isos);
             }
         } finally {
@@ -190,7 +190,7 @@ public class IsoFile implements ContainerBox, Box {
 
     public long getSize() {
         long size = 0;
-        for (AbstractBox box : boxes) {
+        for (Box box : boxes) {
             size += box.getSize();
         }
         return size;
