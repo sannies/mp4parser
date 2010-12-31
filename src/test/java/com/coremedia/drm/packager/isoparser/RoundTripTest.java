@@ -17,6 +17,7 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoFileConvenienceHelper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.MediaDataBox;
 import junit.framework.TestCase;
@@ -72,7 +73,7 @@ public class RoundTripTest extends TestCase {
         isoFile.parse();
         Walk.through(isoFile);
         isoFile.parseMdats();
-        isoFile.switchToAutomaticChunkOffsetBox();
+        IsoFileConvenienceHelper.switchToAutomaticChunkOffsetBox(isoFile);
         isoFile.getBoxes(MediaDataBox.class)[0].getSample(0).toString();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         isoFile.getBox(new IsoOutputStream(baos));
