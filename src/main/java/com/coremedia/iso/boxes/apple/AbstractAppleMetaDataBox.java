@@ -30,7 +30,7 @@ public abstract class AbstractAppleMetaDataBox extends Box implements ContainerB
     public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
         if (clazz.isAssignableFrom(appleDataBox.getClass())) {
             T[] returnValue = (T[]) Array.newInstance(clazz, 1);
-            returnValue[0] = (T) appleDataBox;
+            returnValue[0] = (T) (BoxInterface) appleDataBox;
             return returnValue;
         }
         return null;
