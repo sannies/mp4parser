@@ -1,22 +1,20 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.Utf8;
-
 /**
  *
  */
 public final class AppleNetworkBox extends AbstractAppleMetaDataBox {
-  public static final String TYPE = "tvnn";
+    public static final String TYPE = "tvnn";
 
 
-  public AppleNetworkBox() {
-    super(TYPE);
-  }
+    public AppleNetworkBox() {
+        super(TYPE);
+        appleDataBox = AppleDataBox.getStringAppleDataBox();
+    }
 
-  public String getDisplayName() {
-    return "iTunes TV Network Box";
-  }
-
+    public String getDisplayName() {
+        return "iTunes TV Network Box";
+    }
 
 
 }

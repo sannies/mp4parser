@@ -18,6 +18,40 @@ public final class AppleDataBox extends AbstractFullBox {
     private byte[] fourBytes = new byte[4];
     private byte[] content;
 
+    private static AppleDataBox getEmpty() {
+        AppleDataBox appleDataBox = new AppleDataBox();
+        appleDataBox.setVersion(0);
+        appleDataBox.setFourBytes(new byte[4]);
+        return appleDataBox;
+    }
+
+    public static AppleDataBox getStringAppleDataBox() {
+        AppleDataBox appleDataBox = getEmpty();
+        appleDataBox.setFlags(1);
+        appleDataBox.setContent(new byte[]{0});
+        return appleDataBox;
+    }
+
+    public static AppleDataBox getUint8AppleDataBox() {
+        AppleDataBox appleDataBox = new AppleDataBox();
+        appleDataBox.setFlags(21);
+        appleDataBox.setContent(new byte[]{0});
+        return appleDataBox;
+    }
+
+    public static AppleDataBox getUint16AppleDataBox() {
+        AppleDataBox appleDataBox = new AppleDataBox();
+        appleDataBox.setFlags(21);
+        appleDataBox.setContent(new byte[]{0, 0});
+        return appleDataBox;
+    }
+
+    public static AppleDataBox getUint32AppleDataBox() {
+        AppleDataBox appleDataBox = new AppleDataBox();
+        appleDataBox.setFlags(21);
+        appleDataBox.setContent(new byte[]{0, 0, 0, 0});
+        return appleDataBox;
+    }
 
     public AppleDataBox() {
         super(IsoFile.fourCCtoBytes(TYPE));

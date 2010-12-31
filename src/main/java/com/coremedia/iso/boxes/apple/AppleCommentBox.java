@@ -1,21 +1,20 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.Utf8;
-
 /**
  * itunes MetaData comment box.
  */
 public final class AppleCommentBox extends AbstractAppleMetaDataBox {
-  public static final String TYPE = "\u00a9cmt";
+    public static final String TYPE = "\u00a9cmt";
 
 
-  public AppleCommentBox() {
-    super(TYPE);
-  }
+    public AppleCommentBox() {
+        super(TYPE);
+        appleDataBox = AppleDataBox.getStringAppleDataBox();
+    }
 
-  public String getDisplayName() {
-    return "iTunes Comment";
-  }
+    public String getDisplayName() {
+        return "iTunes Comment";
+    }
 
 
 }

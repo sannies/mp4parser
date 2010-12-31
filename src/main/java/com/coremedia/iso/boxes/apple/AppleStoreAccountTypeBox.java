@@ -9,6 +9,7 @@ public class AppleStoreAccountTypeBox extends AbstractAppleMetaDataBox {
 
     public AppleStoreAccountTypeBox() {
         super(TYPE);
+        appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
     public String getDisplayName() {
@@ -18,9 +19,12 @@ public class AppleStoreAccountTypeBox extends AbstractAppleMetaDataBox {
     public String getReadableValue() {
         byte value = this.appleDataBox.getContent()[0];
         switch (value) {
-            case 0: return "iTunes Account";
-            case 1: return "AOL Account";
-            default: return "unknown Account";
+            case 0:
+                return "iTunes Account";
+            case 1:
+                return "AOL Account";
+            default:
+                return "unknown Account";
         }
 
     }

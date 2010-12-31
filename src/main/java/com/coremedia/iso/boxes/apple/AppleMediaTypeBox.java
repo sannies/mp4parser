@@ -25,6 +25,7 @@ public class AppleMediaTypeBox extends AbstractAppleMetaDataBox {
 
     public AppleMediaTypeBox() {
         super(TYPE);
+        appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
     public String getDisplayName() {

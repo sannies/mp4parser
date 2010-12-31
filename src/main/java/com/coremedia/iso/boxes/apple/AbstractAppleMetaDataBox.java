@@ -67,8 +67,8 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "[" +
-                "appleDataBox=" + appleDataBox +
+        return this.getClass().getSimpleName() + "{" +
+                "appleDataBox=" + getValue() +
                 '}';
     }
 
@@ -141,4 +141,6 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
             return "unknown";
         }
     }
+
+
 }

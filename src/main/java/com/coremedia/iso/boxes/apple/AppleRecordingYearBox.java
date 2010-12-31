@@ -1,21 +1,20 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.Utf8;
-
 /**
  *
  */
 public class AppleRecordingYearBox extends AbstractAppleMetaDataBox {
-  public static final String TYPE = "\u00a9day";
+    public static final String TYPE = "\u00a9day";
 
 
-  public AppleRecordingYearBox() {
-    super(TYPE);
-  }
+    public AppleRecordingYearBox() {
+        super(TYPE);
+        appleDataBox = AppleDataBox.getStringAppleDataBox();
+    }
 
-  public String getDisplayName() {
-    return "iTunes Recording Year";
-  }
+    public String getDisplayName() {
+        return "iTunes Recording Year";
+    }
 
 
 }

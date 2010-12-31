@@ -1,21 +1,20 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.Utf8;
-
 /**
  *
  */
 public final class AppleTrackAuthorBox extends AbstractAppleMetaDataBox {
-  public static final String TYPE = "\u00a9wrt";
+    public static final String TYPE = "\u00a9wrt";
 
 
-  public AppleTrackAuthorBox() {
-    super(TYPE);
-  }
+    public AppleTrackAuthorBox() {
+        super(TYPE);
+        appleDataBox = AppleDataBox.getStringAppleDataBox();
+    }
 
-  public String getDisplayName() {
-    return "iTunes Track Author";
-  }
+    public String getDisplayName() {
+        return "iTunes Track Author";
+    }
 
 
 }

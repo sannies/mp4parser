@@ -1,20 +1,19 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.Utf8;
-
 /**
  * itunes MetaData comment box.
  */
 public final class AppleCopyrightBox extends AbstractAppleMetaDataBox {
-  public static final String TYPE = "cprt";
+    public static final String TYPE = "cprt";
 
 
-  public AppleCopyrightBox() {
-    super(TYPE);
-  }
+    public AppleCopyrightBox() {
+        super(TYPE);
+        appleDataBox = AppleDataBox.getStringAppleDataBox();
+    }
 
-  public String getDisplayName() {
-    return "iTunes Copyright Box";
-  }
+    public String getDisplayName() {
+        return "iTunes Copyright Box";
+    }
 
 }

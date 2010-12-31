@@ -1,22 +1,20 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.Utf8;
-
 /**
  *
  */
 public final class AppleAlbumBox extends AbstractAppleMetaDataBox {
-  public static final String TYPE = "\u00a9alb";
+    public static final String TYPE = "\u00a9alb";
 
 
-  public AppleAlbumBox() {
-    super(TYPE);
-  }
+    public AppleAlbumBox() {
+        super(TYPE);
+        appleDataBox = AppleDataBox.getStringAppleDataBox();
+    }
 
-  public String getDisplayName() {
-    return "iTunes Album Title";
-  }
-
+    public String getDisplayName() {
+        return "iTunes Album Title";
+    }
 
 
 }
