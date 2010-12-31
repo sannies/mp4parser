@@ -16,7 +16,6 @@
 
 package com.coremedia.iso;
 
-import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.MediaDataBox;
@@ -87,7 +86,7 @@ public class IsoFile implements ContainerBox, Box {
                 Box box = boxParser.parseBox(originalIso, this, lastMovieFragmentBox);
                 if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
                 boxeList.add(box);
-                this.boxes = boxeList.toArray(new AbstractBox[boxeList.size()]);
+                this.boxes = boxeList.toArray(new Box[boxeList.size()]);
                 assert box.calculateOffset() == sp : "calculated offset differs from offset in file";
             } else {
                 done = true;
