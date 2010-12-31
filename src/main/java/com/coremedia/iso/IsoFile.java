@@ -26,6 +26,7 @@ import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.Sample;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -134,13 +135,17 @@ public class IsoFile implements ContainerBox, Box {
     }
 
     public static String bytesToFourCC(byte[] type) {
-        char[] result = "\0\0\0\0".toCharArray();
+        byte[] result = new byte[]{0, 0, 0, 0};
         if (type != null) {
             for (int i = 0; i < Math.min(type.length, 4); i++) {
-                result[i] = (char) type[i];
+                result[i] = type[i];
             }
         }
-        return new String(result);
+        try {
+            return new String(type, "ASCII");
+        } catch (UnsupportedEncodingException e) {
+            throw new Error(e);
+        }
     }
 
 

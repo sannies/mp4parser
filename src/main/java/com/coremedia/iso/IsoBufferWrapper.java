@@ -17,8 +17,12 @@
 package com.coremedia.iso;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,8 +41,29 @@ public class IsoBufferWrapper {
     public IsoBufferWrapper(ByteBuffer[] parents) {
         this.parents = parents;
     }
+
     public IsoBufferWrapper(List<ByteBuffer> parents) {
         this.parents = parents.toArray(new ByteBuffer[parents.size()]);
+    }
+
+    public IsoBufferWrapper(File file) throws IOException {
+        long filelength = file.length();
+        int sliceSize = Integer.MAX_VALUE;
+
+        RandomAccessFile raf = new RandomAccessFile(file, "r");
+        ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+        long i = 0;
+        while (i < filelength) {
+            if ((filelength - i) > sliceSize) {
+                buffers.add(raf.getChannel().map(FileChannel.MapMode.READ_ONLY, i, sliceSize).slice());
+                i += sliceSize;
+            } else {
+                buffers.add(raf.getChannel().map(FileChannel.MapMode.READ_ONLY, i, filelength - i).slice());
+                i += filelength - i;
+            }
+        }
+        parents = buffers.toArray(new ByteBuffer[buffers.size()]);
+        raf.close();
     }
 
     public long position() {
