@@ -17,11 +17,11 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.MediaDataBox;
 import junit.framework.TestCase;
 import junitx.framework.ArrayAssert;
 
-import javax.tools.FileObject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -72,10 +72,10 @@ public class RoundTripTest extends TestCase {
         isoFile.parse();
         Walk.through(isoFile);
         isoFile.parseMdats();
-		isoFile.switchToAutomaticChunkOffsetBox();
-		isoFile.getBoxes(MediaDataBox.class)[0].getSample(0).toString();
+        isoFile.switchToAutomaticChunkOffsetBox();
+        isoFile.getBoxes(MediaDataBox.class)[0].getSample(0).toString();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        isoFile.write(baos);
+        isoFile.getBox(new IsoOutputStream(baos));
 
         new FileOutputStream("/home/sannies/a").write(baos.toByteArray());
 

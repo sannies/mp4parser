@@ -34,7 +34,6 @@ import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.Sample;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -66,7 +65,6 @@ public class IsoFile implements ContainerBox, BoxInterface {
         MovieExtendsBox[] movieExtendsBoxes = getBoxes(MovieExtendsBox.class);
         return movieExtendsBoxes != null && movieExtendsBoxes.length > 0;
     }
-
 
 
     public BoxInterface[] getBoxes() {
@@ -149,16 +147,15 @@ public class IsoFile implements ContainerBox, BoxInterface {
     }
 
 
-
     /**
      * Writes the IsoFile without calculating the DCF Hash as described in
      * the OMA DCF Specification 5.3.
      *
-     * @param os the target stream
+     * @param isos the target stream
      * @throws IOException in case of any error caused by the target stream or by reading the original ISO file.
      */
-    public void write(OutputStream os) throws IOException {
-        IsoOutputStream isos = new IsoOutputStream(os);
+    public void getBox(IsoOutputStream isos) throws IOException {
+
         try {
             for (Box box : boxes) {
                 box.getBox(isos);

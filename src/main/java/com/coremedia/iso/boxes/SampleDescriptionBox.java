@@ -54,7 +54,7 @@ public class SampleDescriptionBox extends FullContainerBox {
 
     protected long getContentSize() {
         long size = 4;
-        for (Box box : boxes) {
+        for (BoxInterface box : boxes) {
             size += box.getSize();
         }
         return size;
@@ -85,7 +85,7 @@ public class SampleDescriptionBox extends FullContainerBox {
 
     protected void getContent(IsoOutputStream isos) throws IOException {
         isos.writeUInt32(boxes.length);
-        for (Box boxe : boxes) {
+        for (BoxInterface boxe : boxes) {
             boxe.getBox(isos);
         }
     }

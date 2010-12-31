@@ -28,37 +28,37 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.ItemProtectionBox
  */
 public class ItemProtectionBox extends FullContainerBox {
-  int protectionCount;
+    int protectionCount;
 
-  public static final String TYPE = "ipro";
+    public static final String TYPE = "ipro";
 
-  public ItemProtectionBox() {
-    super(TYPE);
-  }
-
-  public SchemeInformationBox getItemProtectionScheme() {
-    if (getBoxes(SchemeInformationBox.class).length > 0) {
-      return getBoxes(SchemeInformationBox.class)[0];
-    } else {
-      return null;
+    public ItemProtectionBox() {
+        super(TYPE);
     }
-  }
 
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    parseHeader(in, size);
-    protectionCount = in.readUInt16();
-    parseBoxes(size, in, boxParser, lastMovieFragmentBox);
-  }
-
-  protected void getContent(IsoOutputStream os) throws IOException {
-    os.writeUInt16(protectionCount);
-    for (Box boxe : boxes) {
-      boxe.getBox(os);
+    public SchemeInformationBox getItemProtectionScheme() {
+        if (getBoxes(SchemeInformationBox.class).length > 0) {
+            return getBoxes(SchemeInformationBox.class)[0];
+        } else {
+            return null;
+        }
     }
-  }
 
-  public String getDisplayName() {
-    return "Item Protection Box";
-  }
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+        parseHeader(in, size);
+        protectionCount = in.readUInt16();
+        parseBoxes(size, in, boxParser, lastMovieFragmentBox);
+    }
+
+    protected void getContent(IsoOutputStream os) throws IOException {
+        os.writeUInt16(protectionCount);
+        for (BoxInterface boxe : boxes) {
+            boxe.getBox(os);
+        }
+    }
+
+    public String getDisplayName() {
+        return "Item Protection Box";
+    }
 
 }

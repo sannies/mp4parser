@@ -17,7 +17,7 @@
 package com.coremedia.iso.boxes.odf;
 
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.FullContainerBox;
 
 import java.io.ByteArrayOutputStream;
@@ -28,60 +28,60 @@ import java.io.IOException;
  * See OMA DCF Specification for details.
  */
 public class OmaDrmContainerBox extends FullContainerBox {
-  public static final String TYPE = "odrm";
+    public static final String TYPE = "odrm";
 
-  protected long getHeaderSize() {
-    return 20;
-  }
-
-  public byte[] getHeader() {
-    try {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      IsoOutputStream ios = new IsoOutputStream(baos);
-      ios.writeUInt32(1);
-      ios.write(getType());
-      ios.writeUInt64(getSize());
-      ios.writeUInt8(getVersion());
-      ios.writeUInt24(getFlags());
-
-      assert baos.size() == getHeaderSize();
-      return baos.toByteArray();
-    } catch (IOException e) {
-      e.printStackTrace();
+    protected long getHeaderSize() {
+        return 20;
     }
-    return null;
-  }
 
-  public OmaDrmContainerBox() {
-    super(TYPE);
-  }
+    public byte[] getHeader() {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IsoOutputStream ios = new IsoOutputStream(baos);
+            ios.writeUInt32(1);
+            ios.write(getType());
+            ios.writeUInt64(getSize());
+            ios.writeUInt8(getVersion());
+            ios.writeUInt24(getFlags());
 
-  public String getDisplayName() {
-    return "OMA DRM Container Box";
-  }
-
-  /**
-   * Gets the <code>OmaDrmDiscreteHeadersBox</code> child box. If none can be
-   * found <code>null</code> is returned.
-   *
-   * @return the <code>OmaDrmDiscreteHeadersBox</code> if any or <code>null</code>
-   */
-  public OmaDrmDiscreteHeadersBox getOmaDrmDiscreteHeadersBox() {
-    for (Box box : boxes) {
-      if (box instanceof OmaDrmDiscreteHeadersBox) {
-        return (OmaDrmDiscreteHeadersBox) box;
-      }
+            assert baos.size() == getHeaderSize();
+            return baos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
-    return null;
-  }
 
-
-  public OmaDrmContentObjectBox getOmaDrmContentObjectBox() {
-    for (Box box : boxes) {
-      if (box instanceof OmaDrmContentObjectBox) {
-        return (OmaDrmContentObjectBox) box;
-      }
+    public OmaDrmContainerBox() {
+        super(TYPE);
     }
-    return null;
-  }
+
+    public String getDisplayName() {
+        return "OMA DRM Container Box";
+    }
+
+    /**
+     * Gets the <code>OmaDrmDiscreteHeadersBox</code> child box. If none can be
+     * found <code>null</code> is returned.
+     *
+     * @return the <code>OmaDrmDiscreteHeadersBox</code> if any or <code>null</code>
+     */
+    public OmaDrmDiscreteHeadersBox getOmaDrmDiscreteHeadersBox() {
+        for (BoxInterface box : boxes) {
+            if (box instanceof OmaDrmDiscreteHeadersBox) {
+                return (OmaDrmDiscreteHeadersBox) box;
+            }
+        }
+        return null;
+    }
+
+
+    public OmaDrmContentObjectBox getOmaDrmContentObjectBox() {
+        for (BoxInterface box : boxes) {
+            if (box instanceof OmaDrmContentObjectBox) {
+                return (OmaDrmContentObjectBox) box;
+            }
+        }
+        return null;
+    }
 }

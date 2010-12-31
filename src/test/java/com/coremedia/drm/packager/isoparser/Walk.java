@@ -58,6 +58,17 @@ public final class Walk {
 
     public static void through(ContainerBox container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
         for (BoxInterface b : container.getBoxes()) {
+            BoxInterface[] myBoxes = container.getBoxes(b.getClass());
+            boolean found = false;
+            for (BoxInterface myBox : myBoxes) {
+                if (myBox == b) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                throw new RuntimeException("Didn't find the box");
+            }
+
             if (b instanceof ContainerBox) {
                 Walk.through((ContainerBox) b);
             }

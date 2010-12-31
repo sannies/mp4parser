@@ -17,18 +17,23 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoOutputStream;
+
+import java.io.IOException;
 
 /**
  * Defines basic interaction possibilities for any ISO box. Each box has a parent box and a type.
  */
 public interface BoxInterface {
-  ContainerBox getParent();
+    ContainerBox getParent();
 
-  long getSize();
+    long getSize();
 
-  long calculateOffset();
+    long calculateOffset();
 
-  byte[] getType();
+    byte[] getType();
 
-  IsoFile getIsoFile();
+    IsoFile getIsoFile();
+
+    void getBox(IsoOutputStream os) throws IOException;
 }

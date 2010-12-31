@@ -27,8 +27,8 @@ public abstract class AbstractAppleMetaDataBox extends Box implements ContainerB
         return new Box[]{appleDataBox};
     }
 
-    public <T extends Box> T[] getBoxes(Class<T> clazz) {
-        if (appleDataBox.getClass().isInstance(clazz)) {
+    public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
+        if (clazz.isAssignableFrom(appleDataBox.getClass())) {
             T[] returnValue = (T[]) Array.newInstance(clazz, 1);
             returnValue[0] = (T) appleDataBox;
             return returnValue;
@@ -132,7 +132,7 @@ public abstract class AbstractAppleMetaDataBox extends Box implements ContainerB
             int current = 1;
             int length = content.length;
             for (byte b : content) {
-                l += toLong(b)<< (8*(length - current++));
+                l += toLong(b) << (8 * (length - current++));
             }
             return "" + l;
         } else if (appleDataBox.getFlags() == 0) {
