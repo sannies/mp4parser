@@ -29,7 +29,7 @@ import java.util.Arrays;
 /**
  * Base class for all ISO Full boxes.
  */
-public abstract class AbstractFullBox extends AbstractBox {
+public abstract class AbstractFullBox extends AbstractBox implements FullBox {
     private int version;
     private int flags;
 
