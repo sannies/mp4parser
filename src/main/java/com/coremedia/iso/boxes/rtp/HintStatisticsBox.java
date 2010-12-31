@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.rtp;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 
 /**
  * Parent box for various hint statistics. Defined in ISO/IEC 14496-1.
@@ -27,27 +27,27 @@ import com.coremedia.iso.boxes.BoxInterface;
  * @see com.coremedia.iso.boxes.rtp.HintPacketsSentBox
  */
 public class HintStatisticsBox extends AbstractContainerBox {
-  public static final String TYPE = "hinf";
+    public static final String TYPE = "hinf";
 
-  public HintStatisticsBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Hint Statistics Box";
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("HintStatisticsBox[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public HintStatisticsBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public String getDisplayName() {
+        return "Hint Statistics Box";
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("HintStatisticsBox[");
+        Box[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

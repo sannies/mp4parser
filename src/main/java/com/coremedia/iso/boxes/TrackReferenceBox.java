@@ -33,27 +33,27 @@ import com.coremedia.iso.IsoFile;
  * to fill the reference type box.
  */
 public class TrackReferenceBox extends AbstractContainerBox {
-  public static final String TYPE = "tref";
+    public static final String TYPE = "tref";
 
-  public TrackReferenceBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Track Reference Box";
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("TrackReferenceBox[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public TrackReferenceBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public String getDisplayName() {
+        return "Track Reference Box";
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("TrackReferenceBox[");
+        Box[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

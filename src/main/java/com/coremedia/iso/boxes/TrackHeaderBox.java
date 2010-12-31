@@ -110,7 +110,7 @@ public class TrackHeaderBox extends AbstractFullBox {
         return contentSize;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox); //172
         if (getVersion() == 1) {
             creationTime = in.readUInt64();

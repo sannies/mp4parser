@@ -50,7 +50,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         long numberOfEntries = in.readUInt32();
         assert numberOfEntries <= Integer.MAX_VALUE : "Too many entries";

@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.TrackMetaDataContainer;
 
 /**
@@ -37,7 +37,7 @@ public class TrackFragmentBox extends AbstractContainerBox implements TrackMetaD
     }
 
     public TrackFragmentHeaderBox getTrackFragmentHeaderBox() {
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             if (box instanceof TrackFragmentHeaderBox) {
                 return (TrackFragmentHeaderBox) box;
             }

@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.odf;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullContainerBox;
 import com.coremedia.iso.boxes.OmaDrmAccessUnitFormatBox;
 
@@ -34,14 +34,14 @@ public class OmaDrmKeyManagenentSystemBox extends FullContainerBox {
 
     public OmaDrmKeyManagenentSystemBox() {
         super(TYPE);
-        boxes = new BoxInterface[2];
+        boxes = new Box[2];
     }
 
     public String getDisplayName() {
         return "Oma Drm Key Managenent System Box";
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         assert boxes[0] instanceof OmaDrmCommonHeadersBox;
         assert boxes.length == 1 || boxes[1] instanceof OmaDrmAccessUnitFormatBox;

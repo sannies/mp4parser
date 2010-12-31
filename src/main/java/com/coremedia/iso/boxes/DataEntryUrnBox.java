@@ -53,7 +53,7 @@ public class DataEntryUrnBox extends AbstractFullBox {
         return utf8StringLengthInBytes(name) + 1 + utf8StringLengthInBytes(location) + 1;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         name = in.readString();
         location = in.readString();

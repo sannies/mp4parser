@@ -94,7 +94,7 @@ public class RatingBox extends AbstractFullBox {
         return 4 + 4 + 2 + utf8StringLengthInBytes(ratingInfo) + 1;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         ratingEntity = IsoFile.bytesToFourCC(in.read(4));
         ratingCriteria = IsoFile.bytesToFourCC(in.read(4));

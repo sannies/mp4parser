@@ -6,7 +6,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
 
@@ -102,7 +102,7 @@ public class LocationInformationBox extends AbstractFullBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         language = in.readIso639();
         name = in.readString();

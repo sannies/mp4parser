@@ -23,7 +23,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.assistui.multiline;
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
 
@@ -64,7 +64,7 @@ public class RtpMovieHintInformationBox extends AbstractBox {
         return utf8StringLengthInBytes(sdpText) + 4;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         descriptionFormat = IsoFile.bytesToFourCC(in.read(4));
         sdpText = in.readString((int) size - 4);
     }

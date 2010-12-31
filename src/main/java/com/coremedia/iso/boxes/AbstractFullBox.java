@@ -94,7 +94,7 @@ public abstract class AbstractFullBox extends AbstractBox {
         return null;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         parseHeader(in, size);
     }
 

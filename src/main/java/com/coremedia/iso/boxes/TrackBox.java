@@ -37,7 +37,7 @@ public class TrackBox extends AbstractContainerBox implements TrackMetaDataConta
     }
 
     public TrackHeaderBox getTrackHeaderBox() {
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             if (box instanceof TrackHeaderBox) {
                 return (TrackHeaderBox) box;
             }
@@ -49,7 +49,7 @@ public class TrackBox extends AbstractContainerBox implements TrackMetaDataConta
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("TrackBox[");
-        BoxInterface[] boxes = getBoxes();
+        Box[] boxes = getBoxes();
         for (int i = 0; i < boxes.length; i++) {
             if (i > 0) {
                 buffer.append(";");

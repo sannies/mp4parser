@@ -25,27 +25,27 @@ import com.coremedia.iso.IsoFile;
  * @see EditListBox
  */
 public class EditBox extends AbstractContainerBox {
-  public static final String TYPE = "edts";
+    public static final String TYPE = "edts";
 
-  public EditBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Edit Box";
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("EditBox[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public EditBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public String getDisplayName() {
+        return "Edit Box";
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("EditBox[");
+        Box[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

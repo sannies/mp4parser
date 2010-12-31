@@ -37,7 +37,7 @@ public abstract class LiteralBox extends AbstractBox {
         super(type);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         if (size == -1) { // length = rest of file!
             throw new IOException("box size of -1 is not supported. Boxsize -1 means box reaches until the end of the file.");
         } else if (((int) size) != size) {

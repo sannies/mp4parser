@@ -17,7 +17,7 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.beans.BeanInfo;
@@ -57,10 +57,10 @@ public final class Walk {
     }
 
     public static void through(ContainerBox container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
-        for (BoxInterface b : container.getBoxes()) {
-            BoxInterface[] myBoxes = container.getBoxes(b.getClass());
+        for (Box b : container.getBoxes()) {
+            Box[] myBoxes = container.getBoxes(b.getClass());
             boolean found = false;
-            for (BoxInterface myBox : myBoxes) {
+            for (Box myBox : myBoxes) {
                 if (myBox == b) {
                     found = true;
                 }

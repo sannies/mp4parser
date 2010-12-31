@@ -44,7 +44,7 @@ public class FileTypeBox extends AbstractBox {
 
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         majorBrand = IsoFile.bytesToFourCC(in.read(4));
         minorVerson = in.readUInt32();
         int compatibleBrandsCount = (int) ((size - 8) / 4);

@@ -43,7 +43,7 @@ public class FreeSpaceBox extends AbstractBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         if (((int) size) != size) {
             throw new RuntimeException("The FreeSpaceBox cannot be larger than 2^32 bytes!");
         }

@@ -22,27 +22,27 @@ import com.coremedia.iso.IsoFile;
  * This box contains all the objects that declare characteristic information of the media in the track.
  */
 public class MediaInformationBox extends AbstractContainerBox {
-  public static final String TYPE = "minf";
+    public static final String TYPE = "minf";
 
-  public MediaInformationBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Media Information Box";
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("MediaInformationBox[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public MediaInformationBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public String getDisplayName() {
+        return "Media Information Box";
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("MediaInformationBox[");
+        Box[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

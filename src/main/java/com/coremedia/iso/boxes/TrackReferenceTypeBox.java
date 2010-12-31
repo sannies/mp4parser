@@ -45,7 +45,7 @@ public class TrackReferenceTypeBox extends AbstractBox {
         return "Track Reference Type Box";
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         int count = (int) (size / 4);
         trackIds = new long[count];
         for (int i = 0; i < count; i++) {

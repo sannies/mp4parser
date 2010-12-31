@@ -24,7 +24,7 @@ import java.io.IOException;
 /**
  * Defines basic interaction possibilities for any ISO box. Each box has a parent box and a type.
  */
-public interface BoxInterface {
+public interface Box {
     ContainerBox getParent();
 
     long getSize();

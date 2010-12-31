@@ -21,7 +21,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
@@ -112,7 +112,7 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         return depth;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         if (TYPE4.equals(IsoFile.bytesToFourCC(type))) {
             byte[] vc1 = new byte[(int) size - 8]; //substract reserved and dataReferenceIndex (see super#parse)
@@ -145,9 +145,9 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
             assert 0xFFFF == tmp;
 
             size -= 78;
-            ArrayList<BoxInterface> someBoxes = new ArrayList<BoxInterface>();
+            ArrayList<Box> someBoxes = new ArrayList<Box>();
             while (size > 8) { // If there are just some stupid dead bytes don't try to make a new box
-                BoxInterface b = boxParser.parseBox(in, this, lastMovieFragmentBox);
+                Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
                 someBoxes.add(b);
                 size -= b.getSize();
             }
@@ -159,9 +159,9 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
 
 
     @SuppressWarnings("unchecked")
-    public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
+    public <T extends Box> T[] getBoxes(Class<T> clazz) {
         ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             if (clazz.isInstance(boxe)) {
                 boxesToBeReturned.add(clazz.cast(boxe));
             }
@@ -169,7 +169,7 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
     }
 
-    public BoxInterface[] getBoxes() {
+    public Box[] getBoxes() {
         return boxes;
     }
 
@@ -178,7 +178,7 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
             return vc1Content.length + 8;
         }
         long contentSize = 78;
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             contentSize += boxe.getSize();
         }
         return contentSize;
@@ -220,7 +220,7 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
             }
             isos.writeUInt16(getDepth());
             isos.writeUInt16(0xFFFF);
-            for (BoxInterface boxe : boxes) {
+            for (Box boxe : boxes) {
                 boxe.getBox(isos);
             }
         }

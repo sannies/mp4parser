@@ -91,7 +91,7 @@ public class SampleSizeBox extends AbstractFullBox {
         return 8 + (sampleSize == 0 ? entrySize.length * 4 : 0);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
 
         assert ((int) size) == size;
 

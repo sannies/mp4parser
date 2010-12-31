@@ -49,18 +49,18 @@ public class DataReferenceBox extends FullContainerBox {
         return super.getContentSize() + 4;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         setVersion(in.readUInt8());
         setFlags(in.readUInt24());
         in.readUInt32();
-        List<BoxInterface> boxes = new LinkedList<BoxInterface>();
+        List<Box> boxes = new LinkedList<Box>();
         long remainingContentSize = size - 8;
         while (remainingContentSize > 0) {
-            BoxInterface box = boxParser.parseBox(in, this, lastMovieFragmentBox);
+            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
             remainingContentSize -= box.getSize();
             boxes.add(box);
         }
-        this.boxes = boxes.toArray(new BoxInterface[boxes.size()]);
+        this.boxes = boxes.toArray(new Box[boxes.size()]);
     }
 
     public String getDisplayName() {
@@ -75,7 +75,7 @@ public class DataReferenceBox extends FullContainerBox {
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("DataReferenceBox[");
-        BoxInterface[] boxes = getBoxes();
+        Box[] boxes = getBoxes();
         for (int i = 0; i < boxes.length; i++) {
             if (i > 0) {
                 buffer.append(";");

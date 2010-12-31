@@ -30,7 +30,7 @@ import java.util.Arrays;
 /**
  * A basic ISO box. No full box.
  */
-public abstract class AbstractBox implements BoxInterface {
+public abstract class AbstractBox implements Box {
     public long offset;
 
     public long getSize() {
@@ -96,7 +96,7 @@ public abstract class AbstractBox implements BoxInterface {
      * @param lastMovieFragmentBox
      * @throws IOException in case of an I/O error.
      */
-    public abstract void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException;
+    public abstract void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException;
 
     /**
      * Returns the human readable name of the box.
@@ -187,8 +187,8 @@ public abstract class AbstractBox implements BoxInterface {
     public long calculateOffset() {
         //todo: doesn't work for fragmented files as it doesn't take mdats into account (as they are not in the parent structure)
         long offsetFromParentBoxStart = parent.getNumOfBytesToFirstChild();
-        BoxInterface[] boxes = this.getParent().getBoxes();
-        for (BoxInterface box : boxes) {
+        Box[] boxes = this.getParent().getBoxes();
+        for (Box box : boxes) {
             if (box.equals(this)) {
                 return parent.calculateOffset() + offsetFromParentBoxStart;
             }

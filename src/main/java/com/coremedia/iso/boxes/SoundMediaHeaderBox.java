@@ -40,7 +40,7 @@ public class SoundMediaHeaderBox extends AbstractFullBox {
         return 2 + 2;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         balance = in.readFixedPoint88();
         in.readUInt16();

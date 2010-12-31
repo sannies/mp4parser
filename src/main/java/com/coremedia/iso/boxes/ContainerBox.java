@@ -19,35 +19,35 @@ package com.coremedia.iso.boxes;
 /**
  * Interface for all ISO boxes that may contain other boxes.
  */
-public interface ContainerBox extends BoxInterface {
+public interface ContainerBox extends Box {
 
-  /**
-   * Gets all child boxes. May not return <code>null</code>.
-   *
-   * @return an array of boxes, empty array in case of no children.
-   */
-  BoxInterface[] getBoxes();
+    /**
+     * Gets all child boxes. May not return <code>null</code>.
+     *
+     * @return an array of boxes, empty array in case of no children.
+     */
+    Box[] getBoxes();
 
-  /**
-   * Gets all child boxes of the given type. May not return <code>null</code>.
-   *
-   * @param clazz child box's type
-   * @return an array of boxes, empty array in case of no children.
-   */
-  <T extends BoxInterface> T[] getBoxes(Class<T> clazz);
+    /**
+     * Gets all child boxes of the given type. May not return <code>null</code>.
+     *
+     * @param clazz child box's type
+     * @return an array of boxes, empty array in case of no children.
+     */
+    <T extends Box> T[] getBoxes(Class<T> clazz);
 
-  /**
-   * Gets the parent box. May be <code>null</code> in case of the
-   * {@link com.coremedia.iso.IsoFile} itself.
-   *
-   * @return a <code>ContainerBox</code> that contains <code>this</code>
-   */
-  ContainerBox getParent();
+    /**
+     * Gets the parent box. May be <code>null</code> in case of the
+     * {@link com.coremedia.iso.IsoFile} itself.
+     *
+     * @return a <code>ContainerBox</code> that contains <code>this</code>
+     */
+    ContainerBox getParent();
 
-  /**
-   * Returns the number of bytes from the start of the box to start of the first child.
-   *
-   * @return offset of first child from box start
-   */
-  long getNumOfBytesToFirstChild();
+    /**
+     * Returns the number of bytes from the start of the box to start of the first child.
+     *
+     * @return offset of first child from box start
+     */
+    long getNumOfBytesToFirstChild();
 }

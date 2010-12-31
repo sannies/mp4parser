@@ -54,13 +54,13 @@ public class SampleDescriptionBox extends FullContainerBox {
 
     protected long getContentSize() {
         long size = 4;
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             size += box.getSize();
         }
         return size;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         parseHeader(in, size);
         long entryCount = in.readUInt32();
         if (entryCount > Integer.MAX_VALUE) {
@@ -85,7 +85,7 @@ public class SampleDescriptionBox extends FullContainerBox {
 
     protected void getContent(IsoOutputStream isos) throws IOException {
         isos.writeUInt32(boxes.length);
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             boxe.getBox(isos);
         }
     }
@@ -93,7 +93,7 @@ public class SampleDescriptionBox extends FullContainerBox {
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("SampleDescriptionBox[");
-        BoxInterface[] boxes = getBoxes();
+        Box[] boxes = getBoxes();
         for (int i = 0; i < boxes.length; i++) {
             if (i > 0) {
                 buffer.append(";");

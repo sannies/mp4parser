@@ -60,7 +60,7 @@ public class HintMediaHeaderBox extends AbstractFullBox {
         return 16;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         maxPduSize = in.readUInt16();
         avgPduSize = in.readUInt16();

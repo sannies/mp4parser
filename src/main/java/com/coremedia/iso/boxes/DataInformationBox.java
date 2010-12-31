@@ -27,27 +27,27 @@ import com.coremedia.iso.IsoFile;
  * The data information box contains objects that declare the location of the media information in a track.
  */
 public class DataInformationBox extends AbstractContainerBox {
-  public static final String TYPE = "dinf";
+    public static final String TYPE = "dinf";
 
-  public DataInformationBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Data Information Box";
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("DataInformationBox[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public DataInformationBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public String getDisplayName() {
+        return "Data Information Box";
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("DataInformationBox[");
+        Box[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

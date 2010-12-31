@@ -86,7 +86,7 @@ public class EditListBox extends AbstractFullBox {
         return contentSize;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         long entryCount = in.readUInt32();
         if (entryCount > Integer.MAX_VALUE) {

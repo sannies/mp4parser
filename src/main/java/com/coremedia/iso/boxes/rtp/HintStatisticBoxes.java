@@ -22,7 +22,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -171,7 +171,7 @@ public class HintStatisticBoxes extends AbstractBox {
 
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE1)) ||
                 Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE3)) ||
                 Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE5)) ||

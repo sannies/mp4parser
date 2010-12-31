@@ -6,7 +6,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -23,14 +23,14 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
     private static Logger LOG = Logger.getLogger(AbstractAppleMetaDataBox.class.getName());
     AppleDataBox appleDataBox = new AppleDataBox();
 
-    public BoxInterface[] getBoxes() {
+    public Box[] getBoxes() {
         return new AbstractBox[]{appleDataBox};
     }
 
-    public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
+    public <T extends Box> T[] getBoxes(Class<T> clazz) {
         if (clazz.isAssignableFrom(appleDataBox.getClass())) {
             T[] returnValue = (T[]) Array.newInstance(clazz, 1);
-            returnValue[0] = (T) (BoxInterface) appleDataBox;
+            returnValue[0] = (T) (Box) appleDataBox;
             return returnValue;
         }
         return null;
@@ -41,7 +41,7 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
     }
 
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         long sp = in.position();
         long dataBoxSize = in.readUInt32();
         String thisShouldBeData = in.readString(4);

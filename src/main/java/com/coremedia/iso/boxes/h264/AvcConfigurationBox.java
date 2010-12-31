@@ -21,7 +21,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
 
@@ -70,7 +70,7 @@ public final class AvcConfigurationBox extends AbstractBox {
         return rest;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         /*
      unsigned int(8) configurationVersion = 1;
      unsigned int(8) AVCProfileIndication;

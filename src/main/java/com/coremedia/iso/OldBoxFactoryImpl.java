@@ -20,7 +20,7 @@ import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.AlbumBox;
 import com.coremedia.iso.boxes.AuthorBox;
 import com.coremedia.iso.boxes.BitRateBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ClassificationBox;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.ContainerBox;
@@ -168,7 +168,7 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 /**
- * A factory for Iso Boxes. In general it is instanciated and its {@link OldBoxFactoryImpl#parseBox(IsoBufferWrapper, com.coremedia.iso.boxes.BoxInterface, com.coremedia.iso.boxes.BoxInterface)}
+ * A factory for Iso Boxes. In general it is instanciated and its {@link OldBoxFactoryImpl#parseBox(IsoBufferWrapper, com.coremedia.iso.boxes.Box, com.coremedia.iso.boxes.Box)}
  * is called to create the boxes and their subboxes.
  */
 public class OldBoxFactoryImpl implements BoxParser {
@@ -176,7 +176,7 @@ public class OldBoxFactoryImpl implements BoxParser {
 
 
     //TODO there are better ways than one millions if-statements,  I'm sure --sma
-    public AbstractBox createBox(byte[] type, byte[] userType, byte[] parent, BoxInterface lastMovieFragmentBox) {
+    public AbstractBox createBox(byte[] type, byte[] userType, byte[] parent, Box lastMovieFragmentBox) {
         //  System.err.println("Box: " + IsoFile.bytesToFourCC(type) + " Parent: " + ((parent!=null&&parent.length==4)?IsoFile.bytesToFourCC(parent):"IsoFile"));
 
         if (Arrays.equals(parent, IsoFile.fourCCtoBytes(TrackReferenceTypeBox.TYPE1)) ||
@@ -760,7 +760,7 @@ public class OldBoxFactoryImpl implements BoxParser {
      * @return the box just parsed
      * @throws IOException if reading from <code>in</code> fails
      */
-    public AbstractBox parseBox(IsoBufferWrapper in, BoxInterface parent, BoxInterface lastMovieFragmentBox) throws IOException {
+    public AbstractBox parseBox(IsoBufferWrapper in, Box parent, Box lastMovieFragmentBox) throws IOException {
         long offset = in.position();
 
         long size = in.readUInt32();

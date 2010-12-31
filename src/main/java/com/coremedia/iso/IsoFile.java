@@ -17,7 +17,7 @@
 package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ChunkOffsetBox;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.DynamicChunkOffsetBox;
@@ -43,7 +43,7 @@ import java.util.List;
  * The most upper container for ISO Boxes. It is a container box that is a file.
  * Uses IsoBufferWrapper  to access the underlying file.
  */
-public class IsoFile implements ContainerBox, BoxInterface {
+public class IsoFile implements ContainerBox, Box {
     private AbstractBox[] boxes = new AbstractBox[0];
     private BoxParser boxParser = new OldBoxFactoryImpl();
     private IsoBufferWrapper originalIso;
@@ -67,12 +67,12 @@ public class IsoFile implements ContainerBox, BoxInterface {
     }
 
 
-    public BoxInterface[] getBoxes() {
+    public Box[] getBoxes() {
         return boxes;
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
+    public <T extends Box> T[] getBoxes(Class<T> clazz) {
         ArrayList<T> boxesToBeReturned = new ArrayList<T>();
         for (AbstractBox boxe : boxes) {
             if (clazz.isInstance(boxe)) {
@@ -85,13 +85,13 @@ public class IsoFile implements ContainerBox, BoxInterface {
 
     public void parse() throws IOException {
 
-        List<BoxInterface> boxeList = new LinkedList<BoxInterface>();
+        List<Box> boxeList = new LinkedList<Box>();
         boolean done = false;
-        BoxInterface lastMovieFragmentBox = null;
+        Box lastMovieFragmentBox = null;
         while (!done) {
             long sp = originalIso.position();
             if (originalIso.remaining() >= 8) {
-                BoxInterface box = boxParser.parseBox(originalIso, this, lastMovieFragmentBox);
+                Box box = boxParser.parseBox(originalIso, this, lastMovieFragmentBox);
                 if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
                 boxeList.add(box);
                 this.boxes = boxeList.toArray(new AbstractBox[boxeList.size()]);
@@ -208,11 +208,11 @@ public class IsoFile implements ContainerBox, BoxInterface {
                 SampleTableBox sampleTableBox = null;
                 // Do not find the way to the sampleTableBox by many getBoxes(Class) calls since they need to much
                 // object instantiation. Going this way here speeds up the process.
-                for (BoxInterface mediaBoxe : trackBox.getBoxes()) {
+                for (Box mediaBoxe : trackBox.getBoxes()) {
                     if (mediaBoxe instanceof MediaBox) {
-                        for (BoxInterface mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
+                        for (Box mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
                             if (mediaInformationBoxe instanceof MediaInformationBox) {
-                                for (BoxInterface sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
+                                for (Box sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
                                     if (sampleTableBoxe instanceof SampleTableBox) {
                                         sampleTableBox = (SampleTableBox) sampleTableBoxe;
                                     }

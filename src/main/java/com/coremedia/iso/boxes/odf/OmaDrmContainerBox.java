@@ -17,7 +17,7 @@
 package com.coremedia.iso.boxes.odf;
 
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullContainerBox;
 
 import java.io.ByteArrayOutputStream;
@@ -67,7 +67,7 @@ public class OmaDrmContainerBox extends FullContainerBox {
      * @return the <code>OmaDrmDiscreteHeadersBox</code> if any or <code>null</code>
      */
     public OmaDrmDiscreteHeadersBox getOmaDrmDiscreteHeadersBox() {
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             if (box instanceof OmaDrmDiscreteHeadersBox) {
                 return (OmaDrmDiscreteHeadersBox) box;
             }
@@ -77,7 +77,7 @@ public class OmaDrmContainerBox extends FullContainerBox {
 
 
     public OmaDrmContentObjectBox getOmaDrmContentObjectBox() {
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             if (box instanceof OmaDrmContentObjectBox) {
                 return (OmaDrmContentObjectBox) box;
             }

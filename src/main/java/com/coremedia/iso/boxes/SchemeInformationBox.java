@@ -24,27 +24,27 @@ import com.coremedia.iso.IsoFile;
  * boxexes whose type annd format are defined by the scheme declared in the {@link com.coremedia.iso.boxes.SchemeTypeBox}.
  */
 public class SchemeInformationBox extends AbstractContainerBox {
-  public static final String TYPE = "schi";
+    public static final String TYPE = "schi";
 
-  public SchemeInformationBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Scheme Information Box";
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("Scheme Information Box[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public SchemeInformationBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public String getDisplayName() {
+        return "Scheme Information Box";
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("Scheme Information Box[");
+        Box[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

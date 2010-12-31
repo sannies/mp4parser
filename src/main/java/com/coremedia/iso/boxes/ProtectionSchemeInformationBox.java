@@ -31,28 +31,28 @@ import com.coremedia.iso.IsoFile;
  * @see com.coremedia.iso.boxes.sampleentry.VisualSampleEntry#TYPE_ENCRYPTED
  */
 public class ProtectionSchemeInformationBox extends AbstractContainerBox {
-  public static final String TYPE = "sinf";
+    public static final String TYPE = "sinf";
 
-  public ProtectionSchemeInformationBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
+    public ProtectionSchemeInformationBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
 
-  }
-
-  public String getDisplayName() {
-    return "Protection Scheme Information Box";
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("Protection Scheme Information Box[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public String getDisplayName() {
+        return "Protection Scheme Information Box";
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("Protection Scheme Information Box[");
+        Box[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullContainerBox;
 import com.coremedia.iso.boxes.UserDataBox;
 
@@ -45,14 +45,14 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
         super(TYPE);
     }
 
-    public BoxInterface[] getBoxes() {
+    public Box[] getBoxes() {
         return boxes;
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
+    public <T extends Box> T[] getBoxes(Class<T> clazz) {
         ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             if (clazz.isInstance(boxe)) {
                 boxesToBeReturned.add(clazz.cast(boxe));
             }
@@ -70,20 +70,20 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
 
     protected long getContentSize() {
         long size = 0;
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             size += boxe.getSize();
         }
         return size + 1 + utf8StringLengthInBytes(contentType);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         parseHeader(in, size);
         int contentTypeLength = in.readUInt8();
         contentType = new String(in.read(contentTypeLength), "UTF-8");
-        List<BoxInterface> boxList = new LinkedList<BoxInterface>();
+        List<Box> boxList = new LinkedList<Box>();
         long remainingContentSize = size - 4 - 1 - contentTypeLength;
         while (remainingContentSize > 0) {
-            BoxInterface box = boxParser.parseBox(in, this, lastMovieFragmentBox);
+            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
             remainingContentSize -= box.getSize();
             boxList.add(box);
         }
@@ -94,7 +94,7 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
         long sp = isos.getStreamPosition();
         isos.writeUInt8(utf8StringLengthInBytes(contentType));
         isos.writeStringNoTerm(contentType);
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             boxe.getBox(isos);
         }
         assert isos.getStreamPosition() - sp == getContentSize();
@@ -104,8 +104,8 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
         StringBuffer buffer = new StringBuffer();
         buffer.append("OmaDrmDiscreteHeadersBox[");
         buffer.append("contentType=").append(getContentType());
-        BoxInterface[] boxes2 = getBoxes();
-        for (BoxInterface aBoxes2 : boxes2) {
+        Box[] boxes2 = getBoxes();
+        for (Box aBoxes2 : boxes2) {
             buffer.append(";");
             buffer.append(aBoxes2.toString());
         }
@@ -114,7 +114,7 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
     }
 
     public OmaDrmCommonHeadersBox getOmaDrmCommonHeadersBox() {
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             if (box instanceof OmaDrmCommonHeadersBox) {
                 return (OmaDrmCommonHeadersBox) box;
             }
@@ -123,7 +123,7 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
     }
 
     public UserDataBox getUserDataBox() {
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             if (box instanceof UserDataBox) {
                 return (UserDataBox) box;
             }

@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.rtp;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 
 /**
  * Contains SDP information to be used by a streaming server. <br>
@@ -61,27 +61,27 @@ import com.coremedia.iso.boxes.BoxInterface;
  * The sdptext is correctly formatted as a series of lines, each terminated by  &lt;crlf>, as required by SDP.
  */
 public class HintInformationBox extends AbstractContainerBox {
-  public static final String TYPE = "hnti";
+    public static final String TYPE = "hnti";
 
-  public HintInformationBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Hint Information Box";
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("HintInformationBox[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public HintInformationBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public String getDisplayName() {
+        return "Hint Information Box";
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("HintInformationBox[");
+        Box[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

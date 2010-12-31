@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
@@ -69,7 +69,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         return sampleRate;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         in.readUInt32();
         in.readUInt32();
@@ -79,26 +79,26 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         in.readUInt16();
         sampleRate = in.readFixedPoint1616();
         size -= 28;
-        ArrayList<BoxInterface> someBoxes = new ArrayList<BoxInterface>();
+        ArrayList<Box> someBoxes = new ArrayList<Box>();
         while (size > 8) {
             if (TYPE7.equals(IsoFile.bytesToFourCC(type))) {
                 //microsoft garbage
                 break;
             }
-            BoxInterface b = boxParser.parseBox(in, this, lastMovieFragmentBox);
+            Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
             someBoxes.add(b);
             size -= b.getSize();
         }
-        boxes = someBoxes.toArray(new BoxInterface[someBoxes.size()]);
+        boxes = someBoxes.toArray(new Box[someBoxes.size()]);
         // commented out since it forbids deadbytes
         //assert size == 0 : "After parsing all boxes there are " + size + " bytes left. 0 bytes required";
     }
 
 
     @SuppressWarnings("unchecked")
-    public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
+    public <T extends Box> T[] getBoxes(Class<T> clazz) {
         ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             if (clazz.isInstance(boxe)) {
                 boxesToBeReturned.add(clazz.cast(boxe));
             }
@@ -107,13 +107,13 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     }
 
 
-    public BoxInterface[] getBoxes() {
+    public Box[] getBoxes() {
         return boxes;
     }
 
     protected long getContentSize() {
         long contentSize = 28;
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             contentSize += boxe.getSize();
         }
         return contentSize;
@@ -137,7 +137,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         isos.writeUInt16(0);
         isos.writeUInt16(0);
         isos.writeFixedPont1616(getSampleRate());
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             boxe.getBox(isos);
         }
     }

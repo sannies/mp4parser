@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.odf;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 
 /**
  * A mutable DRM information box may appear in both DCF and PDCF. In the OMA DRM system,
@@ -27,28 +27,28 @@ import com.coremedia.iso.boxes.BoxInterface;
  * calculating the DCF Hash.
  */
 public class MutableDrmInformationBox extends AbstractContainerBox {
-  public static final String TYPE = "mdri";
+    public static final String TYPE = "mdri";
 
-  public MutableDrmInformationBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Mutable DRM Information Box";
-  }
-
-  public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("MutableDrmInformationBox[");
-    BoxInterface[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        buffer.append(";");
-      }
-      buffer.append(boxes[i].toString());
+    public MutableDrmInformationBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    buffer.append("]");
-    return buffer.toString();
-  }
+
+    public String getDisplayName() {
+        return "Mutable DRM Information Box";
+    }
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("MutableDrmInformationBox[");
+        Box[] boxes = getBoxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes[i].toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 
 }

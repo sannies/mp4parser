@@ -53,7 +53,7 @@ public class VideoMediaHeaderBox extends AbstractFullBox {
     }
 
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         graphicsmode = in.readUInt16();
         opcolor = new int[3];

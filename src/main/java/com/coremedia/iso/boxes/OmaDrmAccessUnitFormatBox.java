@@ -79,7 +79,7 @@ public final class OmaDrmAccessUnitFormatBox extends AbstractFullBox {
         isos.writeUInt8(initVectorLength);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         allBits = (byte) in.readUInt8();
         selectiveEncryption = (allBits & 0x80) == 0x80;

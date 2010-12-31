@@ -21,7 +21,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -73,7 +73,7 @@ public class OmaDrmContentObjectBox extends AbstractFullBox {
         return 8 + omaDrmDataLength;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         omaDrmDataLength = in.readUInt64();
         omaDrmData = in.read((int) omaDrmDataLength);

@@ -68,7 +68,7 @@ public class SchemeTypeBox extends AbstractFullBox {
         return 8 + (((getFlags() & 1) == 1) ? utf8StringLengthInBytes(schemeUri) + 1 : 0);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         schemeType[0] = (byte) in.readUInt8();
         schemeType[1] = (byte) in.readUInt8();

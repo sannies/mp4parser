@@ -19,7 +19,7 @@ package com.coremedia.iso.boxes.sampleentry;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
@@ -37,7 +37,7 @@ import java.util.List;
  */
 public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     private int dataReferenceIndex;
-    protected BoxInterface[] boxes;
+    protected Box[] boxes;
     byte[] type;
 
     protected SampleEntry(byte[] type) {
@@ -58,19 +58,19 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     }
 
     public void addBox(AbstractBox b) {
-        List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
+        List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
         listOfBoxes.add(b);
         boxes = listOfBoxes.toArray(new AbstractBox[listOfBoxes.size()]);
     }
 
-    public boolean removeBox(BoxInterface b) {
-        List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
+    public boolean removeBox(Box b) {
+        List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
         boolean rc = listOfBoxes.remove(b);
-        boxes = listOfBoxes.toArray(new BoxInterface[listOfBoxes.size()]);
+        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
         return rc;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         byte[] tmp = in.read(6);
         assert Arrays.equals(new byte[6], tmp) : "reserved byte not 0";
         dataReferenceIndex = in.readUInt16();
@@ -78,7 +78,7 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
 
     public long getNumOfBytesToFirstChild() {
         long sizeOfChildren = 0;
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             sizeOfChildren += box.getSize();
         }
         return getSize() - sizeOfChildren;

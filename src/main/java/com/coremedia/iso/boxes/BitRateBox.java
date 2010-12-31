@@ -52,7 +52,7 @@ public final class BitRateBox extends AbstractBox {
         return 12;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         bufferSizeDb = in.readUInt32();
         maxBitrate = in.readUInt32();
         avgBitrate = in.readUInt32();

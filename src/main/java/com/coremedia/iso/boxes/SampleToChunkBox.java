@@ -58,7 +58,7 @@ public class SampleToChunkBox extends AbstractFullBox {
         return firstChunk.length * 12 + 4;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         long entryCount = in.readUInt32();
         if (entryCount > Integer.MAX_VALUE) {

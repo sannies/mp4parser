@@ -46,7 +46,7 @@ public class SampleTableBox extends AbstractContainerBox {
 
 
     public SampleDescriptionBox getSampleDescriptionBox() {
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             if (box instanceof SampleDescriptionBox) {
                 return (SampleDescriptionBox) box;
             }
@@ -55,7 +55,7 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public SampleSizeBox getSampleSizeBox() {
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             if (box instanceof SampleSizeBox) {
                 return (SampleSizeBox) box;
             }
@@ -64,7 +64,7 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public SampleToChunkBox getSampleToChunkBox() {
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             if (box instanceof SampleToChunkBox) {
                 return (SampleToChunkBox) box;
             }
@@ -73,7 +73,7 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public ChunkOffsetBox getChunkOffsetBox() {
-        for (BoxInterface box : boxes) {
+        for (Box box : boxes) {
             if (box instanceof ChunkOffsetBox) {
                 return (ChunkOffsetBox) box;
             }
@@ -83,7 +83,7 @@ public class SampleTableBox extends AbstractContainerBox {
 
     public void setChunkOffsetBox(ChunkOffsetBox b) {
         for (int i = 0; i < boxes.length; i++) {
-            BoxInterface box = boxes[i];
+            Box box = boxes[i];
             if (box instanceof ChunkOffsetBox) {
                 boxes[i] = b;
             }
@@ -94,7 +94,7 @@ public class SampleTableBox extends AbstractContainerBox {
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("SampleTableBox[");
-        BoxInterface[] boxes = getBoxes();
+        Box[] boxes = getBoxes();
         for (int i = 0; i < boxes.length; i++) {
             if (i > 0) {
                 buffer.append(";");

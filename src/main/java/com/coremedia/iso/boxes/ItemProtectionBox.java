@@ -44,7 +44,7 @@ public class ItemProtectionBox extends FullContainerBox {
         }
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         parseHeader(in, size);
         protectionCount = in.readUInt16();
         parseBoxes(size, in, boxParser, lastMovieFragmentBox);
@@ -52,7 +52,7 @@ public class ItemProtectionBox extends FullContainerBox {
 
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeUInt16(protectionCount);
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             boxe.getBox(os);
         }
     }

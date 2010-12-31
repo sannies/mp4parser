@@ -32,11 +32,11 @@ import java.util.List;
  * Abstract base class suitable for most boxes acting purely as container for other boxes.
  */
 public abstract class AbstractContainerBox extends AbstractBox implements ContainerBox {
-    protected BoxInterface[] boxes;
+    protected Box[] boxes;
 
     protected long getContentSize() {
         long contentSize = 0;
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             contentSize += boxe.getSize();
         }
         return contentSize;
@@ -47,14 +47,14 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         boxes = new AbstractBox[0];
     }
 
-    public BoxInterface[] getBoxes() {
+    public Box[] getBoxes() {
         return boxes;
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
+    public <T extends Box> T[] getBoxes(Class<T> clazz) {
         List<T> boxesToBeReturned = new ArrayList<T>(2);
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             if (clazz == boxe.getClass()) {
                 boxesToBeReturned.add((T) boxe);
             }
@@ -64,24 +64,24 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         //return (T[]) boxesToBeReturned.toArray();
     }
 
-    public void addBox(BoxInterface b) {
-        List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
+    public void addBox(Box b) {
+        List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
         listOfBoxes.add(b);
         boxes = listOfBoxes.toArray(new AbstractBox[listOfBoxes.size()]);
     }
 
-    public void removeBox(BoxInterface b) {
-        List<BoxInterface> listOfBoxes = new LinkedList<BoxInterface>(Arrays.asList(boxes));
+    public void removeBox(Box b) {
+        List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
         listOfBoxes.remove(b);
-        boxes = listOfBoxes.toArray(new BoxInterface[listOfBoxes.size()]);
+        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
-        List<BoxInterface> boxeList = new LinkedList<BoxInterface>();
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+        List<Box> boxeList = new LinkedList<Box>();
 
         while (size > 8) {
             long sp = in.position();
-            BoxInterface box = boxParser.parseBox(in, this, lastMovieFragmentBox);
+            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
             long parsedBytes = in.position() - sp;
             assert parsedBytes == box.getSize() :
                     box + " didn't parse well. number of parsed bytes (" + parsedBytes + ") doesn't match getSize (" + box.getSize() + ")";
@@ -89,13 +89,13 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
 
             boxeList.add(box);
             //update field after each box
-            this.boxes = boxeList.toArray(new BoxInterface[boxeList.size()]);
+            this.boxes = boxeList.toArray(new Box[boxeList.size()]);
         }
 
     }
 
     protected void getContent(IsoOutputStream os) throws IOException {
-        for (BoxInterface boxe : boxes) {
+        for (Box boxe : boxes) {
             boxe.getBox(os);
         }
     }

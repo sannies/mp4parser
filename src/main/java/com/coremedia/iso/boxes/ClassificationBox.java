@@ -79,7 +79,7 @@ public class ClassificationBox extends AbstractFullBox {
         return 4 + 2 + 2 + utf8StringLengthInBytes(classificationInfo) + 1;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         classificationEntity = IsoFile.bytesToFourCC(in.read(4));
         classificationTableIndex = in.readUInt16();

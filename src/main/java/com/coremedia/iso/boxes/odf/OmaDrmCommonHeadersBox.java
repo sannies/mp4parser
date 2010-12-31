@@ -23,7 +23,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.BoxInterface;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
@@ -50,7 +50,7 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
     private String textualHeaders;
 
     @SuppressWarnings("unchecked")
-    public <T extends BoxInterface> T[] getBoxes(Class<T> clazz) {
+    public <T extends Box> T[] getBoxes(Class<T> clazz) {
         ArrayList<T> boxesToBeReturned = new ArrayList<T>();
         for (AbstractBox boxe : extendedHeaders) {
             if (clazz.isInstance(boxe)) {
@@ -68,7 +68,7 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         extendedHeaders = new AbstractBox[0];
     }
 
-    public BoxInterface[] getBoxes() {
+    public Box[] getBoxes() {
         return extendedHeaders;
     }
 
@@ -151,7 +151,7 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         return contentLength;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, BoxInterface lastMovieFragmentBox) throws IOException {
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         encryptionMethod = in.readUInt8();
         paddingScheme = in.readUInt8();
@@ -162,12 +162,12 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         contentId = new String(in.read(contentIdLength), "UTF-8");
         rightsIssuerUrl = new String(in.read(rightsIssuerUrlLength), "UTF-8");
         textualHeaders = new String(in.read(textualHeadersLength), "UTF-8");
-        List<BoxInterface> boxeList = new LinkedList<BoxInterface>();
+        List<Box> boxeList = new LinkedList<Box>();
         long remainingContentSize = size;
         remainingContentSize -= 4 + 1 + 1 + 8 + 2 + 2 + 2;
         remainingContentSize -= contentIdLength + rightsIssuerUrlLength + textualHeadersLength;
         while (remainingContentSize > 0) {
-            BoxInterface box = boxParser.parseBox(in, this, lastMovieFragmentBox);
+            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
             remainingContentSize -= box.getSize();
             boxeList.add(box);
         }
@@ -201,7 +201,7 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         buffer.append("contentId=").append(getContentId()).append(";");
         buffer.append("rightsIssuerUrl=").append(getRightsIssuerUrl()).append(";");
         buffer.append("textualHeaders=").append(getTextualHeaders());
-        for (BoxInterface box : getBoxes()) {
+        for (Box box : getBoxes()) {
             buffer.append(";");
             buffer.append(box.toString());
         }
