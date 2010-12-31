@@ -37,12 +37,17 @@ import java.util.List;
  */
 public class IsoFile implements ContainerBox, Box {
     private Box[] boxes = new Box[0];
-    private BoxParser boxParser = new OldBoxFactoryImpl();
+    private BoxParser boxParser = new PropertyBoxParserImpl();
     private IsoBufferWrapper originalIso;
 
 
     public IsoFile(IsoBufferWrapper originalIso) {
         this.originalIso = originalIso;
+    }
+
+    public IsoFile(IsoBufferWrapper originalIso, BoxParser boxParser) {
+        this.originalIso = originalIso;
+        this.boxParser = boxParser;
     }
 
     public ContainerBox getParent() {
