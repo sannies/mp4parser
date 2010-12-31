@@ -23,7 +23,11 @@ public class DynamicChunkOffsetBox extends ChunkOffsetBox {
 
     protected long getContentSize() {
         long count = 0;
-        MediaDataBox[] mdats = this.getIsoFile().getBoxes(MediaDataBox.class);
+        ContainerBox isoFile = this.getParent();
+        while (isoFile.getParent() != null) {
+            isoFile = isoFile.getParent();
+        }
+        MediaDataBox[] mdats = isoFile.getBoxes(MediaDataBox.class);
         for (MediaDataBox mdat : mdats) {
             List<Chunk> chunks = mdat.getTrack(trackId).getChunks();
             count += chunks.size();
@@ -33,7 +37,11 @@ public class DynamicChunkOffsetBox extends ChunkOffsetBox {
     }
 
     public long[] getChunkOffsets() {
-        MediaDataBox[] mdats = this.getIsoFile().getBoxes(MediaDataBox.class);
+        ContainerBox isoFile = this.getParent();
+        while (isoFile.getParent() != null) {
+            isoFile = isoFile.getParent();
+        }
+        MediaDataBox[] mdats = isoFile.getBoxes(MediaDataBox.class);
         ArrayList<Long> chunkOffsets = new ArrayList<Long>();
         for (MediaDataBox mdat : mdats) {
             long mdatStart = mdat.calculateOffset();

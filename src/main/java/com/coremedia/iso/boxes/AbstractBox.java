@@ -83,10 +83,6 @@ public abstract class AbstractBox implements Box {
         this.parent = parent;
     }
 
-    public IsoFile getIsoFile() {
-        return parent.getIsoFile();
-    }
-
     /**
      * Pareses the given IsoBufferWrapper and returns the remaining bytes.
      *

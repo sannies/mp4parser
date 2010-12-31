@@ -18,15 +18,8 @@ package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ChunkOffsetBox;
 import com.coremedia.iso.boxes.ContainerBox;
-import com.coremedia.iso.boxes.DynamicChunkOffsetBox;
-import com.coremedia.iso.boxes.MediaBox;
 import com.coremedia.iso.boxes.MediaDataBox;
-import com.coremedia.iso.boxes.MediaInformationBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.TrackMetaDataContainer;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
@@ -148,8 +141,7 @@ public class IsoFile implements ContainerBox, Box {
 
 
     /**
-     * Writes the IsoFile without calculating the DCF Hash as described in
-     * the OMA DCF Specification 5.3.
+     * Writes the IsoFile.
      *
      * @param isos the target stream
      * @throws IOException in case of any error caused by the target stream or by reading the original ISO file.
@@ -200,41 +192,5 @@ public class IsoFile implements ContainerBox, Box {
         return 0;
     }
 
-    public void switchToAutomaticChunkOffsetBox() {
-        MovieBox[] movieBoxes = this.getBoxes(MovieBox.class);
-        for (MovieBox movieBox : movieBoxes) {
-            TrackBox[] trackBoxes = movieBox.getBoxes(TrackBox.class);
-            for (TrackBox trackBox : trackBoxes) {
-                SampleTableBox sampleTableBox = null;
-                // Do not find the way to the sampleTableBox by many getBoxes(Class) calls since they need to much
-                // object instantiation. Going this way here speeds up the process.
-                for (Box mediaBoxe : trackBox.getBoxes()) {
-                    if (mediaBoxe instanceof MediaBox) {
-                        for (Box mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
-                            if (mediaInformationBoxe instanceof MediaInformationBox) {
-                                for (Box sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
-                                    if (sampleTableBoxe instanceof SampleTableBox) {
-                                        sampleTableBox = (SampleTableBox) sampleTableBoxe;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (sampleTableBox != null) {
-                    ChunkOffsetBox chunkOffsetBox = sampleTableBox.getChunkOffsetBox();
-                    if (chunkOffsetBox == null) {
-                        //todo fix this
-                        System.err.println("Can't switch to AutomaticChunkOffsetBox. SampleTableBox " + sampleTableBox + " doesn't contain a ChunckOffsetBox!");
-                    } else {
-                        sampleTableBox.setChunkOffsetBox(new DynamicChunkOffsetBox(chunkOffsetBox));
-                    }
-                }
-            }
-        }
-    }
 
-    public IsoFile getIsoFile() {
-        return this;
-    }
 }

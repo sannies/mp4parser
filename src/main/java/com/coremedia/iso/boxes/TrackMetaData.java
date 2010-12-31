@@ -19,38 +19,43 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 
 public class TrackMetaData<T> {
-  private long trackId;
-  private T trackBox;
+    private long trackId;
+    private T trackBox;
 
-  public TrackMetaData(long trackId, T trackBox) {
-    this.trackId = trackId;
-    this.trackBox = trackBox;
-  }
-
-  public long getTrackId() {
-    return trackId;
-  }
-
-  public SampleDescriptionBox getSampleDescriptionBox() {
-    if (trackBox instanceof TrackBox) {
-      SampleTableBox sampleTableBox = ((TrackBox) trackBox).getBoxes(MediaBox.class)[0].
-              getBoxes(MediaInformationBox.class)[0].
-              getBoxes(SampleTableBox.class)[0];
-
-      return sampleTableBox.getBoxes(SampleDescriptionBox.class)[0];
-    } else if (trackBox instanceof TrackFragmentBox) {
-      MovieBox[] movieBoxes = ((TrackFragmentBox) trackBox).getIsoFile().getBoxes(MovieBox.class);
-      if (movieBoxes != null && movieBoxes.length > 0) {
-        MovieBox movieBox = movieBoxes[0];
-        TrackMetaData<TrackBox> moovTrackMetaData = movieBox.getTrackMetaData(((TrackFragmentBox) trackBox).getTrackFragmentHeaderBox().getTrackId());
-        return moovTrackMetaData.getSampleDescriptionBox();
-      } else {
-        System.out.println("No movie box in file!");
-        return null;
-      }
-    } else {
-      System.out.println("Unsupported trackBox type " + trackBox);
-      return null;
+    public TrackMetaData(long trackId, T trackBox) {
+        this.trackId = trackId;
+        this.trackBox = trackBox;
     }
-  }
+
+    public long getTrackId() {
+        return trackId;
+    }
+
+    public SampleDescriptionBox getSampleDescriptionBox() {
+        if (trackBox instanceof TrackBox) {
+            SampleTableBox sampleTableBox = ((TrackBox) trackBox).getBoxes(MediaBox.class)[0].
+                    getBoxes(MediaInformationBox.class)[0].
+                    getBoxes(SampleTableBox.class)[0];
+
+            return sampleTableBox.getBoxes(SampleDescriptionBox.class)[0];
+        } else if (trackBox instanceof TrackFragmentBox) {
+            ContainerBox isoFile = ((TrackFragmentBox) trackBox).getParent();
+            while (isoFile.getParent() != null) {
+                isoFile = isoFile.getParent();
+            }
+
+            MovieBox[] movieBoxes = isoFile.getBoxes(MovieBox.class);
+            if (movieBoxes != null && movieBoxes.length > 0) {
+                MovieBox movieBox = movieBoxes[0];
+                TrackMetaData<TrackBox> moovTrackMetaData = movieBox.getTrackMetaData(((TrackFragmentBox) trackBox).getTrackFragmentHeaderBox().getTrackId());
+                return moovTrackMetaData.getSampleDescriptionBox();
+            } else {
+                System.out.println("No movie box in file!");
+                return null;
+            }
+        } else {
+            System.out.println("Unsupported trackBox type " + trackBox);
+            return null;
+        }
+    }
 }
