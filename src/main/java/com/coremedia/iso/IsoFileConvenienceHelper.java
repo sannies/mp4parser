@@ -2,6 +2,7 @@ package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ChunkOffsetBox;
+import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.DynamicChunkOffsetBox;
 import com.coremedia.iso.boxes.MediaBox;
 import com.coremedia.iso.boxes.MediaInformationBox;
@@ -9,8 +10,15 @@ import com.coremedia.iso.boxes.MovieBox;
 import com.coremedia.iso.boxes.SampleTableBox;
 import com.coremedia.iso.boxes.TrackBox;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * A fine selection of useful methods.
+ *
+ * @author Andre John Mas
+ * @author Sebastian Annies
  */
 public class IsoFileConvenienceHelper {
 
@@ -53,4 +61,61 @@ public class IsoFileConvenienceHelper {
             }
         }
     }
+
+    public static Box get(ContainerBox containerBox, String path) {
+
+        String[] parts = path.split("/");
+        if (parts.length == 0) {
+            return null;
+        }
+
+        List<String> partList = new ArrayList<String>(Arrays.asList(parts));
+
+        if ("".equals(partList.get(0))) {
+            partList.remove(0);
+        }
+
+        if (partList.size() > 0) {
+            List<Box> boxes = Arrays.asList(containerBox.getBoxes());
+
+            return get(boxes, partList);
+        }
+        return null;
+    }
+
+    private static Box get(List<Box> boxes, List<String> path) {
+
+
+        String typeInPath = path.remove(0);
+
+        for (Box box : boxes) {
+            if (box instanceof ContainerBox) {
+                ContainerBox boxContainer = (ContainerBox) box;
+                String type = IsoFile.bytesToFourCC(boxContainer.getType());
+
+                if (typeInPath.equals(type)) {
+                    List<Box> children = Arrays.asList(boxContainer.getBoxes());
+                    if (path.size() > 0) {
+                        if (children.size() > 0) {
+                            return get(children, path);
+                        }
+                    } else {
+                        return box;
+                    }
+                }
+
+            } else {
+                String type = IsoFile.bytesToFourCC(box.getType());
+
+                if (path.size() == 0 && typeInPath.equals(type)) {
+                    return box;
+                }
+
+            }
+
+        }
+
+        return null;
+    }
 }
+
