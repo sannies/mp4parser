@@ -142,7 +142,7 @@ public class IsoFile implements ContainerBox, Box {
             }
         }
         try {
-            return new String(type, "ASCII");
+            return new String(type, "ISO-8859-1");
         } catch (UnsupportedEncodingException e) {
             throw new Error(e);
         }
