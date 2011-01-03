@@ -48,15 +48,32 @@ public class IsoBufferWrapper {
 
     public IsoBufferWrapper(File file) throws IOException {
         long filelength = file.length();
-        int sliceSize = Integer.MAX_VALUE;
+        int sliceSize = 1024 * 1024 * 128;
 
         RandomAccessFile raf = new RandomAccessFile(file, "r");
         ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
         long i = 0;
         while (i < filelength) {
             if ((filelength - i) > sliceSize) {
-                buffers.add(raf.getChannel().map(FileChannel.MapMode.READ_ONLY, i, sliceSize).slice());
+                ByteBuffer bb;
+                try {
+                    bb = raf.getChannel().map(FileChannel.MapMode.READ_ONLY, i, sliceSize);//.slice();
+                } catch (IOException e1) {
+
+                    try {
+                        bb = raf.getChannel().map(FileChannel.MapMode.READ_ONLY, i, sliceSize);//.slice();
+                    } catch (IOException e2) {
+
+                        try {
+                            bb = raf.getChannel().map(FileChannel.MapMode.READ_ONLY, i, sliceSize);//.slice();
+                        } catch (IOException e3) {
+                            bb = raf.getChannel().map(FileChannel.MapMode.READ_ONLY, i, sliceSize);//.slice();
+                        }
+                    }
+                }
+                buffers.add(bb);
                 i += sliceSize;
+                System.err.println(i / 1024 / 1024);
             } else {
                 buffers.add(raf.getChannel().map(FileChannel.MapMode.READ_ONLY, i, filelength - i).slice());
                 i += filelength - i;
