@@ -73,7 +73,6 @@ public class IsoBufferWrapper {
                 }
                 buffers.add(bb);
                 i += sliceSize;
-                System.err.println(i / 1024 / 1024);
             } else {
                 buffers.add(raf.getChannel().map(FileChannel.MapMode.READ_ONLY, i, filelength - i).slice());
                 i += filelength - i;

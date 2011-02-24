@@ -43,7 +43,7 @@ public abstract class AbstractBoxParser implements BoxParser {
 
         byte[] type = in.read(4);
         String prefix = "";
-        boolean iWant = true;
+        boolean iWant = false;
         if (iWant) {
             ContainerBox t = parent.getParent();
             while (t != null) {
