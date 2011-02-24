@@ -116,7 +116,7 @@ public class HandlerBox extends AbstractFullBox {
                 name = name.substring(0, name.indexOf('\0') + 1);
             }
             name = name.substring(0, name.indexOf('\0'));
-        } else {
+        } else if (name.length() > 0) {
             name = name.substring(1);
         }
     }

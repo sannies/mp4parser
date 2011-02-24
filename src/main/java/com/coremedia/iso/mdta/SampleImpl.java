@@ -38,12 +38,14 @@ public final class SampleImpl<T extends TrackMetaDataContainer> implements Sampl
   private final IsoBufferWrapper buffer;
   private final long offset;
   private final long size;
+  private boolean syncSample;
 
-  public SampleImpl(IsoBufferWrapper buffer, long offset, long size, Chunk<T> parent) {
+  public SampleImpl(IsoBufferWrapper buffer, long offset, long size, Chunk<T> parent, boolean syncSample) {
     this.parent = parent;
     this.buffer = buffer;
     this.offset = offset;
     this.size = size;
+    this.syncSample = syncSample;
   }
 
   public void getContent(IsoOutputStream os) throws IOException {
@@ -69,7 +71,7 @@ public final class SampleImpl<T extends TrackMetaDataContainer> implements Sampl
   }
 
   public String toString() {
-    return "Offset: " + calculateOffset() + " Size: " + size + " Chunk: " + parent.getFirstSample().calculateOffset() + " Track: " + parent.getParentTrack().getTrackId();
+    return "Offset: " + calculateOffset() + " Size: " + size + " Chunk: " + parent.getFirstSample().calculateOffset() + " Track: " + parent.getParentTrack().getTrackId() + " SyncSample: " + syncSample;
   }
 
   public int compareTo(SampleImpl<T> o) {
@@ -89,5 +91,9 @@ public final class SampleImpl<T extends TrackMetaDataContainer> implements Sampl
       }
     }
     return parent.calculateOffset() + offsetFromChunkStart;
+  }
+
+  public boolean isSyncSample() {
+    return syncSample;
   }
 }

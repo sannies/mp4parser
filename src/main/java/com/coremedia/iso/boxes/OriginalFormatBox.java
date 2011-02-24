@@ -32,44 +32,49 @@ import java.util.Arrays;
  */
 
 public class OriginalFormatBox extends AbstractBox {
-    public static final String TYPE = "frma";
+  public static final String TYPE = "frma";
 
-    private byte[] dataFormat = new byte[4];
+  private byte[] dataFormat = new byte[4];
 
-    public OriginalFormatBox() {
-        super(IsoFile.fourCCtoBytes("frma"));
-    }
+  public OriginalFormatBox() {
+    super(IsoFile.fourCCtoBytes("frma"));
+  }
 
-    public byte[] getDataFormat() {
-        return dataFormat;
-    }
+  public byte[] getDataFormat() {
+    return dataFormat;
+  }
 
-    public void setDataFormat(byte[] dataFormat) {
-        assert dataFormat.length == 4;
-        this.dataFormat = dataFormat;
-    }
+  public String getFourCC() {
+    return IsoFile.bytesToFourCC(dataFormat);
+  }
 
-    public String getDisplayName() {
-        return "Original Format Box";
-    }
+  public void setDataFormat(byte[] dataFormat) {
+    assert dataFormat.length == 4;
+    this.dataFormat = dataFormat;
+  }
 
-    protected long getContentSize() {
-        return 4;
-    }
+  public String getDisplayName() {
+    return "Original Format Box";
+  }
+
+  protected long getContentSize() {
+    return 4;
+  }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         assert size == 4;
+      //in.read(dataFormat)
         dataFormat[0] = (byte) in.readUInt8();
         dataFormat[1] = (byte) in.readUInt8();
         dataFormat[2] = (byte) in.readUInt8();
         dataFormat[3] = (byte) in.readUInt8();
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.write(dataFormat);
-    }
+  protected void getContent(IsoOutputStream os) throws IOException {
+    os.write(dataFormat);
+  }
 
-    public String toString() {
-        return "OriginalFormatBox[dataFormat=" + Arrays.toString(getDataFormat()) + "]";
-    }
+  public String toString() {
+    return "OriginalFormatBox[dataFormat=" + Arrays.toString(getDataFormat()) + "]";
+  }
 }

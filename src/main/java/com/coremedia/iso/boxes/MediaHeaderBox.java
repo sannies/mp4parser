@@ -78,6 +78,26 @@ public class MediaHeaderBox extends AbstractFullBox {
 
     }
 
+    public void setCreationTime(long creationTime) {
+        this.creationTime = creationTime;
+    }
+
+    public void setModificationTime(long modificationTime) {
+        this.modificationTime = modificationTime;
+    }
+
+    public void setTimescale(long timescale) {
+        this.timescale = timescale;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         if (getVersion() == 1) {

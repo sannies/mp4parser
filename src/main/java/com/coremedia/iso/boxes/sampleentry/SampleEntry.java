@@ -23,6 +23,8 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,7 +34,7 @@ import java.util.List;
  *
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.VisualSampleEntry
- * @see com.coremedia.iso.boxes.rtp.HintSampleEntry
+ * @see com.coremedia.iso.boxes.rtp.RtpHintSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  */
 public abstract class SampleEntry extends AbstractBox implements ContainerBox {
@@ -69,6 +71,23 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
         boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
         return rc;
     }
+
+  @SuppressWarnings("unchecked")
+  public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
+    List<T> boxesToBeReturned = new ArrayList<T>(2);
+    for (Box boxe : boxes) { //clazz.isInstance(boxe) / clazz == boxe.getClass()?
+      if (clazz == boxe.getClass()) {
+        boxesToBeReturned.add((T) boxe);
+      }
+
+      if (recursive && boxe instanceof ContainerBox) {
+        boxesToBeReturned.addAll(Arrays.asList(((ContainerBox) boxe).getBoxes(clazz, recursive)));
+      }
+    }
+    // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
+    return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
+    //return (T[]) boxesToBeReturned.toArray();
+  }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         byte[] tmp = in.read(6);

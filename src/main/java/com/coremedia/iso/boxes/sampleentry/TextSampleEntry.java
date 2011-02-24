@@ -32,9 +32,9 @@ import java.util.ArrayList;
  */
 public class TextSampleEntry extends SampleEntry implements ContainerBox {
 
-    public static final String TYPE1 = "tx3g";
+  public static final String TYPE1 = "tx3g";
 
-    public static final String TYPE_ENCRYPTED = "enct";
+  public static final String TYPE_ENCRYPTED = "enct";
 
 /*  class TextSampleEntry() extends SampleEntry ('tx3g') {
     unsigned int(32)  displayFlags;
@@ -47,14 +47,14 @@ public class TextSampleEntry extends SampleEntry implements ContainerBox {
   }
   */
 
-    private long displayFlags; // 32 bits
-    private int horizontalJustification; // 8 bit
-    private int verticalJustification;  // 8 bit
-    private byte[] backgroundColorRgba; // 4 bytes
+  private long displayFlags; // 32 bits
+  private int horizontalJustification; // 8 bit
+  private int verticalJustification;  // 8 bit
+  private byte[] backgroundColorRgba; // 4 bytes
 
-    public TextSampleEntry(byte[] type) {
-        super(type);
-    }
+  public TextSampleEntry(byte[] type) {
+    super(type);
+  }
 
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
@@ -79,51 +79,51 @@ public class TextSampleEntry extends SampleEntry implements ContainerBox {
     }
 
 
-    @SuppressWarnings("unchecked")
-    public <T extends Box> T[] getBoxes(Class<T> clazz) {
-        ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (Box boxe : boxes) {
-            if (clazz.isInstance(boxe)) {
-                boxesToBeReturned.add(clazz.cast(boxe));
-            }
-        }
-        return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
+  @SuppressWarnings("unchecked")
+  public <T extends Box> T[] getBoxes(Class<T> clazz) {
+    ArrayList<T> boxesToBeReturned = new ArrayList<T>();
+    for (Box boxe : boxes) {
+      if (clazz.isInstance(boxe)) {
+        boxesToBeReturned.add(clazz.cast(boxe));
+      }
     }
+    return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
+  }
 
-    public Box[] getBoxes() {
-        return boxes;
+  public Box[] getBoxes() {
+    return boxes;
+  }
+
+  protected long getContentSize() {
+    long contentSize = 18;
+    for (Box boxe : boxes) {
+      contentSize += boxe.getSize();
     }
+    return contentSize;
+  }
 
-    protected long getContentSize() {
-        long contentSize = 18;
-        for (Box boxe : boxes) {
-            contentSize += boxe.getSize();
-        }
-        return contentSize;
+  public String getDisplayName() {
+    return "Text Sample Entry";
+  }
+
+  public String toString() {
+    return "TextSampleEntry";
+  }
+
+  protected void getContent(IsoOutputStream isos) throws IOException {
+    isos.write(new byte[6]);
+    isos.writeUInt16(getDataReferenceIndex());
+
+    isos.writeUInt32(displayFlags);
+    isos.writeUInt8(horizontalJustification);
+    isos.writeUInt8(verticalJustification);
+    isos.writeUInt8(backgroundColorRgba[0]);
+    isos.writeUInt8(backgroundColorRgba[1]);
+    isos.writeUInt8(backgroundColorRgba[2]);
+    isos.writeUInt8(backgroundColorRgba[3]);
+
+    for (Box boxe : boxes) {
+      boxe.getBox(isos);
     }
-
-    public String getDisplayName() {
-        return "Text Sample Entry";
-    }
-
-    public String toString() {
-        return "TextSampleEntry";
-    }
-
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.write(new byte[6]);
-        isos.writeUInt16(getDataReferenceIndex());
-
-        isos.writeUInt32(displayFlags);
-        isos.writeUInt8(horizontalJustification);
-        isos.writeUInt8(verticalJustification);
-        isos.writeUInt8(backgroundColorRgba[0]);
-        isos.writeUInt8(backgroundColorRgba[1]);
-        isos.writeUInt8(backgroundColorRgba[2]);
-        isos.writeUInt8(backgroundColorRgba[3]);
-
-        for (Box boxe : boxes) {
-            boxe.getBox(isos);
-        }
-    }
+  }
 }

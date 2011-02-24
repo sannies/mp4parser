@@ -29,7 +29,7 @@ import java.io.IOException;
  * The TimeScaleEntry is a required box in the additionalData array of a HintSampleEntry if
  * the HintSampleEntry's type is 'rtp '.
  *
- * @see HintSampleEntry
+ * @see RtpHintSampleEntry
  */
 public class TimeScaleEntry extends AbstractBox {
     private long timescale;

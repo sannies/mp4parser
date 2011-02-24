@@ -177,9 +177,20 @@ public class IsoBufferWrapper {
 
     public byte read() {
         if (parents[activeParent].remaining() == 0) {
+          if (parents.length > activeParent + 1) {
             activeParent++;
             parents[activeParent].rewind();
             return read();
+          } else {
+            //todo: consider a parents' rewind on init?
+            try {
+              throw new RuntimeException("No more bytes to read remaining! Make sure position is set correctly after instantiation.");
+            } catch (RuntimeException e) {
+              System.out.println("read beyond buffers!");
+              e.printStackTrace();
+              return 0;
+            }
+          }
         }
         return parents[activeParent].get();
     }
@@ -287,4 +298,17 @@ public class IsoBufferWrapper {
     }
 
 
+  public long readUInt32BE() {
+    long result = 0;
+    result += readUInt16BE();
+    result += ((long) readUInt16BE()) << 16;
+    return result;
+  }
+
+  public int readUInt16BE() {
+    int result = 0;
+    result += readUInt8();
+    result += readUInt8() << 8;
+    return result;
+  }
 }

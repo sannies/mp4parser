@@ -56,6 +56,7 @@ public class RtpTrackSdpHintInformationBox extends AbstractBox {
         return "RTP Track SDP Hint Information";
     }
 
+  @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         sdpText = new String(in.read((int) size), "UTF-8");
     }

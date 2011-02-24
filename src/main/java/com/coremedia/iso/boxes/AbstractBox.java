@@ -25,7 +25,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * A basic ISO box. No full box.
@@ -40,8 +42,7 @@ public abstract class AbstractBox implements Box {
     protected long getHeaderSize() {
         return 4 + // size
                 4 + // type
-                (getContentSize() >= 4294967296L ? 8 : 0) +
-                (Arrays.equals(getType(), IsoFile.fourCCtoBytes("uuid")) ? 16 : 0);
+                (getContentSize() >= 4294967296L ? 8 : 0);
     }
 
     /**
@@ -83,13 +84,17 @@ public abstract class AbstractBox implements Box {
         this.parent = parent;
     }
 
+    public IsoFile getIsoFile() {
+        return parent.getIsoFile();
+    }
+
     /**
      * Pareses the given IsoBufferWrapper and returns the remaining bytes.
      *
      * @param in                   the (part of the) iso file to parse
      * @param size                 expected size of the box
      * @param boxParser            creates inner boxes
-     * @param lastMovieFragmentBox
+     * @param lastMovieFragmentBox latest of previously found moof boxes
      * @throws IOException in case of an I/O error.
      */
     public abstract void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException;
@@ -115,7 +120,7 @@ public abstract class AbstractBox implements Box {
     public byte[] getHeader() {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IsoOutputStream ios = new IsoOutputStream(baos);
+            IsoOutputStream ios = new IsoOutputStream(baos, false);
             if (isSmallBox()) {
                 ios.writeUInt32((int) this.getSize());
                 ios.write(getType());
@@ -124,7 +129,7 @@ public abstract class AbstractBox implements Box {
                 ios.write(getType());
                 ios.writeUInt64(getSize());
             }
-            if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("uuid"))) {
+            if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(UserBox.TYPE))) {
                 ios.write(userType);
             }
 
@@ -151,9 +156,18 @@ public abstract class AbstractBox implements Box {
             os.write(bufAsAr);
         }
 
+
         long writtenBytes = os.getStreamPosition() - sp;
+        String uuid;
+        if (getUserType() != null && getUserType().length == 16) {
+            ByteBuffer b = ByteBuffer.wrap(getUserType());
+            b.order(ByteOrder.BIG_ENDIAN);
+            uuid = new UUID(b.getLong(), b.getLong()).toString();
+        } else {
+            uuid = "--";
+        }
         assert writtenBytes == getSize() : " getHeader + getContent + getDeadBytes (" + writtenBytes + ") of "
-                + IsoFile.bytesToFourCC(getType())
+                + IsoFile.bytesToFourCC(getType()) + " userType: " + uuid
                 + " doesn't match getSize (" + getSize() + ")";
 
     }
@@ -183,13 +197,13 @@ public abstract class AbstractBox implements Box {
     public long calculateOffset() {
         //todo: doesn't work for fragmented files as it doesn't take mdats into account (as they are not in the parent structure)
         long offsetFromParentBoxStart = parent.getNumOfBytesToFirstChild();
-        Box[] boxes = this.getParent().getBoxes();
+        Box[] boxes = parent.getBoxes();
         for (Box box : boxes) {
             if (box.equals(this)) {
                 return parent.calculateOffset() + offsetFromParentBoxStart;
             }
             offsetFromParentBoxStart += box.getSize();
         }
-        throw new RuntimeException("this box is not in the list of its parent's children");
+        throw new InternalError("this box is not in the list of its parent's children");
     }
 }

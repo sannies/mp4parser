@@ -32,5 +32,7 @@ public interface Box {
 
     byte[] getType();
 
+  byte[] getUserType();
+
     void getBox(IsoOutputStream os) throws IOException;
 }

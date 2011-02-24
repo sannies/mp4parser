@@ -26,8 +26,12 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
     public Box[] getBoxes() {
         return new AbstractBox[]{appleDataBox};
     }
+  public <T extends Box> T[] getBoxes(Class<T> clazz) {
+    return getBoxes(clazz, false);
+  }
 
-    public <T extends Box> T[] getBoxes(Class<T> clazz) {
+  public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
+    //todo recursive?
         if (clazz.isAssignableFrom(appleDataBox.getClass())) {
             T[] returnValue = (T[]) Array.newInstance(clazz, 1);
             returnValue[0] = (T) (Box) appleDataBox;
@@ -36,9 +40,9 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
         return null;
     }
 
-    public AbstractAppleMetaDataBox(String type) {
-        super(IsoFile.fourCCtoBytes(type));
-    }
+  public AbstractAppleMetaDataBox(String type) {
+    super(IsoFile.fourCCtoBytes(type));
+  }
 
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
@@ -53,17 +57,17 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
     }
 
 
-    protected long getContentSize() {
-        return appleDataBox.getSize();
-    }
+  protected long getContentSize() {
+    return appleDataBox.getSize();
+  }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        appleDataBox.getBox(os);
-    }
+  protected void getContent(IsoOutputStream os) throws IOException {
+    appleDataBox.getBox(os);
+  }
 
-    public long getNumOfBytesToFirstChild() {
-        return getSize() - appleDataBox.getSize();
-    }
+  public long getNumOfBytesToFirstChild() {
+    return getSize() - appleDataBox.getSize();
+  }
 
     @Override
     public String toString() {

@@ -25,6 +25,8 @@ import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * aligned(8) class TrackFragmentRandomAccessBox
@@ -57,8 +59,7 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
     private int lengthSizeOfTrafNum;
     private int lengthSizeOfTrunNum;
     private int lengthSizeOfSampleNum;
-    private long numberOfEntries;
-    private ArrayList<Entry> entries;
+    private List<Entry> entries = Collections.emptyList();
 
     public TrackFragmentRandomAccessBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -72,13 +73,13 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         long contentSize = 0;
         contentSize += 4 + 4 /*26 + 2 + 2 + 2 */ + 4;
         if (getVersion() == 1) {
-            contentSize += (8 + 8) * numberOfEntries;
+            contentSize += (8 + 8) * entries.size();
         } else {
-            contentSize += (4 + 4) * numberOfEntries;
+            contentSize += (4 + 4) * entries.size();
         }
-        contentSize += (lengthSizeOfTrafNum + 1) * numberOfEntries;
-        contentSize += (lengthSizeOfTrunNum + 1) * numberOfEntries;
-        contentSize += (lengthSizeOfSampleNum + 1) * numberOfEntries;
+        contentSize += (lengthSizeOfTrafNum + 1) * entries.size();
+        contentSize += (lengthSizeOfTrunNum + 1) * entries.size();
+        contentSize += (lengthSizeOfSampleNum + 1) * entries.size();
         return contentSize;
     }
 
@@ -92,7 +93,7 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         lengthSizeOfTrafNum = (int) (temp & 0x3F) >> 4;
         lengthSizeOfTrunNum = (int) (temp & 0xC) >> 2;
         lengthSizeOfSampleNum = (int) (temp & 0x3);
-        numberOfEntries = in.readUInt32();
+        long numberOfEntries = in.readUInt32();
 
         entries = new ArrayList<Entry>();
 
@@ -135,11 +136,11 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         os.writeUInt32(trackId);
         long temp;
         temp = reserved << 6;
-        temp = temp | (lengthSizeOfTrafNum << 4);
-        temp = temp | (lengthSizeOfTrunNum << 2);
-        temp = temp | lengthSizeOfSampleNum;
+        temp = temp | ((lengthSizeOfTrafNum & 0x3) << 4);
+        temp = temp | ((lengthSizeOfTrunNum & 0x3) << 2);
+        temp = temp | (lengthSizeOfSampleNum & 0x3);
         os.writeUInt32(temp);
-        os.writeUInt32(numberOfEntries);
+        os.writeUInt32(entries.size());
 
         for (Entry entry : entries) {
             if (getVersion() == 1) {
@@ -166,6 +167,22 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         return b;
     }
 
+    public void setTrackId(long trackId) {
+        this.trackId = trackId;
+    }
+
+    public void setLengthSizeOfTrafNum(int lengthSizeOfTrafNum) {
+        this.lengthSizeOfTrafNum = lengthSizeOfTrafNum;
+    }
+
+    public void setLengthSizeOfTrunNum(int lengthSizeOfTrunNum) {
+        this.lengthSizeOfTrunNum = lengthSizeOfTrunNum;
+    }
+
+    public void setLengthSizeOfSampleNum(int lengthSizeOfSampleNum) {
+        this.lengthSizeOfSampleNum = lengthSizeOfSampleNum;
+    }
+
     public long getTrackId() {
         return trackId;
     }
@@ -187,11 +204,15 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
     }
 
     public long getNumberOfEntries() {
-        return numberOfEntries;
+        return entries.size();
     }
 
-    public ArrayList<Entry> getEntries() {
-        return entries;
+    public List<Entry> getEntries() {
+        return Collections.unmodifiableList(entries);
+    }
+
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
     }
 
     public String getEntriesAsString() {
@@ -202,16 +223,12 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         return sb.toString();
     }
 
-    public int getEntriesCount() {
-        return entries.size();
-    }
-
     public static class Entry {
-        public long time;
-        public long moofOffset;
-        public long trafNumber;
-        public long trunNumber;
-        public long sampleNumber;
+        private long time;
+        private long moofOffset;
+        private long trafNumber;
+        private long trunNumber;
+        private long sampleNumber;
 
         public long getTime() {
             return time;
@@ -231,6 +248,26 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
 
         public long getSampleNumber() {
             return sampleNumber;
+        }
+
+        public void setTime(long time) {
+            this.time = time;
+        }
+
+        public void setMoofOffset(long moofOffset) {
+            this.moofOffset = moofOffset;
+        }
+
+        public void setTrafNumber(long trafNumber) {
+            this.trafNumber = trafNumber;
+        }
+
+        public void setTrunNumber(long trunNumber) {
+            this.trunNumber = trunNumber;
+        }
+
+        public void setSampleNumber(long sampleNumber) {
+            this.sampleNumber = sampleNumber;
         }
 
         @Override

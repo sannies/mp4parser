@@ -38,8 +38,8 @@ import java.io.IOException;
  * The Edit List Box provides the initial CT value if it is non-empty (non-zero).
  */
 public class TimeToSampleBox extends AbstractFullBox {
-    private long[] sampleCount;
-    private long[] sampleDelta;
+    private long[] sampleCount = new long[0];
+    private long[] sampleDelta = new long[0];
     public static final String TYPE = "stts";
 
     public TimeToSampleBox() {
@@ -85,6 +85,14 @@ public class TimeToSampleBox extends AbstractFullBox {
             isos.writeUInt32(sampleDelta[i]);
 
         }
+    }
+
+    public void setSampleCount(long[] sampleCount) {
+        this.sampleCount = sampleCount;
+    }
+
+    public void setSampleDelta(long[] sampleDelta) {
+        this.sampleDelta = sampleDelta;
     }
 
     public String toString() {

@@ -30,7 +30,6 @@ import com.coremedia.iso.mdta.Track;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -80,6 +79,7 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
     }
 
 
+    @Override
     public void getBox(IsoOutputStream os) throws IOException {
         os.write(getHeader());
         os.write(getDeadBytesBefore());
@@ -93,14 +93,14 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
 
     }
 
-    public long getSize() {
-        long contentSize = getContentSize();  // avoid calling getContentSize() twice
-        long headerSize = 4 + // headerSize
-                4 + // type
-                (contentSize >= 4294967296L ? 8 : 0) +
-                (Arrays.equals(getType(), IsoFile.fourCCtoBytes("uuid")) ? 16 : 0);
-        return headerSize + contentSize + getDeadBytes().length + getDeadBytesBefore().length;
-    }
+  @Override
+  public long getSize() {
+    long contentSize = getContentSize();  // avoid calling getContentSize() twice
+    long headerSize = 4 + // headerSize
+            4 + // type
+            (contentSize >= 4294967296L ? 8 : 0);
+    return headerSize + contentSize + getDeadBytes().length + getDeadBytesBefore().length;
+  }
 
     public long getSampleCount() {
         return sampleList.size();
@@ -110,10 +110,11 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
         return sampleList.get(index).getSample();
     }
 
-    public void replaceSample(int index, Sample s) {
-        sampleList.get(index).setSample(s);
+    public void replaceSample(int index, Sample<?> s) {
+        sampleList.get(index).setSample((Sample<T>) s);
     }
 
+    @Override
     protected long getContentSize() {
         if (contentsParsed) {
             long size = 0;
@@ -148,6 +149,7 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
     }
 
 
+    @Override
     public void parse(final IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         this.movieFragmentBoxBefore = (MovieFragmentBox) lastMovieFragmentBox;
         this.isoBufferWrapper = in;
@@ -162,6 +164,7 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
      *
      * @throws IOException in case of an error when reading the original iso file
      */
+    @SuppressWarnings("unchecked")
     public void parseTrackChunkSample() throws IOException {
         if (!contentsParsed) {
 
@@ -215,11 +218,13 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
         // if already parsed: do nothing
     }
 
+    @Override
     public String getDisplayName() {
         return "Media Data Box";
     }
 
 
+    @Override
     protected void getContent(IsoOutputStream os) throws IOException {
         if (contentsParsed) {
             long sp = os.getStreamPosition();
@@ -246,9 +251,19 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
         return movieFragmentBoxBefore != null;
     }
 
-    public String toString() {
-        return "MediaDataBox[]";
-    }
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder();
+    sb.append("MediaDataBox");
+    sb.append("{contentsParsed=").append(contentsParsed);
+    sb.append(", offset=").append(getOffset());
+    sb.append(", size=").append(getSize());
+    sb.append(", sampleCount=").append(getSampleCount());
+    sb.append(", tracks=").append(tracks);
+    sb.append(", movieFragmentBoxBefore=").append(movieFragmentBoxBefore);
+    sb.append('}');
+    return sb.toString();
+  }
 
     public List<SampleHolder<T>> getSampleList() {
         return sampleList;

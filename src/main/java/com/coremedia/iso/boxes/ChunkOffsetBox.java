@@ -24,8 +24,9 @@ public abstract class ChunkOffsetBox extends AbstractFullBox {
     protected abstract long getContentSize();
 
     protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(getChunkOffsets().length);
-        for (long chunkOffet : getChunkOffsets()) {
+      final long[] chunkOffsets = getChunkOffsets();
+      os.writeUInt32(chunkOffsets.length);
+        for (long chunkOffet : chunkOffsets) {
             os.writeUInt32(chunkOffet);
         }
     }

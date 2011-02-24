@@ -22,6 +22,9 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Samples within the media data are grouped into chunks. Chunks can be of different sizes, and the
@@ -29,25 +32,20 @@ import java.io.IOException;
  * contains a sample, its position, and the associated sample description. Defined in ISO/IEC 14496-12.
  */
 public class SampleToChunkBox extends AbstractFullBox {
-    private long[] firstChunk;
-    private long[] samplesPerChunk;
-    private long[] sampleDescriptionIndex;
+    List<Entry> entries = Collections.emptyList();
+
     public static final String TYPE = "stsc";
 
     public SampleToChunkBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public long[] getFirstChunk() {
-        return firstChunk;
+    public List<Entry> getEntries() {
+        return entries;
     }
 
-    public long[] getSamplesPerChunk() {
-        return samplesPerChunk;
-    }
-
-    public long[] getSampleDescriptionIndex() {
-        return sampleDescriptionIndex;
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
     }
 
     public String getDisplayName() {
@@ -55,7 +53,7 @@ public class SampleToChunkBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return firstChunk.length * 12 + 4;
+        return entries.size() * 12 + 4;
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
@@ -64,29 +62,60 @@ public class SampleToChunkBox extends AbstractFullBox {
         if (entryCount > Integer.MAX_VALUE) {
             throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
         }
+        entries = new ArrayList<Entry>((int) entryCount);
 
-        firstChunk = new long[(int) entryCount];
-        samplesPerChunk = new long[(int) entryCount];
-        sampleDescriptionIndex = new long[(int) entryCount];
         for (int i = 0; i < entryCount; i++) {
-            firstChunk[i] = in.readUInt32();
-            samplesPerChunk[i] = in.readUInt32();
-            sampleDescriptionIndex[i] = in.readUInt32();
+            Entry e = new Entry();
+            e.setFirstChunk(in.readUInt32());
+            e.setSamplesPerChunk(in.readUInt32());
+            e.setSampleDescriptionIndex(in.readUInt32());
+            entries.add(e);
         }
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {
         long l = isos.getStreamPosition();
-        isos.writeUInt32(firstChunk.length);
-        for (int i = 0; i < firstChunk.length; i++) {
-            isos.writeUInt32(firstChunk[i]);
-            isos.writeUInt32(samplesPerChunk[i]);
-            isos.writeUInt32(sampleDescriptionIndex[i]);
+        isos.writeUInt32(entries.size());
+        for (Entry entry : entries) {
+            isos.writeUInt32(entry.getFirstChunk());
+            isos.writeUInt32(entry.getSamplesPerChunk());
+            isos.writeUInt32(entry.getSampleDescriptionIndex());
+
         }
         assert getContentSize() == (isos.getStreamPosition() - l);
     }
 
     public String toString() {
-        return "SampleToChunkBox[entryCount=" + firstChunk.length + "]";
+        return "SampleToChunkBox[entryCount=" + entries.size() + "]";
+    }
+
+    public static class Entry {
+        long firstChunk;
+        long samplesPerChunk;
+        long sampleDescriptionIndex;
+
+        public long getFirstChunk() {
+            return firstChunk;
+        }
+
+        public void setFirstChunk(long firstChunk) {
+            this.firstChunk = firstChunk;
+        }
+
+        public long getSamplesPerChunk() {
+            return samplesPerChunk;
+        }
+
+        public void setSamplesPerChunk(long samplesPerChunk) {
+            this.samplesPerChunk = samplesPerChunk;
+        }
+
+        public long getSampleDescriptionIndex() {
+            return sampleDescriptionIndex;
+        }
+
+        public void setSampleDescriptionIndex(long sampleDescriptionIndex) {
+            this.sampleDescriptionIndex = sampleDescriptionIndex;
+        }
     }
 }

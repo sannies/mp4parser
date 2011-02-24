@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * aligned(8) class TrackRunBox
- * extends FullBox(''trun, 0, tr_flags) {
+ * extends FullBox('trun', 0, tr_flags) {
  * unsigned int(32) sample_count;
  * // the following are optional fields
  * signed int(32) data_offset;
@@ -46,13 +46,15 @@ import java.util.List;
 
 public class TrackRunBox extends AbstractFullBox {
     public static final String TYPE = "trun";
-    private long sampleCount;
     private int dataOffset;
     private SampleFlags firstSampleFlags;
     private List<Entry> entries = new ArrayList<Entry>();
     private boolean dataOffsetPresent;
     private long realOffset;
     private boolean sampleSizePresent;
+    private boolean sampleDurationPresent;
+    private boolean sampleFlagsPresentPresent;
+    private boolean sampleCompositionTimeOffsetPresent;
 
     public List<Entry> getEntries() {
         return entries;
@@ -81,6 +83,22 @@ public class TrackRunBox extends AbstractFullBox {
             return sampleCompositionTimeOffset;
         }
 
+        public void setSampleDuration(long sampleDuration) {
+            this.sampleDuration = sampleDuration;
+        }
+
+        public void setSampleSize(long sampleSize) {
+            this.sampleSize = sampleSize;
+        }
+
+        public void setSampleFlags(SampleFlags sampleFlags) {
+            this.sampleFlags = sampleFlags;
+        }
+
+        public void setSampleCompositionTimeOffset(long sampleCompositionTimeOffset) {
+            this.sampleCompositionTimeOffset = sampleCompositionTimeOffset;
+        }
+
         @Override
         public String toString() {
             return "Entry{" +
@@ -100,10 +118,15 @@ public class TrackRunBox extends AbstractFullBox {
         return realOffset;
     }
 
+    public void setDataOffset(int dataOffset) {
+        setFlags(getFlags() | 0x1); // turn on dataoffset
+        this.dataOffset = dataOffset;
+    }
+
     public long[] getSampleOffsets() {
         long[] result = new long[entries.size()];
 
-        offset = 0;
+        long offset = 0;
         for (int i = 0; i < result.length; i++) {
             result[i] = offset;
             if (isSampleSizePresent()) {
@@ -130,6 +153,32 @@ public class TrackRunBox extends AbstractFullBox {
         return result;
     }
 
+    public long[] getSampleCompositionTimeOffsets() {
+        if (isSampleCompositionTimeOffsetPresent()) {
+            long[] result = new long[entries.size()];
+
+            for (int i = 0; i < result.length; i++) {
+                result[i] = entries.get(i).getSampleCompositionTimeOffset();
+            }
+            return result;
+        }
+        return null;
+    }
+
+    public long[] getSampleDurations() {
+        long[] result = new long[entries.size()];
+
+        for (int i = 0; i < result.length; i++) {
+            if (isSampleDurationPresent()) {
+                result[i] = entries.get(i).getSampleDuration();
+            } else {
+                result[i] = ((TrackFragmentBox) getParent()).getTrackFragmentHeaderBox().getDefaultSampleDuration();
+            }
+        }
+
+        return result;
+    }
+
     public TrackRunBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
@@ -141,14 +190,14 @@ public class TrackRunBox extends AbstractFullBox {
     protected long getContentSize() {
         long size = 4;
 
-        if ((getFlags() & 0x1) == 1) { //dataOffsetPresent
+        if ((getFlags() & 0x1) == 0x1) { //dataOffsetPresent
             size += 4;
         }
         if ((getFlags() & 0x4) == 0x4) { //firstSampleFlagsPresent
             size += 4;
         }
 
-        for (int i = 0; i < sampleCount; i++) {
+        for (int i = 0; i < entries.size(); i++) {
             if ((getFlags() & 0x100) == 0x100) { //sampleDurationPresent
                 size += 4;
             }
@@ -166,7 +215,7 @@ public class TrackRunBox extends AbstractFullBox {
     }
 
     protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(sampleCount);
+        os.writeUInt32(entries.size());
 
         if ((getFlags() & 0x1) == 1) { //dataOffsetPresent
             os.writeUInt32(dataOffset);
@@ -194,7 +243,7 @@ public class TrackRunBox extends AbstractFullBox {
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
-        sampleCount = in.readUInt32();
+        long sampleCount = in.readUInt32();
 
         if ((getFlags() & 0x1) == 1) { //dataOffsetPresent
             dataOffset = (int) in.readUInt32();
@@ -208,6 +257,7 @@ public class TrackRunBox extends AbstractFullBox {
             Entry entry = new Entry();
             if ((getFlags() & 0x100) == 0x100) { //sampleDurationPresent
                 entry.sampleDuration = in.readUInt32();
+                sampleDurationPresent = true;
             }
             if ((getFlags() & 0x200) == 0x200) { //sampleSizePresent
                 entry.sampleSize = in.readUInt32();
@@ -215,16 +265,18 @@ public class TrackRunBox extends AbstractFullBox {
             }
             if ((getFlags() & 0x400) == 0x400) { //sampleFlagsPresent
                 entry.sampleFlags = new SampleFlags(in.readUInt32());
+                sampleFlagsPresentPresent = true;
             }
             if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
                 entry.sampleCompositionTimeOffset = in.readUInt32();
+                sampleCompositionTimeOffsetPresent = true;
             }
             entries.add(entry);
         }
     }
 
     public long getSampleCount() {
-        return sampleCount;
+        return entries.size();
     }
 
     public boolean isDataOffsetPresent() {
@@ -235,6 +287,18 @@ public class TrackRunBox extends AbstractFullBox {
         return sampleSizePresent;
     }
 
+    public boolean isSampleDurationPresent() {
+        return sampleDurationPresent;
+    }
+
+    public boolean isSampleFlagsPresentPresent() {
+        return sampleFlagsPresentPresent;
+    }
+
+    public boolean isSampleCompositionTimeOffsetPresent() {
+        return sampleCompositionTimeOffsetPresent;
+    }
+
     public int getDataOffset() {
         return dataOffset;
     }
@@ -243,4 +307,28 @@ public class TrackRunBox extends AbstractFullBox {
         return firstSampleFlags != null ? firstSampleFlags.toString() : "";
     }
 
+    public void setFirstSampleFlags(SampleFlags firstSampleFlags) {
+        this.firstSampleFlags = firstSampleFlags;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("TrackRunBox");
+        sb.append("{sampleCount=").append(entries.size());
+        sb.append(", dataOffset=").append(dataOffset);
+        sb.append(", dataOffsetPresent=").append(dataOffsetPresent);
+        sb.append(", realOffset=").append(realOffset);
+        sb.append(", sampleSizePresent=").append(sampleSizePresent);
+        sb.append(", sampleDurationPresent=").append(sampleDurationPresent);
+        sb.append(", sampleFlagsPresentPresent=").append(sampleFlagsPresentPresent);
+        sb.append(", sampleCompositionTimeOffsetPresent=").append(sampleCompositionTimeOffsetPresent);
+        sb.append(", firstSampleFlags=").append(firstSampleFlags);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
+    }
 }

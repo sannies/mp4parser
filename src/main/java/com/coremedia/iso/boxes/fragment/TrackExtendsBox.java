@@ -93,4 +93,25 @@ public class TrackExtendsBox extends AbstractFullBox {
     public String getDefaultSampleFlags() {
         return defaultSampleFlags.toString();
     }
+
+    public void setTrackId(long trackId) {
+        this.trackId = trackId;
+    }
+
+    public void setDefaultSampleDescriptionIndex(long defaultSampleDescriptionIndex) {
+        this.defaultSampleDescriptionIndex = defaultSampleDescriptionIndex;
+    }
+
+    public void setDefaultSampleDuration(long defaultSampleDuration) {
+        this.defaultSampleDuration = defaultSampleDuration;
+    }
+
+    public void setDefaultSampleSize(long defaultSampleSize) {
+        this.defaultSampleSize = defaultSampleSize;
+    }
+
+    public void setDefaultSampleFlags(SampleFlags defaultSampleFlags) {
+        this.defaultSampleFlags = defaultSampleFlags;
+
+    }
 }

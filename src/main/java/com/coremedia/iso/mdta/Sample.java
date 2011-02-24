@@ -50,4 +50,5 @@ public interface Sample<T extends TrackMetaDataContainer> {
 
   long calculateOffset();
 
+  boolean isSyncSample();
 }

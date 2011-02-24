@@ -63,5 +63,7 @@ public abstract class LiteralBox extends AbstractBox {
         os.write(content);
     }
 
-
+    public void setContent(byte[] content) {
+        this.content = content;
+    }
 }

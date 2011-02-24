@@ -16,9 +16,12 @@
 
 package com.coremedia.iso;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * An output stream for easy writing of ISO boxes. May calculate DCF hashes.
@@ -26,10 +29,43 @@ import java.io.OutputStream;
 public class IsoOutputStream extends FilterOutputStream {
   private int streamPosition;
 
-  public IsoOutputStream(OutputStream os) {
+  private boolean hashCalculationStarted = true;
+  private boolean calculateHash;
+  private MessageDigest digest;
+
+  public IsoOutputStream(OutputStream os, boolean calculateHash) {
     super(os);
+    if (calculateHash) {
+      try {
+        digest = MessageDigest.getInstance("SHA1");
+      } catch (NoSuchAlgorithmException e) {
+        throw new Error(e);
+  }
+    }
+    this.calculateHash = calculateHash;
   }
 
+  public IsoOutputStream(OutputStream os) {
+    this(os, false);
+  }
+
+  /**
+   * Hash calculation is activated by default. Boxes that are not used
+   * to calculate the hash ('mdri' and children) will call this before
+   * writing and will call {@link #startHashCalculation()} afterwards.
+   */
+  public void stopHashCalculation() {
+    hashCalculationStarted = false;
+  }
+
+  /**
+   * Hash calculation is activated by default. Boxes that are not used
+   * to calculate the hash ('mdri' and children) will call {@link #stopHashCalculation()}
+   * before writing and will call this method afterwards.
+   */
+  public void startHashCalculation() {
+    hashCalculationStarted = false;
+  }
 
   public long getStreamPosition() {
     return streamPosition;
@@ -62,16 +98,26 @@ public class IsoOutputStream extends FilterOutputStream {
   public void write(int b) throws IOException {
     out.write(b);
     streamPosition++;
+    if (hashCalculationStarted && calculateHash) {
+      digest.update((byte) b);
+  }
+
   }
 
   public void write(byte[] b, int off, int len) throws IOException {
     out.write(b, off, len);
     streamPosition += len;
+    if (hashCalculationStarted && calculateHash) {
+      digest.update(b, off, len);
+  }
   }
 
   public void write(byte[] b) throws IOException {
     out.write(b);
     streamPosition += b.length;
+    if (hashCalculationStarted && calculateHash) {
+      digest.update(b);
+  }
   }
 
 
@@ -111,4 +157,23 @@ public class IsoOutputStream extends FilterOutputStream {
     write((result & 0xFF00) >> 8);
     write((result & 0x00FF));
   }
+
+  public byte[] getHash() {
+    if (calculateHash) {
+      return digest.digest();
+    } else {
+      return null;
+}
+  }
+
+  public void writeUInt32BE(long uint32) throws IOException {
+    writeUInt16BE((int) uint32 & 0x0000ffff);
+    writeUInt16BE((int) (uint32 & 0xffff0000) >> 16);
+  }
+
+  public void writeUInt16BE(int uint16) throws IOException {
+    writeUInt8(uint16);
+    writeUInt8(uint16 >> 8);
+  }
+
 }

@@ -20,6 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
@@ -127,15 +128,7 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
             return baseDataOffset;
         } else {
-            //todo: fix it. for now 0 is fine. see MovieFragmentBox#parseMdat
-            return 0;
-            //return getParent().calculateOffset();
-            //Todo only works for first tfhd. Subsequent should be "inherited" according to the spec:
-            /**
-             * the base-dataoffset for the first track in the movie fragment is the position
-             * of the first byte of the enclosing Movie Fragment Box, and for second and subsequent track fragments,
-             * the default is the end of the data defined by the preceding fragment.
-             */
+            return ((AbstractBox) getParent().getParent()).getOffset();
         }
     }
 
@@ -157,5 +150,39 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
 
     public boolean isDurationIsEmpty() {
         return durationIsEmpty;
+    }
+
+    public void setTrackId(long trackId) {
+        this.trackId = trackId;
+    }
+
+    public void setBaseDataOffset(long baseDataOffset) {
+        setFlags(getFlags() | 0x1); // activate the field
+        this.baseDataOffset = baseDataOffset;
+    }
+
+    public void setSampleDescriptionIndex(long sampleDescriptionIndex) {
+        setFlags(getFlags() | 0x2); // activate the field
+        this.sampleDescriptionIndex = sampleDescriptionIndex;
+    }
+
+    public void setDefaultSampleDuration(long defaultSampleDuration) {
+        setFlags(getFlags() | 0x8); // activate the field
+        this.defaultSampleDuration = defaultSampleDuration;
+    }
+
+    public void setDefaultSampleSize(long defaultSampleSize) {
+        setFlags(getFlags() | 0x10); // activate the field
+        this.defaultSampleSize = defaultSampleSize;
+    }
+
+    public void setDefaultSampleFlags(SampleFlags defaultSampleFlags) {
+        setFlags(getFlags() | 0x20); // activate the field
+        this.defaultSampleFlags = defaultSampleFlags;
+    }
+
+    public void setDurationIsEmpty(boolean durationIsEmpty) {
+        setFlags(getFlags() | 0x10000); // activate the field
+        this.durationIsEmpty = durationIsEmpty;
     }
 }

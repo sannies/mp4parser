@@ -43,7 +43,7 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.sampleentry.VisualSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry
- * @see com.coremedia.iso.boxes.rtp.HintSampleEntry
+ * @see com.coremedia.iso.boxes.rtp.RtpHintSampleEntry
  */
 public class SampleDescriptionBox extends FullContainerBox {
     public static final String TYPE = "stsd";

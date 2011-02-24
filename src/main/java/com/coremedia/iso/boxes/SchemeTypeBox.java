@@ -43,6 +43,10 @@ public class SchemeTypeBox extends AbstractFullBox {
         return schemeType;
     }
 
+  public String getFourCC() {
+    return IsoFile.bytesToFourCC(schemeType);
+  }
+
     public long getSchemeVersion() {
         return schemeVersion;
     }

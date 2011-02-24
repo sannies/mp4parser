@@ -61,4 +61,8 @@ public class MovieFragmentRandomAccessOffsetBox extends AbstractFullBox {
     public long getMfraSize() {
         return mfraSize;
     }
+
+    public void setMfraSize(long mfraSize) {
+        this.mfraSize = mfraSize;
+    }
 }

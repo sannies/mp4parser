@@ -27,7 +27,7 @@ import java.io.IOException;
 public class StaticChunkOffsetBox extends ChunkOffsetBox {
     public static final String TYPE = "stco";
 
-    private long[] chunkOffsets;
+    private long[] chunkOffsets = new long[0];
 
     public long[] getChunkOffsets() {
         return chunkOffsets;

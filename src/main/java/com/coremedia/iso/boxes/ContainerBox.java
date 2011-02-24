@@ -16,6 +16,8 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.IsoFile;
+
 /**
  * Interface for all ISO boxes that may contain other boxes.
  */
@@ -37,6 +39,15 @@ public interface ContainerBox extends Box {
     <T extends Box> T[] getBoxes(Class<T> clazz);
 
     /**
+   * Gets all child boxes of the given type. May not return <code>null</code>.
+   *
+   * @param clazz child box's type
+   * @param recursive step down the tree
+   * @return an array of boxes, empty array in case of no children.
+   */
+  <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive);
+
+    /**
      * Gets the parent box. May be <code>null</code> in case of the
      * {@link com.coremedia.iso.IsoFile} itself.
      *
@@ -50,4 +61,6 @@ public interface ContainerBox extends Box {
      * @return offset of first child from box start
      */
     long getNumOfBytesToFirstChild();
+
+  IsoFile getIsoFile();
 }

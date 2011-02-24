@@ -2,12 +2,14 @@ package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.UserBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +38,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
 
     @Override
     public AbstractBox createBox(byte[] type, byte[] userType, byte[] parent, Box lastMovieFragmentBox) {
+
         String constructor = mapping.getProperty(IsoFile.bytesToFourCC(parent) + "-" + IsoFile.bytesToFourCC(type));
         if (constructor == null) {
             constructor = mapping.getProperty(IsoFile.bytesToFourCC(type));
@@ -63,21 +66,20 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
             Object[] constructorArgs = new Object[param.length];
             for (int i = 0; i < param.length; i++) {
 
-                if ("type".equals(param[i])) {
-                    constructorArgs[i] = type;
-                    constructorArgsClazz[i] = byte[].class;
-                }
                 if ("userType".equals(param[i])) {
                     constructorArgs[i] = userType;
                     constructorArgsClazz[i] = byte[].class;
-                }
-                if ("parent".equals(param[i])) {
+                } else if ("type".equals(param[i])) {
+                    constructorArgs[i] = type;
+                    constructorArgsClazz[i] = byte[].class;
+                } else if ("parent".equals(param[i])) {
                     constructorArgs[i] = parent;
                     constructorArgsClazz[i] = byte[].class;
-                }
-                if ("lastMovieFragmentBox".equals(param[i])) {
+                } else if ("lastMovieFragmentBox".equals(param[i])) {
                     constructorArgs[i] = lastMovieFragmentBox;
                     constructorArgsClazz[i] = MovieFragmentBox.class;
+                } else {
+                    throw new InternalError("No such param: " + param[i]);
                 }
 
 

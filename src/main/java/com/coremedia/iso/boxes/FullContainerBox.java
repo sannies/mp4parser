@@ -37,14 +37,25 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
 
     @SuppressWarnings("unchecked")
     public <T extends Box> T[] getBoxes(Class<T> clazz) {
-        ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (Box boxe : boxes) {
-            if (clazz.isInstance(boxe)) {
-                boxesToBeReturned.add(clazz.cast(boxe));
-            }
-        }
-        return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
+        return getBoxes(clazz, false);
     }
+
+  @SuppressWarnings("unchecked")
+  public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
+    List<T> boxesToBeReturned = new ArrayList<T>(2);
+    for (Box boxe : boxes) { //clazz.isInstance(boxe) / clazz == boxe.getClass()?
+      if (clazz == boxe.getClass()) {
+        boxesToBeReturned.add((T) boxe);
+      }
+
+      if (recursive && boxe instanceof ContainerBox) {
+        boxesToBeReturned.addAll(Arrays.asList(((ContainerBox) boxe).getBoxes(clazz, recursive)));
+      }
+    }
+    // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
+    return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
+    //return (T[]) boxesToBeReturned.toArray();
+  }
 
     protected long getContentSize() {
         long contentSize = 0;

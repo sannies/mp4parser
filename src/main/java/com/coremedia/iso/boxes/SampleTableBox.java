@@ -90,6 +90,24 @@ public class SampleTableBox extends AbstractContainerBox {
         }
     }
 
+    public TimeToSampleBox getTimeToSampleBox() {
+        for (Box box : boxes) {
+            if (box instanceof TimeToSampleBox) {
+                return (TimeToSampleBox) box;
+            }
+        }
+        return null;
+    }
+
+    public CompositionTimeToSample getCompositionTimeToSample() {
+        for (Box box : boxes) {
+            if (box instanceof CompositionTimeToSample) {
+                return (CompositionTimeToSample) box;
+            }
+        }
+        return null;
+    }
+
 
     public String toString() {
         StringBuffer buffer = new StringBuffer();

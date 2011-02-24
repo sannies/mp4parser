@@ -59,6 +59,7 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
      *
      * @return Gets the box's content size
      */
+    @Override
     protected abstract long getContentSize();
 
     @Override
@@ -80,7 +81,7 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
                 ios.write(getType());
                 ios.writeUInt64(getSize());
             }
-            if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("uuid"))) {
+          if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(UserBox.TYPE))) {
                 ios.write(getUserType());
             }
             ios.writeUInt8(version);
@@ -94,6 +95,7 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
         return null;
     }
 
+    @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         parseHeader(in, size);
     }

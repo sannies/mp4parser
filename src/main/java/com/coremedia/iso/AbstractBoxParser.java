@@ -4,6 +4,7 @@ import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -35,13 +36,22 @@ public abstract class AbstractBoxParser implements BoxParser {
             LOG.severe("Plausibility check failed: size < 8 (size = " + size + "). Stop parsing!");
             return null;
         } else if ((offset + size) > in.size()) {
-            LOG.severe("Plausibility check failed: offset + size > file size (size = " + size + "). Stop parsing!");
+            LOG.severe("Plausibility check failed: offset + size > file size (size = " + size + "). Stop parsing at " + offset + ".");
             return null;
         }
 
 
         byte[] type = in.read(4);
-
+        String prefix = "";
+        boolean iWant = true;
+        if (iWant) {
+            ContainerBox t = parent.getParent();
+            while (t != null) {
+                prefix = IsoFile.bytesToFourCC(t.getType()) + "/" + prefix;
+                t = t.getParent();
+            }
+            System.err.println(prefix + IsoFile.bytesToFourCC(type) + "  - offset: " + offset);
+        }
         byte[] usertype = null;
         long contentSize;
 
@@ -63,7 +73,7 @@ public abstract class AbstractBoxParser implements BoxParser {
                 parent.getType(), lastMovieFragmentBox);
         box.offset = offset;
         box.setParent((ContainerBox) parent);
-        LOG.finest("Creating " + IsoFile.bytesToFourCC(box.getType()) + " box: (" + box.getDisplayName() + ")");
+        LOG.finest("Parsing " + IsoFile.bytesToFourCC(box.getType()) + " box: (" + box.getDisplayName() + ")");
         // System.out.println("parsing " + Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
         box.parse(in, contentSize, this, lastMovieFragmentBox);
         // System.out.println("box = " + box);

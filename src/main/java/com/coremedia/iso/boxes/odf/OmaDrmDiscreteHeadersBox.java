@@ -36,98 +36,98 @@ import java.util.List;
  * {@link com.coremedia.iso.boxes.UserDataBox}.
  */
 public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
-    public static final String TYPE = "odhe";
+  public static final String TYPE = "odhe";
 
     //private Box[] boxes;
-    private String contentType;
+  private String contentType;
 
-    public OmaDrmDiscreteHeadersBox() {
-        super(TYPE);
-    }
+  public OmaDrmDiscreteHeadersBox() {
+    super(TYPE);
+  }
 
-    public Box[] getBoxes() {
-        return boxes;
-    }
+  public Box[] getBoxes() {
+    return boxes;
+  }
 
-    @SuppressWarnings("unchecked")
-    public <T extends Box> T[] getBoxes(Class<T> clazz) {
-        ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (Box boxe : boxes) {
-            if (clazz.isInstance(boxe)) {
-                boxesToBeReturned.add(clazz.cast(boxe));
-            }
-        }
-        return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
+  @SuppressWarnings("unchecked")
+  public <T extends Box> T[] getBoxes(Class<T> clazz) {
+    ArrayList<T> boxesToBeReturned = new ArrayList<T>();
+    for (Box boxe : boxes) {
+      if (clazz.isInstance(boxe)) {
+        boxesToBeReturned.add(clazz.cast(boxe));
+      }
     }
+    return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
+  }
 
-    public String getContentType() {
-        return contentType;
-    }
+  public String getContentType() {
+    return contentType;
+  }
 
-    public String getDisplayName() {
-        return "OMA DRM Discrete Headers Box";
-    }
+  public String getDisplayName() {
+    return "OMA DRM Discrete Headers Box";
+  }
 
-    protected long getContentSize() {
-        long size = 0;
-        for (Box boxe : boxes) {
-            size += boxe.getSize();
-        }
-        return size + 1 + utf8StringLengthInBytes(contentType);
+  protected long getContentSize() {
+    long size = 0;
+    for (Box boxe : boxes) {
+      size += boxe.getSize();
     }
+    return size + 1 + utf8StringLengthInBytes(contentType);
+  }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        parseHeader(in, size);
-        int contentTypeLength = in.readUInt8();
-        contentType = new String(in.read(contentTypeLength), "UTF-8");
-        List<Box> boxList = new LinkedList<Box>();
-        long remainingContentSize = size - 4 - 1 - contentTypeLength;
-        while (remainingContentSize > 0) {
+    parseHeader(in, size);
+    int contentTypeLength = in.readUInt8();
+    contentType = new String(in.read(contentTypeLength), "UTF-8");
+    List<Box> boxList = new LinkedList<Box>();
+    long remainingContentSize = size - 4 - 1 - contentTypeLength;
+    while (remainingContentSize > 0) {
             Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-            remainingContentSize -= box.getSize();
-            boxList.add(box);
-        }
+      remainingContentSize -= box.getSize();
+      boxList.add(box);
+    }
         this.boxes = boxList.toArray(new AbstractBox[boxList.size()]);
-    }
+  }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        long sp = isos.getStreamPosition();
-        isos.writeUInt8(utf8StringLengthInBytes(contentType));
-        isos.writeStringNoTerm(contentType);
-        for (Box boxe : boxes) {
-            boxe.getBox(isos);
-        }
-        assert isos.getStreamPosition() - sp == getContentSize();
+  protected void getContent(IsoOutputStream isos) throws IOException {
+    long sp = isos.getStreamPosition();
+    isos.writeUInt8(utf8StringLengthInBytes(contentType));
+    isos.writeStringNoTerm(contentType);
+    for (Box boxe : boxes) {
+      boxe.getBox(isos);
     }
+    assert isos.getStreamPosition() - sp == getContentSize();
+  }
 
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("OmaDrmDiscreteHeadersBox[");
-        buffer.append("contentType=").append(getContentType());
-        Box[] boxes2 = getBoxes();
-        for (Box aBoxes2 : boxes2) {
-            buffer.append(";");
-            buffer.append(aBoxes2.toString());
-        }
-        buffer.append("]");
-        return buffer.toString();
+  public String toString() {
+    StringBuffer buffer = new StringBuffer();
+    buffer.append("OmaDrmDiscreteHeadersBox[");
+    buffer.append("contentType=").append(getContentType());
+    Box[] boxes2 = getBoxes();
+    for (Box aBoxes2 : boxes2) {
+      buffer.append(";");
+      buffer.append(aBoxes2.toString());
     }
+    buffer.append("]");
+    return buffer.toString();
+  }
 
-    public OmaDrmCommonHeadersBox getOmaDrmCommonHeadersBox() {
-        for (Box box : boxes) {
-            if (box instanceof OmaDrmCommonHeadersBox) {
-                return (OmaDrmCommonHeadersBox) box;
-            }
-        }
-        return null;
+  public OmaDrmCommonHeadersBox getOmaDrmCommonHeadersBox() {
+    for (Box box : boxes) {
+      if (box instanceof OmaDrmCommonHeadersBox) {
+        return (OmaDrmCommonHeadersBox) box;
+      }
     }
+    return null;
+  }
 
-    public UserDataBox getUserDataBox() {
-        for (Box box : boxes) {
-            if (box instanceof UserDataBox) {
-                return (UserDataBox) box;
-            }
-        }
-        return null;
+  public UserDataBox getUserDataBox() {
+    for (Box box : boxes) {
+      if (box instanceof UserDataBox) {
+        return (UserDataBox) box;
+      }
     }
+    return null;
+  }
 }

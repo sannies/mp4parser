@@ -16,7 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
+
+import java.io.IOException;
 
 /**
  * Tracks are used for two purposes: (a) to contain media data (media tracks) and (b) to contain packetization
@@ -27,6 +31,8 @@ import com.coremedia.iso.IsoFile;
  */
 public class TrackBox extends AbstractContainerBox implements TrackMetaDataContainer {
     public static final String TYPE = "trak";
+
+    IsoBufferWrapper isoFile = null;
 
     public TrackBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -58,5 +64,15 @@ public class TrackBox extends AbstractContainerBox implements TrackMetaDataConta
         }
         buffer.append("]");
         return buffer.toString();
+    }
+
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        this.isoFile = in;
+    }
+
+    public IsoBufferWrapper getIsoBufferWrapper() {
+        return isoFile;
     }
 }

@@ -16,19 +16,20 @@
 
 package com.coremedia.iso;
 
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
-import com.coremedia.iso.boxes.MediaDataBox;
-import com.coremedia.iso.boxes.TrackMetaDataContainer;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.coremedia.iso.boxes.odf.MutableDrmInformationBox;
+import com.coremedia.iso.boxes.odf.OmaDrmTransactionTrackingBox;
 import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.Sample;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,7 +38,7 @@ import java.util.List;
  * Uses IsoBufferWrapper  to access the underlying file.
  */
 public class IsoFile implements ContainerBox, Box {
-    private Box[] boxes = new Box[0];
+    private List<Box> boxes = new ArrayList<Box>();
     private BoxParser boxParser = new PropertyBoxParserImpl();
     private IsoBufferWrapper originalIso;
 
@@ -59,41 +60,62 @@ public class IsoFile implements ContainerBox, Box {
         return new byte[0];
     }
 
-    public boolean isFragmented() {
-        MovieExtendsBox[] movieExtendsBoxes = getBoxes(MovieExtendsBox.class);
-        return movieExtendsBoxes != null && movieExtendsBoxes.length > 0;
+    //todo - do I want this here?
+    public byte[] getUserType() {
+        return new byte[0];
     }
 
 
     public Box[] getBoxes() {
-        return boxes;
+        return boxes.toArray(new Box[boxes.size()]);
     }
 
     @SuppressWarnings("unchecked")
     public <T extends Box> T[] getBoxes(Class<T> clazz) {
-        ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (Box boxe : boxes) {
-            if (clazz.isInstance(boxe)) {
-                boxesToBeReturned.add(clazz.cast(boxe));
+        return getBoxes(clazz, false);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
+        List<T> boxesToBeReturned = new ArrayList<T>(2);
+        for (Box boxe : boxes) { //clazz.isInstance(boxe) / clazz == boxe.getClass()?
+            if (clazz == boxe.getClass()) {
+                boxesToBeReturned.add((T) boxe);
+            }
+
+            if (recursive && boxe instanceof ContainerBox) {
+                boxesToBeReturned.addAll(Arrays.asList(((ContainerBox) boxe).getBoxes(clazz, recursive)));
             }
         }
+        // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
         return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
+        //return (T[]) boxesToBeReturned.toArray();
+    }
+
+    public void addBox(Box b) {
+        boxes.add(b);
+    }
+
+    public void removeBox(Box b) {
+        boxes.remove(b);
     }
 
 
     public void parse() throws IOException {
 
-        List<Box> boxeList = new LinkedList<Box>();
         boolean done = false;
         Box lastMovieFragmentBox = null;
         while (!done) {
             long sp = originalIso.position();
             if (originalIso.remaining() >= 8) {
                 Box box = boxParser.parseBox(originalIso, this, lastMovieFragmentBox);
-                if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
-                boxeList.add(box);
-                this.boxes = boxeList.toArray(new Box[boxeList.size()]);
-                assert box.calculateOffset() == sp : "calculated offset differs from offset in file";
+                if (box != null) {
+                    if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
+                    boxes.add(box);
+                    assert box.calculateOffset() == sp : "calculated offset differs from offset in file";
+                } else {
+                    done = true;
+                }
             } else {
                 done = true;
             }
@@ -113,11 +135,11 @@ public class IsoFile implements ContainerBox, Box {
         if (boxes == null) {
             buffer.append("unparsed");
         } else {
-            for (int i = 0; i < boxes.length; i++) {
+            for (int i = 0; i < boxes.size(); i++) {
                 if (i > 0) {
                     buffer.append(";");
                 }
-                buffer.append(boxes[i].toString());
+                buffer.append(boxes.get(i).toString());
             }
         }
         buffer.append("]");
@@ -135,6 +157,20 @@ public class IsoFile implements ContainerBox, Box {
     }
 
     public static String bytesToFourCC(byte[] type) {
+        char[] result = "\0\0\0\0".toCharArray();
+        if (type != null) {
+            for (int i = 0; i < Math.min(type.length, 4); i++) {
+                result[i] = (char) type[i];
+            }
+        }
+        return new String(result);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(bytesToFourCC(new byte[]{109, 118, 101, 120}));
+    }
+
+    public static String bytesToFourCC2(byte[] type) {
         byte[] result = new byte[]{0, 0, 0, 0};
         if (type != null) {
             for (int i = 0; i < Math.min(type.length, 4); i++) {
@@ -142,15 +178,28 @@ public class IsoFile implements ContainerBox, Box {
             }
         }
         try {
-            return new String(type, "ISO-8859-1");
+            return new String(result, "ISO-8859-1");
         } catch (UnsupportedEncodingException e) {
             throw new Error(e);
         }
     }
 
+    public byte[] writeAndCalculateHash(OutputStream os) throws IOException {
+        IsoOutputStream isos = new IsoOutputStream(os, true);
+        try {
+            for (Box box : boxes) {
+                box.getBox(isos);
+            }
+        } finally {
+            isos.flush();
+        }
+        return isos.getHash();
+    }
+
 
     /**
-     * Writes the IsoFile.
+     * Writes the IsoFile without calculating the DCF Hash as described in
+     * the OMA DCF Specification 5.3.
      *
      * @param isos the target stream
      * @throws IOException in case of any error caused by the target stream or by reading the original ISO file.
@@ -201,5 +250,7 @@ public class IsoFile implements ContainerBox, Box {
         return 0;
     }
 
-
+    public IsoFile getIsoFile() {
+        return this;
+    }
 }

@@ -25,11 +25,7 @@ import com.coremedia.iso.mdta.SampleImpl;
 import com.coremedia.iso.mdta.Track;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * The metadata for a presentation is stored in the single Movie Box which occurs at the top-level of a file.
@@ -43,6 +39,7 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
+    @Override
     public String getDisplayName() {
         return "Movie Box";
     }
@@ -130,10 +127,24 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
         TreeMap<Long, Track<TrackBox>> trackIdsToTracksWithChunks = new TreeMap<Long, Track<TrackBox>>();
 
         long[] trackNumbers = getTrackNumbers();
+        Map<Long, Long> trackToSampleCount = new HashMap<Long, Long>(trackNumbers.length);
+        Map<Long, List<Long>> trackToSyncSamples = new HashMap<Long, List<Long>>();
+
         for (long trackNumber : trackNumbers) {
             TrackMetaData<TrackBox> trackMetaData = getTrackMetaData(trackNumber);
             trackIdsToTracksWithChunks.put(trackNumber, new Track<TrackBox>(trackNumber, trackMetaData, mdat));
+            SyncSampleBox syncSampleBox = trackMetaData.getSyncSampleBox();
+            if (syncSampleBox != null) {
+                long[] sampleNumbers = syncSampleBox.getSampleNumber();
+                ArrayList<Long> sampleNumberList = new ArrayList<Long>(sampleNumbers.length);
+                for (long sampleNumber : sampleNumbers) {
+                    sampleNumberList.add(sampleNumber);
+                }
+                trackToSyncSamples.put(trackNumber, sampleNumberList);
+            }
+            trackToSampleCount.put(trackNumber, 1L);
         }
+
 
         long[] chunkOffsets = getChunkOffsets();
 
@@ -157,15 +168,20 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
             Chunk<TrackBox> chunk = new Chunk<TrackBox>(parentTrack, mdat, sampleSizes.length);
             parentTrack.addChunk(chunk);
 
-            mdat.getTrackMap().put(parentTrack.getTrackId(), parentTrack);
+            long trackId = parentTrack.getTrackId();
+            mdat.getTrackMap().put(trackId, parentTrack);
 
             for (int i = 0; i < sampleOffsets.length; i++) {
+                Long currentSample = trackToSampleCount.get(trackId);
+                List<Long> syncSamples = trackToSyncSamples.get(trackId);
+                boolean syncSample = syncSamples != null && syncSamples.contains(currentSample);
+
                 MediaDataBox.SampleHolder<TrackBox> sh =
                         new MediaDataBox.SampleHolder<TrackBox>(
-                                new SampleImpl<TrackBox>(isoBufferWrapper, chunkOffset + sampleOffsets[i],
-                                        sampleSizes[i], chunk));
+                                new SampleImpl<TrackBox>(isoBufferWrapper, chunkOffset + sampleOffsets[i], sampleSizes[i], chunk, syncSample));
                 mdat.getSampleList().add(sh);
                 chunk.addSample(sh);
+                trackToSampleCount.put(trackId, currentSample + 1);
             }
         }
     }
@@ -192,22 +208,27 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
                     }
                 }
                 int chunkNumber;
-                long[] chunkOffsets = sampleTableBox.getChunkOffsetBox().getChunkOffsets();
+                final ChunkOffsetBox chunkOffsetBox = sampleTableBox.getChunkOffsetBox();
+                long[] chunkOffsets = chunkOffsetBox.getChunkOffsets();
                 if ((chunkNumber = Arrays.binarySearch(chunkOffsets, chunkOffset)) >= 0) {
-                    long[] samplesPerChunk = new long[sampleTableBox.getChunkOffsetBox().getChunkOffsets().length];
+                    long[] samplesPerChunk = new long[chunkOffsets.length];
                     SampleSizeBox sampleSizeBox = sampleTableBox.getSampleSizeBox();
                     SampleToChunkBox sampleToChunkBox = sampleTableBox.getSampleToChunkBox();
-                    long[] firstChunk = sampleToChunkBox.getFirstChunk();
-                    long[] noOfSamples = sampleToChunkBox.getSamplesPerChunk();
 
+                    List<SampleToChunkBox.Entry> sampleToChunkEntries = new LinkedList<SampleToChunkBox.Entry>(sampleToChunkBox.getEntries());
+                    Collections.reverse(sampleToChunkEntries);
+                    Iterator<SampleToChunkBox.Entry> iterator = sampleToChunkEntries.iterator();
+                    SampleToChunkBox.Entry currentEntry = iterator.next();
 
-                    int chunkSizeTableIndex = 0;
-                    for (int i = 0; i < samplesPerChunk.length; i++) {
-                        if ((firstChunk.length > 1) && (chunkSizeTableIndex < firstChunk.length) && ((chunkSizeTableIndex + 1) < firstChunk.length) && (i + 1 == firstChunk[chunkSizeTableIndex + 1])) {
-                            chunkSizeTableIndex++;
+                    for (int i = samplesPerChunk.length; i > 1 ; i--) {
+                        samplesPerChunk[i-1] = currentEntry.getSamplesPerChunk();
+                        if (i == currentEntry.getFirstChunk()) {
+                            currentEntry = iterator.next();
                         }
-                        samplesPerChunk[i] = noOfSamples[chunkSizeTableIndex];
                     }
+                    samplesPerChunk[0] = currentEntry.getSamplesPerChunk();
+
+
                     int sampleNumberOffset = 0;
                     for (int i = 0; i < chunkNumber; i++) {
                         sampleNumberOffset += samplesPerChunk[i];

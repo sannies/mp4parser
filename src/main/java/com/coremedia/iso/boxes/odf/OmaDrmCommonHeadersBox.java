@@ -29,10 +29,7 @@ import com.coremedia.iso.boxes.ContainerBox;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The Common Headers Box defines a structure for required headers in a DCF file.
@@ -49,8 +46,13 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
     private String rightsIssuerUrl;
     private String textualHeaders;
 
+  public <T extends Box> T[] getBoxes(Class<T> clazz) {
+    return getBoxes(clazz, false);
+  }
+  
     @SuppressWarnings("unchecked")
-    public <T extends Box> T[] getBoxes(Class<T> clazz) {
+    public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
+      //todo recursive?
         ArrayList<T> boxesToBeReturned = new ArrayList<T>();
         for (AbstractBox boxe : extendedHeaders) {
             if (clazz.isInstance(boxe)) {
