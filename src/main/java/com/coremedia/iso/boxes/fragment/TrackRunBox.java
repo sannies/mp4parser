@@ -318,4 +318,7 @@ public class TrackRunBox extends AbstractFullBox {
         return sb.toString();
     }
 
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
+    }
 }
