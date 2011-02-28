@@ -79,7 +79,7 @@ public class IsoFile implements ContainerBox, Box {
     public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
         List<T> boxesToBeReturned = new ArrayList<T>(2);
         for (Box boxe : boxes) { //clazz.isInstance(boxe) / clazz == boxe.getClass()?
-            if (clazz == boxe.getClass()) {
+            if (clazz.isAssignableFrom(boxe.getClass())) {
                 boxesToBeReturned.add((T) boxe);
             }
 
