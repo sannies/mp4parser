@@ -24,6 +24,10 @@ import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Defined in ISO/IEC 14496-15:2004.
@@ -36,7 +40,9 @@ public final class AvcConfigurationBox extends AbstractBox {
     private int profileCompatibility;
     private int avcLevelIndication;
     private int lengthSizeMinusOne;
-    private byte[] rest;
+    List<byte[]> sequenceParameterSets = new ArrayList<byte[]>();
+    List<byte[]> pictureParameterSets = new ArrayList<byte[]>();
+
 
     public AvcConfigurationBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -66,8 +72,13 @@ public final class AvcConfigurationBox extends AbstractBox {
         return "AVC Configuration Box";
     }
 
-    public byte[] getRest() {
-        return rest;
+
+    public List<byte[]> getSequenceParameterSets() {
+        return Collections.unmodifiableList(sequenceParameterSets);
+    }
+
+    public List<byte[]> getPictureParameterSets() {
+        return Collections.unmodifiableList(pictureParameterSets);
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
@@ -87,11 +98,36 @@ public final class AvcConfigurationBox extends AbstractBox {
         avcLevelIndication = in.readUInt8();
         int temp = in.readUInt8();
         lengthSizeMinusOne = temp & 3;
-        rest = in.read((int) size - 5);
+        long numberOfSeuqenceParameterSets = in.readUInt8() & 31;
+        for (int i = 0; i < numberOfSeuqenceParameterSets; i++) {
+            int sequenceParameterSetLength = in.readUInt16();
+            byte[] sequenceParameterSetNALUnit = in.read(sequenceParameterSetLength);
+            sequenceParameterSets.add(sequenceParameterSetNALUnit);
+        }
+        long numberOfPictureParameterSets = in.readUInt8();
+        for (int i = 0; i < numberOfPictureParameterSets; i++) {
+            int pictureParameterSetLength = in.readUInt16();
+            byte[] pictureParameterSetNALUnit = in.read(pictureParameterSetLength);
+            pictureParameterSets.add(pictureParameterSetNALUnit);
+        }
+
+
     }
 
     protected long getContentSize() {
-        return 5 + rest.length;
+        long size = 5;
+        size += 1; // sequenceParamsetLength
+        for (byte[] sequenceParameterSetNALUnit : sequenceParameterSets) {
+            size += 2; //lengthSizeMinusOne field
+            size += sequenceParameterSetNALUnit.length;
+        }
+        size += 1; // pictureParamsetLength
+        for (byte[] pictureParameterSetNALUnit : pictureParameterSets) {
+            size += 2; //lengthSizeMinusOne field
+            size += pictureParameterSetNALUnit.length;
+        }
+
+        return size;
     }
 
     protected void getContent(IsoOutputStream os) throws IOException {
@@ -100,7 +136,16 @@ public final class AvcConfigurationBox extends AbstractBox {
         os.writeUInt8(profileCompatibility);
         os.writeUInt8(avcLevelIndication);
         os.writeUInt8(lengthSizeMinusOne | (63 << 2));
-        os.write(rest);
+        os.writeUInt8((pictureParameterSets.size() & 31) | (7 << 5));
+        for (byte[] sequenceParameterSetNALUnit : sequenceParameterSets) {
+            os.writeUInt16(sequenceParameterSetNALUnit.length);
+            os.write(sequenceParameterSetNALUnit);
+        }
+        os.writeUInt8(pictureParameterSets.size());
+        for (byte[] pictureParameterSetNALUnit : pictureParameterSets) {
+            os.writeUInt16(pictureParameterSetNALUnit.length);
+            os.write(pictureParameterSetNALUnit);
+        }
     }
 }
 
