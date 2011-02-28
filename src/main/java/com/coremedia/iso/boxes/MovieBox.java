@@ -220,8 +220,8 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
                     Iterator<SampleToChunkBox.Entry> iterator = sampleToChunkEntries.iterator();
                     SampleToChunkBox.Entry currentEntry = iterator.next();
 
-                    for (int i = samplesPerChunk.length; i > 1 ; i--) {
-                        samplesPerChunk[i-1] = currentEntry.getSamplesPerChunk();
+                    for (int i = samplesPerChunk.length; i > 1; i--) {
+                        samplesPerChunk[i - 1] = currentEntry.getSamplesPerChunk();
                         if (i == currentEntry.getFirstChunk()) {
                             currentEntry = iterator.next();
                         }
@@ -299,5 +299,14 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
         }
         buffer.append("]");
         return buffer.toString();
+    }
+
+    public MovieHeaderBox getMovieHeaderBox() {
+        for (Box box : boxes) {
+            if (box instanceof MovieHeaderBox) {
+                return (MovieHeaderBox) box;
+            }
+        }
+        return null;
     }
 }
