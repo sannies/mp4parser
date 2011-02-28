@@ -49,12 +49,7 @@ public class TrackRunBox extends AbstractFullBox {
     private int dataOffset;
     private SampleFlags firstSampleFlags;
     private List<Entry> entries = new ArrayList<Entry>();
-    private boolean dataOffsetPresent;
     private long realOffset;
-    private boolean sampleSizePresent;
-    private boolean sampleDurationPresent;
-    private boolean sampleFlagsPresentPresent;
-    private boolean sampleCompositionTimeOffsetPresent;
 
     public List<Entry> getEntries() {
         return entries;
@@ -247,7 +242,6 @@ public class TrackRunBox extends AbstractFullBox {
 
         if ((getFlags() & 0x1) == 1) { //dataOffsetPresent
             dataOffset = (int) in.readUInt32();
-            dataOffsetPresent = true;
         }
         if ((getFlags() & 0x4) == 0x4) { //firstSampleFlagsPresent
             firstSampleFlags = new SampleFlags(in.readUInt32());
@@ -257,19 +251,15 @@ public class TrackRunBox extends AbstractFullBox {
             Entry entry = new Entry();
             if ((getFlags() & 0x100) == 0x100) { //sampleDurationPresent
                 entry.sampleDuration = in.readUInt32();
-                sampleDurationPresent = true;
             }
             if ((getFlags() & 0x200) == 0x200) { //sampleSizePresent
                 entry.sampleSize = in.readUInt32();
-                sampleSizePresent = true;
             }
             if ((getFlags() & 0x400) == 0x400) { //sampleFlagsPresent
                 entry.sampleFlags = new SampleFlags(in.readUInt32());
-                sampleFlagsPresentPresent = true;
             }
             if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
                 entry.sampleCompositionTimeOffset = in.readUInt32();
-                sampleCompositionTimeOffsetPresent = true;
             }
             entries.add(entry);
         }
@@ -280,23 +270,23 @@ public class TrackRunBox extends AbstractFullBox {
     }
 
     public boolean isDataOffsetPresent() {
-        return dataOffsetPresent;
+        return (getFlags() & 0x1) == 1;
     }
 
     public boolean isSampleSizePresent() {
-        return sampleSizePresent;
+        return (getFlags() & 0x200) == 0x200;
     }
 
     public boolean isSampleDurationPresent() {
-        return sampleDurationPresent;
+        return (getFlags() & 0x100) == 0x100;
     }
 
     public boolean isSampleFlagsPresentPresent() {
-        return sampleFlagsPresentPresent;
+        return (getFlags() & 0x400) == 0x400;
     }
 
     public boolean isSampleCompositionTimeOffsetPresent() {
-        return sampleCompositionTimeOffsetPresent;
+        return (getFlags() & 0x800) == 0x800;
     }
 
     public int getDataOffset() {
@@ -317,18 +307,15 @@ public class TrackRunBox extends AbstractFullBox {
         sb.append("TrackRunBox");
         sb.append("{sampleCount=").append(entries.size());
         sb.append(", dataOffset=").append(dataOffset);
-        sb.append(", dataOffsetPresent=").append(dataOffsetPresent);
+        sb.append(", dataOffsetPresent=").append(isDataOffsetPresent());
         sb.append(", realOffset=").append(realOffset);
-        sb.append(", sampleSizePresent=").append(sampleSizePresent);
-        sb.append(", sampleDurationPresent=").append(sampleDurationPresent);
-        sb.append(", sampleFlagsPresentPresent=").append(sampleFlagsPresentPresent);
-        sb.append(", sampleCompositionTimeOffsetPresent=").append(sampleCompositionTimeOffsetPresent);
+        sb.append(", sampleSizePresent=").append(isSampleSizePresent());
+        sb.append(", sampleDurationPresent=").append(isSampleDurationPresent());
+        sb.append(", sampleFlagsPresentPresent=").append(isSampleFlagsPresentPresent());
+        sb.append(", sampleCompositionTimeOffsetPresent=").append(isSampleCompositionTimeOffsetPresent());
         sb.append(", firstSampleFlags=").append(firstSampleFlags);
         sb.append('}');
         return sb.toString();
     }
 
-    public void setEntries(List<Entry> entries) {
-        this.entries = entries;
-    }
 }
