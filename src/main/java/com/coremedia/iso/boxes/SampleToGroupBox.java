@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * aligned(8) class SampleToGroupBox
- * extends FullBox(�sbgp�, version = 0, 0)
+ * extends FullBox('sbgp', version = 0, 0)
  * {
  * unsigned int(32) grouping_type;
  * unsigned int(32) entry_count;
