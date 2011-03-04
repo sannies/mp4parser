@@ -70,6 +70,10 @@ public class IsoFile implements ContainerBox, Box {
         return boxes.toArray(new Box[boxes.size()]);
     }
 
+    public void setBoxes(Box[] boxes) {
+        this.boxes = new LinkedList<Box>(Arrays.asList(boxes));
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends Box> T[] getBoxes(Class<T> clazz) {
         return getBoxes(clazz, false);
