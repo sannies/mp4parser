@@ -33,8 +33,10 @@ import java.util.List;
 public class IsoBufferWrapper {
     ByteBuffer[] parents;
     int activeParent = 0;
+  public int readBitsRemaining;
+  private byte readBitsBuffer;
 
-    public IsoBufferWrapper(ByteBuffer parent) {
+  public IsoBufferWrapper(ByteBuffer parent) {
         this.parents = new ByteBuffer[]{parent};
     }
 
@@ -233,7 +235,7 @@ public class IsoBufferWrapper {
 
     public String readIso639() {
         int bits = readUInt16();
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < 3; i++) {
             int c = (bits >> (2 - i) * 5) & 0x1f;
             result.append((char) (c + 0x60));
@@ -245,7 +247,7 @@ public class IsoBufferWrapper {
      * Reads a zero terminated string.
      *
      * @return the string read
-     * @in case of an error in the underlying stream
+     * @throws Error in case of an error in the underlying stream
      */
     public String readString() {
 
@@ -309,5 +311,43 @@ public class IsoBufferWrapper {
     result += readUInt8();
     result += readUInt8() << 8;
     return result;
+  }
+
+  public int readBits(int i) {
+    if (i > 31) {
+      //> signed int
+      throw new IllegalArgumentException("cannot read more than 31 bits");
+    }
+    
+    int ret = 0;
+    while (i > 8) {
+      ret = ret | (parse8(8) << i-8);
+      i -= 8;
+    }
+    return ret | parse8(i);
+  }
+
+  private int parse8(int i) {
+    if (readBitsRemaining == 0) {
+      readBitsBuffer = read();
+      readBitsRemaining = 8;
+    }
+
+    if (i > readBitsRemaining) {
+      final int resultRemaining = i - readBitsRemaining;
+      byte buffer = (byte) (((byte) (readBitsBuffer & (int) (Math.pow(2, readBitsRemaining)  - 1))) << resultRemaining);
+
+      readBitsBuffer = read();
+      readBitsRemaining = 8 - resultRemaining;
+      return buffer | (readBitsBuffer >>> readBitsRemaining) & (int) (Math.pow(2, resultRemaining) - 1);
+    } else {
+      readBitsRemaining -= i;
+
+      return (readBitsBuffer >>> readBitsRemaining) & (int) (Math.pow(2, i) - 1);
+    }
+  }
+
+  public int getReadBitsRemaining() {
+    return readBitsRemaining;
   }
 }
