@@ -80,6 +80,34 @@ public final class AvcConfigurationBox extends AbstractBox {
         return Collections.unmodifiableList(pictureParameterSets);
     }
 
+    public void setConfigurationVersion(int configurationVersion) {
+        this.configurationVersion = configurationVersion;
+    }
+
+    public void setAvcProfileIndicaation(int avcProfileIndicaation) {
+        this.avcProfileIndicaation = avcProfileIndicaation;
+    }
+
+    public void setProfileCompatibility(int profileCompatibility) {
+        this.profileCompatibility = profileCompatibility;
+    }
+
+    public void setAvcLevelIndication(int avcLevelIndication) {
+        this.avcLevelIndication = avcLevelIndication;
+    }
+
+    public void setLengthSizeMinusOne(int lengthSizeMinusOne) {
+        this.lengthSizeMinusOne = lengthSizeMinusOne;
+    }
+
+    public void setSequenceParameterSets(List<byte[]> sequenceParameterSets) {
+        this.sequenceParameterSets = sequenceParameterSets;
+    }
+
+    public void setPictureParameterSets(List<byte[]> pictureParameterSets) {
+        this.pictureParameterSets = pictureParameterSets;
+    }
+
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         /*
      unsigned int(8) configurationVersion = 1;
