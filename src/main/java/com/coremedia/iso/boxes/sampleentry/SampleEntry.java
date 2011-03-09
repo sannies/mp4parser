@@ -39,7 +39,7 @@ import java.util.List;
  */
 public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     private int dataReferenceIndex;
-    protected Box[] boxes;
+    protected Box[] boxes = new Box[0];
     byte[] type;
 
     protected SampleEntry(byte[] type) {
