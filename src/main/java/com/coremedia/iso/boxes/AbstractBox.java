@@ -27,6 +27,8 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -34,6 +36,18 @@ import java.util.UUID;
  */
 public abstract class AbstractBox implements Box {
     public long offset;
+    private List<WriteListener> writeListeners = null;
+
+    /**
+     * Adds a Listener that will be called right before writing the box.
+     * @param writeListener the new Listener.
+     */
+    public void addWriteListener(WriteListener writeListener) {
+        if (writeListeners == null) {
+            writeListeners = new LinkedList<WriteListener>();
+        }
+        writeListeners.add(writeListener);
+    }
 
     public long getSize() {
         return getContentSize() + getHeaderSize() + getDeadBytes().length;
@@ -147,6 +161,13 @@ public abstract class AbstractBox implements Box {
 
     public void getBox(IsoOutputStream os) throws IOException {
         long sp = os.getStreamPosition();
+
+        if (writeListeners != null) {
+            for (WriteListener writeListener : writeListeners) {
+                writeListener.beforeWrite(sp);
+            }
+        }
+
         os.write(getHeader());
         getContent(os);
         for (ByteBuffer buffer : deadBytes) {
