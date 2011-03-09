@@ -23,6 +23,9 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * This box contains a compact version of a table that allows indexing from decoding time to sample number.
@@ -38,30 +41,22 @@ import java.io.IOException;
  * The Edit List Box provides the initial CT value if it is non-empty (non-zero).
  */
 public class TimeToSampleBox extends AbstractFullBox {
-    private long[] sampleCount = new long[0];
-    private long[] sampleDelta = new long[0];
     public static final String TYPE = "stts";
+
+    List<Entry> entries = Collections.emptyList();
+
 
     public TimeToSampleBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public long[] getSampleCount() {
-        return sampleCount;
-    }
-
-    public long[] getSampleDelta() {
-        return sampleDelta;
-    }
 
     public String getDisplayName() {
         return "Decoding Time to Sample Box";
     }
 
     protected long getContentSize() {
-        return 4 +
-                sampleCount.length * 4 +
-                sampleDelta.length * 4;
+        return 4 + entries.size() * 8;
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
@@ -70,32 +65,48 @@ public class TimeToSampleBox extends AbstractFullBox {
         if (entryCount > Integer.MAX_VALUE) {
             throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
         }
-        sampleCount = new long[(int) entryCount];
-        sampleDelta = new long[(int) entryCount];
+        entries = new ArrayList<Entry>((int) entryCount);
+
         for (int i = 0; i < entryCount; i++) {
-            sampleCount[i] = in.readUInt32();
-            sampleDelta[i] = in.readUInt32();
+            entries.add(new Entry(in.readUInt32(),in.readUInt32()));
         }
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt32(sampleCount.length);
-        for (int i = 0; i < sampleCount.length; i++) {
-            isos.writeUInt32(sampleCount[i]);
-            isos.writeUInt32(sampleDelta[i]);
-
+        isos.writeUInt32(entries.size());
+        for (Entry entry : entries) {
+            isos.writeUInt32(entry.getCount());
+            isos.writeUInt32(entry.getDelta());
         }
     }
 
-    public void setSampleCount(long[] sampleCount) {
-        this.sampleCount = sampleCount;
+    public List<Entry> getEntries() {
+        return entries;
     }
 
-    public void setSampleDelta(long[] sampleDelta) {
-        this.sampleDelta = sampleDelta;
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
     }
 
     public String toString() {
-        return "TimeToSampleBox[entryCount=" + sampleCount.length + "]";
+        return "TimeToSampleBox[entryCount=" + entries.size() + "]";
+    }
+
+    public static class Entry {
+        long count;
+        long delta;
+
+        public Entry(long count, long delta) {
+            this.count = count;
+            this.delta = delta;
+        }
+
+        public long getCount() {
+            return count;
+        }
+
+        public long getDelta() {
+            return delta;
+        }
     }
 }

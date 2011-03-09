@@ -6,6 +6,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.util.*;
 
 /**
  * This box provides the offset between decoding time and composition time.
@@ -18,35 +19,26 @@ import java.io.IOException;
 public class CompositionTimeToSample extends AbstractFullBox {
     public static final String TYPE = "ctts";
 
-    long[] sampleCount = new long[]{};
-    long[] sampleOffset = new long[]{};
-
+    List<Entry> entries = Collections.emptyList();
 
     public CompositionTimeToSample() {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public long[] getSampleCount() {
-        return sampleCount;
-    }
-
-    public long[] getSampleOffset() {
-        return sampleOffset;
-    }
-
-    public void setSampleCountAndOffset(long[] sampleCount, long[] sampleOffset) {
-        assert sampleCount.length == sampleOffset.length;
-        this.sampleCount = sampleCount;
-        this.sampleOffset = sampleOffset;
-    }
-
-
     protected long getContentSize() {
-        return 4 + 8 * sampleCount.length;
+        return 4 + 8 * entries.size();
     }
 
     public String getDisplayName() {
         return "Composition Time to Sample Box";
+    }
+
+    public List<Entry> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
     }
 
     @Override
@@ -54,20 +46,36 @@ public class CompositionTimeToSample extends AbstractFullBox {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         long numberOfEntries = in.readUInt32();
         assert numberOfEntries <= Integer.MAX_VALUE : "Too many entries";
-        sampleCount = new long[(int) numberOfEntries];
-        sampleOffset = new long[(int) numberOfEntries];
-
+        entries = new ArrayList<Entry>((int) numberOfEntries);
         for (int i = 0; i < numberOfEntries; i++) {
-            sampleCount[i] = in.readUInt32();
-            sampleOffset[i] = in.readUInt32();
+            Entry e = new Entry(in.readUInt32(),in.readUInt32());
         }
     }
 
     protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(sampleCount.length);
-        for (int i = 0; i < sampleCount.length; i++) {
-            os.writeUInt32(sampleCount[i]);
-            os.writeUInt32(sampleOffset[i]);
+        os.writeUInt32(entries.size());
+
+        for (Entry entry : entries) {
+            os.writeUInt32(entry.getCount());
+            os.writeUInt32(entry.getOffset());
+        }
+    }
+
+    public static class Entry {
+        long count;
+        long offset;
+
+        public Entry(long count, long offset) {
+            this.count = count;
+            this.offset = offset;
+        }
+
+        public long getCount() {
+            return count;
+        }
+
+        public long getOffset() {
+            return offset;
         }
     }
 }
