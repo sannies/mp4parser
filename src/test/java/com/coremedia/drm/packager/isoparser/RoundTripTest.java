@@ -78,8 +78,6 @@ public class RoundTripTest extends TestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         isoFile.getBox(new IsoOutputStream(baos));
 
-        new FileOutputStream("/home/sannies/a").write(baos.toByteArray());
-
         ArrayAssert.assertEquals(content, baos.toByteArray());
 
     }
