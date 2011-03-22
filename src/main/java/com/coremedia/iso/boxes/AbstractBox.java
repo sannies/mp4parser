@@ -40,6 +40,7 @@ public abstract class AbstractBox implements Box {
 
     /**
      * Adds a Listener that will be called right before writing the box.
+     *
      * @param writeListener the new Listener.
      */
     public void addWriteListener(WriteListener writeListener) {
@@ -56,7 +57,8 @@ public abstract class AbstractBox implements Box {
     protected long getHeaderSize() {
         return 4 + // size
                 4 + // type
-                (getContentSize() >= 4294967296L ? 8 : 0);
+                (getContentSize() >= 4294967296L ? 8 : 0) +
+                (Arrays.equals(getType(), IsoFile.fourCCtoBytes(UserBox.TYPE)) ? 16 : 0);
     }
 
     /**
