@@ -6,7 +6,7 @@
   <name>ISO Parser</name>
   <description>A generic parser and writer for all ISO 14496 based files (MP4, Quicktime, DCF, PDCF, ...)</description>
   <url>http://code.google.com/p/mp4parser/</url>
-  <version>1.0-alpha-2-SNAPSHOT</version>
+  <version>1.0-beta-1</version>
 
   <developers>
     <developer>
@@ -100,15 +100,10 @@
       <version>1.4</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>1.4</version>
-    </dependency>
   </dependencies>
 
   <scm>
-    <url>http://code.google.com/p/mp4parser/source/browse/</url>
-    <connection>scm:svn:https://mp4parser.googlecode.com/svn/trunk/isoparser</connection>
+    <url>http://code.google.com/p/mp4parser/source/browse/tags/isoparser-1.0-beta-1</url>
+    <connection>scm:svn:https://mp4parser.googlecode.com/svn/tags/isoparser-1.0-beta-1</connection>
   </scm>
 </project>
