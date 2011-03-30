@@ -1,19 +1,14 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.Utf8;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.math.BigInteger;
 import java.util.logging.Logger;
 
 /**
@@ -26,12 +21,13 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
     public Box[] getBoxes() {
         return new AbstractBox[]{appleDataBox};
     }
-  public <T extends Box> T[] getBoxes(Class<T> clazz) {
-    return getBoxes(clazz, false);
-  }
 
-  public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
-    //todo recursive?
+    public <T extends Box> T[] getBoxes(Class<T> clazz) {
+        return getBoxes(clazz, false);
+    }
+
+    public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
+        //todo recursive?
         if (clazz.isAssignableFrom(appleDataBox.getClass())) {
             T[] returnValue = (T[]) Array.newInstance(clazz, 1);
             returnValue[0] = (T) (Box) appleDataBox;
@@ -40,9 +36,9 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
         return null;
     }
 
-  public AbstractAppleMetaDataBox(String type) {
-    super(IsoFile.fourCCtoBytes(type));
-  }
+    public AbstractAppleMetaDataBox(String type) {
+        super(IsoFile.fourCCtoBytes(type));
+    }
 
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
@@ -57,17 +53,17 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
     }
 
 
-  protected long getContentSize() {
-    return appleDataBox.getSize();
-  }
+    protected long getContentSize() {
+        return appleDataBox.getSize();
+    }
 
-  protected void getContent(IsoOutputStream os) throws IOException {
-    appleDataBox.getBox(os);
-  }
+    protected void getContent(IsoOutputStream os) throws IOException {
+        appleDataBox.getBox(os);
+    }
 
-  public long getNumOfBytesToFirstChild() {
-    return getSize() - appleDataBox.getSize();
-  }
+    public long getNumOfBytesToFirstChild() {
+        return getSize() - appleDataBox.getSize();
+    }
 
     @Override
     public String toString() {
@@ -116,11 +112,7 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
             appleDataBox.setVersion(0);
             appleDataBox.setFlags(0);
             appleDataBox.setFourBytes(new byte[4]);
-            try {
-                appleDataBox.setContent(Hex.decodeHex(value.toCharArray()));
-            } catch (DecoderException e) {
-                throw new IllegalArgumentException("The value has to be a hex string", e);
-            }
+            appleDataBox.setContent(hexStringToByteArray(value));
 
         } else {
             LOG.warning("Don't know how to handle appleDataBox with flag=" + appleDataBox.getFlags());
@@ -140,10 +132,20 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
             }
             return "" + l;
         } else if (appleDataBox.getFlags() == 0) {
-            return Hex.encodeHexString(appleDataBox.getContent());
+            return String.format("%x", new BigInteger(appleDataBox.getContent()));
         } else {
             return "unknown";
         }
+    }
+
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i + 1), 16));
+        }
+        return data;
     }
 
 
