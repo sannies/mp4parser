@@ -61,6 +61,10 @@ public class RoundTripTest extends TestCase {
         testRoundTrip_1("/test.m4p");
     }
 
+    public void testRoundTrip_1e() throws Exception {
+        testRoundTrip_1("/test-pod.m4a");
+    }
+
     public void testRoundTrip_1(String resource) throws Exception {
 
         File originalFile = File.createTempFile("pdcf", "original");

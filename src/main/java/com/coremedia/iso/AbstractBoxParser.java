@@ -86,8 +86,8 @@ public abstract class AbstractBoxParser implements BoxParser {
         }
 
 
-        assert size == box.getSize() : "Reconstructed Size is not equal to the number of parsed bytes! (" + box.getDisplayName() + ")"
-                + " Actual Box size: " + size + " Calculated size: " + box.getSize();
+        assert size == box.getSize() : "Reconstructed Size is not equal to the number of parsed bytes! (" + IsoFile.bytesToFourCC(box.getType()) + " - " + box.getDisplayName() + ")"
+                + " Actual Box size: " + size + " Calculated size: " + box.getSize() + " at offset: "  + offset;
         return box;
     }
 
