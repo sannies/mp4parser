@@ -215,14 +215,6 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         this.entries = entries;
     }
 
-    public String getEntriesAsString() {
-        StringBuilder sb = new StringBuilder();
-        for (Entry entry : entries) {
-            sb.append(entry.toString()).append(';');
-        }
-        return sb.toString();
-    }
-
     public static class Entry {
         private long time;
         private long moofOffset;

@@ -49,6 +49,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
         entries = new ArrayList<Entry>((int) numberOfEntries);
         for (int i = 0; i < numberOfEntries; i++) {
             Entry e = new Entry(in.readUInt32(),in.readUInt32());
+            entries.add(e);
         }
     }
 
@@ -76,6 +77,14 @@ public class CompositionTimeToSample extends AbstractFullBox {
 
         public long getOffset() {
             return offset;
+        }
+
+        @Override
+        public String toString() {
+            return "Entry{" +
+                    "count=" + count +
+                    ", offset=" + offset +
+                    '}';
         }
     }
 }

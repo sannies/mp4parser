@@ -117,5 +117,14 @@ public class SampleToChunkBox extends AbstractFullBox {
         public void setSampleDescriptionIndex(long sampleDescriptionIndex) {
             this.sampleDescriptionIndex = sampleDescriptionIndex;
         }
+
+        @Override
+        public String toString() {
+            return "Entry{" +
+                    "firstChunk=" + firstChunk +
+                    ", samplesPerChunk=" + samplesPerChunk +
+                    ", sampleDescriptionIndex=" + sampleDescriptionIndex +
+                    '}';
+        }
     }
 }

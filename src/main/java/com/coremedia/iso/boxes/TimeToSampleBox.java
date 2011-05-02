@@ -108,5 +108,13 @@ public class TimeToSampleBox extends AbstractFullBox {
         public long getDelta() {
             return delta;
         }
+
+        @Override
+        public String toString() {
+            return "Entry{" +
+                    "count=" + count +
+                    ", delta=" + delta +
+                    '}';
+        }
     }
 }
