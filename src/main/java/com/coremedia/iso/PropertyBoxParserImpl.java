@@ -20,11 +20,14 @@ import java.util.regex.Pattern;
 public class PropertyBoxParserImpl extends AbstractBoxParser {
     Properties mapping;
 
-    public PropertyBoxParserImpl() {
+    public PropertyBoxParserImpl(String... customProperties) {
         InputStream is = getClass().getResourceAsStream("/default.properties");
         mapping = new Properties();
         try {
             mapping.load(is);
+            for (String customProperty : customProperties) {
+                mapping.load(getClass().getResourceAsStream(customProperty));
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
