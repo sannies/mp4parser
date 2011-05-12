@@ -16,6 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoBufferWrapper;
+
+import java.io.IOException;
+
 
 /**
  * A common base structure to contain general metadata. See ISO/IEC 14496-12 Ch. 8.44.1.
@@ -28,10 +33,17 @@ public class MetaBox extends FullContainerBox {
     super(TYPE);
   }
 
+  @Override
   public String getDisplayName() {
     return "Meta Box";
   }
-/*     THIS COULD NOT BE TESTED - SO I COMMENT IT OUT
+
+  @Override
+  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    super.parse(in, size, boxParser, lastMovieFragmentBox);
+    //todo: need to implement hdlr box (at least)
+  }
+  /*     THIS COULD NOT BE TESTED - SO I COMMENT IT OUT
   public void addBox(Box b) {
     HashMap<String, Box> meta = new HashMap<String, Box>();
     for (Box boxe : boxes) {
