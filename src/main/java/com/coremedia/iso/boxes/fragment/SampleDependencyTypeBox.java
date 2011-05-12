@@ -106,7 +106,7 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
     }
   }
 
-  @Override
+    @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         long remainingBytes = size - 4;
@@ -115,10 +115,10 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
             Entry entry = new Entry();
             int temp = in.readUInt8();
 
-      entry.reserved = temp >> 6;
-      entry.sampleDependsOn = (temp >> 4) & 0x3;
-      entry.sampleIsDependentOn = (temp >> 2) & 0x3;
-          entry.sampleHasRedundancy = temp & 0x3;
+            entry.reserved = temp >> 6;
+            entry.sampleDependsOn = (temp >> 4) & 0x3;
+            entry.sampleIsDependentOn = (temp >> 2) & 0x3;
+            entry.sampleHasRedundancy = temp & 0x3;
 
             sampleEntries.add(entry);
             remainingBytes--;
@@ -139,7 +139,7 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
       sampleEntries.add(entry);
         }*/
 
-  }
+    }
 
   private long getSampleCount() {
         ContainerBox traf = this.getParent();
@@ -154,13 +154,10 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
     }
 
     System.out.println("Couldn't find Track Run Box. Trying to determine sample count by looking up Sample Size Boxes");
-        ContainerBox bc = this.getParent();
-    while (bc.getParent() != null) {
-      bc = bc.getParent();
-    }
-    MovieBox[] movieBoxes = bc.getBoxes(MovieBox.class, false);
+    IsoFile isoFile = this.getIsoFile();
+    MovieBox[] movieBoxes = isoFile.getBoxes(MovieBox.class, false);
     if (movieBoxes.length == 0) {
-      System.out.println("No Movie Box found in " + bc);
+      System.out.println("No Movie Box found in " + isoFile);
       return 0;
     }
     MovieBox movieBox = movieBoxes[0];

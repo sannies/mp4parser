@@ -16,6 +16,7 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
@@ -26,13 +27,20 @@ import java.io.IOException;
 public interface Box {
     ContainerBox getParent();
 
+    boolean isParsed();
+
     long getSize();
+
+    long getOffset();
 
     long calculateOffset();
 
     byte[] getType();
 
-  byte[] getUserType();
+    byte[] getUserType();
 
     void getBox(IsoOutputStream os) throws IOException;
+
+    IsoFile getIsoFile();
+
 }

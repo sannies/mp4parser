@@ -38,9 +38,10 @@ import java.util.List;
  * Uses IsoBufferWrapper  to access the underlying file.
  */
 public class IsoFile implements ContainerBox, Box {
-    private List<Box> boxes = new ArrayList<Box>();
-    private BoxParser boxParser = new PropertyBoxParserImpl();
-    private IsoBufferWrapper originalIso;
+    protected List<Box> boxes = new ArrayList<Box>();
+    protected BoxParser boxParser = new PropertyBoxParserImpl();
+    protected IsoBufferWrapper originalIso;
+    protected boolean parsed;
 
 
     public IsoFile(IsoBufferWrapper originalIso) {
@@ -124,6 +125,7 @@ public class IsoFile implements ContainerBox, Box {
                 done = true;
             }
         }
+        parsed = done;
     }
 
     public void parseMdats() throws IOException {
@@ -250,11 +252,19 @@ public class IsoFile implements ContainerBox, Box {
         return size;
     }
 
+    public long getOffset() {
+        return 0;
+    }
+
     public long calculateOffset() {
         return 0;
     }
 
     public IsoFile getIsoFile() {
         return this;
+    }
+
+    public boolean isParsed() {
+        return parsed;
     }
 }
