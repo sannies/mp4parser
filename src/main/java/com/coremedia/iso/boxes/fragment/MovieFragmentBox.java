@@ -84,6 +84,21 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
     return result;
   }
 
+    public List<Long> getSyncSamples(SampleDependencyTypeBox sdtp) {
+        List<Long> result = new ArrayList<Long>();
+
+        final List<SampleDependencyTypeBox.Entry> sampleEntries = sdtp.getSampleEntries();
+        long i = 1;
+        for (SampleDependencyTypeBox.Entry sampleEntry : sampleEntries) {
+            if (sampleEntry.getSampleDependsOn() == 2) {
+                result.add(i);
+            }
+            i++;
+        }
+
+        return result;
+    }
+
   public int getTrackCount() {
     return getBoxes(TrackFragmentBox.class, false).length;
   }
@@ -124,8 +139,13 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
         ArrayList<Long> sampleNumberList = new ArrayList<Long>(sampleNumbers.length);
         for (long sampleNumber : sampleNumbers) {
           sampleNumberList.add(sampleNumber);
-    }
+        }
         trackToSyncSamples.put(trackNumber, sampleNumberList);
+      } else {
+        final SampleDependencyTypeBox[] sampleDependencyTypeBoxes = getBoxes(SampleDependencyTypeBox.class, true);
+        if (sampleDependencyTypeBoxes != null && sampleDependencyTypeBoxes.length > 0) {
+          trackToSyncSamples.put(trackNumber, getSyncSamples(sampleDependencyTypeBoxes[0]));
+        }
       }
       trackToSampleCount.put(trackNumber, 1L);
     }
@@ -162,8 +182,9 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
         List<Long> syncSamples = trackToSyncSamples.get(trackId);
         boolean syncSample = syncSamples != null && syncSamples.contains(currentSample);
 
+        SampleImpl<TrackFragmentBox> sample = createSample(isoBufferWrapper, trunOffset + sampleOffsets[i], sampleOffsets[i], sampleSizes[i], parentTrack, chunk, currentSample, syncSample);
         MediaDataBox.SampleHolder<TrackFragmentBox> sh =
-                new MediaDataBox.SampleHolder<TrackFragmentBox>(new SampleImpl<TrackFragmentBox>(isoBufferWrapper, trunOffset + sampleOffsets[i], sampleSizes[i], chunk, syncSample));
+                new MediaDataBox.SampleHolder<TrackFragmentBox>(sample);
         mdat.getSampleList().add(sh);
         chunk.addSample(sh);
         trackToSampleCount.put(trackId, currentSample + 1);
@@ -171,6 +192,10 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
     }
 
   }
+
+    protected SampleImpl<TrackFragmentBox> createSample(IsoBufferWrapper isoBufferWrapper, long offset, long sampleOffset, long sampleSize, Track<TrackFragmentBox> parentTrack, Chunk<TrackFragmentBox> chunk, Long currentSample, boolean syncSample) {
+        return new SampleImpl<TrackFragmentBox>(isoBufferWrapper, offset, currentSample, sampleSize, chunk, syncSample);
+    }
 
   public TrackMetaData<TrackFragmentBox> getTrackMetaData(long trackId) {
     TrackFragmentBox[] trackBoxes = this.getBoxes(TrackFragmentBox.class, false);

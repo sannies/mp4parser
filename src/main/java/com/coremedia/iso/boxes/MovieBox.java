@@ -176,14 +176,17 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
                 List<Long> syncSamples = trackToSyncSamples.get(trackId);
                 boolean syncSample = syncSamples != null && syncSamples.contains(currentSample);
 
-                MediaDataBox.SampleHolder<TrackBox> sh =
-                        new MediaDataBox.SampleHolder<TrackBox>(
-                                new SampleImpl<TrackBox>(isoBufferWrapper, chunkOffset + sampleOffsets[i], sampleSizes[i], chunk, syncSample));
+                SampleImpl<TrackBox> sample = createSample(isoBufferWrapper, chunkOffset + sampleOffsets[i], sampleOffsets[i], sampleSizes[i], parentTrack, chunk, currentSample, syncSample);
+                MediaDataBox.SampleHolder<TrackBox> sh = new MediaDataBox.SampleHolder<TrackBox>(sample);
                 mdat.getSampleList().add(sh);
                 chunk.addSample(sh);
                 trackToSampleCount.put(trackId, currentSample + 1);
             }
         }
+    }
+
+    protected SampleImpl<TrackBox> createSample(IsoBufferWrapper isoBufferWrapper, long offset, long sampleOffset, long sampleSize, Track<TrackBox> parentTrack, Chunk<TrackBox> chunk, Long currentSample, boolean syncSample) {
+        return new SampleImpl<TrackBox>(isoBufferWrapper, offset, currentSample, sampleSize, chunk, syncSample);
     }
 
     public long[] getSampleSizesForChunk(long chunkOffset) {

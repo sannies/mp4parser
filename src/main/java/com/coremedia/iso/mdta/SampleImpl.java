@@ -32,20 +32,22 @@ import java.util.List;
  * @see Track
  * @see Sample
  */
-public final class SampleImpl<T extends TrackMetaDataContainer> implements Sample<T>, Comparable<SampleImpl<T>> {
+public class SampleImpl<T extends TrackMetaDataContainer> implements Sample<T>, Comparable<SampleImpl<T>> {
 
   private final Chunk<T> parent;
-  private final IsoBufferWrapper buffer;
-  private final long offset;
-  private final long size;
-  private boolean syncSample;
+  protected final IsoBufferWrapper buffer;
+  protected final long offset;
+  protected final long size;
+  protected boolean syncSample;
+  private long sampleNumber;
 
-  public SampleImpl(IsoBufferWrapper buffer, long offset, long size, Chunk<T> parent, boolean syncSample) {
+  public SampleImpl(IsoBufferWrapper buffer, long offset, Long sampleNumber, long size, Chunk<T> parent, boolean syncSample) {
     this.parent = parent;
     this.buffer = buffer;
     this.offset = offset;
     this.size = size;
     this.syncSample = syncSample;
+    this.sampleNumber = sampleNumber;
   }
 
   public void getContent(IsoOutputStream os) throws IOException {
@@ -95,5 +97,13 @@ public final class SampleImpl<T extends TrackMetaDataContainer> implements Sampl
 
   public boolean isSyncSample() {
     return syncSample;
+  }
+
+    public String getDescription() {
+        return null;
+    }
+
+    public long getSampleNumber() {
+    return sampleNumber;
   }
 }
