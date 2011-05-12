@@ -321,7 +321,8 @@ public class IsoBufferWrapper {
     
     int ret = 0;
     while (i > 8) {
-      ret = ret | (parse8(8) << i-8);
+      final int moved = parse8(8) << i - 8;
+      ret = ret | moved;
       i -= 8;
     }
     return ret | parse8(i);
@@ -335,11 +336,12 @@ public class IsoBufferWrapper {
 
     if (i > readBitsRemaining) {
       final int resultRemaining = i - readBitsRemaining;
-      byte buffer = (byte) (((byte) (readBitsBuffer & (int) (Math.pow(2, readBitsRemaining)  - 1))) << resultRemaining);
+      int buffer = (readBitsBuffer & (int) (Math.pow(2, readBitsRemaining)  - 1)) << resultRemaining;
 
       readBitsBuffer = read();
       readBitsRemaining = 8 - resultRemaining;
-      return buffer | (readBitsBuffer >>> readBitsRemaining) & (int) (Math.pow(2, resultRemaining) - 1);
+      final int movedAndMasked = (readBitsBuffer >>> readBitsRemaining) & (int) (Math.pow(2, resultRemaining) - 1);
+      return buffer | movedAndMasked;
     } else {
       readBitsRemaining -= i;
 
