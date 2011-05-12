@@ -38,7 +38,6 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
   public static final String TYPE3 = "mp4a";
   public static final String TYPE4 = "drms";
   public static final String TYPE5 = "alac";
-  //public static final String TYPE6 = "mp4s";
   public static final String TYPE7 = "owma";
   public static final String TYPE8 = "ac-3"; /* ETSI TS 102 366 1.2.1 Annex F */
 
@@ -51,7 +50,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
 
   private int channelCount;
   private int sampleSize;
-  private double sampleRate;
+  private long sampleRate;
   private int soundVersion;
   private int compressionId;
   private int packetSize;
@@ -73,7 +72,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     return sampleSize;
   }
 
-  public double getSampleRate() {
+  public long getSampleRate() {
     return sampleRate;
   }
 
@@ -105,8 +104,9 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     return bytesPerSample;
   }
 
+  @Override
   public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-      super.parse(in, size, boxParser, lastMovieFragmentBox);
+    super.parse(in, size, boxParser, lastMovieFragmentBox);
     //reserved bits - used by qt
     soundVersion = in.readUInt16();
 
@@ -120,8 +120,8 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     compressionId = in.readUInt16();
     //reserved bits - used by qt
     packetSize = in.readUInt16();
-    sampleRate = in.readFixedPoint1616();
-    //sampleRate = in.readUInt32() >>> 16;
+    //sampleRate = in.readFixedPoint1616();
+    sampleRate = in.readUInt32() >>> 16;
 
     //more qt stuff - see http://mp4v2.googlecode.com/svn-history/r388/trunk/src/atom_sound.cpp 
     if (soundVersion > 0) {
@@ -166,6 +166,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     return boxes;
   }
 
+  @Override
   protected long getContentSize() {
     long contentSize = 28;
     for (Box boxe : boxes) {
@@ -174,6 +175,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     return contentSize;
   }
 
+  @Override
   public String getDisplayName() {
     return "Audio Sample Entry";
   }
@@ -182,6 +184,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     return "AudioSampleEntry";
   }
 
+  @Override
   protected void getContent(IsoOutputStream isos) throws IOException {
     isos.write(new byte[6]);
     isos.writeUInt16(getDataReferenceIndex());
@@ -191,7 +194,8 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     isos.writeUInt16(getSampleSize());
     isos.writeUInt16(0);
     isos.writeUInt16(0);
-    isos.writeFixedPont1616(getSampleRate());
+    //isos.writeFixedPont1616(getSampleRate());
+    isos.writeUInt32(getSampleRate() << 16);
     for (Box boxe : boxes) {
       boxe.getBox(isos);
     }
