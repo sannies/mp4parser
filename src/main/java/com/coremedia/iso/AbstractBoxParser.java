@@ -3,8 +3,8 @@ package com.coremedia.iso;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.UserBox;
 
-import java.awt.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -36,7 +36,7 @@ public abstract class AbstractBoxParser implements BoxParser {
             LOG.severe("Plausibility check failed: size < 8 (size = " + size + "). Stop parsing!");
             return null;
         } else if ((offset + size) > in.size()) {
-            LOG.severe("Plausibility check failed: offset + size > file size (size = " + size + "). Stop parsing at " + offset + ".");
+            LOG.severe("Plausibility check failed: offset (" + offset + ") + size (" + size + ") > file size (" + in.size() + "). Stop parsing!");
             return null;
         }
 
@@ -65,7 +65,7 @@ public abstract class AbstractBoxParser implements BoxParser {
         } else {
             contentSize = size - 8;
         }
-        if (Arrays.equals(type, IsoFile.fourCCtoBytes("uuid"))) {
+        if (Arrays.equals(type, IsoFile.fourCCtoBytes(UserBox.TYPE))) {
             usertype = in.read(16);
             contentSize -= 16;
         }
