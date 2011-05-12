@@ -114,7 +114,7 @@ public class RtpHintSampleEntry extends SampleEntry implements ContainerBox {
 
     public String toString() {
       StringBuilder builder = new StringBuilder();
-        builder.append("HintSampleEntry[");
+        builder.append("RtpHintSampleEntry[");
         builder.append("hintTrackVersion=").append(getHintTrackVersion()).append(";");
         builder.append("highestCompatibleVersion=").append(getHighestCompatibleVersion()).append(";");
         builder.append("maxPacketSize=").append(getMaxPacketSize());
