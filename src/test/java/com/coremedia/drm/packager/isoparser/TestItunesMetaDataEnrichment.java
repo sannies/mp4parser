@@ -23,14 +23,14 @@ import java.nio.ByteBuffer;
  *
  */
 public class TestItunesMetaDataEnrichment extends TestCase {
-    public void testEnrichment() throws IOException {
+  public void testEnrichment() throws IOException {
         InputStream is = getClass().getResourceAsStream("/file6141.odf");
-        IsoBufferWrapper isoBufferWrapper = new IsoBufferWrapper(ByteBuffer.wrap(IOUtils.toByteArray(is)));
+        IsoBufferWrapper isoBufferWrapper = new IsoBufferWrapper(ByteBuffer.wrap(IOUtils.toByteArray(is)));    
         IsoFile isoFile = new IsoFile(isoBufferWrapper);
         isoFile.parse();
-        OmaDrmContainerBox omaDrmContainerBox = isoFile.getBoxes(OmaDrmContainerBox.class)[0];
+        OmaDrmContainerBox omaDrmContainerBox = isoFile.getBoxes(OmaDrmContainerBox.class, false)[0];
         OmaDrmDiscreteHeadersBox omaDrmDiscreteHeadersBox = omaDrmContainerBox.getBoxes(OmaDrmDiscreteHeadersBox.class)[0];
-        UserDataBox[] userDataBoxes = omaDrmDiscreteHeadersBox.getBoxes(UserDataBox.class);
+        UserDataBox[] userDataBoxes = omaDrmDiscreteHeadersBox.getBoxes(UserDataBox.class, false);
         MetaBox mb = new MetaBox();
 
         HandlerBox hb = new HandlerBox();
