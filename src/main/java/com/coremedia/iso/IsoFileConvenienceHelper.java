@@ -29,9 +29,9 @@ public class IsoFileConvenienceHelper {
      * @param isoFile will be changed!
      */
     public static void switchToAutomaticChunkOffsetBox(IsoFile isoFile) {
-        MovieBox[] movieBoxes = isoFile.getBoxes(MovieBox.class);
+        List<MovieBox> movieBoxes = isoFile.getBoxes(MovieBox.class);
         for (MovieBox movieBox : movieBoxes) {
-            TrackBox[] trackBoxes = movieBox.getBoxes(TrackBox.class);
+            List<TrackBox> trackBoxes = movieBox.getBoxes(TrackBox.class);
             for (TrackBox trackBox : trackBoxes) {
                 SampleTableBox sampleTableBox = null;
                 // Do not find the way to the sampleTableBox by many getBoxes(Class) calls since they need to much
@@ -76,9 +76,7 @@ public class IsoFileConvenienceHelper {
         }
 
         if (partList.size() > 0) {
-            List<Box> boxes = Arrays.asList(containerBox.getBoxes());
-
-            return get(boxes, partList);
+            return get((List<Box>)containerBox.getBoxes(), partList);
         }
         return null;
     }
@@ -94,7 +92,7 @@ public class IsoFileConvenienceHelper {
                 String type = IsoFile.bytesToFourCC(boxContainer.getType());
 
                 if (typeInPath.equals(type)) {
-                    List<Box> children = Arrays.asList(boxContainer.getBoxes());
+                    List<Box> children = (List<Box>) boxContainer.getBoxes();
                     if (path.size() > 0) {
                         if (children.size() > 0) {
                             return get(children, path);

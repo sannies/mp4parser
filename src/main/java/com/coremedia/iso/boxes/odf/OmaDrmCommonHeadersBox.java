@@ -38,7 +38,7 @@ import java.util.*;
 public class OmaDrmCommonHeadersBox extends AbstractFullBox implements ContainerBox {
     public static final String TYPE = "ohdr";
 
-    private AbstractBox[] extendedHeaders;
+    private List<Box> extendedHeaders;
     private int encryptionMethod;
     private int paddingScheme;
     private long plaintextLength;
@@ -46,20 +46,20 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
     private String rightsIssuerUrl;
     private String textualHeaders;
 
-  public <T extends Box> T[] getBoxes(Class<T> clazz) {
-    return getBoxes(clazz, false);
-  }
-  
+    public <T extends Box> List<T> getBoxes(Class<T> clazz) {
+        return getBoxes(clazz, false);
+    }
+
     @SuppressWarnings("unchecked")
-    public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
-      //todo recursive?
+    public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
+        //todo recursive?
         ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (AbstractBox boxe : extendedHeaders) {
+        for (Box boxe : extendedHeaders) {
             if (clazz.isInstance(boxe)) {
                 boxesToBeReturned.add(clazz.cast(boxe));
             }
         }
-        return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
+        return boxesToBeReturned;
     }
 
     public OmaDrmCommonHeadersBox() {
@@ -67,10 +67,10 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         contentId = "";
         rightsIssuerUrl = "";
         textualHeaders = "";
-        extendedHeaders = new AbstractBox[0];
+        extendedHeaders = new LinkedList<Box>();
     }
 
-    public Box[] getBoxes() {
+    public List<Box> getBoxes() {
         return extendedHeaders;
     }
 
@@ -146,7 +146,7 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-        for (AbstractBox boxe : extendedHeaders) {
+        for (Box boxe : extendedHeaders) {
             contentLength += boxe.getSize();
         }
 
@@ -164,17 +164,15 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         contentId = new String(in.read(contentIdLength), "UTF-8");
         rightsIssuerUrl = new String(in.read(rightsIssuerUrlLength), "UTF-8");
         textualHeaders = new String(in.read(textualHeadersLength), "UTF-8");
-        List<Box> boxeList = new LinkedList<Box>();
         long remainingContentSize = size;
         remainingContentSize -= 4 + 1 + 1 + 8 + 2 + 2 + 2;
         remainingContentSize -= contentIdLength + rightsIssuerUrlLength + textualHeadersLength;
         while (remainingContentSize > 0) {
             Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
             remainingContentSize -= box.getSize();
-            boxeList.add(box);
+            extendedHeaders.add((AbstractBox) box);
         }
         assert remainingContentSize == 0;
-        this.extendedHeaders = boxeList.toArray(new AbstractBox[boxeList.size()]);
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {
@@ -188,7 +186,7 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         isos.writeStringNoTerm(rightsIssuerUrl);
         isos.writeStringNoTerm(textualHeaders);
 
-        for (AbstractBox boxe : extendedHeaders) {
+        for (Box boxe : extendedHeaders) {
             boxe.getBox(isos);
         }
 
@@ -211,13 +209,13 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         return buffer.toString();
     }
 
-    public void setExtendedHeaders(AbstractBox[] extendedHeaders) {
+    public void setExtendedHeaders(List<Box> extendedHeaders) {
         this.extendedHeaders = extendedHeaders;
     }
 
     public long getNumOfBytesToFirstChild() {
         long sizeOfChildren = 0;
-        for (AbstractBox extendedHeader : extendedHeaders) {
+        for (Box extendedHeader : extendedHeaders) {
             sizeOfChildren += extendedHeader.getSize();
         }
         return getSize() - sizeOfChildren;

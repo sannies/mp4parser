@@ -82,10 +82,10 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public void setChunkOffsetBox(ChunkOffsetBox b) {
-        for (int i = 0; i < boxes.length; i++) {
-            Box box = boxes[i];
+        for (int i = 0; i < boxes.size(); i++) {
+            Box box = boxes.get(i);
             if (box instanceof ChunkOffsetBox) {
-                boxes[i] = b;
+                boxes.set(i, b);
             }
         }
     }
@@ -108,18 +108,4 @@ public class SampleTableBox extends AbstractContainerBox {
         return null;
     }
 
-
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("SampleTableBox[");
-        Box[] boxes = getBoxes();
-        for (int i = 0; i < boxes.length; i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes[i].toString());
-        }
-        buffer.append("]");
-        return buffer.toString();
-    }
 }

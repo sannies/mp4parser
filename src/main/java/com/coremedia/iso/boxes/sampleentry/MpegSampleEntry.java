@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class MpegSampleEntry extends SampleEntry implements ContainerBox {
   
@@ -21,30 +22,14 @@ public class MpegSampleEntry extends SampleEntry implements ContainerBox {
   public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
     super.parse(in, size, boxParser, lastMovieFragmentBox);
 
-    ArrayList<Box> someBoxes = new ArrayList<Box>();
     while (size > 8) {
       Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
-      someBoxes.add(b);
+      boxes.add(b);
       size -= b.getSize();
     }
-    boxes = someBoxes.toArray(new Box[someBoxes.size()]);
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T extends Box> T[] getBoxes(Class<T> clazz) {
-    ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-    for (Box boxe : boxes) {
-      if (clazz.isInstance(boxe)) {
-        boxesToBeReturned.add(clazz.cast(boxe));
-      }
-    }
-    return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
   }
 
 
-  public Box[] getBoxes() {
-    return boxes;
-  }
 
   @Override
   protected long getContentSize() {

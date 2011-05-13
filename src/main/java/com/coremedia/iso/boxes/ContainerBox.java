@@ -18,6 +18,8 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
 
+import java.util.List;
+
 /**
  * Interface for all ISO boxes that may contain other boxes.
  */
@@ -28,7 +30,7 @@ public interface ContainerBox extends Box {
      *
      * @return an array of boxes, empty array in case of no children.
      */
-    Box[] getBoxes();
+    List<Box> getBoxes();
 
     /**
      * Gets all child boxes of the given type. May not return <code>null</code>.
@@ -36,16 +38,16 @@ public interface ContainerBox extends Box {
      * @param clazz child box's type
      * @return an array of boxes, empty array in case of no children.
      */
-    <T extends Box> T[] getBoxes(Class<T> clazz);
+    <T extends Box> List<T> getBoxes(Class<T> clazz);
 
     /**
-   * Gets all child boxes of the given type. May not return <code>null</code>.
-   *
-   * @param clazz child box's type
-   * @param recursive step down the tree
-   * @return an array of boxes, empty array in case of no children.
-   */
-  <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive);
+     * Gets all child boxes of the given type. May not return <code>null</code>.
+     *
+     * @param clazz     child box's type
+     * @param recursive step down the tree
+     * @return an array of boxes, empty array in case of no children.
+     */
+    <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive);
 
     /**
      * Gets the parent box. May be <code>null</code> in case of the

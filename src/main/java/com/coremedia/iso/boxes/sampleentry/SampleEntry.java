@@ -39,7 +39,7 @@ import java.util.List;
  */
 public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     private int dataReferenceIndex;
-    protected Box[] boxes = new Box[0];
+    protected List<Box> boxes = new LinkedList<Box>();
     byte[] type;
 
     protected SampleEntry(byte[] type) {
@@ -60,34 +60,38 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     }
 
     public void addBox(AbstractBox b) {
-        List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-        listOfBoxes.add(b);
-        boxes = listOfBoxes.toArray(new AbstractBox[listOfBoxes.size()]);
+        boxes.add(b);
     }
 
     public boolean removeBox(Box b) {
-        List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-        boolean rc = listOfBoxes.remove(b);
-        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
-        return rc;
+        return boxes.remove(b);
     }
 
-  @SuppressWarnings("unchecked")
-  public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
-    List<T> boxesToBeReturned = new ArrayList<T>(2);
-    for (Box boxe : boxes) { //clazz.isInstance(boxe) / clazz == boxe.getClass()?
-      if (clazz == boxe.getClass()) {
-        boxesToBeReturned.add((T) boxe);
-      }
-
-      if (recursive && boxe instanceof ContainerBox) {
-        boxesToBeReturned.addAll(Arrays.asList(((ContainerBox) boxe).getBoxes(clazz, recursive)));
-      }
+    public List<Box> getBoxes() {
+        return boxes;
     }
-    // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
-    return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
-    //return (T[]) boxesToBeReturned.toArray();
-  }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
+        List<T> boxesToBeReturned = new ArrayList<T>(2);
+        for (Box boxe : boxes) { //clazz.isInstance(boxe) / clazz == boxe.getClass()?
+            if (clazz == boxe.getClass()) {
+                boxesToBeReturned.add((T) boxe);
+            }
+
+            if (recursive && boxe instanceof ContainerBox) {
+                boxesToBeReturned.addAll(((ContainerBox) boxe).getBoxes(clazz, recursive));
+            }
+        }
+        // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
+        return boxesToBeReturned;
+        //return (T[]) boxesToBeReturned.toArray();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Box> List<T> getBoxes(Class<T> clazz) {
+        return getBoxes(clazz, false);
+    }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         byte[] tmp = in.read(6);

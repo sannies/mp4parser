@@ -259,7 +259,7 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
     }
 
     public int getTrackCount() {
-        return getBoxes(TrackBox.class).length;
+        return getBoxes(TrackBox.class).size();
     }
 
 
@@ -270,10 +270,10 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
      */
     public long[] getTrackNumbers() {
 
-        AbstractBox[] trackBoxes = this.getBoxes(TrackBox.class);
-        long[] trackNumbers = new long[trackBoxes.length];
-        for (int trackCounter = 0; trackCounter < trackBoxes.length; trackCounter++) {
-            AbstractBox trackBoxe = trackBoxes[trackCounter];
+        List<TrackBox> trackBoxes = this.getBoxes(TrackBox.class);
+        long[] trackNumbers = new long[trackBoxes.size()];
+        for (int trackCounter = 0; trackCounter < trackBoxes.size(); trackCounter++) {
+            AbstractBox trackBoxe = trackBoxes.get(trackCounter);
             TrackBox trackBox = (TrackBox) trackBoxe;
             trackNumbers[trackCounter] = trackBox.getTrackHeaderBox().getTrackId();
         }
@@ -281,7 +281,7 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
     }
 
     public TrackMetaData<TrackBox> getTrackMetaData(long trackId) {
-        TrackBox[] trackBoxes = this.getBoxes(TrackBox.class);
+        List<TrackBox> trackBoxes = this.getBoxes(TrackBox.class);
         for (TrackBox trackBox : trackBoxes) {
             if (trackBox.getTrackHeaderBox().getTrackId() == trackId) {
                 return new TrackMetaData<TrackBox>(trackId, trackBox);
@@ -290,19 +290,6 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
         throw new RuntimeException("TrackId " + trackId + " not contained in " + this);
     }
 
-    public String toString() {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append("MovieBox[");
-        Box[] boxes = getBoxes();
-        for (int i = 0; i < boxes.length; i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes[i].toString());
-        }
-        buffer.append("]");
-        return buffer.toString();
-    }
 
     public MovieHeaderBox getMovieHeaderBox() {
         for (Box box : boxes) {

@@ -41,7 +41,11 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
 
     @Override
     public AbstractBox createBox(byte[] type, byte[] userType, byte[] parent, Box lastMovieFragmentBox) {
-
+  //    if (Arrays.equals(type, IsoFile.fourCCtoBytes(UserBox.TYPE))) {
+//#uuid=com.coremedia.iso.boxes.UserBox(userType)
+    //      return com.castlabs.isobox.boxes.UserBox.createFor(userType);
+        //UserBox box = new UserBox(userType);
+    //  }
         String constructor = mapping.getProperty(IsoFile.bytesToFourCC(parent) + "-" + IsoFile.bytesToFourCC(type));
         if (constructor == null) {
             constructor = mapping.getProperty(IsoFile.bytesToFourCC(type));
@@ -69,10 +73,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
             Object[] constructorArgs = new Object[param.length];
             for (int i = 0; i < param.length; i++) {
 
-                if ("userType".equals(param[i])) {
-                    constructorArgs[i] = userType;
-                    constructorArgsClazz[i] = byte[].class;
-                } else if ("type".equals(param[i])) {
+                if ("type".equals(param[i])) {
                     constructorArgs[i] = type;
                     constructorArgsClazz[i] = byte[].class;
                 } else if ("parent".equals(param[i])) {

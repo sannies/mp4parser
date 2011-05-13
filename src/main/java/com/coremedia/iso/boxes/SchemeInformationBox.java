@@ -33,18 +33,4 @@ public class SchemeInformationBox extends AbstractContainerBox {
     public String getDisplayName() {
         return "Scheme Information Box";
     }
-
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Scheme Information Box[");
-        Box[] boxes = getBoxes();
-        for (int i = 0; i < boxes.length; i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes[i].toString());
-        }
-        buffer.append("]");
-        return buffer.toString();
-    }
 }

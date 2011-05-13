@@ -27,6 +27,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Walks through a ContainerBox and its children to see that no getter throws any exception.
@@ -58,7 +59,7 @@ public final class Walk {
 
     public static void through(ContainerBox container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
         for (Box b : container.getBoxes()) {
-            Box[] myBoxes = container.getBoxes(b.getClass());
+            List<Box> myBoxes = (List<Box>) container.getBoxes(b.getClass());
             boolean found = false;
             for (Box myBox : myBoxes) {
                 if (myBox == b) {

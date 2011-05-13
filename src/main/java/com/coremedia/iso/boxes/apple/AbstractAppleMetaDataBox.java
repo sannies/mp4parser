@@ -9,6 +9,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -18,20 +20,18 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
     private static Logger LOG = Logger.getLogger(AbstractAppleMetaDataBox.class.getName());
     AppleDataBox appleDataBox = new AppleDataBox();
 
-    public Box[] getBoxes() {
-        return new AbstractBox[]{appleDataBox};
+    public List<Box> getBoxes() {
+        return Collections.singletonList((Box)appleDataBox);
     }
 
-    public <T extends Box> T[] getBoxes(Class<T> clazz) {
+    public <T extends Box> List<T> getBoxes(Class<T> clazz) {
         return getBoxes(clazz, false);
     }
 
-    public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
+    public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
         //todo recursive?
         if (clazz.isAssignableFrom(appleDataBox.getClass())) {
-            T[] returnValue = (T[]) Array.newInstance(clazz, 1);
-            returnValue[0] = (T) (Box) appleDataBox;
-            return returnValue;
+            return (List<T>) Collections.singletonList(appleDataBox);
         }
         return null;
     }

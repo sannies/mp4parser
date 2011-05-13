@@ -53,14 +53,12 @@ public class DataReferenceBox extends FullContainerBox {
         setVersion(in.readUInt8());
         setFlags(in.readUInt24());
         in.readUInt32();
-        List<Box> boxes = new LinkedList<Box>();
         long remainingContentSize = size - 8;
         while (remainingContentSize > 0) {
             Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
             remainingContentSize -= box.getSize();
             boxes.add(box);
         }
-        this.boxes = boxes.toArray(new Box[boxes.size()]);
     }
 
     public String getDisplayName() {
@@ -68,21 +66,7 @@ public class DataReferenceBox extends FullContainerBox {
     }
 
     protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(getBoxes().length);
+        os.writeUInt32(getBoxes().size());
         super.getContent(os);
-    }
-
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("DataReferenceBox[");
-        Box[] boxes = getBoxes();
-        for (int i = 0; i < boxes.length; i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes[i].toString());
-        }
-        buffer.append("]");
-        return buffer.toString();
     }
 }

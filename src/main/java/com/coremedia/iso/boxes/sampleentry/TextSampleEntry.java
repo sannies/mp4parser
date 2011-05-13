@@ -27,6 +27,7 @@ import com.coremedia.iso.boxes.ContainerBox;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -82,30 +83,11 @@ public class TextSampleEntry extends SampleEntry {
         styleRecord.parse(in);
         size -= styleRecord.getSize();
 
-        LinkedList<Box> ll = new LinkedList<Box>();
-
         while (size > 0) {
             Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
-            ll.add(b);
+            boxes.add(b);
             size -= b.getSize();
         }
-        boxes = ll.toArray(new Box[ll.size()]);
-    }
-
-
-    @SuppressWarnings("unchecked")
-    public <T extends Box> T[] getBoxes(Class<T> clazz) {
-        ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (Box boxe : boxes) {
-            if (clazz.isInstance(boxe)) {
-                boxesToBeReturned.add(clazz.cast(boxe));
-            }
-        }
-        return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
-    }
-
-    public Box[] getBoxes() {
-        return boxes;
     }
 
     protected long getContentSize() {

@@ -37,8 +37,8 @@ public class ItemProtectionBox extends FullContainerBox {
     }
 
     public SchemeInformationBox getItemProtectionScheme() {
-        if (getBoxes(SchemeInformationBox.class).length > 0) {
-            return getBoxes(SchemeInformationBox.class)[0];
+        if (!getBoxes(SchemeInformationBox.class).isEmpty()) {
+            return getBoxes(SchemeInformationBox.class).get(0);
         } else {
             return null;
         }

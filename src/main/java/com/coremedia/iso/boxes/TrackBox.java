@@ -51,21 +51,6 @@ public class TrackBox extends AbstractContainerBox implements TrackMetaDataConta
         return null;
     }
 
-
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("TrackBox[");
-        Box[] boxes = getBoxes();
-        for (int i = 0; i < boxes.length; i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes[i].toString());
-        }
-        buffer.append("]");
-        return buffer.toString();
-    }
-
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);

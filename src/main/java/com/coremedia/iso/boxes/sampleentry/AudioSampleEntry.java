@@ -26,6 +26,9 @@ import com.coremedia.iso.boxes.ContainerBox;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Contains basic information about the audio samples in this track. Format-specific information
@@ -134,37 +137,19 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
       in.read(20);
     }
     size -= 28;
-    ArrayList<Box> someBoxes = new ArrayList<Box>();
     while (size > 8) {
       if (TYPE7.equals(IsoFile.bytesToFourCC(type))) {
         //microsoft garbage
         break;
       }
       Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
-      someBoxes.add(b);
+      boxes.add(b);
       size -= b.getSize();
     }
-    boxes = someBoxes.toArray(new Box[someBoxes.size()]);
-    // commented out since it forbids deadbytes		 
+    // commented out since it forbids deadbytes
     //assert size == 0 : "After parsing all boxes there are " + size + " bytes left. 0 bytes required";
   }
 
-
-  @SuppressWarnings("unchecked")
-  public <T extends Box> T[] getBoxes(Class<T> clazz) {
-    ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-    for (Box boxe : boxes) {
-      if (clazz.isInstance(boxe)) {
-        boxesToBeReturned.add(clazz.cast(boxe));
-      }
-    }
-    return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
-  }
-
-
-  public Box[] getBoxes() {
-    return boxes;
-  }
 
   @Override
   protected long getContentSize() {

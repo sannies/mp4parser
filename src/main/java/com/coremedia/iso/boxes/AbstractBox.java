@@ -158,7 +158,8 @@ public abstract class AbstractBox implements Box {
                 ios.write(userType);
             }
 
-            assert baos.size() == getHeaderSize();
+            assert baos.size() == getHeaderSize():
+                    "written header size differs from calculated size: " + baos.size() + " vs. " + getHeaderSize();
             return baos.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
@@ -229,8 +230,7 @@ public abstract class AbstractBox implements Box {
     public long calculateOffset() {
         //todo: doesn't work for fragmented files as it doesn't take mdats into account (as they are not in the parent structure)
         long offsetFromParentBoxStart = parent.getNumOfBytesToFirstChild();
-        Box[] boxes = parent.getBoxes();
-        for (Box box : boxes) {
+        for (Box box : parent.getBoxes()) {
             if (box.equals(this)) {
                 return parent.calculateOffset() + offsetFromParentBoxStart;
             }

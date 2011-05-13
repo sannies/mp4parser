@@ -60,14 +60,14 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
     // getBox(tfhd)#getBaseDataOffset +
     //   for each getBoxes(trun) -> trun#isDataOffsetPresent ? trun#getDataOffset : sum(size of all previous truns in traf)
 
-    TrackFragmentBox[] trackFragmentBoxes = getBoxes(TrackFragmentBox.class, false);
+    List<TrackFragmentBox> trackFragmentBoxes = getBoxes(TrackFragmentBox.class, false);
     for (TrackFragmentBox trackFragmentBox : trackFragmentBoxes) {
 
       TrackFragmentHeaderBox trackFragmentHeaderBox = trackFragmentBox.getTrackFragmentHeaderBox();
       long baseDataOffset = trackFragmentHeaderBox.getBaseDataOffset();
 
       long cumulatedTrunBoxLength = 0;
-      TrackRunBox[] trackRunBoxes = trackFragmentBox.getBoxes(TrackRunBox.class, false);
+      List<TrackRunBox> trackRunBoxes = trackFragmentBox.getBoxes(TrackRunBox.class, false);
       for (TrackRunBox trackRunBox : trackRunBoxes) {
         if (trackRunBox.isDataOffsetPresent()) {
           trackRunBox.setRealOffset(baseDataOffset + trackRunBox.getDataOffset());
@@ -84,23 +84,22 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
     return result;
   }
 
-    public List<Long> getSyncSamples(SampleDependencyTypeBox sdtp) {
-        List<Long> result = new ArrayList<Long>();
+  public List<Long> getSyncSamples(SampleDependencyTypeBox sdtp) {
+    List<Long> result = new ArrayList<Long>();
 
-        final List<SampleDependencyTypeBox.Entry> sampleEntries = sdtp.getSampleEntries();
-        long i = 1;
-        for (SampleDependencyTypeBox.Entry sampleEntry : sampleEntries) {
-            if (sampleEntry.getSampleDependsOn() == 2) {
-                result.add(i);
-            }
-            i++;
-        }
-
-        return result;
+    final List<SampleDependencyTypeBox.Entry> sampleEntries = sdtp.getSampleEntries();
+    long i = 1;
+    for (SampleDependencyTypeBox.Entry sampleEntry : sampleEntries) {
+      if (sampleEntry.getSampleDependsOn() == 2) {
+        result.add(i++);
+      }
     }
 
+    return result;
+  }
+
   public int getTrackCount() {
-    return getBoxes(TrackFragmentBox.class, false).length;
+    return getBoxes(TrackFragmentBox.class, false).size();
   }
 
   /**
@@ -110,10 +109,10 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
    */
   public long[] getTrackNumbers() {
 
-    TrackFragmentBox[] trackBoxes = this.getBoxes(TrackFragmentBox.class, false);
-    long[] trackNumbers = new long[trackBoxes.length];
-    for (int trackCounter = 0; trackCounter < trackBoxes.length; trackCounter++) {
-      TrackFragmentBox trackBoxe = trackBoxes[trackCounter];
+    List<TrackFragmentBox> trackBoxes = this.getBoxes(TrackFragmentBox.class, false);
+    long[] trackNumbers = new long[trackBoxes.size()];
+    for (int trackCounter = 0; trackCounter < trackBoxes.size(); trackCounter++) {
+      TrackFragmentBox trackBoxe = trackBoxes.get(trackCounter);
       trackNumbers[trackCounter] = trackBoxe.getTrackFragmentHeaderBox().getTrackId();
     }
     return trackNumbers;
@@ -139,13 +138,8 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
         ArrayList<Long> sampleNumberList = new ArrayList<Long>(sampleNumbers.length);
         for (long sampleNumber : sampleNumbers) {
           sampleNumberList.add(sampleNumber);
-        }
+    }
         trackToSyncSamples.put(trackNumber, sampleNumberList);
-      } else {
-        final SampleDependencyTypeBox[] sampleDependencyTypeBoxes = getBoxes(SampleDependencyTypeBox.class, true);
-        if (sampleDependencyTypeBoxes != null && sampleDependencyTypeBoxes.length > 0) {
-          trackToSyncSamples.put(trackNumber, getSyncSamples(sampleDependencyTypeBoxes[0]));
-        }
       }
       trackToSampleCount.put(trackNumber, 1L);
     }
@@ -182,9 +176,8 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
         List<Long> syncSamples = trackToSyncSamples.get(trackId);
         boolean syncSample = syncSamples != null && syncSamples.contains(currentSample);
 
-        SampleImpl<TrackFragmentBox> sample = createSample(isoBufferWrapper, trunOffset + sampleOffsets[i], sampleOffsets[i], sampleSizes[i], parentTrack, chunk, currentSample, syncSample);
         MediaDataBox.SampleHolder<TrackFragmentBox> sh =
-                new MediaDataBox.SampleHolder<TrackFragmentBox>(sample);
+                new MediaDataBox.SampleHolder<TrackFragmentBox>(new SampleImpl<TrackFragmentBox>(isoBufferWrapper, trunOffset + sampleOffsets[i], (long) i, sampleSizes[i], chunk, syncSample));
         mdat.getSampleList().add(sh);
         chunk.addSample(sh);
         trackToSampleCount.put(trackId, currentSample + 1);
@@ -193,12 +186,8 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
 
   }
 
-    protected SampleImpl<TrackFragmentBox> createSample(IsoBufferWrapper isoBufferWrapper, long offset, long sampleOffset, long sampleSize, Track<TrackFragmentBox> parentTrack, Chunk<TrackFragmentBox> chunk, Long currentSample, boolean syncSample) {
-        return new SampleImpl<TrackFragmentBox>(isoBufferWrapper, offset, currentSample, sampleSize, chunk, syncSample);
-    }
-
   public TrackMetaData<TrackFragmentBox> getTrackMetaData(long trackId) {
-    TrackFragmentBox[] trackBoxes = this.getBoxes(TrackFragmentBox.class, false);
+    List<TrackFragmentBox> trackBoxes = this.getBoxes(TrackFragmentBox.class, false);
     for (TrackFragmentBox trackFragmentBox : trackBoxes) {
       if (trackFragmentBox.getTrackFragmentHeaderBox().getTrackId() == trackId) {
         return new TrackMetaData<TrackFragmentBox>(trackId, trackFragmentBox);
@@ -207,18 +196,5 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
     throw new RuntimeException("TrackId " + trackId + " not contained in " + this);
   }
 
-  public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("MovieFragmentBox[");
-    Box[] boxes = getBoxes();
-    for (int i = 0; i < boxes.length; i++) {
-      if (i > 0) {
-        builder.append(";");
-      }
-      builder.append(boxes[i].toString());
-    }
-    builder.append("]");
-    return builder.toString();
-  }
 
 }

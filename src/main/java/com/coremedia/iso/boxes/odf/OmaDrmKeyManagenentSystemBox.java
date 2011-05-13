@@ -34,7 +34,6 @@ public class OmaDrmKeyManagenentSystemBox extends FullContainerBox {
 
     public OmaDrmKeyManagenentSystemBox() {
         super(TYPE);
-        boxes = new Box[2];
     }
 
     public String getDisplayName() {
@@ -43,31 +42,31 @@ public class OmaDrmKeyManagenentSystemBox extends FullContainerBox {
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
-        assert boxes[0] instanceof OmaDrmCommonHeadersBox;
-        assert boxes.length == 1 || boxes[1] instanceof OmaDrmAccessUnitFormatBox;
+        assert boxes.get(0) instanceof OmaDrmCommonHeadersBox;
+        assert boxes.size() == 1 || boxes.get(1) instanceof OmaDrmAccessUnitFormatBox;
     }
 
     public OmaDrmCommonHeadersBox getOmaDrmCommonHeadersBox() {
-        return (OmaDrmCommonHeadersBox) boxes[0];
+        return (OmaDrmCommonHeadersBox) boxes.get(0);
     }
 
     public OmaDrmAccessUnitFormatBox getDrmAccessUnitFormatBox() {
-        if (boxes.length < 2) {
+        if (boxes.size() < 2) {
             OmaDrmAccessUnitFormatBox box = new OmaDrmAccessUnitFormatBox();
             box.setAllBits((byte) 1);
             box.setKeyIndicatorLength(0);
             box.setInitVectorLength(16);
             return box;
         }
-        return (OmaDrmAccessUnitFormatBox) boxes[1];
+        return (OmaDrmAccessUnitFormatBox) boxes.get(1);
     }
 
     public void setOmaDrmCommonHeadersBox(OmaDrmCommonHeadersBox box) {
-        boxes[0] = box;
+        boxes.set(0, box);
     }
 
     public void setDrmAccessUnitFormatBox(OmaDrmAccessUnitFormatBox box) {
-        boxes[1] = box;
+        boxes.set(1, box);
     }
 
 

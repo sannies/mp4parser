@@ -66,10 +66,9 @@ public class SampleDescriptionBox extends FullContainerBox {
         if (entryCount > Integer.MAX_VALUE) {
             throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE subboxes");
         }
-        boxes = new AbstractBox[(int) entryCount];
         long sp = in.position();
         for (int i = 0; i < entryCount; i++) {
-            boxes[i] = boxParser.parseBox(in, this, lastMovieFragmentBox);
+            boxes.add(boxParser.parseBox(in, this, lastMovieFragmentBox));
         }
 
         if (in.position() - offset < size) {
@@ -84,23 +83,10 @@ public class SampleDescriptionBox extends FullContainerBox {
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt32(boxes.length);
+        isos.writeUInt32(boxes.size());
         for (Box boxe : boxes) {
             boxe.getBox(isos);
         }
     }
 
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("SampleDescriptionBox[");
-        Box[] boxes = getBoxes();
-        for (int i = 0; i < boxes.length; i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes[i]);
-        }
-        buffer.append("]");
-        return buffer.toString();
-    }
 }

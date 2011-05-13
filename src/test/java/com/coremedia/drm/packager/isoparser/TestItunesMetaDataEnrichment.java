@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 /**
  *
@@ -25,12 +26,16 @@ import java.nio.ByteBuffer;
 public class TestItunesMetaDataEnrichment extends TestCase {
   public void testEnrichment() throws IOException {
         InputStream is = getClass().getResourceAsStream("/file6141.odf");
-        IsoBufferWrapper isoBufferWrapper = new IsoBufferWrapper(ByteBuffer.wrap(IOUtils.toByteArray(is)));    
+        IsoBufferWrapper isoBufferWrapper =
+                new IsoBufferWrapper(ByteBuffer.wrap(IOUtils.toByteArray(is)));
         IsoFile isoFile = new IsoFile(isoBufferWrapper);
         isoFile.parse();
-        OmaDrmContainerBox omaDrmContainerBox = isoFile.getBoxes(OmaDrmContainerBox.class, false)[0];
-        OmaDrmDiscreteHeadersBox omaDrmDiscreteHeadersBox = omaDrmContainerBox.getBoxes(OmaDrmDiscreteHeadersBox.class)[0];
-        UserDataBox[] userDataBoxes = omaDrmDiscreteHeadersBox.getBoxes(UserDataBox.class, false);
+        OmaDrmContainerBox omaDrmContainerBox =
+                isoFile.getBoxes(OmaDrmContainerBox.class, false).get(0);
+        OmaDrmDiscreteHeadersBox omaDrmDiscreteHeadersBox =
+                omaDrmContainerBox.getBoxes(OmaDrmDiscreteHeadersBox.class).get(0);
+        List<UserDataBox> userDataBoxes =
+                omaDrmDiscreteHeadersBox.getBoxes(UserDataBox.class, false);
         MetaBox mb = new MetaBox();
 
         HandlerBox hb = new HandlerBox();
@@ -45,7 +50,7 @@ public class TestItunesMetaDataEnrichment extends TestCase {
         mb.addBox(ilst);
 
         System.err.print(mb);
-        userDataBoxes[0].addBox(mb);
+        userDataBoxes.get(0).addBox(mb);
 
         File f = File.createTempFile("TestItunesMetaDataEnrichment", "odf");
         f.deleteOnExit();

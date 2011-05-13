@@ -37,17 +37,5 @@ public class DataInformationBox extends AbstractContainerBox {
         return "Data Information Box";
     }
 
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("DataInformationBox[");
-        Box[] boxes = getBoxes();
-        for (int i = 0; i < boxes.length; i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes[i].toString());
-        }
-        buffer.append("]");
-        return buffer.toString();
-    }
+
 }

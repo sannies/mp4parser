@@ -22,17 +22,14 @@ import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 /**
  * Abstract base class suitable for most boxes acting purely as container for other boxes.
  */
 public abstract class AbstractContainerBox extends AbstractBox implements ContainerBox {
-    protected Box[] boxes;
+    protected List<Box> boxes = new LinkedList<Box>();
 
     @Override
     protected long getContentSize() {
@@ -45,50 +42,45 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
 
     public AbstractContainerBox(byte[] type) {
         super(type);
-        boxes = new AbstractBox[0];
     }
 
-    public Box[] getBoxes() {
-        return boxes;
+    public List<Box> getBoxes() {
+        return Collections.unmodifiableList(boxes);
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Box> T[] getBoxes(Class<T> clazz) {
-    return getBoxes(clazz, false);
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T extends Box> T[] getBoxes(Class<T> clazz, boolean recursive) {
-    List<T> boxesToBeReturned = new ArrayList<T>(2);
-    for (Box boxe : boxes) { //clazz.isInstance(boxe) / clazz == boxe.getClass()?
-      if (clazz == boxe.getClass()) {
-        boxesToBeReturned.add((T) boxe);
-      }
-
-      if (recursive && boxe instanceof ContainerBox) {
-        boxesToBeReturned.addAll(Arrays.asList(((ContainerBox) boxe).getBoxes(clazz, recursive)));
-      }
+    public <T extends Box> List<T> getBoxes(Class<T> clazz) {
+        return getBoxes(clazz, false);
     }
-    // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
-    return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
-    //return (T[]) boxesToBeReturned.toArray();
-  }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
+        List<T> boxesToBeReturned = new ArrayList<T>(2);
+        for (Box boxe : boxes) { //clazz.isInstance(boxe) / clazz == boxe.getClass()?
+            if (clazz == boxe.getClass()) {
+                boxesToBeReturned.add((T) boxe);
+            }
+
+            if (recursive && boxe instanceof ContainerBox) {
+                boxesToBeReturned.addAll(((ContainerBox) boxe).getBoxes(clazz, recursive));
+            }
+        }
+        // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
+        return boxesToBeReturned;
+        //return (T[]) boxesToBeReturned.toArray();
+    }
 
     public void addBox(Box b) {
-        List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-        listOfBoxes.add(b);
-        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
+        boxes.add(b);
     }
 
     public void removeBox(Box b) {
-        List<Box> listOfBoxes = new LinkedList<Box>(Arrays.asList(boxes));
-        listOfBoxes.remove(b);
-        boxes = listOfBoxes.toArray(new Box[listOfBoxes.size()]);
+        boxes.remove(b);
     }
 
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        List<Box> boxeList = new LinkedList<Box>();
+
 
         while (size > 8) {
             long sp = in.position();
@@ -98,9 +90,8 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
                     box + " didn't parse well. number of parsed bytes (" + parsedBytes + ") doesn't match getSize (" + box.getSize() + ")";
             size -= parsedBytes;
 
-            boxeList.add(box);
+            boxes.add(box);
             //update field after each box
-            this.boxes = boxeList.toArray(new Box[boxeList.size()]);
         }
 
     }
@@ -113,13 +104,13 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     public String toString() {
-      StringBuilder buffer = new StringBuilder();
+        StringBuilder buffer = new StringBuilder();
         buffer.append(this.getClass().getSimpleName()).append("[");
-        for (int i = 0; i < boxes.length; i++) {
+        for (int i = 0; i < boxes.size(); i++) {
             if (i > 0) {
                 buffer.append(";");
             }
-            buffer.append(boxes[i].toString());
+            buffer.append(boxes.get(i).toString());
         }
         buffer.append("]");
         return buffer.toString();

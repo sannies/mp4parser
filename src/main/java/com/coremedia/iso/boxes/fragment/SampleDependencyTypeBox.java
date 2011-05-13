@@ -143,35 +143,35 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
 
   private long getSampleCount() {
         ContainerBox traf = this.getParent();
-        TrackRunBox[] trackRunBoxes = traf.getBoxes(TrackRunBox.class);
-    if (trackRunBoxes.length > 1) {
+        List<TrackRunBox> trackRunBoxes = traf.getBoxes(TrackRunBox.class);
+    if (trackRunBoxes.size() > 1) {
       for (TrackRunBox trackRunBox : trackRunBoxes) {
         System.out.println("Found (additional) Track Run Box: " + trackRunBox + " in " + traf);
       }
       throw new RuntimeException("More than one Track Fragment Header Box in Track Fragment Box.");
-    } else if (trackRunBoxes.length == 1) {
-      return trackRunBoxes[0].getSampleCount();
+    } else if (trackRunBoxes.size() == 1) {
+      return trackRunBoxes.get(0).getSampleCount();
     }
 
     System.out.println("Couldn't find Track Run Box. Trying to determine sample count by looking up Sample Size Boxes");
     IsoFile isoFile = this.getIsoFile();
-    MovieBox[] movieBoxes = isoFile.getBoxes(MovieBox.class, false);
-    if (movieBoxes.length == 0) {
+    List<MovieBox> movieBoxes = isoFile.getBoxes(MovieBox.class, false);
+    if (movieBoxes.size() == 0) {
       System.out.println("No Movie Box found in " + isoFile);
       return 0;
     }
-    MovieBox movieBox = movieBoxes[0];
+    MovieBox movieBox = movieBoxes.get(0);
 
-    SampleSizeBox[] sampleSizeBoxes = movieBox.getBoxes(SampleSizeBox.class, false);
+    List<SampleSizeBox> sampleSizeBoxes = movieBox.getBoxes(SampleSizeBox.class, false);
 
     long sampleCount = 0;
-    if (sampleSizeBoxes.length > 1) {
+    if (sampleSizeBoxes.size() > 1) {
       System.out.println("Found more than one Sample Size Box in movie box. Taking first.");
       for (SampleSizeBox sampleSizeBox : sampleSizeBoxes) {
         System.out.println("found Sample Size Box " + sampleSizeBox + " in " + movieBox);
       }
-    } else if (sampleSizeBoxes.length > 0) {
-      sampleCount = sampleSizeBoxes[0].getSampleCount();
+    } else if (sampleSizeBoxes.size() > 0) {
+      sampleCount = sampleSizeBoxes.get(0).getSampleCount();
     } else {
       System.out.println("No Sample Size Box found in " + movieBox.getDisplayName());
     }

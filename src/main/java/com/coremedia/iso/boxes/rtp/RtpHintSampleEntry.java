@@ -43,20 +43,6 @@ public class RtpHintSampleEntry extends SampleEntry implements ContainerBox {
         super(type);
     }
 
-    public Box[] getBoxes() {
-        return boxes;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Box> T[] getBoxes(Class<T> clazz) {
-        ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (Box boxe : boxes) {
-            if (clazz.isInstance(boxe)) {
-                boxesToBeReturned.add(clazz.cast(boxe));
-            }
-        }
-        return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
-    }
 
     public int getHintTrackVersion() {
         return hintTrackVersion;
@@ -86,13 +72,12 @@ public class RtpHintSampleEntry extends SampleEntry implements ContainerBox {
         highestCompatibleVersion = in.readUInt16();
         maxPacketSize = in.readUInt32();
         size -= 16;
-        List<Box> boxes = new LinkedList<Box>();
+
         while (size > 0) {
             Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
             size -= box.getSize();
             boxes.add(box);
         }
-        this.boxes = boxes.toArray(new Box[boxes.size()]);
     }
 
     @Override
@@ -118,12 +103,11 @@ public class RtpHintSampleEntry extends SampleEntry implements ContainerBox {
         builder.append("hintTrackVersion=").append(getHintTrackVersion()).append(";");
         builder.append("highestCompatibleVersion=").append(getHighestCompatibleVersion()).append(";");
         builder.append("maxPacketSize=").append(getMaxPacketSize());
-        Box[] boxes = getBoxes();
-        for (int i = 0; i < boxes.length; i++) {
+        for (int i = 0; i < boxes.size(); i++) {
             if (i > 0) {
                 builder.append(";");
             }
-            builder.append(boxes[i].toString());
+            builder.append(boxes.get(i).toString());
         }
         builder.append("]");
         return builder.toString();

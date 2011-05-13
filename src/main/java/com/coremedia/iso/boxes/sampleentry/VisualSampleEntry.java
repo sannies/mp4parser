@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Contains information common to all visual tracks.
@@ -149,32 +150,16 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
             assert 0xFFFF == tmp;
 
             size -= 78;
-            ArrayList<Box> someBoxes = new ArrayList<Box>();
+
             while (size > 8) { // If there are just some stupid dead bytes don't try to make a new box
                 Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
-                someBoxes.add(b);
+                boxes.add(b);
                 size -= b.getSize();
             }
-            boxes = someBoxes.toArray(new AbstractBox[someBoxes.size()]);
+
             // commented out since it forbids deadbytes
             //  assert size == 0 : "After parsing all boxes there are " + size + " bytes left. 0 bytes required";
         }
-    }
-
-
-    @SuppressWarnings("unchecked")
-    public <T extends Box> T[] getBoxes(Class<T> clazz) {
-        ArrayList<T> boxesToBeReturned = new ArrayList<T>();
-        for (Box boxe : boxes) {
-            if (clazz.isInstance(boxe)) {
-                boxesToBeReturned.add(clazz.cast(boxe));
-            }
-        }
-        return boxesToBeReturned.toArray((T[]) Array.newInstance(clazz, boxesToBeReturned.size()));
-    }
-
-    public Box[] getBoxes() {
-        return boxes;
     }
 
     protected long getContentSize() {
