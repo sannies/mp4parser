@@ -313,6 +313,13 @@ public class IsoBufferWrapper {
     return result;
   }
 
+    /**
+     * Reads i bits from the underlying buffers.
+     * Caveat: this method always consumes full bytes even if just a bit is read!
+     *
+     * @param i number of bits to read, 31 max
+     * @return bitstring value as unsigned int
+     */
   public int readBits(int i) {
     if (i > 31) {
       //> signed int
