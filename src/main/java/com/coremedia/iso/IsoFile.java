@@ -17,19 +17,11 @@
 package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.boxes.odf.MutableDrmInformationBox;
-import com.coremedia.iso.boxes.odf.OmaDrmTransactionTrackingBox;
 import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.Sample;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
