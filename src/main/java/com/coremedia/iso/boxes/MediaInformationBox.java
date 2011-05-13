@@ -18,6 +18,8 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
 
+import java.util.List;
+
 /**
  * This box contains all the objects that declare characteristic information of the media in the track.
  */
@@ -28,8 +30,22 @@ public class MediaInformationBox extends AbstractContainerBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
+    @Override
     public String getDisplayName() {
         return "Media Information Box";
     }
 
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("MediaInformationBox[");
+        List<Box> boxes = getBoxes();
+        for (int i = 0; i < boxes.size(); i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes.get(i).toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

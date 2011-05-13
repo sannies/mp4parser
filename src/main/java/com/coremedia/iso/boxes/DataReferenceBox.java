@@ -22,7 +22,6 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -45,10 +44,12 @@ public class DataReferenceBox extends FullContainerBox {
 
     }
 
+    @Override
     protected long getContentSize() {
         return super.getContentSize() + 4;
     }
 
+    @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         setVersion(in.readUInt8());
         setFlags(in.readUInt24());
@@ -61,12 +62,28 @@ public class DataReferenceBox extends FullContainerBox {
         }
     }
 
+    @Override
     public String getDisplayName() {
         return "Data Reference Box";
     }
 
+    @Override
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeUInt32(getBoxes().size());
         super.getContent(os);
+    }
+
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("DataReferenceBox[");
+        List<Box> boxes = getBoxes();
+        for (int i = 0; i < boxes.size(); i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes.get(i).toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
     }
 }

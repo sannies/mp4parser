@@ -121,6 +121,7 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
         throw new RuntimeException("wrong chunkOffset, the chunk's offset is in no chunk offset box of no track box");
     }
 
+    @Override
     public void parseMdat(MediaDataBox<TrackBox> mdat) {
         mdat.getTrackMap().clear();
 
@@ -258,6 +259,7 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
         return offsets;
     }
 
+    @Override
     public int getTrackCount() {
         return getBoxes(TrackBox.class).size();
     }
@@ -268,6 +270,7 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
      *
      * @return the tracknumbers (IDs) of the tracks in their order of appearance in the file
      */
+    @Override
     public long[] getTrackNumbers() {
 
         List<TrackBox> trackBoxes = this.getBoxes(TrackBox.class);
@@ -280,6 +283,7 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
         return trackNumbers;
     }
 
+    @Override
     public TrackMetaData<TrackBox> getTrackMetaData(long trackId) {
         List<TrackBox> trackBoxes = this.getBoxes(TrackBox.class);
         for (TrackBox trackBox : trackBoxes) {
@@ -290,7 +294,6 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
         throw new RuntimeException("TrackId " + trackId + " not contained in " + this);
     }
 
-
     public MovieHeaderBox getMovieHeaderBox() {
         for (Box box : boxes) {
             if (box instanceof MovieHeaderBox) {
@@ -298,5 +301,19 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
             }
         }
         return null;
+    }
+
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("MovieBox[");
+        List<Box> boxes = getBoxes();
+        for (int i = 0; i < boxes.size(); i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes.get(i).toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
     }
 }

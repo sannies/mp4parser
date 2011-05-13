@@ -51,6 +51,7 @@ public abstract class AbstractBox implements Box {
         writeListeners.add(writeListener);
     }
 
+    @Override
     public long getSize() {
         return getContentSize() + getHeaderSize() + getDeadBytes().length;
     }
@@ -77,10 +78,12 @@ public abstract class AbstractBox implements Box {
         this.type = type;
     }
 
+    @Override
     public byte[] getType() {
         return type;
     }
 
+    @Override
     public byte[] getUserType() {
         return userType;
     }
@@ -89,10 +92,12 @@ public abstract class AbstractBox implements Box {
         this.userType = userType;
     }
 
+    @Override
     public ContainerBox getParent() {
         return parent;
     }
 
+    @Override
     public boolean isParsed() {
         return parsed;
     }
@@ -101,6 +106,7 @@ public abstract class AbstractBox implements Box {
         this.parsed = parsed;
     }
 
+    @Override
     public long getOffset() {
         return offset;
     }
@@ -109,6 +115,7 @@ public abstract class AbstractBox implements Box {
         this.parent = parent;
     }
 
+    @Override
     public IsoFile getIsoFile() {
         return parent.getIsoFile();
     }
@@ -171,6 +178,7 @@ public abstract class AbstractBox implements Box {
         return this.getSize() < 4294967296L;
     }
 
+    @Override
     public void getBox(IsoOutputStream os) throws IOException {
         long sp = os.getStreamPosition();
 
@@ -227,6 +235,7 @@ public abstract class AbstractBox implements Box {
     }
 
 
+    @Override
     public long calculateOffset() {
         //todo: doesn't work for fragmented files as it doesn't take mdats into account (as they are not in the parent structure)
         long offsetFromParentBoxStart = parent.getNumOfBytesToFirstChild();

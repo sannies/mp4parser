@@ -37,13 +37,17 @@ public class IsoFile extends AbstractContainerBox {
 
     public IsoFile(IsoBufferWrapper originalIso) {
         super(new byte[]{});
+        boxParser = createBoxParser();
         this.originalIso = originalIso;
     }
 
     public IsoFile(IsoBufferWrapper originalIso, BoxParser boxParser) {
-        super(new byte[]{});
-        this.originalIso = originalIso;
+        this(originalIso);
         this.boxParser = boxParser;
+    }
+
+    protected BoxParser createBoxParser() {
+        return new PropertyBoxParserImpl();
     }
 
     @Override
@@ -80,13 +84,27 @@ public class IsoFile extends AbstractContainerBox {
     }
 
     public void parseMdats() throws IOException {
-        if (!mdatsParsed) {
-            List<MediaDataBox> mdats = getBoxes(MediaDataBox.class);
-            for (MediaDataBox mdat : mdats) {
-                mdat.parseTrackChunkSample();
-            }
-            mdatsParsed = true;
+        List<MediaDataBox> mdats = getBoxes(MediaDataBox.class);
+        for (MediaDataBox<? extends TrackMetaDataContainer> mdat : mdats) {
+            mdat.parseTrackChunkSample();
         }
+    }
+
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("IsoFile[");
+        if (boxes == null) {
+            buffer.append("unparsed");
+        } else {
+            for (int i = 0; i < boxes.size(); i++) {
+                if (i > 0) {
+                    buffer.append(";");
+                }
+                buffer.append(boxes.get(i).toString());
+            }
+        }
+        buffer.append("]");
+        return buffer.toString();
     }
 
     public static byte[] fourCCtoBytes(String fourCC) {
@@ -129,10 +147,12 @@ public class IsoFile extends AbstractContainerBox {
         return samplesInTrack;
     }
 
+    @Override
     public long getNumOfBytesToFirstChild() {
         return 0;
     }
 
+    @Override
     public long getSize() {
         long size = 0;
         for (Box box : boxes) {
@@ -141,10 +161,17 @@ public class IsoFile extends AbstractContainerBox {
         return size;
     }
 
+    @Override
     public long calculateOffset() {
         return 0;
     }
 
+    @Override
+    public long getOffset() {
+        return 0;
+    }
+
+    @Override
     public IsoFile getIsoFile() {
         return this;
     }

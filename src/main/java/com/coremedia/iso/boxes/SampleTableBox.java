@@ -18,6 +18,8 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
 
+import java.util.List;
+
 /**
  * The sample table contains all the time and data indexing of the media samples in a track. Using the tables
  * here, it is possible to locate samples in time, determine their type (e.g. I-frame or not), and determine their
@@ -40,6 +42,7 @@ public class SampleTableBox extends AbstractContainerBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
+    @Override
     public String getDisplayName() {
         return "Sample Table Box";
     }
@@ -108,4 +111,18 @@ public class SampleTableBox extends AbstractContainerBox {
         return null;
     }
 
+
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("SampleTableBox[");
+        List<Box> boxes = getBoxes();
+        for (int i = 0; i < boxes.size(); i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes.get(i).toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

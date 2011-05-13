@@ -21,6 +21,7 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * The sample description table gives detailed information about the coding type used, and any initialization
@@ -52,6 +53,7 @@ public class SampleDescriptionBox extends FullContainerBox {
         super(TYPE);
     }
 
+    @Override
     protected long getContentSize() {
         long size = 4;
         for (Box box : boxes) {
@@ -60,6 +62,7 @@ public class SampleDescriptionBox extends FullContainerBox {
         return size;
     }
 
+    @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         parseHeader(in, size);
         long entryCount = in.readUInt32();
@@ -78,10 +81,12 @@ public class SampleDescriptionBox extends FullContainerBox {
         }
     }
 
+    @Override
     public String getDisplayName() {
         return "Sample Description Box";
     }
 
+    @Override
     protected void getContent(IsoOutputStream isos) throws IOException {
         isos.writeUInt32(boxes.size());
         for (Box boxe : boxes) {
@@ -89,4 +94,17 @@ public class SampleDescriptionBox extends FullContainerBox {
         }
     }
 
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("SampleDescriptionBox[");
+        List<Box> boxes = getBoxes();
+        for (int i = 0; i < boxes.size(); i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes.get(i));
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }

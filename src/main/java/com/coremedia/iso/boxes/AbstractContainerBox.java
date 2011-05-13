@@ -44,14 +44,17 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         super(type);
     }
 
+    @Override
     public List<Box> getBoxes() {
         return Collections.unmodifiableList(boxes);
     }
 
+    @Override
     public void setBoxes(List<Box> boxes) {
         this.boxes = new LinkedList<Box>(boxes);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends Box> List<T> getBoxes(Class<T> clazz) {
         return getBoxes(clazz, false);
@@ -120,6 +123,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         return buffer.toString();
     }
 
+    @Override
     public long getNumOfBytesToFirstChild() {
         return 8;
     }

@@ -18,6 +18,8 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
 
+import java.util.List;
+
 /**
  * The <code>ProtectionSchemeInformationBox</code> contains all the information required both
  * to understand the encryption transform applied and its parameters, and also to find other
@@ -38,8 +40,22 @@ public class ProtectionSchemeInformationBox extends AbstractContainerBox {
 
     }
 
+    @Override
     public String getDisplayName() {
         return "Protection Scheme Information Box";
     }
 
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("Protection Scheme Information Box[");
+        List<Box> boxes = getBoxes();
+        for (int i = 0; i < boxes.size(); i++) {
+            if (i > 0) {
+                buffer.append(";");
+            }
+            buffer.append(boxes.get(i).toString());
+        }
+        buffer.append("]");
+        return buffer.toString();
+    }
 }
