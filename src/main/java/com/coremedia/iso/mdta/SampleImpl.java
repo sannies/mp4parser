@@ -50,7 +50,9 @@ public class SampleImpl<T extends TrackMetaDataContainer> implements Sample<T>, 
     this.sampleNumber = sampleNumber;
   }
 
+  @Override
   public void getContent(IsoOutputStream os) throws IOException {
+    //System.out.println("SampleImpl#getContent " + this.getSampleNumber());
     ByteBuffer[] segments = buffer.getSegment(offset, size);
     for (ByteBuffer segment : segments) {
       while (segment.remaining() > 1024) {
@@ -64,6 +66,7 @@ public class SampleImpl<T extends TrackMetaDataContainer> implements Sample<T>, 
     }
   }
 
+  @Override
   public long getSize() {
     return size;
   }
@@ -73,17 +76,21 @@ public class SampleImpl<T extends TrackMetaDataContainer> implements Sample<T>, 
   }
 
   public String toString() {
+    //System.out.println("SampleImpl#toString");
     return "Offset: " + calculateOffset() + " Size: " + size + " Chunk: " + parent.getFirstSample().calculateOffset() + " Track: " + parent.getParentTrack().getTrackId() + " SyncSample: " + syncSample;
   }
 
+  @Override
   public int compareTo(SampleImpl<T> o) {
     return (int) (this.offset - o.offset);
   }
 
+  @Override
   public Chunk<T> getParent() {
     return parent;
   }
 
+  @Override
   public long calculateOffset() {
     long offsetFromChunkStart = 0;
     List<Sample<T>> samples = parent.getSamples();
@@ -95,15 +102,17 @@ public class SampleImpl<T extends TrackMetaDataContainer> implements Sample<T>, 
     return parent.calculateOffset() + offsetFromChunkStart;
   }
 
+  @Override
   public boolean isSyncSample() {
     return syncSample;
   }
 
-    public String getDescription() {
+  @Override
+  public String getDescription() {
         return null;
-    }
+  }
 
-    public long getSampleNumber() {
+  public long getSampleNumber() {
     return sampleNumber;
   }
 }

@@ -56,14 +56,15 @@ public class Chunk<T extends TrackMetaDataContainer> {
 
   public long getSize() {
     long length = 0;
-    int listLength = samplesHolders.size();
 
-    for (int i = 0; i < listLength; i++) {
-      Sample<T> currentSample = samplesHolders.get(i).getSample();
-      long size = currentSample.getSize();
-      assert (getSizeByWriting(currentSample) == size) :
-              "Size of all samples accumulated is different from the size when written";
-      length += size;
+    for (MediaDataBox.SampleHolder<T> samplesHolder : samplesHolders) {
+        Sample<T> currentSample = samplesHolder.getSample();
+        long size = currentSample.getSize();
+
+        //todo: not fast
+        assert (getSizeByWriting(currentSample) == size) :
+                "Size of all samples accumulated is different from the size when written";
+        length += size;
     }
     return length;
   }
@@ -117,6 +118,8 @@ public class Chunk<T extends TrackMetaDataContainer> {
 
   @Override
   public String toString() {
+    //System.out.println("Chunk#toString");
+
     return "Chunk{" +
             "parentTrack=" + parentTrack +
             "; offset=" + calculateOffset() +

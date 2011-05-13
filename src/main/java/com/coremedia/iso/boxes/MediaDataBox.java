@@ -64,6 +64,7 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
     private List<SampleHolder<T>> sampleList = new ArrayList<SampleHolder<T>>();
     private TrackBoxContainer<TrackFragmentBox> movieFragmentBoxBefore;
     private IsoBufferWrapper isoBufferWrapper;
+    private long parsedSize = -1;
 
     public MediaDataBox(MovieFragmentBox lastMovieFragmentBox) {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -116,22 +117,32 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
 
     @Override
     protected long getContentSize() {
-        if (contentsParsed) {
+        if (parsedSize == -1 && contentsParsed) {
             long size = 0;
 
             for (Track<T> track : tracks.values()) {
+                //System.out.println("getting size of track " + track.getTrackId());
                 size += track.getSize();
             }
-            long size2 = 0;
 
-            for (SampleHolder<T> sample : sampleList) {
-                size2 += sample.getSample().getSize();
-            }
-            assert size == size2;
+            //todo: not fast
+            assert size == calculateSampleSizes();
+            parsedSize = size;
             return size;
-        } else {
+        } else if (parsedSize == -1) {
             return sizeIfNotParsed;
+        } else {
+            return parsedSize;
         }
+    }
+
+    private long calculateSampleSizes() {
+        System.out.println("getting size of samples. listsize: " + sampleList.size());
+        long size2 = 0;
+        for (SampleHolder<T> sample : sampleList) {
+            size2 += sample.getSample().getSize();
+        }
+        return size2;
     }
 
     public Track<T> getTrack(long trackId) {
@@ -253,6 +264,8 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
 
   @Override
   public String toString() {
+    //System.out.println("Mdat#toString");
+
     final StringBuilder sb = new StringBuilder();
     sb.append("MediaDataBox");
     sb.append("{contentsParsed=").append(contentsParsed);
