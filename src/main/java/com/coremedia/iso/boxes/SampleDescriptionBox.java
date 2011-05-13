@@ -93,18 +93,4 @@ public class SampleDescriptionBox extends FullContainerBox {
             boxe.getBox(isos);
         }
     }
-
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("SampleDescriptionBox[");
-        List<Box> boxes = getBoxes();
-        for (int i = 0; i < boxes.size(); i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes.get(i));
-        }
-        buffer.append("]");
-        return buffer.toString();
-    }
 }

@@ -112,6 +112,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
+        //buffer.append(getDisplayName()).append("[");
         buffer.append(this.getClass().getSimpleName()).append("[");
         for (int i = 0; i < boxes.size(); i++) {
             if (i > 0) {

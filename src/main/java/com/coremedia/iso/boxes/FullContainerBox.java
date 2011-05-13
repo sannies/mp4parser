@@ -101,7 +101,7 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append(getDisplayName()).append("[");
         for (int i = 0; i < boxes.size(); i++) {
             if (i > 0) {

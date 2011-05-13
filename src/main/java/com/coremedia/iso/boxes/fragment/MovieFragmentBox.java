@@ -211,18 +211,4 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
     throw new RuntimeException("TrackId " + trackId + " not contained in " + this);
   }
 
-  public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("MovieFragmentBox[");
-    List<Box> boxes = getBoxes();
-    for (int i = 0; i < boxes.size(); i++) {
-      if (i > 0) {
-        builder.append(";");
-      }
-      builder.append(boxes.get(i).toString());
-    }
-    builder.append("]");
-    return builder.toString();
-  }
-
 }

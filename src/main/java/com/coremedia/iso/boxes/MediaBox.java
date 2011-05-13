@@ -37,17 +37,4 @@ public class MediaBox extends AbstractContainerBox {
         return "Media Box";
     }
 
-    public String toString() {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append("MediaBox[");
-        List<Box> boxes = getBoxes();
-        for (int i = 0; i < boxes.size(); i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes.get(i).toString());
-        }
-        buffer.append("]");
-        return buffer.toString();
-    }
 }

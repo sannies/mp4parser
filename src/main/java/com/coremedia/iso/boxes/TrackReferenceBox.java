@@ -46,17 +46,4 @@ public class TrackReferenceBox extends AbstractContainerBox {
         return "Track Reference Box";
     }
 
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("TrackReferenceBox[");
-        List<Box> boxes = getBoxes();
-        for (int i = 0; i < boxes.size(); i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes.get(i).toString());
-        }
-        buffer.append("]");
-        return buffer.toString();
-    }
 }
