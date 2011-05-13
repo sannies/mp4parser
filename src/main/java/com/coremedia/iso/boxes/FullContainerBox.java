@@ -35,6 +35,10 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
     protected List<Box> boxes = new LinkedList<Box>();
 
 
+    public void setBoxes(List<Box> boxes) {
+        this.boxes = new LinkedList<Box>(boxes);
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends Box> List<T> getBoxes(Class<T> clazz) {
         return getBoxes(clazz, false);

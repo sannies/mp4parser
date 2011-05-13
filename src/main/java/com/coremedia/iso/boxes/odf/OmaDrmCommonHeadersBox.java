@@ -209,7 +209,8 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         return buffer.toString();
     }
 
-    public void setExtendedHeaders(List<Box> extendedHeaders) {
+
+    public void setBoxes(List<Box> extendedHeaders) {
         this.extendedHeaders = extendedHeaders;
     }
 

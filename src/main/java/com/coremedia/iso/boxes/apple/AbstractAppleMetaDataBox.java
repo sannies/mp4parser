@@ -21,7 +21,15 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
     AppleDataBox appleDataBox = new AppleDataBox();
 
     public List<Box> getBoxes() {
-        return Collections.singletonList((Box)appleDataBox);
+        return Collections.singletonList((Box) appleDataBox);
+    }
+
+    public void setBoxes(List<Box> boxes) {
+        if (boxes.size() == 1 && boxes.get(0) instanceof AppleDataBox) {
+            appleDataBox = (AppleDataBox) boxes.get(0);
+        } else {
+            throw new IllegalArgumentException("This box only accepts one AppleDataBox child");
+        }
     }
 
     public <T extends Box> List<T> getBoxes(Class<T> clazz) {

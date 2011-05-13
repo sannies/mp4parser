@@ -48,6 +48,10 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         return Collections.unmodifiableList(boxes);
     }
 
+    public void setBoxes(List<Box> boxes) {
+        this.boxes = new LinkedList<Box>(boxes);
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends Box> List<T> getBoxes(Class<T> clazz) {
         return getBoxes(clazz, false);

@@ -33,6 +33,12 @@ public interface ContainerBox extends Box {
     List<Box> getBoxes();
 
     /**
+     * Sets all boxes and removes all previous child boxes.
+     * @param boxes the new list of children
+     */
+    void setBoxes(List<Box> boxes);
+
+    /**
      * Gets all child boxes of the given type. May not return <code>null</code>.
      *
      * @param clazz child box's type
