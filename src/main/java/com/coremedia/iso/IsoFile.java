@@ -37,10 +37,11 @@ import java.util.List;
  * The most upper container for ISO Boxes. It is a container box that is a file.
  * Uses IsoBufferWrapper  to access the underlying file.
  */
-public class IsoFile extends  AbstractContainerBox {
+public class IsoFile extends AbstractContainerBox {
     protected BoxParser boxParser = new PropertyBoxParserImpl();
     protected IsoBufferWrapper originalIso;
     protected boolean parsed;
+    private boolean mdatsParsed;
 
     public IsoFile(IsoBufferWrapper originalIso) {
         super(new byte[]{});
@@ -87,9 +88,12 @@ public class IsoFile extends  AbstractContainerBox {
     }
 
     public void parseMdats() throws IOException {
-        List<MediaDataBox> mdats = getBoxes(MediaDataBox.class);
-        for (MediaDataBox mdat : mdats) {
-            mdat.parseTrackChunkSample();
+        if (!mdatsParsed) {
+            List<MediaDataBox> mdats = getBoxes(MediaDataBox.class);
+            for (MediaDataBox mdat : mdats) {
+                mdat.parseTrackChunkSample();
+            }
+            mdatsParsed = true;
         }
     }
 
