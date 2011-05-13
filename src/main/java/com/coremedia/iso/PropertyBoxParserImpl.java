@@ -38,25 +38,22 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     Pattern p = Pattern.compile("(.*)\\((.*?)\\)");
 
     @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Box> getClassForFourCc(byte[] type, byte[] parent) {
+        FourCcToBox fourCcToBox = new FourCcToBox(type, parent).invoke();
+        try {
+            return (Class<? extends Box>) Class.forName(fourCcToBox.clazzName);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public AbstractBox createBox(byte[] type, byte[] userType, byte[] parent, Box lastMovieFragmentBox) {
 
-        String constructor = mapping.getProperty(IsoFile.bytesToFourCC(parent) + "-" + IsoFile.bytesToFourCC(type));
-        if (constructor == null) {
-            constructor = mapping.getProperty(IsoFile.bytesToFourCC(type));
-        }
-        if (constructor == null) {
-            constructor = mapping.getProperty("default");
-        }
-        if (constructor == null) {
-            throw new RuntimeException("No box object found for " + IsoFile.bytesToFourCC(type));
-        }
-        Matcher m = p.matcher(constructor);
-        boolean matches = m.matches();
-        if (!matches) {
-            throw new RuntimeException("Cannot work with that constructor: " + constructor);
-        }
-        String clazzName = m.group(1);
-        String[] param = m.group(2).split(",");
+        FourCcToBox fourCcToBox = new FourCcToBox(type, parent).invoke();
+        String[] param = fourCcToBox.getParam();
+        String clazzName = fourCcToBox.getClazzName();
         try {
             if (param[0].trim().length() == 0) {
                 param = new String[]{};
@@ -107,6 +104,47 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
 
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private class FourCcToBox {
+        private byte[] type;
+        private byte[] parent;
+        private String clazzName;
+        private String[] param;
+
+        public FourCcToBox(byte[] type, byte... parent) {
+            this.type = type;
+            this.parent = parent;
+        }
+
+        public String getClazzName() {
+            return clazzName;
+        }
+
+        public String[] getParam() {
+            return param;
+        }
+
+        public FourCcToBox invoke() {
+            String constructor = mapping.getProperty(IsoFile.bytesToFourCC(parent) + "-" + IsoFile.bytesToFourCC(type));
+            if (constructor == null) {
+                constructor = mapping.getProperty(IsoFile.bytesToFourCC(type));
+            }
+            if (constructor == null) {
+                constructor = mapping.getProperty("default");
+            }
+            if (constructor == null) {
+                throw new RuntimeException("No box object found for " + IsoFile.bytesToFourCC(type));
+            }
+            Matcher m = p.matcher(constructor);
+            boolean matches = m.matches();
+            if (!matches) {
+                throw new RuntimeException("Cannot work with that constructor: " + constructor);
+            }
+            clazzName = m.group(1);
+            param = m.group(2).split(",");
+            return this;
         }
     }
 }

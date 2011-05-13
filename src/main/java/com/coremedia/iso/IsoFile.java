@@ -32,7 +32,6 @@ import java.util.List;
 public class IsoFile extends AbstractContainerBox {
     protected BoxParser boxParser = new PropertyBoxParserImpl();
     protected IsoBufferWrapper originalIso;
-    protected boolean parsed;
     private boolean mdatsParsed;
 
     public IsoFile(IsoBufferWrapper originalIso) {
@@ -84,9 +83,12 @@ public class IsoFile extends AbstractContainerBox {
     }
 
     public void parseMdats() throws IOException {
-        List<MediaDataBox> mdats = getBoxes(MediaDataBox.class);
-        for (MediaDataBox<? extends TrackMetaDataContainer> mdat : mdats) {
-            mdat.parseTrackChunkSample();
+        if (!mdatsParsed) {
+            List<MediaDataBox> mdats = getBoxes(MediaDataBox.class);
+            for (MediaDataBox<? extends TrackMetaDataContainer> mdat : mdats) {
+                mdat.parseTrackChunkSample();
+            }
+            mdatsParsed = true;
         }
     }
 
@@ -184,5 +186,13 @@ public class IsoFile extends AbstractContainerBox {
     @Override
     public byte[] getHeader() {
         return new byte[0];
+    }
+
+    public BoxParser getBoxParser() {
+        return boxParser;
+    }
+
+    public IsoBufferWrapper getOriginalIso() {
+        return originalIso;
     }
 }

@@ -184,7 +184,10 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
             while (bc.getParent() != null) {
                 bc = bc.getParent();
             }
-            List<MovieBox> movieBoxes = bc.getBoxes(MovieBox.class);
+
+            List<? extends MovieBox> movieBoxes = (List<? extends MovieBox>) bc.getBoxes(getIsoFile().getBoxParser()
+                    .getClassForFourCc(IsoFile.fourCCtoBytes(MovieBox.TYPE), new byte[0]));
+
             TrackBoxContainer<T> trackBoxContainer;
             if (movieFragmentBoxBefore == null) {
                 trackBoxContainer = (TrackBoxContainer<T>) movieBoxes.get(0);

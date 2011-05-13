@@ -37,7 +37,7 @@ import java.util.UUID;
 public abstract class AbstractBox implements Box {
     public long offset;
     private List<WriteListener> writeListeners = null;
-    private boolean parsed;
+    protected boolean parsed;
 
     /**
      * Adds a Listener that will be called right before writing the box.
