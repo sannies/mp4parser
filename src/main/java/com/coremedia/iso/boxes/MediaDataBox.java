@@ -137,7 +137,6 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
     }
 
     private long calculateSampleSizes() {
-        System.out.println("getting size of samples. listsize: " + sampleList.size());
         long size2 = 0;
         for (SampleHolder<T> sample : sampleList) {
             size2 += sample.getSample().getSize();
