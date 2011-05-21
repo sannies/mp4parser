@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,9 +21,16 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     Properties mapping;
 
     public PropertyBoxParserImpl(String... customProperties) {
-        InputStream is = getClass().getResourceAsStream("/default.properties");
+        InputStream is = getClass().getResourceAsStream("/isoparser-default.properties");
         mapping = new Properties();
         try {
+            Enumeration<URL> enumeration = getClass().getClassLoader().getResources("isoparser-custom.properties");
+
+            while (enumeration.hasMoreElements()) {
+                URL url = enumeration.nextElement();
+                mapping.load(url.openStream());
+            }
+
             mapping.load(is);
             for (String customProperty : customProperties) {
                 mapping.load(getClass().getResourceAsStream(customProperty));
