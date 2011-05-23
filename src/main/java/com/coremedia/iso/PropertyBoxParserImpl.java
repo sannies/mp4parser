@@ -24,14 +24,13 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         InputStream is = getClass().getResourceAsStream("/isoparser-default.properties");
         mapping = new Properties();
         try {
-            Enumeration<URL> enumeration = getClass().getClassLoader().getResources("isoparser-custom.properties");
+            mapping.load(is);
+            Enumeration<URL> enumeration = Thread.currentThread().getContextClassLoader().getResources("isoparser-custom.properties");
 
             while (enumeration.hasMoreElements()) {
                 URL url = enumeration.nextElement();
                 mapping.load(url.openStream());
             }
-
-            mapping.load(is);
             for (String customProperty : customProperties) {
                 mapping.load(getClass().getResourceAsStream(customProperty));
             }
