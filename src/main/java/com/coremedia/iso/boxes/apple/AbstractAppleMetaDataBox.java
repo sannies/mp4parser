@@ -114,7 +114,7 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
             } catch (IOException e) {
                 throw new Error(e);
             }
-            appleDataBox.setContent(content);
+            appleDataBox.setContent(baos.toByteArray());
         } else if (appleDataBox.getFlags() == 0) {
             appleDataBox = new AppleDataBox();
             appleDataBox.setVersion(0);
