@@ -24,6 +24,7 @@ import com.coremedia.iso.mdta.Sample;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.nio.charset.Charset;
 
 /**
  * The most upper container for ISO Boxes. It is a container box that is a file.
@@ -120,13 +121,13 @@ public class IsoFile extends AbstractContainerBox {
     }
 
     public static String bytesToFourCC(byte[] type) {
-        char[] result = "\0\0\0\0".toCharArray();
+        byte[] result = new byte[]{0, 0, 0, 0};
         if (type != null) {
             for (int i = 0; i < Math.min(type.length, 4); i++) {
-                result[i] = (char) type[i];
+                result[i] = type[i];
             }
         }
-        return new String(result);
+        return new String(result, Charset.forName("ISO-8859-1"));
     }
 
 
