@@ -67,4 +67,28 @@ public final class BitRateBox extends AbstractBox {
         os.writeUInt32(maxBitrate);
         os.writeUInt32(avgBitrate);
     }
+
+    public long getBufferSizeDb() {
+        return bufferSizeDb;
+    }
+
+    public void setBufferSizeDb(long bufferSizeDb) {
+        this.bufferSizeDb = bufferSizeDb;
+    }
+
+    public long getMaxBitrate() {
+        return maxBitrate;
+    }
+
+    public void setMaxBitrate(long maxBitrate) {
+        this.maxBitrate = maxBitrate;
+    }
+
+    public long getAvgBitrate() {
+        return avgBitrate;
+    }
+
+    public void setAvgBitrate(long avgBitrate) {
+        this.avgBitrate = avgBitrate;
+    }
 }
