@@ -23,7 +23,6 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,6 +77,11 @@ public class HandlerBox extends AbstractFullBox {
         return handlerType;
     }
 
+    /**
+     * You are required to add a '\0' string termination by yourself.
+     *
+     * @param name the new human readable name
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -102,7 +106,11 @@ public class HandlerBox extends AbstractFullBox {
         if (name == NO_STRING_AT_ALL_NOT_EVEN_NULL) {
             return 20;
         }
-        return 21 + utf8StringLengthInBytes(name);
+        if (name.endsWith("\0")) {
+            return 20 + utf8StringLengthInBytes(name);
+        } else {
+            return 21 + utf8StringLengthInBytes(name);
+        }
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
@@ -114,17 +122,6 @@ public class HandlerBox extends AbstractFullBox {
         c = in.readUInt32();
         if ((int) (size - 24) > 0) {
             name = in.readString((int) (size - 24));
-            if (name.contains("\0")) {
-                if (name.indexOf("\0") != name.length() - 1) {
-                    // todo this is in a way correcting. I should be able to turn it off!
-                    deadBytes = new ByteBuffer[1];
-                    deadBytes[0] = ByteBuffer.wrap(name.substring(name.indexOf('\0') + 1).getBytes("UTF-8"));
-                    name = name.substring(0, name.indexOf('\0') + 1);
-                }
-                name = name.substring(0, name.indexOf('\0'));
-            } else if (name.length() > 0) {
-                name = name;//.substring(1);
-            }
         } else {
             name = NO_STRING_AT_ALL_NOT_EVEN_NULL;
         }
@@ -138,7 +135,11 @@ public class HandlerBox extends AbstractFullBox {
         isos.writeUInt32(c);
         // I know  what I do == comparison is ok here
         if (name != NO_STRING_AT_ALL_NOT_EVEN_NULL) {
-            isos.writeStringZeroTerm(name);
+            if (name.endsWith("\0")) {
+                isos.writeStringNoTerm(name);
+            } else {
+                isos.writeStringZeroTerm(name);
+            }
         }
     }
 

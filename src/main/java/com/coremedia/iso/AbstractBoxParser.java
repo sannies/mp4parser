@@ -72,7 +72,7 @@ public abstract class AbstractBoxParser implements BoxParser {
         AbstractBox box = createBox(type, usertype,
                 parent.getType(), lastMovieFragmentBox);
         box.offset = offset;
-        box.setParent((ContainerBox) parent);
+        box.setParent(parent);
         LOG.finest("Parsing " + IsoFile.bytesToFourCC(box.getType()) + " box: (" + box.getDisplayName() + ")");
         // System.out.println("parsing " + Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
         box.parse(in, contentSize, this, lastMovieFragmentBox);
@@ -81,13 +81,14 @@ public abstract class AbstractBoxParser implements BoxParser {
             // System.out.println("dead bytes found in " + box);
             LOG.info(IsoFile.bytesToFourCC(type) + " has dead bytes");
             long length = (size - (in.position() - offset));
+            assert length < Integer.MAX_VALUE : "Ooops length larger than Integer.MAX_VALUE";
             box.setDeadBytes(in.getSegment(in.position(), length));
             in.skip(length);
         }
 
 
         assert size == box.getSize() : "Reconstructed Size is not equal to the number of parsed bytes! (" + IsoFile.bytesToFourCC(box.getType()) + " - " + box.getDisplayName() + ")"
-                + " Actual Box size: " + size + " Calculated size: " + box.getSize() + " at offset: "  + offset;
+                + " Actual Box size: " + size + " Calculated size: " + box.getSize() + " at offset: " + offset;
         return box;
     }
 

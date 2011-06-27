@@ -276,7 +276,7 @@ public class IsoBufferWrapperImpl implements IsoBufferWrapper {
         return n;
     }
 
-    public ByteBuffer[] getSegment(long startPos, long length) {
+    public IsoBufferWrapper getSegment(long startPos, long length) {
         ArrayList<ByteBuffer> segments = new ArrayList<ByteBuffer>();
         position(startPos);
         while (length > 0) {
@@ -291,7 +291,7 @@ public class IsoBufferWrapperImpl implements IsoBufferWrapper {
             }
             segments.add(currentSlice);
         }
-        return segments.toArray(new ByteBuffer[segments.size()]);
+        return new IsoBufferWrapperImpl(segments.toArray(new ByteBuffer[segments.size()]));
     }
 
 

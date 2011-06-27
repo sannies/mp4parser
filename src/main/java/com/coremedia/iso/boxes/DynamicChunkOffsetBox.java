@@ -23,34 +23,34 @@ public class DynamicChunkOffsetBox extends ChunkOffsetBox {
 
     }
 
-  @Override
-  public long getSize() {
-    final long contentSize = getContentSize();
-    return //box header
-            4 + // size
-            4 + // type
-            (contentSize >= 4294967296L ? 8 : 0) +
-           //full box header
-            4 +
-           //content
-            contentSize +
-           //rest
-            getDeadBytes().length;
-  }
+    @Override
+    public long getSize() {
+        final long contentSize = getContentSize();
+        return //box header
+                4 + // size
+                        4 + // type
+                        (contentSize >= 4294967296L ? 8 : 0) +
+                        //full box header
+                        4 +
+                        //content
+                        contentSize +
+                        //rest
+                        (deadBytes == null ? 0 : deadBytes.size());
+    }
 
-  @Override
+    @Override
     protected long getContentSize() {
         long count = 0;
         IsoFile isoFile = this.getIsoFile();
 
         List<MediaDataBox> mdats = isoFile.getBoxes(MediaDataBox.class);
         for (MediaDataBox mdat : mdats) {
-          final Track<?> track = mdat.getTrack(trackId);
-          if (track == null) {
-            //System.out.println("mdat doesn't contain track with trackId " + trackId + " but " + mdat.getTracks());
-            continue;
-          }
-          List<? extends Chunk<? extends TrackMetaDataContainer>> chunks = track.getChunks();
+            final Track<?> track = mdat.getTrack(trackId);
+            if (track == null) {
+                //System.out.println("mdat doesn't contain track with trackId " + trackId + " but " + mdat.getTracks());
+                continue;
+            }
+            List<? extends Chunk<? extends TrackMetaDataContainer>> chunks = track.getChunks();
             count += chunks.size();
         }
 
@@ -59,17 +59,17 @@ public class DynamicChunkOffsetBox extends ChunkOffsetBox {
 
     @Override
     public long[] getChunkOffsets() {
-      IsoFile isoFile = this.getIsoFile();
+        IsoFile isoFile = this.getIsoFile();
 
         List<MediaDataBox> mdats = isoFile.getBoxes(MediaDataBox.class);
         ArrayList<Long> chunkOffsets = new ArrayList<Long>();
         for (MediaDataBox mdat : mdats) {
             long mdatStart = mdat.getOffset();
-          final Track<?> track = mdat.getTrack(trackId);
-          if (track == null) {
-            //System.out.println("mdat doesn't contain track with trackId " + trackId + " but " + mdat.getTracks());
-            continue;
-          }
+            final Track<?> track = mdat.getTrack(trackId);
+            if (track == null) {
+                //System.out.println("mdat doesn't contain track with trackId " + trackId + " but " + mdat.getTracks());
+                continue;
+            }
             List<? extends Chunk<? extends TrackMetaDataContainer>> chunks = track.getChunks();
             for (Chunk<?> chunk : chunks) {
                 chunkOffsets.add(mdatStart + chunk.calculateOffset());
@@ -89,9 +89,9 @@ public class DynamicChunkOffsetBox extends ChunkOffsetBox {
                 "It needs to be constructed from a StaticChunkOffsetBox");
     }
 
-  public String toString() {
-      return "DynamicChunkOffsetBox[entryCount=" + getChunkOffsets().length + "]";
-  }
+    public String toString() {
+        return "DynamicChunkOffsetBox[entryCount=" + getChunkOffsets().length + "]";
+    }
 
 
 }

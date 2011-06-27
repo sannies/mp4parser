@@ -51,9 +51,9 @@ public abstract class AbstractBox implements Box {
         writeListeners.add(writeListener);
     }
 
-    @Override
+
     public long getSize() {
-        return getContentSize() + getHeaderSize() + getDeadBytes().length;
+        return getContentSize() + getHeaderSize() + (deadBytes == null ? 0 : deadBytes.size());
     }
 
     protected long getHeaderSize() {
@@ -78,12 +78,12 @@ public abstract class AbstractBox implements Box {
         this.type = type;
     }
 
-    @Override
+
     public byte[] getType() {
         return type;
     }
 
-    @Override
+
     public byte[] getUserType() {
         return userType;
     }
@@ -92,12 +92,12 @@ public abstract class AbstractBox implements Box {
         this.userType = userType;
     }
 
-    @Override
+
     public ContainerBox getParent() {
         return parent;
     }
 
-    @Override
+
     public boolean isParsed() {
         return parsed;
     }
@@ -106,7 +106,7 @@ public abstract class AbstractBox implements Box {
         this.parsed = parsed;
     }
 
-    @Override
+
     public long getOffset() {
         return offset;
     }
@@ -115,7 +115,7 @@ public abstract class AbstractBox implements Box {
         this.parent = parent;
     }
 
-    @Override
+
     public IsoFile getIsoFile() {
         return parent.getIsoFile();
     }
@@ -139,13 +139,13 @@ public abstract class AbstractBox implements Box {
     public abstract String getDisplayName();
 
 
-    ByteBuffer[] deadBytes = new ByteBuffer[]{};
+    IsoBufferWrapper deadBytes = null;
 
-    public ByteBuffer[] getDeadBytes() {
+    public IsoBufferWrapper getDeadBytes() {
         return deadBytes;
     }
 
-    public void setDeadBytes(ByteBuffer[] newDeadBytes) {
+    public void setDeadBytes(IsoBufferWrapper newDeadBytes) {
         deadBytes = newDeadBytes;
     }
 
@@ -165,7 +165,7 @@ public abstract class AbstractBox implements Box {
                 ios.write(userType);
             }
 
-            assert baos.size() == getHeaderSize():
+            assert baos.size() == getHeaderSize() :
                     "written header size differs from calculated size: " + baos.size() + " vs. " + getHeaderSize();
             return baos.toByteArray();
         } catch (IOException e) {
@@ -178,7 +178,7 @@ public abstract class AbstractBox implements Box {
         return this.getSize() < 4294967296L;
     }
 
-    @Override
+
     public void getBox(IsoOutputStream os) throws IOException {
         long sp = os.getStreamPosition();
 
@@ -190,11 +190,11 @@ public abstract class AbstractBox implements Box {
 
         os.write(getHeader());
         getContent(os);
-        for (ByteBuffer buffer : deadBytes) {
-            buffer.rewind();
-            byte[] bufAsAr = new byte[buffer.limit()];
-            buffer.get(bufAsAr);
-            os.write(bufAsAr);
+        if (deadBytes != null) {
+            deadBytes.position(0);
+            while (deadBytes.remaining() > 0) {
+                os.write(deadBytes.read());
+            }
         }
 
 
@@ -235,7 +235,6 @@ public abstract class AbstractBox implements Box {
     }
 
 
-    @Override
     public long calculateOffset() {
         //todo: doesn't work for fragmented files as it doesn't take mdats into account (as they are not in the parent structure)
         long offsetFromParentBoxStart = parent.getNumOfBytesToFirstChild();

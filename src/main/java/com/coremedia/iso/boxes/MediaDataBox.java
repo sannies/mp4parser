@@ -28,13 +28,7 @@ import com.coremedia.iso.mdta.SampleImpl;
 import com.coremedia.iso.mdta.Track;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This box contains the media data. In video tracks, this box would contain video frames. A presentation may
@@ -85,23 +79,23 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
         os.write(getHeader());
         os.write(getDeadBytesBefore());
         getContent(os);
-        for (ByteBuffer buffer : deadBytes) {
-            buffer.rewind();
-            byte[] bufAsAr = new byte[buffer.limit()];
-            buffer.get(bufAsAr);
-            os.write(bufAsAr);
+        if (deadBytes != null) {
+            deadBytes.position(0);
+            while (deadBytes.remaining() > 0) {
+                os.write(deadBytes.read());
+            }
         }
 
     }
 
-  @Override
-  public long getSize() {
-    long contentSize = getContentSize();  // avoid calling getContentSize() twice
-    long headerSize = 4 + // headerSize
-            4 + // type
-            (contentSize >= 4294967296L ? 8 : 0);
-    return headerSize + contentSize + getDeadBytes().length + getDeadBytesBefore().length;
-  }
+    @Override
+    public long getSize() {
+        long contentSize = getContentSize();  // avoid calling getContentSize() twice
+        long headerSize = 4 + // headerSize
+                4 + // type
+                (contentSize >= 4294967296L ? 8 : 0);
+        return headerSize + contentSize + (deadBytes == null ? 0 : deadBytes.size()) + getDeadBytesBefore().length;
+    }
 
     public long getSampleCount() {
         return sampleList.size();
@@ -246,16 +240,15 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
             }
             assert getContentSize() == os.getStreamPosition() - sp;
         } else {
-            ByteBuffer[] segments = isoBufferWrapper.getSegment(startOffset, sizeIfNotParsed);
-            for (ByteBuffer segment : segments) {
-                while (segment.remaining() > 1024) {
-                    byte[] buf = new byte[1024];
-                    segment.get(buf);
-                    os.write(buf);
-                }
-                while (segment.remaining() > 0) {
-                    os.write(segment.get());
-                }
+            IsoBufferWrapper segment = isoBufferWrapper.getSegment(startOffset, sizeIfNotParsed);
+
+            while (segment.remaining() > 1024) {
+                byte[] buf = new byte[1024];
+                segment.read(buf);
+                os.write(buf);
+            }
+            while (segment.remaining() > 0) {
+                os.write(segment.read());
             }
         }
     }
@@ -264,21 +257,21 @@ public final class MediaDataBox<T extends TrackMetaDataContainer> extends Abstra
         return movieFragmentBoxBefore != null;
     }
 
-  @Override
-  public String toString() {
-    //System.out.println("Mdat#toString");
+    @Override
+    public String toString() {
+        //System.out.println("Mdat#toString");
 
-    final StringBuilder sb = new StringBuilder();
-    sb.append("MediaDataBox");
-    sb.append("{contentsParsed=").append(contentsParsed);
-    sb.append(", offset=").append(getOffset());
-    sb.append(", size=").append(getSize());
-    sb.append(", sampleCount=").append(getSampleCount());
-    sb.append(", tracks=").append(tracks);
-    sb.append(", movieFragmentBoxBefore=").append(movieFragmentBoxBefore);
-    sb.append('}');
-    return sb.toString();
-  }
+        final StringBuilder sb = new StringBuilder();
+        sb.append("MediaDataBox");
+        sb.append("{contentsParsed=").append(contentsParsed);
+        sb.append(", offset=").append(getOffset());
+        sb.append(", size=").append(getSize());
+        sb.append(", sampleCount=").append(getSampleCount());
+        sb.append(", tracks=").append(tracks);
+        sb.append(", movieFragmentBoxBefore=").append(movieFragmentBoxBefore);
+        sb.append('}');
+        return sb.toString();
+    }
 
     public List<SampleHolder<T>> getSampleList() {
         return sampleList;

@@ -1,7 +1,5 @@
 package com.coremedia.iso;
 
-import java.nio.ByteBuffer;
-
 /**
  * Encapsulates access to underlying storage.
  */
@@ -24,9 +22,9 @@ public interface IsoBufferWrapper {
 
     void position(long l);
 
-    int read(byte[] deadBytesBefore);
+    int read(byte[] buffer);
 
-    ByteBuffer[] getSegment(long startOffset, long sizeIfNotParsed);
+    IsoBufferWrapper getSegment(long startOffset, long sizeIfNotParsed);
 
     long readUInt32();
 

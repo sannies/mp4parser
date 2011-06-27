@@ -35,9 +35,8 @@ public class IsoBufferWrapperMultipleBufferTest extends TestCase {
     }
 
     public void testSegment() {
-        ByteBuffer[] buffers = isoBufferWrapper.getSegment(2, 2);
-        assertEquals(1, buffers[0].remaining());
-        assertEquals(1, buffers[1].remaining());
+        IsoBufferWrapper isoBufferWrapper = this.isoBufferWrapper.getSegment(2, 2);
+        assertEquals(2, isoBufferWrapper.remaining());
     }
 
     public void testPosition() {
