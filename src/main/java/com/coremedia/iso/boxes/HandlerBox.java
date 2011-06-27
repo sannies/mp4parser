@@ -123,7 +123,7 @@ public class HandlerBox extends AbstractFullBox {
                 }
                 name = name.substring(0, name.indexOf('\0'));
             } else if (name.length() > 0) {
-                name = name.substring(1);
+                name = name;//.substring(1);
             }
         } else {
             name = NO_STRING_AT_ALL_NOT_EVEN_NULL;

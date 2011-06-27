@@ -12,9 +12,9 @@ public class IsoBufferWrapperMultipleBufferTest extends TestCase {
     private IsoBufferWrapper isoBufferWrapper;
 
     private IsoBufferWrapper getTestIsoBufferWrapper() {
-        byte[] b1 = {1,2,3,4};
-        byte[] b2 = {4,5,6};
-        return  new IsoBufferWrapper(new ByteBuffer[]{ByteBuffer.wrap(b1, 0, 3), ByteBuffer.wrap(b2)});
+        byte[] b1 = {1, 2, 3, 4};
+        byte[] b2 = {4, 5, 6};
+        return new IsoBufferWrapperImpl(new ByteBuffer[]{ByteBuffer.wrap(b1, 0, 3), ByteBuffer.wrap(b2)});
 
     }
 
@@ -35,7 +35,7 @@ public class IsoBufferWrapperMultipleBufferTest extends TestCase {
     }
 
     public void testSegment() {
-       ByteBuffer[] buffers = isoBufferWrapper.getSegment(2,2);
+        ByteBuffer[] buffers = isoBufferWrapper.getSegment(2, 2);
         assertEquals(1, buffers[0].remaining());
         assertEquals(1, buffers[1].remaining());
     }
@@ -46,11 +46,13 @@ public class IsoBufferWrapperMultipleBufferTest extends TestCase {
         isoBufferWrapper.position(4);
         assertEquals(5, isoBufferWrapper.read());
     }
+
     public void testPositionAfterLast() {
         isoBufferWrapper.position(6);
         assertEquals(6, isoBufferWrapper.position());
         assertEquals(0, isoBufferWrapper.remaining());
     }
+
     public void testRemaining() {
 
         assertEquals(6, isoBufferWrapper.remaining());

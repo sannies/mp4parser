@@ -8,7 +8,12 @@ import java.io.IOException;
  */
 public class Test {
     public static void main(String[] args) throws IOException {
-        IsoBufferWrapper isoBufferWrapper = new IsoBufferWrapper(new File(args[0]));
+        main2(new String[]{"/home/sannies/scm/svn/mp4parser/isoparser/src/test/resources/foo1.mp4"});
+        main2(new String[]{"/home/sannies/scm/svn/mp4parser/isoparser/src/test/resources/foo2.mp4"});
+    }
+
+    public static void main2(String[] args) throws IOException {
+        IsoBufferWrapper isoBufferWrapper = new IsoBufferWrapperImpl(new File(args[0]));
         IsoFile isoFile = new IsoFile(isoBufferWrapper);
         isoFile.parse();
         isoFile.parseMdats();

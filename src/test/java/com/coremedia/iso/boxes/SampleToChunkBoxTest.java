@@ -1,6 +1,6 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoOutputStream;
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -36,7 +36,7 @@ public class SampleToChunkBoxTest extends TestCase {
         byte[] content = baos.toByteArray();
 
         SampleToChunkBox stsc2 = new SampleToChunkBox();
-        stsc2.parse(new IsoBufferWrapper(ByteBuffer.wrap(content, 8, content.length - 8)), content.length + 8, null, null);
+        stsc2.parse(new IsoBufferWrapperImpl(ByteBuffer.wrap(content, 8, content.length - 8)), content.length + 8, null, null);
         Assert.assertEquals(content.length, stsc2.getSize());
 
 

@@ -1,6 +1,7 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.HandlerBox;
@@ -24,10 +25,10 @@ import java.util.List;
  *
  */
 public class TestItunesMetaDataEnrichment extends TestCase {
-  public void testEnrichment() throws IOException {
+    public void testEnrichment() throws IOException {
         InputStream is = getClass().getResourceAsStream("/file6141.odf");
         IsoBufferWrapper isoBufferWrapper =
-                new IsoBufferWrapper(ByteBuffer.wrap(IOUtils.toByteArray(is)));
+                new IsoBufferWrapperImpl(ByteBuffer.wrap(IOUtils.toByteArray(is)));
         IsoFile isoFile = new IsoFile(isoBufferWrapper);
         isoFile.parse();
         OmaDrmContainerBox omaDrmContainerBox =

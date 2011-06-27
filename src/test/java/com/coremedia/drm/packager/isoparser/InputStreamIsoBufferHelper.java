@@ -1,6 +1,7 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoBufferWrapperImpl;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -28,12 +29,12 @@ public final class InputStreamIsoBufferHelper {
                     i += b.length - i;
                 }
             }
-            return new IsoBufferWrapper(buffers.toArray(new ByteBuffer[buffers.size()]));
+            return new IsoBufferWrapperImpl(buffers.toArray(new ByteBuffer[buffers.size()]));
         }
     }
 
     public static IsoBufferWrapper get(byte[] is) throws IOException {
-        return new IsoBufferWrapper(ByteBuffer.wrap(is));
+        return new IsoBufferWrapperImpl(ByteBuffer.wrap(is));
     }
 
 }
