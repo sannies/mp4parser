@@ -84,10 +84,10 @@ public class FileTypeBox extends AbstractBox {
     /**
      * Sets the "informative integer for the minor version of the major brand".
      *
-     * @param minorVerson the version number of the major brand
+     * @param minorVersion the version number of the major brand
      */
-    public void setMinorVerson(int minorVerson) {
-        this.minorVerson = minorVerson;
+    public void setMinorVersion(int minorVersion) {
+        this.minorVerson = minorVersion;
     }
 
     /**
