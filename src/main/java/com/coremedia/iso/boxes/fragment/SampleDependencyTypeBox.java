@@ -22,9 +22,6 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,69 +39,69 @@ import java.util.List;
  * }
  */
 public class SampleDependencyTypeBox extends AbstractFullBox {
-  public static final String TYPE = "sdtp";
+    public static final String TYPE = "sdtp";
 
-  private List<Entry> sampleEntries = new ArrayList<Entry>();
+    private List<Entry> entries = new ArrayList<Entry>();
 
-  public static class Entry {
-    private int reserved;
-    private int sampleDependsOn;
-    private int sampleIsDependentOn;
-    private int sampleHasRedundancy;
+    public static class Entry {
+        private int reserved;
+        private int sampleDependsOn;
+        private int sampleIsDependentOn;
+        private int sampleHasRedundancy;
 
-    public int getReserved() {
-      return reserved;
+        public int getReserved() {
+            return reserved;
+        }
+
+        public int getSampleDependsOn() {
+            return sampleDependsOn;
+        }
+
+        public int getSampleIsDependentOn() {
+            return sampleIsDependentOn;
+        }
+
+        public int getSampleHasRedundancy() {
+            return sampleHasRedundancy;
+        }
+
+        @Override
+        public String toString() {
+            return "Entry{" +
+                    "reserved=" + reserved +
+                    ", sampleDependsOn=" + sampleDependsOn +
+                    ", sampleIsDependentOn=" + sampleIsDependentOn +
+                    ", sampleHasRedundancy=" + sampleHasRedundancy +
+                    '}';
+        }
     }
 
-    public int getSampleDependsOn() {
-      return sampleDependsOn;
-    }
-
-    public int getSampleIsDependentOn() {
-      return sampleIsDependentOn;
-    }
-
-    public int getSampleHasRedundancy() {
-      return sampleHasRedundancy;
+    public SampleDependencyTypeBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
 
     @Override
-    public String toString() {
-      return "Entry{" +
-              "reserved=" + reserved +
-              ", sampleDependsOn=" + sampleDependsOn +
-              ", sampleIsDependentOn=" + sampleIsDependentOn +
-              ", sampleHasRedundancy=" + sampleHasRedundancy +
-              '}';
+    public String getDisplayName() {
+        return "Independent and Disposable Samples Box";
     }
-  }
 
-  public SampleDependencyTypeBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  @Override
-  public String getDisplayName() {
-    return "Independent and Disposable Samples Box";
-  }
-
-  @Override
-  protected long getContentSize() {
-    return getSampleCount();
-  }
-
-  @Override
-  protected void getContent(IsoOutputStream os) throws IOException {
-    for (Entry entry : sampleEntries) {
-      int temp = entry.reserved << 6;
-
-      temp = temp | (entry.sampleDependsOn << 4);
-      temp = temp | (entry.sampleIsDependentOn << 2);
-      temp = temp | entry.sampleHasRedundancy;
-
-      os.write(temp);
+    @Override
+    protected long getContentSize() {
+        return entries.size();
     }
-  }
+
+    @Override
+    protected void getContent(IsoOutputStream os) throws IOException {
+        for (Entry entry : entries) {
+            int temp = entry.reserved << 6;
+
+            temp = temp | (entry.sampleDependsOn << 4);
+            temp = temp | (entry.sampleIsDependentOn << 2);
+            temp = temp | entry.sampleHasRedundancy;
+
+            os.write(temp);
+        }
+    }
 
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
@@ -120,86 +117,26 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
             entry.sampleIsDependentOn = (temp >> 2) & 0x3;
             entry.sampleHasRedundancy = temp & 0x3;
 
-            sampleEntries.add(entry);
+            entries.add(entry);
             remainingBytes--;
         }
 
-        /*
-    long sampleCount = getSampleCount();
-
-    for (int i = 0; i < sampleCount; i++) {
-      Entry entry = new Entry();
-      int temp = in.readUInt8();
-
-      entry.reserved = temp >> 6;
-      entry.sampleDependsOn = (temp >> 4) & 0x3;
-      entry.sampleIsDependentOn = (temp >> 2) & 0x3;
-      entry.sampleHasRedundancy = temp & 0x3;
-
-      sampleEntries.add(entry);
-        }*/
-
     }
 
-  private long getSampleCount() {
-        ContainerBox traf = this.getParent();
-        List<TrackRunBox> trackRunBoxes = traf.getBoxes(TrackRunBox.class);
-    if (trackRunBoxes.size() > 1) {
-      for (TrackRunBox trackRunBox : trackRunBoxes) {
-        System.out.println("Found (additional) Track Run Box: " + trackRunBox + " in " + traf);
-      }
-      throw new RuntimeException("More than one Track Fragment Header Box in Track Fragment Box.");
-    } else if (trackRunBoxes.size() == 1) {
-      return trackRunBoxes.get(0).getSampleCount();
+    public List<Entry> getEntries() {
+        return entries;
     }
 
-    System.out.println("Couldn't find Track Run Box. Trying to determine sample count by looking up Sample Size Boxes");
-    IsoFile isoFile = this.getIsoFile();
-    List<MovieBox> movieBoxes = isoFile.getBoxes(MovieBox.class, false);
-    if (movieBoxes.size() == 0) {
-      System.out.println("No Movie Box found in " + isoFile);
-      return 0;
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
     }
-    MovieBox movieBox = movieBoxes.get(0);
 
-    List<SampleSizeBox> sampleSizeBoxes = movieBox.getBoxes(SampleSizeBox.class, false);
-
-    long sampleCount = 0;
-    if (sampleSizeBoxes.size() > 1) {
-      System.out.println("Found more than one Sample Size Box in movie box. Taking first.");
-      for (SampleSizeBox sampleSizeBox : sampleSizeBoxes) {
-        System.out.println("found Sample Size Box " + sampleSizeBox + " in " + movieBox);
-      }
-    } else if (sampleSizeBoxes.size() > 0) {
-      sampleCount = sampleSizeBoxes.get(0).getSampleCount();
-    } else {
-      System.out.println("No Sample Size Box found in " + movieBox.getDisplayName());
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("SampleDependencyTypeBox");
+        sb.append("{entries=").append(entries);
+        sb.append('}');
+        return sb.toString();
     }
-    return sampleCount;
-  }
-
-  public List<Entry> getSampleEntries() {
-    return sampleEntries;
-  }
-
-  public int getSampleEntriesCount() {
-    return sampleEntries.size();
-  }
-
-  public String getSampleEntriesAsString() {
-    StringBuilder stringBuilder = new StringBuilder();
-    for (Entry sampleEntry : sampleEntries) {
-      stringBuilder.append(sampleEntry);
-    }
-    return stringBuilder.toString();
-  }
-
-  @Override
-  public String toString() {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("SampleDependencyTypeBox");
-    sb.append("{sampleEntries=").append(sampleEntries);
-    sb.append('}');
-    return sb.toString();
-  }
 }

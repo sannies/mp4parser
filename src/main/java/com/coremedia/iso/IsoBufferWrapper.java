@@ -1,44 +1,46 @@
 package com.coremedia.iso;
 
+import java.io.IOException;
+
 /**
  * Encapsulates access to underlying storage.
  */
 public interface IsoBufferWrapper {
-    int readUInt8();
+    int readUInt8() throws IOException;
 
-    int readUInt24();
+    int readUInt24() throws IOException;
 
-    String readIso639();
+    String readIso639() throws IOException;
 
-    String readString();
+    String readString() throws IOException;
 
-    long position();
+    long position() throws IOException;
 
-    long remaining();
+    long remaining() throws IOException;
 
-    String readString(int i);
+    String readString(int i) throws IOException;
 
-    long skip(long size);
+    long skip(long size) throws IOException;
 
-    void position(long l);
+    void position(long l) throws IOException;
 
-    int read(byte[] buffer);
+    int read(byte[] buffer) throws IOException;
 
-    IsoBufferWrapper getSegment(long startOffset, long sizeIfNotParsed);
+    IsoBufferWrapper getSegment(long startOffset, long sizeIfNotParsed) throws IOException;
 
-    long readUInt32();
+    long readUInt32() throws IOException;
 
-    long readUInt64();
+    long readUInt64() throws IOException;
 
-    byte read();
+    byte read() throws IOException;
 
-    int readUInt16();
+    int readUInt16() throws IOException;
 
     long size();
 
-    byte[] read(int i);
+    byte[] read(int i) throws IOException;
 
-    double readFixedPoint1616();
+    double readFixedPoint1616() throws IOException;
 
-    float readFixedPoint88();
+    float readFixedPoint88() throws IOException;
 }

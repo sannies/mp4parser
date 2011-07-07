@@ -87,7 +87,7 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
   public List<Long> getSyncSamples(SampleDependencyTypeBox sdtp) {
     List<Long> result = new ArrayList<Long>();
 
-    final List<SampleDependencyTypeBox.Entry> sampleEntries = sdtp.getSampleEntries();
+    final List<SampleDependencyTypeBox.Entry> sampleEntries = sdtp.getEntries();
     long i = 1;
     for (SampleDependencyTypeBox.Entry sampleEntry : sampleEntries) {
       if (sampleEntry.getSampleDependsOn() == 2) {

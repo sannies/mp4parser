@@ -150,7 +150,7 @@ public class TextSampleEntry extends SampleEntry {
         int bottom;
         int right;
 
-        public void parse(IsoBufferWrapper in) {
+        public void parse(IsoBufferWrapper in) throws IOException {
             top = in.readUInt16();
             left = in.readUInt16();
             bottom = in.readUInt16();
@@ -180,7 +180,7 @@ public class TextSampleEntry extends SampleEntry {
         int fontId;
         String fontname;
 
-        public void parse(IsoBufferWrapper in) {
+        public void parse(IsoBufferWrapper in) throws IOException {
             fontId = in.readUInt16();
             int length = in.readUInt8();
             fontname = in.readString(length);
@@ -216,7 +216,7 @@ public class TextSampleEntry extends SampleEntry {
         int fontSize;
         byte[] textColor;
 
-        public void parse(IsoBufferWrapper in) {
+        public void parse(IsoBufferWrapper in) throws IOException {
             startChar = in.readUInt16();
             endChar = in.readUInt16();
             fontId = in.readUInt16();

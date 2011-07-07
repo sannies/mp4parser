@@ -2,20 +2,24 @@ package com.coremedia.iso;
 
 import junit.framework.TestCase;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
- * Make sure the IsoBufferWrapper works. Especially the segmentation with
- * multiple ByteBuffers.
+ *
  */
-public class IsoBufferWrapperMultipleBufferTest extends TestCase {
+public class FileChannelIsoBufferWrapperImplTest extends TestCase {
     private IsoBufferWrapper isoBufferWrapper;
+    File temp;
 
-    private IsoBufferWrapper getTestIsoBufferWrapper() {
-        byte[] b1 = {1, 2, 3, 4};
-        byte[] b2 = {4, 5, 6};
-        return new IsoBufferWrapperImpl(new ByteBuffer[]{ByteBuffer.wrap(b1, 0, 3), ByteBuffer.wrap(b2)});
+    private IsoBufferWrapper getTestIsoBufferWrapper() throws IOException {
+        temp = File.createTempFile("FileChannelIsoBufferWrapperImplTest", "test");
+        byte[] b1 = {1, 2, 3, 4, 5, 6};
+        FileOutputStream fos = new FileOutputStream(temp);
+        fos.write(b1);
+        fos.close();
+        return new FileChannelIsoBufferWrapperImpl(temp);
 
     }
 
@@ -23,6 +27,11 @@ public class IsoBufferWrapperMultipleBufferTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
         this.isoBufferWrapper = getTestIsoBufferWrapper();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+
     }
 
     public void testSimple() throws IOException {
