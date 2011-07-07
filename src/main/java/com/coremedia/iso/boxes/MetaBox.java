@@ -18,68 +18,50 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
 
+import javax.print.attribute.standard.MediaSize;
 import java.io.IOException;
 
 
 /**
  * A common base structure to contain general metadata. See ISO/IEC 14496-12 Ch. 8.44.1.
  */
-public class MetaBox extends FullContainerBox {
+public class MetaBox extends AbstractContainerBox {
+    private int version = -1;
+    private int flags = -1;
 
-  public static final String TYPE = "meta";
+    public static final String TYPE = "meta";
 
-  public MetaBox() {
-    super(TYPE);
-  }
-
-  @Override
-  public String getDisplayName() {
-    return "Meta Box";
-  }
-
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-    //todo: need to implement hdlr box (at least)
-  }
-  /*     THIS COULD NOT BE TESTED - SO I COMMENT IT OUT
-  public void addBox(Box b) {
-    HashMap<String, Box> meta = new HashMap<String, Box>();
-    for (Box boxe : boxes) {
-      meta.put(IsoFile.bytesToFourCC(boxe.getType()), boxe);
+    public MetaBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
-    meta.put(IsoFile.bytesToFourCC(b.getType()), b);
-    sortBoxes(meta);
-  }
 
-  public ItemProtectionBox getItemProtectionBox() {
-    if (getBoxes(ItemProtectionBox.class).length > 0) {
-      return getBoxes(ItemProtectionBox.class)[0];
-    } else {
-      return null;
+    @Override
+    public String getDisplayName() {
+        return "Meta Box";
     }
-  }
 
-
-  String[] order = new String[]{"hdlr", "dinf", "ipmc", "iloc", "ipro", "iinf", "xml", "bxml", "pitm"};
-
-  private void sortBoxes(HashMap<String, Box> meta) {
-    List<Box> newBoxes = new LinkedList<Box>();
-    for (String anOrder : order) {
-      Box b = meta.get(anOrder);
-      if (b != null) {
-        newBoxes.add(b);
-      }
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+        long pos = in.position();
+        in.skip(4);
+        if ("hdlr".equals(IsoFile.bytesToFourCC(in.read(4)))) {
+            //  this is apple bullshit - it's NO FULLBOX
+            in.position(pos);
+        } else {
+            in.position(pos);
+            version = in.readUInt8();
+            flags = in.readUInt24();
+        }
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
     }
-    boxes = newBoxes.toArray(new Box[]{});
-  }
 
-  public HandlerBox getHandlerBox() {
-    if (getBoxes(HandlerBox.class).length > 0) {
-      return getBoxes(HandlerBox.class)[0];
-    } else {
-      return null;
+    public boolean isMp4Box() {
+        return version != -1 && flags != -1;
     }
-  } */
+
+    public boolean isAppleBox() {
+        return !(version != -1 && flags != -1);
+    }
 }

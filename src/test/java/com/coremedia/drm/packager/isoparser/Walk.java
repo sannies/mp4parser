@@ -79,7 +79,7 @@ public final class Walk {
                 }
                 b.toString(); // Just test if some execption is trown
                 ((AbstractBox) b).getDisplayName(); // Just test if some execption is trown
-                ((AbstractBox) b).getUserType();
+                b.getUserType();
 
                 BeanInfo beanInfo = Introspector.getBeanInfo(b.getClass());
                 PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();

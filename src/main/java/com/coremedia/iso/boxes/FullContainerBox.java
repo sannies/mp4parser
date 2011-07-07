@@ -87,7 +87,22 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
 
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        parseHeader(in, size);
+        long pos = in.position();
+        int version = in.readUInt8();
+        long flags = in.readUInt24();
+        // perhaps we don't have a full box here. In that case the flags and version
+        // will be in a non-plausible range.
+        if (version > 3) {
+            // that's not plausible
+            if (flags > 7) {
+                // and thats not plausible too
+                // we have one of those stupid apple meta boxes
+                version = 0;
+                flags = 0;
+                in.position(pos); // reset position to before trying to parse flags and vewrsion
+            }
+
+        }
         parseBoxes(size, in, boxParser, lastMovieFragmentBox);
     }
 

@@ -8,8 +8,7 @@ import java.io.IOException;
  */
 public class Test {
     public static void main(String[] args) throws IOException {
-        main2(new String[]{"/home/sannies/scm/svn/mp4parser/isoparser/src/test/resources/foo1.mp4"});
-        main2(new String[]{"/home/sannies/scm/svn/mp4parser/isoparser/src/test/resources/foo2.mp4"});
+        main2(new String[]{"/home/sannies/Downloads/foo4.mp4"});
     }
 
     public static void main2(String[] args) throws IOException {

@@ -44,17 +44,14 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         super(type);
     }
 
-    @Override
     public List<Box> getBoxes() {
         return Collections.unmodifiableList(boxes);
     }
 
-    @Override
     public void setBoxes(List<Box> boxes) {
         this.boxes = new LinkedList<Box>(boxes);
     }
 
-    @Override
     @SuppressWarnings("unchecked")
     public <T extends Box> List<T> getBoxes(Class<T> clazz) {
         return getBoxes(clazz, false);
@@ -93,7 +90,8 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
             long sp = in.position();
             Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
             long parsedBytes = in.position() - sp;
-            assert parsedBytes == box.getSize() :
+            assert parsedBytes == box.getSize() ||
+                    box instanceof HandlerBox:
                     box + " didn't parse well. number of parsed bytes (" + parsedBytes + ") doesn't match getSize (" + box.getSize() + ")";
             size -= parsedBytes;
 
@@ -124,7 +122,6 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         return buffer.toString();
     }
 
-    @Override
     public long getNumOfBytesToFirstChild() {
         return 8;
     }
