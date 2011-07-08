@@ -29,8 +29,8 @@ import java.io.IOException;
  * A common base structure to contain general metadata. See ISO/IEC 14496-12 Ch. 8.44.1.
  */
 public class MetaBox extends AbstractContainerBox {
-    private int version = -1;
-    private int flags = -1;
+    private int version = 0;
+    private int flags = 0;
 
     public static final String TYPE = "meta";
 
@@ -81,6 +81,8 @@ public class MetaBox extends AbstractContainerBox {
         if ("hdlr".equals(IsoFile.bytesToFourCC(in.read(4)))) {
             //  this is apple bullshit - it's NO FULLBOX
             in.position(pos);
+            version = -1;
+            flags = -1;
         } else {
             in.position(pos);
             version = in.readUInt8();
@@ -93,7 +95,13 @@ public class MetaBox extends AbstractContainerBox {
         return version != -1 && flags != -1;
     }
 
-    public boolean isAppleBox() {
-        return !(version != -1 && flags != -1);
+    public void setMp4Box(boolean mp4) {
+        if (mp4) {
+            version = 0;
+            flags = 0;
+        } else {
+            version = -1;
+            flags = -1;
+        }
     }
 }
