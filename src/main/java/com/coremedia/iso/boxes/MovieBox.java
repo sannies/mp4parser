@@ -17,14 +17,8 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.mdta.Chunk;
-import com.coremedia.iso.mdta.SampleImpl;
-import com.coremedia.iso.mdta.Track;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -33,7 +27,6 @@ import java.util.*;
  */
 public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<TrackBox> {
     public static final String TYPE = "moov";
-    private IsoBufferWrapper isoBufferWrapper;
 
     public MovieBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -44,222 +37,7 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
         return "Movie Box";
     }
 
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        // super does everything fine but we need the IsoBufferWrapper for later
-        this.isoBufferWrapper = in;
-    }
 
-    public long[] getChunkOffsets() {
-        List<Long> offsets = new ArrayList<Long>();
-        for (Box trackBoxe : this.getBoxes()) {
-            if (trackBoxe instanceof TrackBox) {
-                TrackBox trackBox = (TrackBox) trackBoxe;
-                SampleTableBox sampleTableBox = null;
-                // Do not find the way to the sampleTableBox by many getBoxes(Class) calls since they need to much
-                // object instantiation. Going this way here speeds up the process.
-                for (Box mediaBoxe : trackBox.getBoxes()) {
-                    if (mediaBoxe instanceof MediaBox) {
-                        for (Box mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
-                            if (mediaInformationBoxe instanceof MediaInformationBox) {
-                                for (Box sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
-                                    if (sampleTableBoxe instanceof SampleTableBox) {
-                                        sampleTableBox = (SampleTableBox) sampleTableBoxe;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (sampleTableBox != null) {
-                    ChunkOffsetBox chunkOffsetBox = sampleTableBox.getChunkOffsetBox();
-                    if (chunkOffsetBox == null) {
-                        System.out.println("SampleTableBox " + sampleTableBox + " of TrackBox " + trackBox + " doesn't contain a ChunkOffsetBox!");
-                    } else {
-                        long[] chunkOffsets = chunkOffsetBox.getChunkOffsets();
-                        for (long chunkOffset : chunkOffsets) {
-                            offsets.add(chunkOffset);
-                        }
-                    }
-                }
-            }
-        }
-        Collections.sort(offsets);
-        long[] returnArray = new long[offsets.size()];
-        for (int i = 0; i < returnArray.length; i++) {
-            returnArray[i] = offsets.get(i);
-        }
-        return returnArray;
-    }
-
-    public long getTrackIdForChunk(long chunkOffset) {
-        for (Box trackBoxe : this.getBoxes()) {
-            if (trackBoxe instanceof TrackBox) {
-                TrackBox trackBox = (TrackBox) trackBoxe;
-                SampleTableBox sampleTableBox = null;
-                // Do not find the way to the sampleTableBox by many getBoxes(Class) calls since they need to much
-                // object instantiation. Going this way here speeds up the process.
-                for (Box mediaBoxe : trackBox.getBoxes()) {
-                    if (mediaBoxe instanceof MediaBox) {
-                        for (Box mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
-                            if (mediaInformationBoxe instanceof MediaInformationBox) {
-                                for (Box sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
-                                    if (sampleTableBoxe instanceof SampleTableBox) {
-                                        sampleTableBox = (SampleTableBox) sampleTableBoxe;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if ((Arrays.binarySearch(sampleTableBox.getChunkOffsetBox().getChunkOffsets(), chunkOffset)) >= 0) {
-                    return trackBox.getTrackHeaderBox().getTrackId();
-                }
-            }
-        }
-        throw new RuntimeException("wrong chunkOffset, the chunk's offset is in no chunk offset box of no track box");
-    }
-
-    @Override
-    public void parseMdat(MediaDataBox<TrackBox> mdat) {
-        mdat.getTrackMap().clear();
-
-        TreeMap<Long, Track<TrackBox>> trackIdsToTracksWithChunks = new TreeMap<Long, Track<TrackBox>>();
-
-        long[] trackNumbers = getTrackNumbers();
-        Map<Long, Long> trackToSampleCount = new HashMap<Long, Long>(trackNumbers.length);
-        Map<Long, List<Long>> trackToSyncSamples = new HashMap<Long, List<Long>>();
-
-        for (long trackNumber : trackNumbers) {
-            TrackMetaData<TrackBox> trackMetaData = getTrackMetaData(trackNumber);
-            trackIdsToTracksWithChunks.put(trackNumber, new Track<TrackBox>(trackNumber, trackMetaData, mdat));
-            SyncSampleBox syncSampleBox = trackMetaData.getSyncSampleBox();
-            if (syncSampleBox != null) {
-                long[] sampleNumbers = syncSampleBox.getSampleNumber();
-                ArrayList<Long> sampleNumberList = new ArrayList<Long>(sampleNumbers.length);
-                for (long sampleNumber : sampleNumbers) {
-                    sampleNumberList.add(sampleNumber);
-                }
-                trackToSyncSamples.put(trackNumber, sampleNumberList);
-            }
-            trackToSampleCount.put(trackNumber, 1L);
-        }
-
-
-        long[] chunkOffsets = getChunkOffsets();
-
-        for (long chunkOffset : chunkOffsets) {
-            //chunk inside this mdat?
-            if (mdat.getStartOffset() > chunkOffset || chunkOffset > mdat.getStartOffset() + mdat.getSizeIfNotParsed()) {
-                System.out.println("Chunk offset " + chunkOffset + " not contained in " + this);
-                continue;
-            }
-
-            long track = getTrackIdForChunk(chunkOffset);
-
-            long[] sampleOffsets = getSampleOffsetsForChunk(chunkOffset);
-            long[] sampleSizes = getSampleSizesForChunk(chunkOffset);
-
-            for (int i = 1; i < sampleSizes.length; i++) {
-                assert sampleOffsets[i] == sampleSizes[i - 1] + sampleOffsets[i - 1];
-            }
-
-            Track<TrackBox> parentTrack = trackIdsToTracksWithChunks.get(track);
-            Chunk<TrackBox> chunk = new Chunk<TrackBox>(parentTrack, mdat, sampleSizes.length);
-            parentTrack.addChunk(chunk);
-
-            long trackId = parentTrack.getTrackId();
-            mdat.getTrackMap().put(trackId, parentTrack);
-
-            for (int i = 0; i < sampleOffsets.length; i++) {
-                Long currentSample = trackToSampleCount.get(trackId);
-                List<Long> syncSamples = trackToSyncSamples.get(trackId);
-                boolean syncSample = syncSamples != null && syncSamples.contains(currentSample);
-
-                SampleImpl<TrackBox> sample = createSample(isoBufferWrapper, chunkOffset + sampleOffsets[i], sampleOffsets[i], sampleSizes[i], parentTrack, chunk, currentSample, syncSample);
-                MediaDataBox.SampleHolder<TrackBox> sh = new MediaDataBox.SampleHolder<TrackBox>(sample);
-                mdat.getSampleList().add(sh);
-                chunk.addSample(sh);
-                trackToSampleCount.put(trackId, currentSample + 1);
-            }
-        }
-    }
-
-    protected SampleImpl<TrackBox> createSample(IsoBufferWrapper isoBufferWrapper, long offset, long sampleOffset, long sampleSize, Track<TrackBox> parentTrack, Chunk<TrackBox> chunk, Long currentSample, boolean syncSample) {
-        return new SampleImpl<TrackBox>(isoBufferWrapper, offset, currentSample, sampleSize, chunk, syncSample);
-    }
-
-    public long[] getSampleSizesForChunk(long chunkOffset) {
-
-        for (Box trackBoxe : this.getBoxes()) {
-            if (trackBoxe instanceof TrackBox) {
-                TrackBox trackBox = (TrackBox) trackBoxe;
-                SampleTableBox sampleTableBox = null;
-                // Do not find the way to the sampleTableBox by many getBoxes(Class) calls since they need to much
-                // object instantiation. Going this way here speeds up the process.
-                for (Box mediaBoxe : trackBox.getBoxes()) {
-                    if (mediaBoxe instanceof MediaBox) {
-                        for (Box mediaInformationBoxe : ((MediaBox) mediaBoxe).getBoxes()) {
-                            if (mediaInformationBoxe instanceof MediaInformationBox) {
-                                for (Box sampleTableBoxe : ((MediaInformationBox) mediaInformationBoxe).getBoxes()) {
-                                    if (sampleTableBoxe instanceof SampleTableBox) {
-                                        sampleTableBox = (SampleTableBox) sampleTableBoxe;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                int chunkNumber;
-                final ChunkOffsetBox chunkOffsetBox = sampleTableBox.getChunkOffsetBox();
-                long[] chunkOffsets = chunkOffsetBox.getChunkOffsets();
-                if ((chunkNumber = Arrays.binarySearch(chunkOffsets, chunkOffset)) >= 0) {
-                    long[] samplesPerChunk = new long[chunkOffsets.length];
-                    SampleSizeBox sampleSizeBox = sampleTableBox.getSampleSizeBox();
-                    SampleToChunkBox sampleToChunkBox = sampleTableBox.getSampleToChunkBox();
-
-                    List<SampleToChunkBox.Entry> sampleToChunkEntries = new LinkedList<SampleToChunkBox.Entry>(sampleToChunkBox.getEntries());
-                    Collections.reverse(sampleToChunkEntries);
-                    Iterator<SampleToChunkBox.Entry> iterator = sampleToChunkEntries.iterator();
-                    SampleToChunkBox.Entry currentEntry = iterator.next();
-
-                    for (int i = samplesPerChunk.length; i > 1; i--) {
-                        samplesPerChunk[i - 1] = currentEntry.getSamplesPerChunk();
-                        if (i == currentEntry.getFirstChunk()) {
-                            currentEntry = iterator.next();
-                        }
-                    }
-                    samplesPerChunk[0] = currentEntry.getSamplesPerChunk();
-
-
-                    int sampleNumberOffset = 0;
-                    for (int i = 0; i < chunkNumber; i++) {
-                        sampleNumberOffset += samplesPerChunk[i];
-                    }
-                    long noOfSamplesInThisChunk = samplesPerChunk[chunkNumber];
-                    assert noOfSamplesInThisChunk <= Integer.MAX_VALUE : "The parser cannot deal with more than Integer.MAX_VALUE samples in a one chunk";
-                    long[] returnValue = new long[(int) noOfSamplesInThisChunk];
-                    for (int i = 0; i < samplesPerChunk[chunkNumber]; i++) {
-                        returnValue[i] = sampleSizeBox.getSampleSizeAtIndex(i + sampleNumberOffset);
-                    }
-                    return returnValue;
-                }
-            }
-        }
-        throw new RuntimeException("wrong chunkOffset");
-    }
-
-    public long[] getSampleOffsetsForChunk(long chunkOffset) {
-        long[] sizes = getSampleSizesForChunk(chunkOffset);
-        long[] offsets = new long[sizes.length];
-        for (int i = 1; i < sizes.length; i++) {
-            offsets[i] = offsets[i - 1] + sizes[i - 1];
-        }
-        return offsets;
-    }
-
-    @Override
     public int getTrackCount() {
         return getBoxes(TrackBox.class).size();
     }
@@ -270,7 +48,6 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
      *
      * @return the tracknumbers (IDs) of the tracks in their order of appearance in the file
      */
-    @Override
     public long[] getTrackNumbers() {
 
         List<TrackBox> trackBoxes = this.getBoxes(TrackBox.class);
@@ -283,7 +60,6 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
         return trackNumbers;
     }
 
-    @Override
     public TrackMetaData<TrackBox> getTrackMetaData(long trackId) {
         List<TrackBox> trackBoxes = this.getBoxes(TrackBox.class);
         for (TrackBox trackBox : trackBoxes) {

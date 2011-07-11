@@ -32,6 +32,10 @@ public class IsoBufferWrapperImpl implements IsoBufferWrapper {
     public int readBitsRemaining;
     private byte readBitsBuffer;
 
+    public IsoBufferWrapperImpl(byte[] bytes) {
+        this(ByteBuffer.wrap(bytes));
+    }
+
     public IsoBufferWrapperImpl(ByteBuffer parent) {
         this.parents = new ByteBuffer[]{parent};
     }

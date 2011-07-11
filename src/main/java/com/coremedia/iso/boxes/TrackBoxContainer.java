@@ -16,6 +16,8 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.boxes.mdat.MediaDataBox;
+
 public interface TrackBoxContainer<T extends TrackMetaDataContainer> {
   int getTrackCount();
 
@@ -23,5 +25,4 @@ public interface TrackBoxContainer<T extends TrackMetaDataContainer> {
 
   long[] getTrackNumbers();
 
-  void parseMdat(MediaDataBox<T> mdat);
 }

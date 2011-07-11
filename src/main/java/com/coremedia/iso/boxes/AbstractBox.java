@@ -139,7 +139,7 @@ public abstract class AbstractBox implements Box {
     public abstract String getDisplayName();
 
 
-    IsoBufferWrapper deadBytes = null;
+    protected IsoBufferWrapper deadBytes = null;
 
     public IsoBufferWrapper getDeadBytes() {
         return deadBytes;

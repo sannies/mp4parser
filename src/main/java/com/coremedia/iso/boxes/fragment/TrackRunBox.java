@@ -49,7 +49,7 @@ public class TrackRunBox extends AbstractFullBox {
     private int dataOffset;
     private SampleFlags firstSampleFlags;
     private List<Entry> entries = new ArrayList<Entry>();
-    private long realOffset;
+
 
     public List<Entry> getEntries() {
         return entries;
@@ -103,14 +103,6 @@ public class TrackRunBox extends AbstractFullBox {
                     ", sampleCompositionTimeOffset=" + sampleCompositionTimeOffset +
                     '}';
         }
-    }
-
-    public void setRealOffset(long realOffset) {
-        this.realOffset = realOffset;
-    }
-
-    public long getRealOffset() {
-        return realOffset;
     }
 
     public void setDataOffset(int dataOffset) {
@@ -192,20 +184,20 @@ public class TrackRunBox extends AbstractFullBox {
             size += 4;
         }
 
-        for (int i = 0; i < entries.size(); i++) {
-            if ((getFlags() & 0x100) == 0x100) { //sampleDurationPresent
-                size += 4;
-            }
-            if ((getFlags() & 0x200) == 0x200) { //sampleSizePresent
-                size += 4;
-            }
-            if ((getFlags() & 0x400) == 0x400) { //sampleFlagsPresent
-                size += 4;
-            }
-            if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
-                size += 4;
-            }
+        long entrySize = 0;
+        if ((getFlags() & 0x100) == 0x100) { //sampleDurationPresent
+            entrySize += 4;
         }
+        if ((getFlags() & 0x200) == 0x200) { //sampleSizePresent
+            entrySize += 4;
+        }
+        if ((getFlags() & 0x400) == 0x400) { //sampleFlagsPresent
+            entrySize += 4;
+        }
+        if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
+            entrySize += 4;
+        }
+        size += entrySize * entries.size();
         return size;
     }
 
@@ -308,7 +300,6 @@ public class TrackRunBox extends AbstractFullBox {
         sb.append("{sampleCount=").append(entries.size());
         sb.append(", dataOffset=").append(dataOffset);
         sb.append(", dataOffsetPresent=").append(isDataOffsetPresent());
-        sb.append(", realOffset=").append(realOffset);
         sb.append(", sampleSizePresent=").append(isSampleSizePresent());
         sb.append(", sampleDurationPresent=").append(isSampleDurationPresent());
         sb.append(", sampleFlagsPresentPresent=").append(isSampleFlagsPresentPresent());

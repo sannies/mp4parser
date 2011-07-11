@@ -18,12 +18,8 @@ package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.mdta.Chunk;
-import com.coremedia.iso.mdta.Sample;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import java.nio.charset.Charset;
 
 /**
@@ -33,7 +29,6 @@ import java.nio.charset.Charset;
 public class IsoFile extends AbstractContainerBox {
     protected BoxParser boxParser = new PropertyBoxParserImpl();
     protected IsoBufferWrapper originalIso;
-    private boolean mdatsParsed;
 
     public IsoFile(IsoBufferWrapper originalIso) {
         super(new byte[]{});
@@ -83,15 +78,6 @@ public class IsoFile extends AbstractContainerBox {
         parsed = done;
     }
 
-    public void parseMdats() throws IOException {
-        if (!mdatsParsed) {
-            List<MediaDataBox> mdats = getBoxes(MediaDataBox.class);
-            for (MediaDataBox<? extends TrackMetaDataContainer> mdat : mdats) {
-                mdat.parseTrackChunkSample();
-            }
-            mdatsParsed = true;
-        }
-    }
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
@@ -130,25 +116,6 @@ public class IsoFile extends AbstractContainerBox {
         return new String(result, Charset.forName("ISO-8859-1"));
     }
 
-
-    /**
-     * Returns the track with the given id as list of <code>Sample</code>. It unifies the track if it is spread over more
-     * than one <code>MediaDataBox</code>.
-     *
-     * @param trackId as stated in ISO 14496-13
-     * @return the track's list of <code>Sample</code>.
-     */
-    public List<Sample<? extends TrackMetaDataContainer>> getTrack(long trackId) {
-        List<MediaDataBox> mdats = getBoxes(MediaDataBox.class);
-        List<Sample<? extends TrackMetaDataContainer>> samplesInTrack = new LinkedList<Sample<? extends TrackMetaDataContainer>>();
-        for (MediaDataBox mdat : mdats) {
-            List<Chunk> chunks = mdat.getTrack(trackId).getChunks();
-            for (Chunk chunk : chunks) {
-                samplesInTrack.addAll(chunk.getSamples());
-            }
-        }
-        return samplesInTrack;
-    }
 
     @Override
     public long getNumOfBytesToFirstChild() {
