@@ -9,17 +9,17 @@ import java.io.IOException;
 /**
  *
  */
-public class FileChannelIsoBufferWrapperImplTest extends TestCase {
+public class RandomAccessFileIsoBufferWrapperImplTest extends TestCase {
     private IsoBufferWrapper isoBufferWrapper;
     File temp;
 
     private IsoBufferWrapper getTestIsoBufferWrapper() throws IOException {
-        temp = File.createTempFile("FileChannelIsoBufferWrapperImplTest", "test");
+        temp = File.createTempFile("RandomAccessFileIsoBufferWrapperImplTest", "test");
         byte[] b1 = {1, 2, 3, 4, 5, 6};
         FileOutputStream fos = new FileOutputStream(temp);
         fos.write(b1);
         fos.close();
-        return new FileChannelIsoBufferWrapperImpl(temp);
+        return new RandomAccessFileIsoBufferWrapperImpl(temp);
 
     }
 

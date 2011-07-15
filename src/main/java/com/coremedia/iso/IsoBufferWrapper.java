@@ -43,4 +43,8 @@ public interface IsoBufferWrapper {
     double readFixedPoint1616() throws IOException;
 
     float readFixedPoint88() throws IOException;
+
+    int readUInt16BE() throws IOException;
+
+    long readUInt32BE() throws IOException;
 }

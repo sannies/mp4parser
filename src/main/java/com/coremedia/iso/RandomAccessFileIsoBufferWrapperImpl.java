@@ -6,13 +6,13 @@ import java.nio.ByteBuffer;
 /**
  *
  */
-public class FileChannelIsoBufferWrapperImpl implements IsoBufferWrapper {
+public class RandomAccessFileIsoBufferWrapperImpl implements IsoBufferWrapper {
 
     public int readBitsRemaining;
     private byte readBitsBuffer;
     RandomAccessFile raf;
 
-    public FileChannelIsoBufferWrapperImpl(File file) throws IOException {
+    public RandomAccessFileIsoBufferWrapperImpl(File file) throws IOException {
 
         raf = new RandomAccessFile(file, "r");
 
