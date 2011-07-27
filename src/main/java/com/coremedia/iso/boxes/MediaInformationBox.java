@@ -35,4 +35,13 @@ public class MediaInformationBox extends AbstractContainerBox {
         return "Media Information Box";
     }
 
+    public SampleTableBox getSampleTableBox() {
+        for (Box box : boxes) {
+            if (box instanceof SampleTableBox) {
+                return (SampleTableBox) box;
+            }
+        }
+        return null;
+    }
+
 }

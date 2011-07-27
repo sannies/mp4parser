@@ -37,4 +37,13 @@ public class MediaBox extends AbstractContainerBox {
         return "Media Box";
     }
 
+    public MediaInformationBox getMediaInformationBox() {
+        for (Box box : boxes) {
+            if (box instanceof MediaInformationBox) {
+                return (MediaInformationBox) box;
+            }
+        }
+        return null;
+    }
+
 }

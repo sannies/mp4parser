@@ -33,8 +33,6 @@ import java.util.List;
 public class TrackBox extends AbstractContainerBox implements TrackMetaDataContainer {
     public static final String TYPE = "trak";
 
-    IsoBufferWrapper isoFile = null;
-
     public TrackBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
@@ -56,11 +54,16 @@ public class TrackBox extends AbstractContainerBox implements TrackMetaDataConta
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
-        this.isoFile = in;
     }
 
-    public IsoBufferWrapper getIsoBufferWrapper() {
-        return isoFile;
+
+    public MediaBox getMediaBox() {
+        for (Box box : boxes) {
+            if (box instanceof MediaBox) {
+                return (MediaBox) box;
+            }
+        }
+        return null;
     }
 
 }
