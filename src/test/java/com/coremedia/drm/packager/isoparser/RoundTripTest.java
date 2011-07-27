@@ -22,6 +22,7 @@ import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.mdat.MediaDataBox;
 import junit.framework.TestCase;
 import junitx.framework.ArrayAssert;
+import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -73,7 +74,7 @@ public class RoundTripTest extends TestCase {
 
         File originalFile = File.createTempFile("pdcf", "original");
         FileOutputStream fos = new FileOutputStream(originalFile);
-        byte[] content = read(getClass().getResourceAsStream(resource));
+        byte[] content = IOUtils.toByteArray(getClass().getResourceAsStream(resource));
         fos.write(content);
         fos.close();
 
@@ -88,11 +89,6 @@ public class RoundTripTest extends TestCase {
 
     }
 
-    private byte[] read(InputStream resourceAsStream) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        copy(resourceAsStream, baos);
-        return baos.toByteArray();
-    }
 
     public static void copy(InputStream input, OutputStream output) throws IOException {
         assert input != null && output != null;
