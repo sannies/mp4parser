@@ -62,15 +62,13 @@ public class HandlerBox extends AbstractFullBox {
 
     }
 
-    public static final String NO_STRING_AT_ALL_NOT_EVEN_NULL = "no string at all";
-
     private String handlerType;
-    private String name;
+    private String name = null;
     private long a, b, c;
+    private boolean zeroTerm = true;
 
     public HandlerBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
-        name = "";
     }
 
     public String getHandlerType() {
@@ -103,14 +101,12 @@ public class HandlerBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        if (name == NO_STRING_AT_ALL_NOT_EVEN_NULL) {
-            return 20;
-        }
-        if (name.endsWith("\0")) {
-            return 20 + utf8StringLengthInBytes(name);
-        } else {
+        if (zeroTerm) {
             return 21 + utf8StringLengthInBytes(name);
+        } else {
+            return 20 + utf8StringLengthInBytes(name);
         }
+
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
@@ -122,8 +118,14 @@ public class HandlerBox extends AbstractFullBox {
         c = in.readUInt32();
         if ((int) (size - 24) > 0) {
             name = in.readString((int) (size - 24));
+            if (name.endsWith("\0")) {
+                name = name.substring(0, name.length()-1);
+                zeroTerm = true;
+            } else {
+                zeroTerm = false;
+            }
         } else {
-            name = NO_STRING_AT_ALL_NOT_EVEN_NULL;
+            zeroTerm = false; //No string at all, not even zero term char
         }
     }
 
@@ -133,13 +135,9 @@ public class HandlerBox extends AbstractFullBox {
         isos.writeUInt32(a);
         isos.writeUInt32(b);
         isos.writeUInt32(c);
-        // I know  what I do == comparison is ok here
-        if (name != NO_STRING_AT_ALL_NOT_EVEN_NULL) {
-            if (name.endsWith("\0")) {
-                isos.writeStringNoTerm(name);
-            } else {
-                isos.writeStringZeroTerm(name);
-            }
+        isos.writeStringNoTerm(name);
+        if (zeroTerm) {
+            isos.write(0);
         }
     }
 

@@ -87,10 +87,8 @@ public abstract class AbstractBoxParser implements BoxParser {
         }
 
 
-        // the hdlr box has different sizes. If file is mov no zero termination in case of mp4
-        // zero termination
-        assert size == box.getSize() ||
-                "hdlr".equals(IsoFile.bytesToFourCC(box.getType())) :
+
+        assert size == box.getSize() :
                 "Reconstructed Size is not equal to the number of parsed bytes! (" +
                         IsoFile.bytesToFourCC(box.getType()) + " - " + box.getDisplayName() + ")"
                         + " Actual Box size: " + size + " Calculated size: " + box.getSize() +
