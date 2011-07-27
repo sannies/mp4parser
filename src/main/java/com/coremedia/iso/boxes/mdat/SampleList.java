@@ -67,7 +67,7 @@ public class SampleList extends AbstractList<IsoBufferWrapper> {
         SampleSizeBox sampleSizeBox = getSampleTableBox(trackBox).getSampleSizeBox();
         ChunkOffsetBox chunkOffsetBox = getSampleTableBox(trackBox).getChunkOffsetBox();
         SampleToChunkBox sampleToChunkBox = getSampleTableBox(trackBox).getSampleToChunkBox();
-        long[] numberOfSamplesInChunk = blowup(sampleToChunkBox.getEntries(), chunkOffsetBox.getChunkOffsets().length);
+        long[] numberOfSamplesInChunk = sampleToChunkBox.blowup(chunkOffsetBox.getChunkOffsets().length);
         int sampleIndex = 0;
         for (int i = 0; i < numberOfSamplesInChunk.length; i++) {
             long thisChunksNumberOfSamples = numberOfSamplesInChunk[i];
@@ -119,22 +119,5 @@ public class SampleList extends AbstractList<IsoBufferWrapper> {
         return (SampleTableBox) IsoFileConvenienceHelper.get(trackBox, "mdia/minf/stbl");
     }
 
-    private static long[] blowup(List<SampleToChunkBox.Entry> entries, int chunkCount) {
-        long[] numberOfSamples = new long[chunkCount];
-        int j = 0;
-        List<SampleToChunkBox.Entry> sampleToChunkEntries = new LinkedList<SampleToChunkBox.Entry>(entries);
-        Collections.reverse(sampleToChunkEntries);
-        Iterator<SampleToChunkBox.Entry> iterator = sampleToChunkEntries.iterator();
-        SampleToChunkBox.Entry currentEntry = iterator.next();
-
-        for (int i = numberOfSamples.length; i > 1; i--) {
-            numberOfSamples[i - 1] = currentEntry.getSamplesPerChunk();
-            if (i == currentEntry.getFirstChunk()) {
-                currentEntry = iterator.next();
-            }
-        }
-        numberOfSamples[0] = currentEntry.getSamplesPerChunk();
-        return numberOfSamples;
-    }
 
 }

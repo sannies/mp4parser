@@ -22,9 +22,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Samples within the media data are grouped into chunks. Chunks can be of different sizes, and the
@@ -87,6 +85,30 @@ public class SampleToChunkBox extends AbstractFullBox {
 
     public String toString() {
         return "SampleToChunkBox[entryCount=" + entries.size() + "]";
+    }
+
+    /**
+     * Decompresses the list of entries and returns the number of samples per chunk for
+     * every single chunk.
+     * @param chunkCount
+     * @return number of samples per chunk
+     */
+    public long[] blowup(int chunkCount) {
+        long[] numberOfSamples = new long[chunkCount];
+        int j = 0;
+        List<SampleToChunkBox.Entry> sampleToChunkEntries = new LinkedList<Entry>(entries);
+        Collections.reverse(sampleToChunkEntries);
+        Iterator<Entry> iterator = sampleToChunkEntries.iterator();
+        SampleToChunkBox.Entry currentEntry = iterator.next();
+
+        for (int i = numberOfSamples.length; i > 1; i--) {
+            numberOfSamples[i - 1] = currentEntry.getSamplesPerChunk();
+            if (i == currentEntry.getFirstChunk()) {
+                currentEntry = iterator.next();
+            }
+        }
+        numberOfSamples[0] = currentEntry.getSamplesPerChunk();
+        return numberOfSamples;
     }
 
     public static class Entry {
