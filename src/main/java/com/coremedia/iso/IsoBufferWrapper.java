@@ -26,7 +26,7 @@ public interface IsoBufferWrapper {
 
     int read(byte[] buffer) throws IOException;
 
-    IsoBufferWrapper getSegment(long startOffset, long sizeIfNotParsed) throws IOException;
+    IsoBufferWrapper getSegment(long startOffset, long length) throws IOException;
 
     long readUInt32() throws IOException;
 

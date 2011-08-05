@@ -79,7 +79,7 @@ public abstract class AbstractBoxParser implements BoxParser {
         // System.out.println("box = " + box);
         if (in.position() - offset < size && contentSize != -1) {
             // System.out.println("dead bytes found in " + box);
-            LOG.info(IsoFile.bytesToFourCC(type) + " has dead bytes");
+            LOG.finer(IsoFile.bytesToFourCC(type) + " has dead bytes");
             long length = (size - (in.position() - offset));
             assert length < Integer.MAX_VALUE : "Ooops length larger than Integer.MAX_VALUE";
             box.setDeadBytes(in.getSegment(in.position(), length));

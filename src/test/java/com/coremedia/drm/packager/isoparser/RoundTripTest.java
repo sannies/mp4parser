@@ -54,13 +54,9 @@ public class RoundTripTest extends TestCase {
         testRoundTrip_1("/MOV00006.3gp");
     }
 
-/*
-     Have to remvoe that test here. It's not working after introduction of
-     the correcting HandlerBox (HandlerBox now always adds \0 string terminator
-     as specified )
-    public void testRoundTrip_1c() throws Exceptio n {
+    public void testRoundTrip_1c() throws Exception {
         testRoundTrip_1("/Beethoven - Bagatelle op.119 no.11 i.m4a");
-    }*/
+    }
 
     public void testRoundTrip_1d() throws Exception {
         testRoundTrip_1("/test.m4p");

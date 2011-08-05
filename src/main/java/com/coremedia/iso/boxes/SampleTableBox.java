@@ -102,6 +102,15 @@ public class SampleTableBox extends AbstractContainerBox {
         return null;
     }
 
+    public SyncSampleBox getSyncSampleBox() {
+        for (Box box : boxes) {
+            if (box instanceof SyncSampleBox) {
+                return (SyncSampleBox) box;
+            }
+        }
+        return null;
+    }
+
     public CompositionTimeToSample getCompositionTimeToSample() {
         for (Box box : boxes) {
             if (box instanceof CompositionTimeToSample) {
