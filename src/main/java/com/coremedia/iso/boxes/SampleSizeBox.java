@@ -30,7 +30,6 @@ import java.io.IOException;
  */
 public class SampleSizeBox extends AbstractFullBox {
     private long sampleSize;
-    private long sampleCount;
     private long[] entrySize;
     public static final String TYPE = "stsz";
 
@@ -63,7 +62,7 @@ public class SampleSizeBox extends AbstractFullBox {
     }
 
     public long getSampleCount() {
-        return sampleCount;
+        return entrySize.length;
     }
 
     public long[] getEntrySize() {
@@ -74,14 +73,6 @@ public class SampleSizeBox extends AbstractFullBox {
         this.entrySize = entrySize;
     }
 
-    public void setEntrySize(int index, long singleSampleSize) {
-        if (entrySize == null) {
-
-            entrySize = new long[(int) sampleCount];
-            this.sampleSize = 0;
-        }
-        this.entrySize[index] = singleSampleSize;
-    }
 
     public String getDisplayName() {
         return "Sample Size Box";
@@ -97,7 +88,7 @@ public class SampleSizeBox extends AbstractFullBox {
 
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         sampleSize = in.readUInt32();
-        sampleCount = in.readUInt32();
+        long sampleCount = in.readUInt32();
         if (sampleCount > Integer.MAX_VALUE) {
             throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE samples!");
         }
@@ -113,9 +104,9 @@ public class SampleSizeBox extends AbstractFullBox {
 
     protected void getContent(IsoOutputStream isos) throws IOException {
         isos.writeUInt32(sampleSize);
-        isos.writeUInt32(sampleCount);
+        isos.writeUInt32(entrySize.length);
         if (sampleSize == 0) {
-            for (int i = 0; i < sampleCount; i++) {
+            for (int i = 0; i < entrySize.length; i++) {
                 isos.writeUInt32(entrySize[i]);
             }
         }

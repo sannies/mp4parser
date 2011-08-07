@@ -76,4 +76,8 @@ public class SyncSampleBox extends AbstractFullBox {
     public String toString() {
         return "SyncSampleBox[entryCount=" + sampleNumber.length + "]";
     }
+
+    public void setSampleNumber(long[] sampleNumber) {
+        this.sampleNumber = sampleNumber;
+    }
 }

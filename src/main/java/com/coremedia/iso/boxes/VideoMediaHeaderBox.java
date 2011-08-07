@@ -18,7 +18,6 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
@@ -27,13 +26,14 @@ import java.io.IOException;
  * The video media header contains general presentation information, independent of the coding, for video
  * media. Note that the flags field has the value 1.
  */
-public class VideoMediaHeaderBox extends AbstractFullBox {
-    private int graphicsmode;
-    private int[] opcolor;
+public class VideoMediaHeaderBox extends AbstractMediaHeaderBox {
+    private int graphicsmode = 0;
+    private int[] opcolor = new int[]{0, 0, 0};
     public static final String TYPE = "vmhd";
 
     public VideoMediaHeaderBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
+        setFlags(1); // 1 is default.
     }
 
     public int getGraphicsmode() {
@@ -71,5 +71,13 @@ public class VideoMediaHeaderBox extends AbstractFullBox {
 
     public String toString() {
         return "VideoMediaHeaderBox[graphicsmode=" + getGraphicsmode() + ";opcolor0=" + getOpcolor()[0] + ";opcolor1=" + getOpcolor()[1] + ";opcolor2=" + getOpcolor()[2] + "]";
+    }
+
+    public void setOpcolor(int[] opcolor) {
+        this.opcolor = opcolor;
+    }
+
+    public void setGraphicsmode(int graphicsmode) {
+        this.graphicsmode = graphicsmode;
     }
 }

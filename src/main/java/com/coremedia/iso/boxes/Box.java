@@ -27,6 +27,8 @@ import java.io.IOException;
 public interface Box {
     ContainerBox getParent();
 
+    void setParent(ContainerBox parent);
+
     boolean isParsed();
 
     long getSize();

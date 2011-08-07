@@ -18,18 +18,17 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
 
-public class SoundMediaHeaderBox extends AbstractFullBox {
+public class SoundMediaHeaderBox extends AbstractMediaHeaderBox {
 
     public static final String TYPE = "smhd";
     private float balance;
 
     public SoundMediaHeaderBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public float getBalance() {

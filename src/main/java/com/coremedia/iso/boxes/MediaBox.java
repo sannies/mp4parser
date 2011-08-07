@@ -45,5 +45,13 @@ public class MediaBox extends AbstractContainerBox {
         }
         return null;
     }
+    public MediaHeaderBox getMediaHeaderBox() {
+        for (Box box : boxes) {
+            if (box instanceof MediaHeaderBox) {
+                return (MediaHeaderBox) box;
+            }
+        }
+        return null;
+    }
 
 }

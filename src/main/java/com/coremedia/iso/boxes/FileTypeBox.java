@@ -20,8 +20,14 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.sun.deploy.util.OrderedHashSet;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListResourceBundle;
+import java.util.Set;
 
 /**
  * This box identifies the specifications to which this file complies. <br>
@@ -32,31 +38,38 @@ public class FileTypeBox extends AbstractBox {
     public static final String TYPE = "ftyp";
 
     private String majorBrand;
-    private long minorVerson;
-    private String[] compatibleBrands;
+    private long minorVersion;
+    private Collection<String> compatibleBrands;
 
     public FileTypeBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
+    public FileTypeBox(String majorBrand, long minorVersion, Collection<String> compatibleBrands) {
+        super(IsoFile.fourCCtoBytes(TYPE));
+        this.majorBrand = majorBrand;
+        this.minorVersion = minorVersion;
+        this.compatibleBrands = compatibleBrands;
+    }
+
     protected long getContentSize() {
-        return 8 + compatibleBrands.length * 4;
+        return 8 + compatibleBrands.size() * 4;
 
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         majorBrand = IsoFile.bytesToFourCC(in.read(4));
-        minorVerson = in.readUInt32();
+        minorVersion = in.readUInt32();
         int compatibleBrandsCount = (int) ((size - 8) / 4);
-        compatibleBrands = new String[compatibleBrandsCount];
+        compatibleBrands = new LinkedList<String>();
         for (int i = 0; i < compatibleBrandsCount; i++) {
-            compatibleBrands[i] = IsoFile.bytesToFourCC(in.read(4));
+            compatibleBrands.add(IsoFile.bytesToFourCC(in.read(4)));
         }
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {
         isos.write(IsoFile.fourCCtoBytes(majorBrand));
-        isos.writeUInt32(minorVerson);
+        isos.writeUInt32(minorVersion);
         for (String compatibleBrand : compatibleBrands) {
             isos.write(IsoFile.fourCCtoBytes(compatibleBrand));
         }
@@ -87,7 +100,7 @@ public class FileTypeBox extends AbstractBox {
      * @param minorVersion the version number of the major brand
      */
     public void setMinorVersion(int minorVersion) {
-        this.minorVerson = minorVersion;
+        this.minorVersion = minorVersion;
     }
 
     /**
@@ -96,8 +109,8 @@ public class FileTypeBox extends AbstractBox {
      * @return an informative integer
      * @see FileTypeBox#getMajorBrand()
      */
-    public long getMinorVerson() {
-        return minorVerson;
+    public long getMinorVersion() {
+        return minorVersion;
     }
 
     /**
@@ -105,11 +118,11 @@ public class FileTypeBox extends AbstractBox {
      *
      * @return the compatible brands
      */
-    public String[] getCompatibleBrands() {
+    public Collection<String> getCompatibleBrands() {
         return compatibleBrands;
     }
 
-    public void setCompatibleBrands(String[] compatibleBrands) {
+    public void setCompatibleBrands(List<String> compatibleBrands) {
         this.compatibleBrands = compatibleBrands;
     }
 
@@ -123,7 +136,7 @@ public class FileTypeBox extends AbstractBox {
         result.append("FileTypeBox[");
         result.append("majorBrand=").append(getMajorBrand());
         result.append(";");
-        result.append("minorVerson=").append(getMinorVerson());
+        result.append("minorVersion=").append(getMinorVersion());
         for (String compatibleBrand : compatibleBrands) {
             result.append(";");
             result.append("compatibleBrand=").append(compatibleBrand);

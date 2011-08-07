@@ -38,9 +38,9 @@ public class MovieHeaderBox extends AbstractFullBox {
     private long modificationTime;
     private long timescale;
     private long duration;
-    private double rate;
-    private float volume;
-    private long[] matrix;
+    private double rate = 1.0;
+    private float volume = 1.0f;
+    private long[] matrix = new long[]{0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000};
     private long nextTrackId;
     public static final String TYPE = "mvhd";
 
@@ -124,7 +124,7 @@ public class MovieHeaderBox extends AbstractFullBox {
     }
 
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append("MovieHeaderBox[");
         result.append("creationTime=").append(getCreationTime());
         result.append(";");
@@ -174,5 +174,37 @@ public class MovieHeaderBox extends AbstractFullBox {
             isos.writeUInt32(0);
         }
         isos.writeUInt32(nextTrackId);
+    }
+
+    public void setCreationTime(long creationTime) {
+        this.creationTime = creationTime;
+    }
+
+    public void setModificationTime(long modificationTime) {
+        this.modificationTime = modificationTime;
+    }
+
+    public void setTimescale(long timescale) {
+        this.timescale = timescale;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
+
+    public void setRate(double rate) {
+        this.rate = rate;
+    }
+
+    public void setVolume(float volume) {
+        this.volume = volume;
+    }
+
+    public void setMatrix(long[] matrix) {
+        this.matrix = matrix;
+    }
+
+    public void setNextTrackId(long nextTrackId) {
+        this.nextTrackId = nextTrackId;
     }
 }

@@ -17,6 +17,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.fragment.SampleDependencyTypeBox;
 
 import java.util.List;
 
@@ -115,6 +116,15 @@ public class SampleTableBox extends AbstractContainerBox {
         for (Box box : boxes) {
             if (box instanceof CompositionTimeToSample) {
                 return (CompositionTimeToSample) box;
+            }
+        }
+        return null;
+    }
+
+    public SampleDependencyTypeBox getSampleDependencyTypeBox() {
+        for (Box box : boxes) {
+            if (box instanceof SampleDependencyTypeBox) {
+                return (SampleDependencyTypeBox) box;
             }
         }
         return null;

@@ -18,6 +18,7 @@ package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.googlecode.mp4parser.authoring.Movie;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -162,5 +163,19 @@ public class IsoFile extends AbstractContainerBox {
 
     public IsoBufferWrapper getOriginalIso() {
         return originalIso;
+    }
+
+    /**
+     * Shortcut to get the MovieBox since it is often needed and present in
+     * nearly all ISO 14496 files (at least if they are derived from MP4 ).
+     * @return the MovieBox or <code>null</code>
+     */
+    public MovieBox getMovieBox() {
+        for (Box box : boxes) {
+            if (box instanceof MovieBox) {
+                return (MovieBox) box;
+            }
+        }
+        return null;
     }
 }

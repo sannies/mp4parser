@@ -45,12 +45,15 @@ public class TrackHeaderBox extends AbstractFullBox {
     private int layer;
     private int alternateGroup;
     private float volume;
-    private long[] matrix;
+    private long[] matrix = new long[]{0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000};;
     private double width;
     private double height;
 
+
     public TrackHeaderBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
+        // 7 seems to be the only meaningful value
+        setFlags(7);
     }
 
     @isDate
@@ -192,5 +195,45 @@ public class TrackHeaderBox extends AbstractFullBox {
         result.append("height=").append(getHeight());
         result.append("]");
         return result.toString();
+    }
+
+    public void setCreationTime(long creationTime) {
+        this.creationTime = creationTime;
+    }
+
+    public void setModificationTime(long modificationTime) {
+        this.modificationTime = modificationTime;
+    }
+
+    public void setTrackId(long trackId) {
+        this.trackId = trackId;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
+
+    public void setLayer(int layer) {
+        this.layer = layer;
+    }
+
+    public void setAlternateGroup(int alternateGroup) {
+        this.alternateGroup = alternateGroup;
+    }
+
+    public void setVolume(float volume) {
+        this.volume = volume;
+    }
+
+    public void setMatrix(long[] matrix) {
+        this.matrix = matrix;
+    }
+
+    public void setWidth(double width) {
+        this.width = width;
+    }
+
+    public void setHeight(double height) {
+        this.height = height;
     }
 }

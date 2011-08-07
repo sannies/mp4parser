@@ -18,8 +18,6 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
 
-import java.util.List;
-
 /**
  * This box contains all the objects that declare characteristic information of the media in the track.
  */
@@ -39,6 +37,14 @@ public class MediaInformationBox extends AbstractContainerBox {
         for (Box box : boxes) {
             if (box instanceof SampleTableBox) {
                 return (SampleTableBox) box;
+            }
+        }
+        return null;
+    }
+    public AbstractMediaHeaderBox getMediaHeaderBox() {
+        for (Box box : boxes) {
+            if (box instanceof AbstractMediaHeaderBox) {
+                return (AbstractMediaHeaderBox) box;
             }
         }
         return null;

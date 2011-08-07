@@ -61,13 +61,8 @@ public class SampleToChunkBox extends AbstractFullBox {
             throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
         }
         entries = new ArrayList<Entry>((int) entryCount);
-
         for (int i = 0; i < entryCount; i++) {
-            Entry e = new Entry();
-            e.setFirstChunk(in.readUInt32());
-            e.setSamplesPerChunk(in.readUInt32());
-            e.setSampleDescriptionIndex(in.readUInt32());
-            entries.add(e);
+            entries.add(new Entry(in.readUInt32(), in.readUInt32(), in.readUInt32()));
         }
     }
 
@@ -115,6 +110,12 @@ public class SampleToChunkBox extends AbstractFullBox {
         long firstChunk;
         long samplesPerChunk;
         long sampleDescriptionIndex;
+
+        public Entry(long firstChunk, long samplesPerChunk, long sampleDescriptionIndex) {
+            this.firstChunk = firstChunk;
+            this.samplesPerChunk = samplesPerChunk;
+            this.sampleDescriptionIndex = sampleDescriptionIndex;
+        }
 
         public long getFirstChunk() {
             return firstChunk;

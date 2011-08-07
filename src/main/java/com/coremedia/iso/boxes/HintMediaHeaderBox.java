@@ -18,7 +18,6 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
@@ -29,7 +28,7 @@ import java.io.IOException;
  *
  * @see com.coremedia.iso.boxes.MediaInformationBox
  */
-public class HintMediaHeaderBox extends AbstractFullBox {
+public class HintMediaHeaderBox extends AbstractMediaHeaderBox {
     private int maxPduSize;
     private int avgPduSize;
     private long maxBitrate;
@@ -37,7 +36,7 @@ public class HintMediaHeaderBox extends AbstractFullBox {
     public static final String TYPE = "hmhd";
 
     public HintMediaHeaderBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public int getMaxPduSize() {

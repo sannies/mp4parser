@@ -74,7 +74,12 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         //return (T[]) boxesToBeReturned.toArray();
     }
 
+    /**
+     * Add <code>b</code> to the container and sets the parent correctly.
+     * @param b will be added to the container
+     */
     public void addBox(Box b) {
+        b.setParent(this);
         boxes.add(b);
     }
 

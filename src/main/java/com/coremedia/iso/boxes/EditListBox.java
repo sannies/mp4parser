@@ -23,6 +23,8 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * <code>
@@ -50,26 +52,22 @@ import java.io.IOException;
  * <li>Media-Rate = 1</li>
  */
 public class EditListBox extends AbstractFullBox {
-    private long[] segmentDurations;
-    private long[] mediaTimes;
-    private double[] mediaRates;
+    private List<Entry> entries = new LinkedList<Entry>();
     public static final String TYPE = "elst";
 
     public EditListBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public long[] getSegmentDurations() {
-        return segmentDurations;
+
+    public List<Entry> getEntries() {
+        return entries;
     }
 
-    public long[] getMediaTimes() {
-        return mediaTimes;
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
     }
 
-    public double[] getMediaRates() {
-        return mediaRates;
-    }
 
     public String getDisplayName() {
         return "Edit List Box";
@@ -78,11 +76,11 @@ public class EditListBox extends AbstractFullBox {
     protected long getContentSize() {
         long contentSize = 4;
         if (getVersion() == 1) {
-            contentSize += mediaRates.length * 16;
+            contentSize += entries.size() * 20;
         } else {
-            contentSize += mediaRates.length * 8;
+            contentSize += entries.size() * 12;
         }
-        contentSize += mediaRates.length * 4;
+
         return contentSize;
     }
 
@@ -92,37 +90,159 @@ public class EditListBox extends AbstractFullBox {
         if (entryCount > Integer.MAX_VALUE) {
             throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
         }
-        segmentDurations = new long[(int) entryCount];
-        mediaTimes = new long[(int) entryCount];
-        mediaRates = new double[(int) entryCount];
+        entries = new LinkedList<Entry>();
         for (int i = 0; i < entryCount; i++) {
-            if (getVersion() == 1) {
-                segmentDurations[i] = in.readUInt64();
-                mediaTimes[i] = in.readUInt64();
-            } else {
-                segmentDurations[i] = in.readUInt32();
-                mediaTimes[i] = in.readUInt32();
-            }
-            mediaRates[i] = in.readFixedPoint1616();
+            entries.add(new Entry(in));
+
         }
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt32(segmentDurations.length);
-        for (int i = 0; i < segmentDurations.length; i++) {
-            if (getVersion() == 1) {
-                isos.writeUInt64(segmentDurations[i]);
-                isos.writeUInt64(mediaTimes[i]);
-            } else {
-                isos.writeUInt32((int) segmentDurations[i]);
-                isos.writeUInt32((int) mediaTimes[i]);
-            }
-            isos.writeFixedPont1616(mediaRates[i]);
+        isos.writeUInt32(entries.size());
+        for (Entry entry : entries) {
+            entry.getContent(isos);
         }
-
     }
 
+    @Override
     public String toString() {
-        return "EditListBox[entryCount=" + segmentDurations.length + "]";
+        return "EditListBox{" +
+                "entries=" + entries +
+                '}';
+    }
+
+    public class Entry {
+        private long segmentDuration;
+        private long mediaTime;
+        private double mediaRate;
+
+        /**
+         * Creates a new <code>Entry</code> with all values set.
+         *
+         * @param segmentDuration duration in movie timescale
+         * @param mediaTime       starting time
+         * @param mediaRate       relative play rate
+         */
+        public Entry(long segmentDuration, long mediaTime, double mediaRate) {
+            this.segmentDuration = segmentDuration;
+            this.mediaTime = mediaTime;
+            this.mediaRate = mediaRate;
+        }
+
+        public Entry(IsoBufferWrapper in) throws IOException {
+            if (getVersion() == 1) {
+                segmentDuration = in.readUInt64();
+                mediaTime = in.readUInt64();
+                mediaRate = in.readFixedPoint1616();
+            } else {
+                segmentDuration = in.readUInt32();
+                mediaTime = in.readUInt32();
+                mediaRate = in.readFixedPoint1616();
+            }
+        }
+
+        /**
+         * The segment duration is an integer that specifies the duration
+         * of this edit segment in units of the timescale in the Movie
+         * Header Box
+         *
+         * @return segment duration in movie timescale
+         */
+        public long getSegmentDuration() {
+            return segmentDuration;
+        }
+
+        /**
+         * The segment duration is an integer that specifies the duration
+         * of this edit segment in units of the timescale in the Movie
+         * Header Box
+         *
+         * @param segmentDuration new segment duration in movie timescale
+         */
+        public void setSegmentDuration(long segmentDuration) {
+            this.segmentDuration = segmentDuration;
+        }
+
+        /**
+         * The media time is an integer containing the starting time
+         * within the media of a specific edit segment(in media time
+         * scale units, in composition time)
+         *
+         * @return starting time
+         */
+        public long getMediaTime() {
+            return mediaTime;
+        }
+
+        /**
+         * The media time is an integer containing the starting time
+         * within the media of a specific edit segment(in media time
+         * scale units, in composition time)
+         *
+         * @param mediaTime starting time
+         */
+        public void setMediaTime(long mediaTime) {
+            this.mediaTime = mediaTime;
+        }
+
+        /**
+         * The media rate specifies the relative rate at which to play the
+         * media corresponding to a specific edit segment.
+         *
+         * @return relative play rate
+         */
+        public double getMediaRate() {
+            return mediaRate;
+        }
+
+        /**
+         * The media rate specifies the relative rate at which to play the
+         * media corresponding to a specific edit segment.
+         *
+         * @param mediaRate new relative play rate
+         */
+        public void setMediaRate(double mediaRate) {
+            this.mediaRate = mediaRate;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Entry entry = (Entry) o;
+
+            if (mediaTime != entry.mediaTime) return false;
+            if (segmentDuration != entry.segmentDuration) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (int) (segmentDuration ^ (segmentDuration >>> 32));
+            result = 31 * result + (int) (mediaTime ^ (mediaTime >>> 32));
+            return result;
+        }
+
+        public void getContent(IsoOutputStream isos) throws IOException {
+            if (getVersion() == 1) {
+                isos.writeUInt64(segmentDuration);
+                isos.writeUInt64(mediaTime);
+            } else {
+                isos.writeUInt32((int) segmentDuration);
+                isos.writeUInt32((int) mediaTime);
+            }
+            isos.writeFixedPont1616(mediaRate);
+        }
+
+        @Override
+        public String toString() {
+            return "Entry{" +
+                    "segmentDuration=" + segmentDuration +
+                    ", mediaTime=" + mediaTime +
+                    ", mediaRate=" + mediaRate +
+                    '}';
+        }
     }
 }
