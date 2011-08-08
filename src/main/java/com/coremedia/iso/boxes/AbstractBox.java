@@ -152,14 +152,14 @@ public abstract class AbstractBox implements Box {
     public byte[] getHeader() {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IsoOutputStream ios = new IsoOutputStream(baos, false);
+            IsoOutputStream ios = new IsoOutputStream(baos);
             if (isSmallBox()) {
-                ios.writeUInt32((int) this.getSize());
+                ios.writeUInt32((int) this.getContentSize() + 8);
                 ios.write(getType());
             } else {
                 ios.writeUInt32(1);
                 ios.write(getType());
-                ios.writeUInt64(getSize());
+                ios.writeUInt64(getContentSize() + 16);
             }
             if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(UserBox.TYPE))) {
                 ios.write(userType);
@@ -174,8 +174,8 @@ public abstract class AbstractBox implements Box {
         return null;
     }
 
-    private boolean isSmallBox() {
-        return this.getSize() < 4294967296L;
+    protected boolean isSmallBox() {
+        return (getContentSize() + 8) < 4294967296L;
     }
 
 

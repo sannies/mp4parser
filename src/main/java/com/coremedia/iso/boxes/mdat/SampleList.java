@@ -14,8 +14,20 @@ import java.util.*;
 public class SampleList extends AbstractList<IsoBufferWrapper> {
 
     SortedMap<Long, Long> offsets2Sizes;
+    List<Long> offsetKeys = null;
 
     IsoBufferWrapper isoBufferWrapper;
+
+    private List<Long> getOffsetKeys() {
+        if (offsetKeys == null) {
+            List<Long> offsetKeys = new ArrayList<Long>(offsets2Sizes.size());
+            for (Long aLong : offsets2Sizes.keySet()) {
+                offsetKeys.add(aLong);
+            }
+            this.offsetKeys = offsetKeys;
+        }
+        return offsetKeys;
+    }
 
     public SampleList(MovieFragmentBox moof) {
         assert 1 == moof.getTrackCount();
@@ -85,15 +97,10 @@ public class SampleList extends AbstractList<IsoBufferWrapper> {
 
     @Override
     public IsoBufferWrapper get(int index) {
-
-        Iterator<Map.Entry<Long, Long>> entries = offsets2Sizes.entrySet().iterator();
-        Map.Entry<Long, Long> entry = entries.next();
-        while (index > 0) {
-            index--;
-            entry = entries.next();
-        }
+        // it is a two stage lookup: from index to offset to size
+        Long offset = getOffsetKeys().get(index);
         try {
-            return isoBufferWrapper.getSegment(entry.getKey(), entry.getValue());
+            return isoBufferWrapper.getSegment(offset, offsets2Sizes.get(offset));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

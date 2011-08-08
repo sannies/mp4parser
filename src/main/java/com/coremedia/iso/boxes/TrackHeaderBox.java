@@ -236,4 +236,21 @@ public class TrackHeaderBox extends AbstractFullBox {
     public void setHeight(double height) {
         this.height = height;
     }
+
+
+    public boolean isEnabled() {
+        return (getFlags() & 1) > 0 ;
+    }
+
+    public boolean isInMovie() {
+        return (getFlags() & 2) > 0;
+    }
+
+    public boolean isInPreview() {
+        return (getFlags() & 4) > 0;
+    }
+
+    public boolean isInPoster() {
+        return (getFlags() & 8) > 0;
+    }
 }
