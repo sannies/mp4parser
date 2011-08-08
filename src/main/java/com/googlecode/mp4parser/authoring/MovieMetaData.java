@@ -32,4 +32,13 @@ public class MovieMetaData {
     public void setTimescale(long timescale) {
         this.timescale = timescale;
     }
+
+    @Override
+    public String toString() {
+        return "MovieMetaData{" +
+                "title='" + title + '\'' +
+                ", duration=" + duration +
+                ", timescale=" + timescale +
+                '}';
+    }
 }

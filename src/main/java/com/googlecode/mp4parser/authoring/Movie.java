@@ -43,4 +43,17 @@ public class Movie {
     public void setMovieMetaData(MovieMetaData movieMetaData) {
         this.movieMetaData = movieMetaData;
     }
+
+    @Override
+    public String toString() {
+        String s = "Movie{ ";
+        for (Track track : tracks) {
+            s += "track_" + track.getTrackMetaData().getTrackId() + " (" + track.getType() + "), ";
+        }
+
+        s += ", movieMetaData=" + movieMetaData + '}';
+        return s;
+    }
+
+
 }
