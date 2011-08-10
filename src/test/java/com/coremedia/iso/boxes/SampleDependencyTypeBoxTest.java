@@ -29,7 +29,7 @@ public class SampleDependencyTypeBoxTest {
         byte[] content = baos.toByteArray();
 
         SampleDependencyTypeBox stsc2 = new SampleDependencyTypeBox();
-        stsc2.parse(new IsoBufferWrapperImpl(ByteBuffer.wrap(content, 8, content.length - 8)), content.length + 8, null, null);
+        stsc2.parse(new IsoBufferWrapperImpl(ByteBuffer.wrap(content, 8, content.length - 8)), content.length - 8, null, null);
         Assert.assertEquals(content.length, stsc2.getSize());
 
 

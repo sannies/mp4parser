@@ -119,7 +119,7 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long remainingBytes = size - 12;
+        long remainingBytes = size - 4;
 
         while (remainingBytes > 0) {
             entries.add(new Entry(in.readUInt8()));
