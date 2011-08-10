@@ -241,7 +241,7 @@ public class DefaultMp4IsoBuilder implements IsoBuilder {
         for (int i = 0; i < sizes.length; i++) {
             sizes[i] = track.getSamples().get(i).size();
         }
-        stsz.setEntrySize(sizes);
+        stsz.setSampleSizes(sizes);
 
         stbl.addBox(stsz);
         // The ChunkOffsetBox we create here is just a stub

@@ -30,8 +30,9 @@ import java.io.IOException;
  */
 public class SampleSizeBox extends AbstractFullBox {
     private long sampleSize;
-    private long[] entrySize;
+    private long[] sampleSizes;
     public static final String TYPE = "stsz";
+    long sampleCount;
 
     public SampleSizeBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -40,7 +41,7 @@ public class SampleSizeBox extends AbstractFullBox {
     /**
      * Returns the field sample size.
      * If sampleSize > 0 every sample has the same size.
-     * If sampleSize == 0 the samples have different size as stated in the entrySize field.
+     * If sampleSize == 0 the samples have different size as stated in the sampleSizes field.
      *
      * @return the sampleSize field
      */
@@ -57,20 +58,25 @@ public class SampleSizeBox extends AbstractFullBox {
         if (sampleSize > 0) {
             return sampleSize;
         } else {
-            return entrySize[index];
+            return sampleSizes[index];
         }
     }
 
     public long getSampleCount() {
-        return entrySize.length;
+        if (sampleSize > 0) {
+            return sampleCount;
+        } else {
+            return sampleSizes.length;
+        }
+
     }
 
-    public long[] getEntrySize() {
-        return entrySize;
+    public long[] getSampleSizes() {
+        return sampleSizes;
     }
 
-    public void setEntrySize(long[] entrySize) {
-        this.entrySize = entrySize;
+    public void setSampleSizes(long[] sampleSizes) {
+        this.sampleSizes = sampleSizes;
     }
 
 
@@ -79,7 +85,7 @@ public class SampleSizeBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 8 + (sampleSize == 0 ? entrySize.length * 4 : 0);
+        return 8 + (sampleSize == 0 ? sampleSizes.length * 4 : 0);
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
@@ -88,26 +94,26 @@ public class SampleSizeBox extends AbstractFullBox {
 
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         sampleSize = in.readUInt32();
-        long sampleCount = in.readUInt32();
+        sampleCount = in.readUInt32();
         if (sampleCount > Integer.MAX_VALUE) {
             throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE samples!");
         }
 
         if (sampleSize == 0) {
-            entrySize = new long[(int) sampleCount];
+            sampleSizes = new long[(int) sampleCount];
 
             for (int i = 0; i < sampleCount; i++) {
-                entrySize[i] = in.readUInt32();
+                sampleSizes[i] = in.readUInt32();
             }
         }
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {
         isos.writeUInt32(sampleSize);
-        isos.writeUInt32(entrySize.length);
+        isos.writeUInt32(sampleSizes.length);
         if (sampleSize == 0) {
-            for (int i = 0; i < entrySize.length; i++) {
-                isos.writeUInt32(entrySize[i]);
+            for (int i = 0; i < sampleSizes.length; i++) {
+                isos.writeUInt32(sampleSizes[i]);
             }
         }
 
