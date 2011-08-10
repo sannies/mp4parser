@@ -48,7 +48,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
         assert numberOfEntries <= Integer.MAX_VALUE : "Too many entries";
         entries = new ArrayList<Entry>((int) numberOfEntries);
         for (int i = 0; i < numberOfEntries; i++) {
-            Entry e = new Entry(in.readUInt32(),in.readUInt32());
+            Entry e = new Entry(in.readUInt32(),in.readInt32());
             entries.add(e);
         }
     }
@@ -58,15 +58,15 @@ public class CompositionTimeToSample extends AbstractFullBox {
 
         for (Entry entry : entries) {
             os.writeUInt32(entry.getCount());
-            os.writeUInt32(entry.getOffset());
+            os.writeInt32(entry.getOffset());
         }
     }
 
     public static class Entry {
         long count;
-        long offset;
+        int offset;
 
-        public Entry(long count, long offset) {
+        public Entry(long count, int offset) {
             this.count = count;
             this.offset = offset;
         }
@@ -75,7 +75,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
             return count;
         }
 
-        public long getOffset() {
+        public int getOffset() {
             return offset;
         }
 

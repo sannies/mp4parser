@@ -16,12 +16,9 @@
 
 package com.coremedia.iso;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * An output stream for easy writing of ISO boxes. May calculate DCF hashes.
@@ -32,7 +29,6 @@ public class IsoOutputStream extends FilterOutputStream {
     public IsoOutputStream(OutputStream os) {
         super(os);
     }
-
 
 
     public long getStreamPosition() {
@@ -47,6 +43,14 @@ public class IsoOutputStream extends FilterOutputStream {
     public void writeUInt32(long uint32) throws IOException {
         writeUInt16((int) (uint32 & 0xffff0000) >> 16);
         writeUInt16((int) uint32 & 0x0000ffff);
+    }
+
+    public void writeInt32(int int32) throws IOException {
+        out.write((int32 >>> 24) & 0xFF);
+        out.write((int32 >>> 16) & 0xFF);
+        out.write((int32 >>> 8) & 0xFF);
+        out.write((int32 >>> 0) & 0xFF);
+        streamPosition += 4;
     }
 
     public void writeUInt24(int uint24) throws IOException {

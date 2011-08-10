@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.coremedia.iso.boxes.fragment;
+package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
@@ -44,34 +44,53 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
     private List<Entry> entries = new ArrayList<Entry>();
 
     public static class Entry {
-        private int reserved;
-        private int sampleDependsOn;
-        private int sampleIsDependentOn;
-        private int sampleHasRedundancy;
+
+        public Entry(int value) {
+            this.value = value;
+        }
+
+        private int value;
+
 
         public int getReserved() {
-            return reserved;
+            return (value >> 6) & 0x03;
+        }
+
+        public void setReserved(int res) {
+            value = (res & 0x03) << 6 | value & 0x3f;
         }
 
         public int getSampleDependsOn() {
-            return sampleDependsOn;
+            return (value >> 4) & 0x03;
+        }
+
+        public void setSampleDependsOn(int sdo) {
+            value = (sdo & 0x03) << 4 | value & 0xcf;
         }
 
         public int getSampleIsDependentOn() {
-            return sampleIsDependentOn;
+            return (value >> 2) & 0x03;
+        }
+
+        public void setSampleIsDependentOn(int sido) {
+            value = (sido & 0x03) << 2 | value & 0xf3;
         }
 
         public int getSampleHasRedundancy() {
-            return sampleHasRedundancy;
+            return value & 0x03;
+        }
+
+        public void setSampleHasRedundancy(int shr) {
+            value = shr & 0x03 | value & 0xfc;
         }
 
         @Override
         public String toString() {
             return "Entry{" +
-                    "reserved=" + reserved +
-                    ", sampleDependsOn=" + sampleDependsOn +
-                    ", sampleIsDependentOn=" + sampleIsDependentOn +
-                    ", sampleHasRedundancy=" + sampleHasRedundancy +
+                    "reserved=" + getReserved() +
+                    ", sampleDependsOn=" + getSampleDependsOn() +
+                    ", sampleIsDependentOn=" + getSampleIsDependentOn() +
+                    ", sampleHasRedundancy=" + getSampleHasRedundancy() +
                     '}';
         }
     }
@@ -93,31 +112,17 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
     @Override
     protected void getContent(IsoOutputStream os) throws IOException {
         for (Entry entry : entries) {
-            int temp = entry.reserved << 6;
-
-            temp = temp | (entry.sampleDependsOn << 4);
-            temp = temp | (entry.sampleIsDependentOn << 2);
-            temp = temp | entry.sampleHasRedundancy;
-
-            os.write(temp);
+            os.write(entry.value);
         }
     }
 
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long remainingBytes = size - 4;
+        long remainingBytes = size - 12;
 
         while (remainingBytes > 0) {
-            Entry entry = new Entry();
-            int temp = in.readUInt8();
-
-            entry.reserved = temp >> 6;
-            entry.sampleDependsOn = (temp >> 4) & 0x3;
-            entry.sampleIsDependentOn = (temp >> 2) & 0x3;
-            entry.sampleHasRedundancy = temp & 0x3;
-
-            entries.add(entry);
+            entries.add(new Entry(in.readUInt8()));
             remainingBytes--;
         }
 

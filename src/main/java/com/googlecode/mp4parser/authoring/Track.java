@@ -5,6 +5,7 @@ import com.coremedia.iso.boxes.HintMediaHeaderBox;
 import com.coremedia.iso.boxes.MediaHeaderBox;
 import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
 import com.coremedia.iso.boxes.NullMediaHeaderBox;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.SampleTableBox;
 import com.coremedia.iso.boxes.SoundMediaHeaderBox;
@@ -12,7 +13,6 @@ import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.coremedia.iso.boxes.VideoMediaHeaderBox;
-import com.coremedia.iso.boxes.fragment.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
 
 import java.util.List;

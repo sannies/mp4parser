@@ -17,9 +17,6 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.fragment.SampleDependencyTypeBox;
-
-import java.util.List;
 
 /**
  * The sample table contains all the time and data indexing of the media samples in a track. Using the tables

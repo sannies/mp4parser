@@ -137,6 +137,15 @@ public class IsoBufferWrapperImpl implements IsoBufferWrapper {
         return result;
     }
 
+    public int readInt32() {
+        int ch1 = readUInt8();
+        int ch2 = readUInt8();
+        int ch3 = readUInt8();
+        int ch4 = readUInt8();
+        return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0));
+
+    }
+
     public int readUInt24() {
         int result = 0;
         result += readUInt16() << 8;
