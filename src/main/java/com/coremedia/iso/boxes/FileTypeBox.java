@@ -20,14 +20,11 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.sun.deploy.util.OrderedHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListResourceBundle;
-import java.util.Set;
 
 /**
  * This box identifies the specifications to which this file complies. <br>
