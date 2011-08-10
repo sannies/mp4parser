@@ -21,7 +21,6 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Tracks are used for two purposes: (a) to contain media data (media tracks) and (b) to contain packetization
@@ -49,6 +48,23 @@ public class TrackBox extends AbstractContainerBox implements TrackMetaDataConta
             }
         }
         return null;
+    }
+
+    /**
+     * Gets the SampleTableBox at mdia/minf/stbl if existing.
+     *
+     * @return the SampleTableBox or <code>null</code>
+     */
+    public SampleTableBox getSampleTableBox() {
+        MediaBox mdia = getMediaBox();
+        if (mdia != null) {
+            MediaInformationBox minf = mdia.getMediaInformationBox();
+            if (minf != null) {
+                return minf.getSampleTableBox();
+            }
+        }
+        return null;
+
     }
 
     @Override
