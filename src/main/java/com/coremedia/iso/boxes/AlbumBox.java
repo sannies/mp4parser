@@ -71,10 +71,6 @@ public class AlbumBox extends AbstractFullBox {
         this.trackNumber = trackNumber;
     }
 
-    public String getDisplayName() {
-        return "Album Box";
-    }
-
     protected long getContentSize() {
         return 2 + utf8StringLengthInBytes(albumTitle) + 1 + (trackNumber == -1 ? 0 : 1);
     }

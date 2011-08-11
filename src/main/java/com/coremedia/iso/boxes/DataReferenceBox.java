@@ -22,7 +22,6 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * The data reference object contains a table of data references (normally URLs) that declare the location(s) of
@@ -62,10 +61,6 @@ public class DataReferenceBox extends FullContainerBox {
         }
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Data Reference Box";
-    }
 
     @Override
     protected void getContent(IsoOutputStream os) throws IOException {

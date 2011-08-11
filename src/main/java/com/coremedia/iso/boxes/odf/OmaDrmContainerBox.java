@@ -56,10 +56,6 @@ public class OmaDrmContainerBox extends FullContainerBox {
         super(TYPE);
     }
 
-    public String getDisplayName() {
-        return "OMA DRM Container Box";
-    }
-
     /**
      * Gets the <code>OmaDrmDiscreteHeadersBox</code> child box. If none can be
      * found <code>null</code> is returned.

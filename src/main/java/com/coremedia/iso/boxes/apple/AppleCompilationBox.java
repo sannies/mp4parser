@@ -12,9 +12,4 @@ public final class AppleCompilationBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Compilation Box";
-    }
-
-
 }

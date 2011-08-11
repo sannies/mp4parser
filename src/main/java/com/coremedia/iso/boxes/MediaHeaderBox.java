@@ -61,10 +61,6 @@ public class MediaHeaderBox extends AbstractFullBox {
         return language;
     }
 
-    public String getDisplayName() {
-        return "Media Header Box";
-    }
-
     protected long getContentSize() {
         long contentSize = 0;
         if (getVersion() == 1) {

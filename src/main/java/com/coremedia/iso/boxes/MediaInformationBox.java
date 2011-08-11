@@ -28,11 +28,6 @@ public class MediaInformationBox extends AbstractContainerBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Media Information Box";
-    }
-
     public SampleTableBox getSampleTableBox() {
         for (Box box : boxes) {
             if (box instanceof SampleTableBox) {
@@ -41,6 +36,7 @@ public class MediaInformationBox extends AbstractContainerBox {
         }
         return null;
     }
+
     public AbstractMediaHeaderBox getMediaHeaderBox() {
         for (Box box : boxes) {
             if (box instanceof AbstractMediaHeaderBox) {

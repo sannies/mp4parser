@@ -42,10 +42,6 @@ public class UserBox extends AbstractBox {
         content = in.read((int) size);
     }
 
-    public String getDisplayName() {
-        return "User Box " + new String(getUserType());
-    }
-
     protected long getContentSize() {
         return content.length;
     }

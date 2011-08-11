@@ -40,10 +40,6 @@ public class RecordingYearBox extends AbstractFullBox {
         return 2;
     }
 
-    public String getDisplayName() {
-        return "RecordingYearBox";
-    }
-
     public int getRecordingYear() {
         return recordingYear;
     }

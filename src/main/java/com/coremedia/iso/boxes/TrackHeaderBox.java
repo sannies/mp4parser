@@ -45,7 +45,8 @@ public class TrackHeaderBox extends AbstractFullBox {
     private int layer;
     private int alternateGroup;
     private float volume;
-    private long[] matrix = new long[]{0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000};;
+    private long[] matrix = new long[]{0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000};
+    ;
     private double width;
     private double height;
 
@@ -96,10 +97,6 @@ public class TrackHeaderBox extends AbstractFullBox {
 
     public double getHeight() {
         return height;
-    }
-
-    public String getDisplayName() {
-        return "Track Header Box";
     }
 
     protected long getContentSize() {
@@ -239,7 +236,7 @@ public class TrackHeaderBox extends AbstractFullBox {
 
 
     public boolean isEnabled() {
-        return (getFlags() & 1) > 0 ;
+        return (getFlags() & 1) > 0;
     }
 
     public boolean isInMovie() {

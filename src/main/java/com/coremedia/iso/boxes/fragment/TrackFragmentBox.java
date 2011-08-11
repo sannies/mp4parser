@@ -32,9 +32,6 @@ public class TrackFragmentBox extends AbstractContainerBox implements TrackMetaD
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public String getDisplayName() {
-        return "Track Fragment Box";
-    }
 
     public TrackFragmentHeaderBox getTrackFragmentHeaderBox() {
         for (Box box : getBoxes()) {
@@ -44,6 +41,7 @@ public class TrackFragmentBox extends AbstractContainerBox implements TrackMetaD
         }
         return null;
     }
+
     public TrackRunBox getTrackRunBox() {
         for (Box box : getBoxes()) {
             if (box instanceof TrackRunBox) {

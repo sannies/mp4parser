@@ -6,7 +6,9 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * This box provides the offset between decoding time and composition time.
@@ -29,10 +31,6 @@ public class CompositionTimeToSample extends AbstractFullBox {
         return 4 + 8 * entries.size();
     }
 
-    public String getDisplayName() {
-        return "Composition Time to Sample Box";
-    }
-
     public List<Entry> getEntries() {
         return entries;
     }
@@ -48,7 +46,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
         assert numberOfEntries <= Integer.MAX_VALUE : "Too many entries";
         entries = new ArrayList<Entry>((int) numberOfEntries);
         for (int i = 0; i < numberOfEntries; i++) {
-            Entry e = new Entry(in.readUInt32(),in.readInt32());
+            Entry e = new Entry(in.readUInt32(), in.readInt32());
             entries.add(e);
         }
     }

@@ -45,10 +45,6 @@ public class PerformerBox extends AbstractFullBox {
         return performer;
     }
 
-    public String getDisplayName() {
-        return "Performer Box";
-    }
-
     public void setLanguage(String language) {
         this.language = language;
     }

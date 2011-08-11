@@ -31,11 +31,6 @@ public class XmlBox extends AbstractFullBox {
     }
 
     @Override
-    public String getDisplayName() {
-        return "XML Box";
-    }
-
-    @Override
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeStringNoTerm(xml);
     }
@@ -45,7 +40,7 @@ public class XmlBox extends AbstractFullBox {
         long a = in.remaining();
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         long b = in.remaining();
-        size -= (a-b);
+        size -= (a - b);
         assert size < Integer.MAX_VALUE;
         xml = in.readString((int) size);
     }

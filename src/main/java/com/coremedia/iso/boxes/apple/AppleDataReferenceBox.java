@@ -35,10 +35,6 @@ public class AppleDataReferenceBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Apple Data Reference Box";
-    }
 
     protected long getContentSize() {
         return 4 //data ref type

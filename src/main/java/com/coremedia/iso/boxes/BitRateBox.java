@@ -58,10 +58,6 @@ public final class BitRateBox extends AbstractBox {
         avgBitrate = in.readUInt32();
     }
 
-    public String getDisplayName() {
-        return "Bit Rate Box";
-    }
-
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeUInt32(bufferSizeDb);
         os.writeUInt32(maxBitrate);

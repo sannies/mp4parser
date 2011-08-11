@@ -28,8 +28,10 @@ import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The Common Headers Box defines a structure for required headers in a DCF file.
@@ -133,9 +135,6 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         return textualHeaders;
     }
 
-    public String getDisplayName() {
-        return "OMA DRM Common Headers Box";
-    }
 
     protected long getContentSize() {
         long contentLength;

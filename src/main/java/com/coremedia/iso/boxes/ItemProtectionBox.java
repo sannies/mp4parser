@@ -57,8 +57,4 @@ public class ItemProtectionBox extends FullContainerBox {
         }
     }
 
-    public String getDisplayName() {
-        return "Item Protection Box";
-    }
-
 }

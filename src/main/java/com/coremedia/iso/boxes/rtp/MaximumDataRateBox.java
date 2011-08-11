@@ -57,10 +57,6 @@ public class MaximumDataRateBox extends AbstractBox {
         m = in.readUInt32();
     }
 
-    public String getDisplayName() {
-        return "Maximum Data Rate";
-    }
-
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeUInt32(g);
         os.writeUInt32(m);

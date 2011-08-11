@@ -18,8 +18,6 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
 
-import java.util.List;
-
 /**
  * <code>
  * Box Type: 'dinf'<br>
@@ -33,11 +31,6 @@ public class DataInformationBox extends AbstractContainerBox {
 
     public DataInformationBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Data Information Box";
     }
 
 }

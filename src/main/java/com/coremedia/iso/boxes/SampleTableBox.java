@@ -40,12 +40,6 @@ public class SampleTableBox extends AbstractContainerBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Sample Table Box";
-    }
-
-
     public SampleDescriptionBox getSampleDescriptionBox() {
         for (Box box : boxes) {
             if (box instanceof SampleDescriptionBox) {

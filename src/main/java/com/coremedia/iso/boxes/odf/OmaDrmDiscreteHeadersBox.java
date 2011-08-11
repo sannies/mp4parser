@@ -19,15 +19,12 @@ package com.coremedia.iso.boxes.odf;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullContainerBox;
 import com.coremedia.iso.boxes.UserDataBox;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -59,10 +56,6 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
 
     public String getContentType() {
         return contentType;
-    }
-
-    public String getDisplayName() {
-        return "OMA DRM Discrete Headers Box";
     }
 
     protected long getContentSize() {

@@ -40,10 +40,6 @@ public class MovieFragmentHeaderBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public String getDisplayName() {
-        return "Movie Fragment Header Box";
-    }
-
     protected long getContentSize() {
         return 4;
     }

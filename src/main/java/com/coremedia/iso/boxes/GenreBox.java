@@ -54,10 +54,6 @@ public class GenreBox extends AbstractFullBox {
         this.genre = genre;
     }
 
-    public String getDisplayName() {
-        return "Genre Box";
-    }
-
     protected long getContentSize() {
         return 2 + utf8StringLengthInBytes(genre) + 1;
     }

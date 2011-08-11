@@ -12,9 +12,5 @@ public class AppleRecordingYearBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Recording Year";
-    }
-
 
 }

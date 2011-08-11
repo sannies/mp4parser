@@ -40,10 +40,6 @@ public class OmaDrmIconUriBox extends AbstractFullBox {
         return iconUri;
     }
 
-    public String getDisplayName() {
-        return "Icon URI Box";
-    }
-
     protected long getContentSize() {
         return utf8StringLengthInBytes(iconUri);
     }

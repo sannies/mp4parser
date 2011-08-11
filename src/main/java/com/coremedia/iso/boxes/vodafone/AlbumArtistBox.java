@@ -56,10 +56,6 @@ public class AlbumArtistBox extends AbstractFullBox {
         this.albumArtist = albumArtist;
     }
 
-    public String getDisplayName() {
-        return "Album Artist Box";
-    }
-
     protected long getContentSize() {
         return 2 + utf8StringLengthInBytes(albumArtist) + 1;
     }

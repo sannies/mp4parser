@@ -73,7 +73,7 @@ public abstract class AbstractBoxParser implements BoxParser {
                 parent.getType(), lastMovieFragmentBox);
         box.offset = offset;
         box.setParent(parent);
-        LOG.finest("Parsing " + IsoFile.bytesToFourCC(box.getType()) + " box: (" + box.getDisplayName() + ")");
+        LOG.finest("Parsing " + IsoFile.bytesToFourCC(box.getType()));
         // System.out.println("parsing " + Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
         box.parse(in, contentSize, this, lastMovieFragmentBox);
         // System.out.println("box = " + box);
@@ -87,10 +87,9 @@ public abstract class AbstractBoxParser implements BoxParser {
         }
 
 
-
         assert size == box.getSize() :
                 "Reconstructed Size is not equal to the number of parsed bytes! (" +
-                        IsoFile.bytesToFourCC(box.getType()) + " - " + box.getDisplayName() + ")"
+                        IsoFile.bytesToFourCC(box.getType()) + ")"
                         + " Actual Box size: " + size + " Calculated size: " + box.getSize() +
                         " at offset: " + offset;
         return box;

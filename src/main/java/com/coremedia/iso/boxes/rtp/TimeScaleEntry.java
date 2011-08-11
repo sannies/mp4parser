@@ -43,10 +43,6 @@ public class TimeScaleEntry extends AbstractBox {
         return timescale;
     }
 
-    public String getDisplayName() {
-        return "Time Scale Entry";
-    }
-
     protected long getContentSize() {
         return 4;
     }

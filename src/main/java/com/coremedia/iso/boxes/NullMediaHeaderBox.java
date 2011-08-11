@@ -33,10 +33,6 @@ public class NullMediaHeaderBox extends AbstractMediaHeaderBox {
         return 0;
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Null Media Header Box";
-    }
 
     @Override
     protected void getContent(IsoOutputStream os) throws IOException {

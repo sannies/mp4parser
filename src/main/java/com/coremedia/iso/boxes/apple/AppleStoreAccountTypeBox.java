@@ -12,10 +12,6 @@ public class AppleStoreAccountTypeBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Store Account Type Box";
-    }
-
     public String getReadableValue() {
         byte value = this.appleDataBox.getContent()[0];
         switch (value) {

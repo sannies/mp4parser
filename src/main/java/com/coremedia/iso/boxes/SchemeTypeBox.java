@@ -43,9 +43,9 @@ public class SchemeTypeBox extends AbstractFullBox {
         return schemeType;
     }
 
-  public String getFourCC() {
-    return IsoFile.bytesToFourCC(schemeType);
-  }
+    public String getFourCC() {
+        return IsoFile.bytesToFourCC(schemeType);
+    }
 
     public long getSchemeVersion() {
         return schemeVersion;
@@ -93,10 +93,6 @@ public class SchemeTypeBox extends AbstractFullBox {
         if ((getFlags() & 1) == 1) {
             isos.writeStringZeroTerm(schemeUri);
         }
-    }
-
-    public String getDisplayName() {
-        return "Schema Type Box";
     }
 
     public String toString() {

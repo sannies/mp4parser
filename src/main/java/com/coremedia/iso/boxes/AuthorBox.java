@@ -68,10 +68,6 @@ public class AuthorBox extends AbstractFullBox {
         this.author = author;
     }
 
-    public String getDisplayName() {
-        return "Author Box";
-    }
-
     protected long getContentSize() {
         return 2 + utf8StringLengthInBytes(author) + 1;
     }

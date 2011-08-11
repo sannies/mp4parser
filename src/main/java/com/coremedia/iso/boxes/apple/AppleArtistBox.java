@@ -12,9 +12,5 @@ public final class AppleArtistBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Artist";
-    }
-
 
 }

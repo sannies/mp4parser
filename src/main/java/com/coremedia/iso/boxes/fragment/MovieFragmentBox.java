@@ -17,9 +17,13 @@
 package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.AbstractContainerBox;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.TrackBoxContainer;
+import com.coremedia.iso.boxes.TrackMetaData;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * aligned(8) class MovieFragmentBox extends Box(moof){
@@ -31,11 +35,6 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
 
     public MovieFragmentBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Movie Fragment Box";
     }
 
 

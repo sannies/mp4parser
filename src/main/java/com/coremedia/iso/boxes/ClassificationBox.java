@@ -71,10 +71,6 @@ public class ClassificationBox extends AbstractFullBox {
         this.classificationInfo = classificationInfo;
     }
 
-    public String getDisplayName() {
-        return "Classification Box";
-    }
-
     protected long getContentSize() {
         return 4 + 2 + 2 + utf8StringLengthInBytes(classificationInfo) + 1;
     }

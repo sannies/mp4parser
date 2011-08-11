@@ -27,10 +27,6 @@ public final class AppleNameBox extends AbstractFullBox {
         return Utf8.convert(name).length;
     }
 
-    public String getDisplayName() {
-        return "Apple Name Box";
-    }
-
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeStringNoTerm(name);
     }

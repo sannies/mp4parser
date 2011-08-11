@@ -26,13 +26,10 @@ import com.coremedia.iso.boxes.AbstractContainerBox;
  * }
  */
 public class MovieFragmentRandomAccessBox extends AbstractContainerBox {
-  public static final String TYPE = "mfra";
+    public static final String TYPE = "mfra";
 
-  public MovieFragmentRandomAccessBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public MovieFragmentRandomAccessBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  public String getDisplayName() {
-    return "Movie Fragment Random Access Box";
-  }
 }

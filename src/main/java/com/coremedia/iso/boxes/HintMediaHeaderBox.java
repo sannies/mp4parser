@@ -77,11 +77,13 @@ public class HintMediaHeaderBox extends AbstractMediaHeaderBox {
 
     }
 
-    public String getDisplayName() {
-        return "Hint Media Header Box";
-    }
-
+    @Override
     public String toString() {
-        return "HintMediaHeaderBox[]";
+        return "HintMediaHeaderBox{" +
+                "maxPduSize=" + maxPduSize +
+                ", avgPduSize=" + avgPduSize +
+                ", maxBitrate=" + maxBitrate +
+                ", avgBitrate=" + avgBitrate +
+                '}';
     }
 }

@@ -44,10 +44,6 @@ public class VideoMediaHeaderBox extends AbstractMediaHeaderBox {
         return opcolor;
     }
 
-    public String getDisplayName() {
-        return "Video Media Header Box";
-    }
-
     protected long getContentSize() {
         return opcolor.length * 2 + 2;
     }

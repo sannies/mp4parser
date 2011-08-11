@@ -20,15 +20,9 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
 
 public class AppleReferenceMovieDescriptorBox extends AbstractContainerBox {
-  public static final String TYPE = "rmda";
+    public static final String TYPE = "rmda";
 
-  public AppleReferenceMovieDescriptorBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  @Override
-  public String getDisplayName() {
-    return "Apple Reference Movie Descriptor Box";
-  }
-
+    public AppleReferenceMovieDescriptorBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 }

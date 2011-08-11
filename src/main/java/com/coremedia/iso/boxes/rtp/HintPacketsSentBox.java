@@ -54,10 +54,6 @@ public class HintPacketsSentBox extends AbstractBox {
         return packetsSent;
     }
 
-    public String getDisplayName() {
-        return "Hint Packets Sent Box";
-    }
-
     protected long getContentSize() {
         if (Arrays.equals(getType(), IsoFile.fourCCtoBytes("nump"))) {
             return 8;

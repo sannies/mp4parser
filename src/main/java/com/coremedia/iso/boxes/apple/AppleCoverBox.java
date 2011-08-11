@@ -14,10 +14,6 @@ public final class AppleCoverBox extends AbstractAppleMetaDataBox {
         super(TYPE);
     }
 
-    public String getDisplayName() {
-        return "iTunes Cover";
-    }
-
 
     public void setPng(byte[] pngData) {
         appleDataBox = new AppleDataBox();

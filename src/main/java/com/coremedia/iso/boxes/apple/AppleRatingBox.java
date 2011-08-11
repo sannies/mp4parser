@@ -12,9 +12,5 @@ public final class AppleRatingBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Rating Box";
-    }
-
 
 }

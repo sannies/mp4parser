@@ -46,10 +46,6 @@ public class TrackExtendsBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public String getDisplayName() {
-        return "Track Extends Box";
-    }
-
     @Override
     protected long getContentSize() {
         return 5 * 4;

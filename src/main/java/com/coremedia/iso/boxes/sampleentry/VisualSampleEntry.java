@@ -20,15 +20,11 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Contains information common to all visual tracks.
@@ -134,17 +130,17 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
             tmp = in.readUInt32();
             assert 0 == tmp : "reserved byte not 0";
             frameCount = in.readUInt16();
-          int compressornameDisplayAbleData = in.readUInt8();
-          if (compressornameDisplayAbleData > 31) {
-            System.out.println("invalid compressor name displayable data: " + compressornameDisplayAbleData);
-            compressornameDisplayAbleData = 31;
-          }
-          byte[] bytes = in.read(compressornameDisplayAbleData);
-          compressorname = new String(bytes, "UTF-8");
-          if (compressornameDisplayAbleData < 31) {
-            byte[] zeros = in.read(31 - compressornameDisplayAbleData);
-            assert Arrays.equals(zeros, new byte[zeros.length]) : "The compressor name length was not filled up with zeros";
-          }
+            int compressornameDisplayAbleData = in.readUInt8();
+            if (compressornameDisplayAbleData > 31) {
+                System.out.println("invalid compressor name displayable data: " + compressornameDisplayAbleData);
+                compressornameDisplayAbleData = 31;
+            }
+            byte[] bytes = in.read(compressornameDisplayAbleData);
+            compressorname = new String(bytes, "UTF-8");
+            if (compressornameDisplayAbleData < 31) {
+                byte[] zeros = in.read(31 - compressornameDisplayAbleData);
+                assert Arrays.equals(zeros, new byte[zeros.length]) : "The compressor name length was not filled up with zeros";
+            }
             depth = in.readUInt16();
             tmp = in.readUInt16();
             assert 0xFFFF == tmp;
@@ -171,11 +167,6 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
             contentSize += boxe.getSize();
         }
         return contentSize;
-    }
-
-
-    public String getDisplayName() {
-        return "Visual Sample Entry";
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {

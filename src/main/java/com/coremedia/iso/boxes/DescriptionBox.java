@@ -44,10 +44,6 @@ public class DescriptionBox extends AbstractFullBox {
         return description;
     }
 
-    public String getDisplayName() {
-        return "Description Box";
-    }
-
     protected long getContentSize() {
         return 2 + utf8StringLengthInBytes(description) + 1;
     }

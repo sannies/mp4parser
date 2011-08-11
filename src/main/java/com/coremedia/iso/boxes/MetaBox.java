@@ -21,7 +21,6 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
-import javax.print.attribute.standard.MediaSize;
 import java.io.IOException;
 
 
@@ -39,18 +38,13 @@ public class MetaBox extends AbstractContainerBox {
     }
 
     @Override
-    public String getDisplayName() {
-        return "Meta Box";
-    }
-
-    @Override
     public long getSize() {
         if (isMp4Box()) {
             // it's a fullbox
             return 4 + super.getSize();
         } else {
             // it's an apple metabox
-            return  super.getSize();
+            return super.getSize();
         }
     }
 

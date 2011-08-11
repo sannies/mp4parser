@@ -64,10 +64,6 @@ public class FreeSpaceBox extends AbstractBox {
         os.write(content);
     }
 
-    public String getDisplayName() {
-        return "Free Space Box";
-    }
-
     public String toString() {
         return "FreeSpaceBox[size=" + content.length + ";type=" + IsoFile.bytesToFourCC(getType()) + "]";
     }

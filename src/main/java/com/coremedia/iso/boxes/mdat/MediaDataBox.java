@@ -90,13 +90,6 @@ public final class MediaDataBox extends AbstractBox {
         in.skip(size);
     }
 
-
-    @Override
-    public String getDisplayName() {
-        return "Media Data Box";
-    }
-
-
     @Override
     protected void getContent(IsoOutputStream os) throws IOException {
 

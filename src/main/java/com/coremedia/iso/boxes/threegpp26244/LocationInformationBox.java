@@ -93,10 +93,6 @@ public class LocationInformationBox extends AbstractFullBox {
         this.additionalNotes = additionalNotes;
     }
 
-    public String getDisplayName() {
-        return "Location Information Box";
-    }
-
     protected long getContentSize() {
         return 18 + Utf8.convert(name).length + Utf8.convert(astronomicalBody).length + Utf8.convert(additionalNotes).length;
     }

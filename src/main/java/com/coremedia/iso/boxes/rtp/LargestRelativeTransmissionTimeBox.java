@@ -29,10 +29,6 @@ public class LargestRelativeTransmissionTimeBox extends AbstractBox {
         time = in.readUInt32();
     }
 
-    public String getDisplayName() {
-        return "Largest Relative Transmission Time";
-    }
-
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeUInt32(time);
     }

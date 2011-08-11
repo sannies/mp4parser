@@ -119,10 +119,6 @@ public class MovieHeaderBox extends AbstractFullBox {
         nextTrackId = in.readUInt32();
     }
 
-    public String getDisplayName() {
-        return "Movie Header Box";
-    }
-
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append("MovieHeaderBox[");

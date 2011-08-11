@@ -19,10 +19,6 @@ public class AbstractAppleMetaDataBoxTest {
                 this.appleDataBox.setContent(new byte[4]);
             }
 
-            @Override
-            public String getDisplayName() {
-                return "aaa";
-            }
         }
 
         MyConcreteAppleMetaDataBox myConcreteAppleMetaDataBox = new MyConcreteAppleMetaDataBox();

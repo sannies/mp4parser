@@ -42,10 +42,6 @@ public class MovieExtendsHeaderBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public String getDisplayName() {
-        return "Movie Extends Header Box";
-    }
-
     @Override
     protected long getContentSize() {
         return getVersion() == 1 ? 8 : 4;

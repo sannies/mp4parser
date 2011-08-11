@@ -18,8 +18,6 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
 
-import java.util.List;
-
 /**
  * <code>
  * Box Type: 'tref'<br>
@@ -40,10 +38,4 @@ public class TrackReferenceBox extends AbstractContainerBox {
     public TrackReferenceBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
-
-    @Override
-    public String getDisplayName() {
-        return "Track Reference Box";
-    }
-
 }

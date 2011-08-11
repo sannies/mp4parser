@@ -27,10 +27,6 @@ public final class AppleMeanBox extends AbstractFullBox {
         return Utf8.convert(meaning).length;
     }
 
-    public String getDisplayName() {
-        return "Apple Meaning Box";
-    }
-
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeStringNoTerm(meaning);
     }

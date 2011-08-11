@@ -39,10 +39,6 @@ public class MovieFragmentRandomAccessOffsetBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public String getDisplayName() {
-        return "Movie Fragment Random Access Offset Box";
-    }
-
     protected long getContentSize() {
         return 4;
     }

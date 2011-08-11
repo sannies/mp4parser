@@ -29,10 +29,6 @@ public class LargestHintPacketDurationBox extends AbstractBox {
         milliSeconds = in.readUInt32();
     }
 
-    public String getDisplayName() {
-        return "Largest Hint Packet Duration";
-    }
-
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeUInt32(milliSeconds);
     }

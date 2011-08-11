@@ -12,20 +12,16 @@ import java.io.IOException;
  *
  */
 public final class AppleWaveBox extends AbstractContainerBox {
-  public static final String TYPE = "wave";
+    public static final String TYPE = "wave";
 
-  public AppleWaveBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public AppleWaveBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
-  @Override
-  public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    super.parse(in, size, boxParser, lastMovieFragmentBox);
-  }
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+        super.parse(in, size, boxParser, lastMovieFragmentBox);
+    }
 
-  @Override
-  public String getDisplayName() {
-    return "iTunes Proprietary Wave Box";
-  }
 
 }

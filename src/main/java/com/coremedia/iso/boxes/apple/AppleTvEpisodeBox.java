@@ -12,7 +12,4 @@ public class AppleTvEpisodeBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getUint32AppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes TV Episode Box";
-    }
 }

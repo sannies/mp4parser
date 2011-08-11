@@ -43,10 +43,6 @@ public final class OmaDrmAccessUnitFormatBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes("odaf"));
     }
 
-    public String getDisplayName() {
-        return "OMA DRM Access Unit Format Box";
-    }
-
     public boolean isSelectiveEncryption() {
         return selectiveEncryption;
     }

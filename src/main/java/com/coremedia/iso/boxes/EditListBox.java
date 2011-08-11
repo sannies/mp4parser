@@ -68,11 +68,6 @@ public class EditListBox extends AbstractFullBox {
         this.entries = entries;
     }
 
-
-    public String getDisplayName() {
-        return "Edit List Box";
-    }
-
     protected long getContentSize() {
         long contentSize = 4;
         if (getVersion() == 1) {

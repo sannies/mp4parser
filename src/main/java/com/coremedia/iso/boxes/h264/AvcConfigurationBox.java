@@ -67,11 +67,6 @@ public final class AvcConfigurationBox extends AbstractBox {
         return lengthSizeMinusOne;
     }
 
-    public String getDisplayName() {
-        return "AVC Configuration Box";
-    }
-
-
     public List<byte[]> getSequenceParameterSets() {
         return Collections.unmodifiableList(sequenceParameterSets);
     }

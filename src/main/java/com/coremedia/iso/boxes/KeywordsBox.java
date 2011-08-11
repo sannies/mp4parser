@@ -52,10 +52,6 @@ public class KeywordsBox extends AbstractFullBox {
         this.keywords = keywords;
     }
 
-    public String getDisplayName() {
-        return "Keywords Box";
-    }
-
     protected long getContentSize() {
         long contentSize = 2 + 1;
         for (String keyword : keywords) {

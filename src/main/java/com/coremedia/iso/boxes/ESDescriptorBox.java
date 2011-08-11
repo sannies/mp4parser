@@ -29,10 +29,6 @@ public class ESDescriptorBox extends AbstractFullBox {
         return 4 + rest.length;
     }
 
-    public String getDisplayName() {
-        return "ES Descriptor Box";
-    }
-
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeUInt8(eSDescriptorType);
         os.writeUInt8(firstExtendedDescriptorTypeTag);

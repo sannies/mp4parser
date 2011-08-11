@@ -12,8 +12,4 @@ public final class AppleTvSeasonBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getUint32AppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes TV Season Box";
-    }
-
 }

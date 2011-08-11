@@ -42,11 +42,6 @@ public class CompositionShiftLeastGreatestAtom extends AbstractFullBox {
     }
 
     @Override
-    public String getDisplayName() {
-        return "Composition Shift Least Greatest Atom";
-    }
-
-    @Override
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeInt32(compositionOffsetToDisplayOffsetShift);
         os.writeInt32(leastDisplayOffset);

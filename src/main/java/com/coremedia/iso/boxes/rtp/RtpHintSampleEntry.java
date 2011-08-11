@@ -24,10 +24,6 @@ import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Contains basic information about the (rtp-) hint samples in this track.
@@ -92,13 +88,8 @@ public class RtpHintSampleEntry extends SampleEntry implements ContainerBox {
         }
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Hint Samply Entry";
-    }
-
     public String toString() {
-      StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         builder.append("RtpHintSampleEntry[");
         builder.append("hintTrackVersion=").append(getHintTrackVersion()).append(";");
         builder.append("highestCompatibleVersion=").append(getHighestCompatibleVersion()).append(";");

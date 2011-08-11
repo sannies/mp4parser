@@ -55,11 +55,6 @@ public class RtpMovieHintInformationBox extends AbstractBox {
         this.sdpText = sdpText;
     }
 
-    public String getDisplayName() {
-        return "RTP Movie Hint Information";
-    }
-
-
     protected long getContentSize() {
         return utf8StringLengthInBytes(sdpText) + 4;
     }

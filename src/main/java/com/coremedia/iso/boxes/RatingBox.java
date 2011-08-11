@@ -86,10 +86,6 @@ public class RatingBox extends AbstractFullBox {
         return ratingInfo;
     }
 
-    public String getDisplayName() {
-        return "Rating Box";
-    }
-
     protected long getContentSize() {
         return 4 + 4 + 2 + utf8StringLengthInBytes(ratingInfo) + 1;
     }

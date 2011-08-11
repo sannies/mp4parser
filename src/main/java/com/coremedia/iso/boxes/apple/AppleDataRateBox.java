@@ -33,11 +33,6 @@ public class AppleDataRateBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Apple Data Rate Box";
-    }
-
     protected long getContentSize() {
         return 4;
     }

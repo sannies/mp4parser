@@ -21,8 +21,10 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -76,6 +78,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
 
     /**
      * Add <code>b</code> to the container and sets the parent correctly.
+     *
      * @param b will be added to the container
      */
     public void addBox(Box b) {
@@ -96,7 +99,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
             Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
             long parsedBytes = in.position() - sp;
             assert parsedBytes == box.getSize() ||
-                    box instanceof HandlerBox:
+                    box instanceof HandlerBox :
                     box + " didn't parse well. number of parsed bytes (" + parsedBytes + ") doesn't match getSize (" + box.getSize() + ")";
             size -= parsedBytes;
 
@@ -115,7 +118,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        //buffer.append(getDisplayName()).append("[");
+
         buffer.append(this.getClass().getSimpleName()).append("[");
         for (int i = 0; i < boxes.size(); i++) {
             if (i > 0) {

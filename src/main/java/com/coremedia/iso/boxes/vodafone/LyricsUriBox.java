@@ -46,10 +46,6 @@ public class LyricsUriBox extends AbstractFullBox {
         this.lyricsUri = lyricsUri;
     }
 
-    public String getDisplayName() {
-        return "Lyrics URI Box";
-    }
-
     protected long getContentSize() {
         return utf8StringLengthInBytes(lyricsUri) + 1;
     }

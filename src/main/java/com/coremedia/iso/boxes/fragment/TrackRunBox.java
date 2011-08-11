@@ -170,10 +170,6 @@ public class TrackRunBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public String getDisplayName() {
-        return "Track Fragment Run Box";
-    }
-
     protected long getContentSize() {
         long size = 4;
 

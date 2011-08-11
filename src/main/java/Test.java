@@ -44,9 +44,9 @@ public class Test {
             }
             Class clazz = Class.forName(clazzName);
             AbstractBox box = (AbstractBox) clazz.newInstance();
-            names.setProperty(IsoFile.bytesToFourCC(box.getType()), box.getDisplayName());
+            //names.setProperty(IsoFile.bytesToFourCC(box.getType()), box.getDisplayName());
         }
-        System.err.println( names.toString());
+        System.err.println(names.toString());
         FileWriter fw = new FileWriter("/home/sannies/scm/svn/mp4parser/isoviewer/src/main/resources/names.properties");
 
         names.store(fw, "");

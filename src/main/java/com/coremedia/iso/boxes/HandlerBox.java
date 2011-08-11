@@ -96,10 +96,6 @@ public class HandlerBox extends AbstractFullBox {
         return readableTypes.get(handlerType) != null ? readableTypes.get(handlerType) : "Unknown Handler Type";
     }
 
-    public String getDisplayName() {
-        return "Handler Reference Box";
-    }
-
     protected long getContentSize() {
         if (zeroTerm) {
             return 21 + utf8StringLengthInBytes(name);
@@ -119,7 +115,7 @@ public class HandlerBox extends AbstractFullBox {
         if ((int) (size - 24) > 0) {
             name = in.readString((int) (size - 24));
             if (name.endsWith("\0")) {
-                name = name.substring(0, name.length()-1);
+                name = name.substring(0, name.length() - 1);
                 zeroTerm = true;
             } else {
                 zeroTerm = false;

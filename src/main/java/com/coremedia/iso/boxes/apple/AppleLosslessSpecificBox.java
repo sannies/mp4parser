@@ -161,9 +161,4 @@ public final class AppleLosslessSpecificBox extends AbstractFullBox {
         return 24;
     }
 
-    public String getDisplayName() {
-        return "Apple Lossless Codec Params";
-    }
-
-
 }

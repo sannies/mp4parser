@@ -12,8 +12,4 @@ public final class AppleGaplessPlaybackBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Gapless Playback";
-    }
-
 }

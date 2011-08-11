@@ -24,11 +24,6 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Contains basic information about the audio samples in this track. Format-specific information
@@ -140,7 +135,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         }
         if (soundVersion == 2) {
             soundVersion2Data = in.read(20);
-            size -=20;
+            size -= 20;
         }
         size -= 28;
         while (size > 8) {
@@ -160,18 +155,14 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     @Override
     protected long getContentSize() {
         long contentSize = 28;
-        contentSize += soundVersion>0?16:0;
-        contentSize += soundVersion==2?20:0;
+        contentSize += soundVersion > 0 ? 16 : 0;
+        contentSize += soundVersion == 2 ? 20 : 0;
         for (Box boxe : boxes) {
             contentSize += boxe.getSize();
         }
         return contentSize;
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Audio Sample Entry";
-    }
 
     public String toString() {
         return "AudioSampleEntry";

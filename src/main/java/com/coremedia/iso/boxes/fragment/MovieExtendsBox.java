@@ -24,14 +24,9 @@ import com.coremedia.iso.boxes.AbstractContainerBox;
  * }
  */
 public class MovieExtendsBox extends AbstractContainerBox {
-  public static final String TYPE = "mvex";
+    public static final String TYPE = "mvex";
 
-  public MovieExtendsBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Movie Extends Box";
-  }
-
+    public MovieExtendsBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 }

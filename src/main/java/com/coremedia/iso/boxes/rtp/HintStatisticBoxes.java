@@ -115,28 +115,6 @@ public class HintStatisticBoxes extends AbstractBox {
         return bytesSent;
     }
 
-    public String getDisplayName() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Hint Bytes Sent Box (");
-        if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(HintStatisticBoxes.TYPE1)) ||
-                Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE2))) {
-            buffer.append("including 12-byte RTP headers");
-        } else if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(HintStatisticBoxes.TYPE3)) ||
-                Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE4))) {
-            buffer.append("not including RTP headers");
-        } else if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE5))) {
-            buffer.append("total bytes sent from media tracks");
-        } else if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE6))) {
-            buffer.append("total bytes sent immediate mode");
-        } else if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE7))) {
-            buffer.append("total bytes in repeated packets");
-        } else {
-            throw new UnsupportedOperationException();
-        }
-        buffer.append(")");
-        return buffer.toString();
-    }
-
     protected long getContentSize() {
         if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE5)) ||
                 Arrays.equals(getType(), IsoFile.fourCCtoBytes(TYPE6)) ||

@@ -12,9 +12,6 @@ public final class AppleTempBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getUint16AppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Tempo Box";
-    }
 
     public int getTempo() {
         return appleDataBox.getContent()[1];

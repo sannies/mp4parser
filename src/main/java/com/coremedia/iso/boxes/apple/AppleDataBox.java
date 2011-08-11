@@ -61,10 +61,6 @@ public final class AppleDataBox extends AbstractFullBox {
         return content.length + 4;
     }
 
-    public String getDisplayName() {
-        return "iTunes Data Box";
-    }
-
     public void setContent(byte[] content) {
         this.content = new byte[content.length];
         System.arraycopy(content, 0, this.content, 0, content.length);

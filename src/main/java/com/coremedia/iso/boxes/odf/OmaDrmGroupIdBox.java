@@ -65,10 +65,6 @@ public class OmaDrmGroupIdBox extends AbstractFullBox {
         return groupKey;
     }
 
-    public String getDisplayName() {
-        return "OMA DRM Group ID Box";
-    }
-
     protected long getContentSize() {
         return 5 + utf8StringLengthInBytes(groupId) + groupKey.length;
     }

@@ -43,10 +43,6 @@ public class OmaDrmRightsObjectBox extends AbstractFullBox {
         return rightsObject;
     }
 
-    public String getDisplayName() {
-        return "OMA DRM Rights Object Box";
-    }
-
     protected long getContentSize() {
         return rightsObject.length;
     }

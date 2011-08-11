@@ -50,10 +50,6 @@ public class SoundMediaHeaderBox extends AbstractMediaHeaderBox {
         isos.writeUInt16(0);
     }
 
-    public String getDisplayName() {
-        return "Sound Media Header Box";
-    }
-
     public String toString() {
         return "SoundMediaHeaderBox[balance=" + getBalance() + "]";
     }

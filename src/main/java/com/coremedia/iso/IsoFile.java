@@ -16,9 +16,10 @@
 
 package com.coremedia.iso;
 
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.AbstractContainerBox;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.MovieBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.googlecode.mp4parser.authoring.Movie;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -44,11 +45,6 @@ public class IsoFile extends AbstractContainerBox {
 
     protected BoxParser createBoxParser() {
         return new PropertyBoxParserImpl();
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "file";
     }
 
     @Override
@@ -168,6 +164,7 @@ public class IsoFile extends AbstractContainerBox {
     /**
      * Shortcut to get the MovieBox since it is often needed and present in
      * nearly all ISO 14496 files (at least if they are derived from MP4 ).
+     *
      * @return the MovieBox or <code>null</code>
      */
     public MovieBox getMovieBox() {

@@ -22,7 +22,11 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Samples within the media data are grouped into chunks. Chunks can be of different sizes, and the
@@ -44,10 +48,6 @@ public class SampleToChunkBox extends AbstractFullBox {
 
     public void setEntries(List<Entry> entries) {
         this.entries = entries;
-    }
-
-    public String getDisplayName() {
-        return "Sample to Chunk Box";
     }
 
     protected long getContentSize() {
@@ -85,6 +85,7 @@ public class SampleToChunkBox extends AbstractFullBox {
     /**
      * Decompresses the list of entries and returns the number of samples per chunk for
      * every single chunk.
+     *
      * @param chunkCount
      * @return number of samples per chunk
      */

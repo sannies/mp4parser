@@ -12,9 +12,4 @@ public final class AppleShowBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes TV Show Box";
-    }
-
-
 }

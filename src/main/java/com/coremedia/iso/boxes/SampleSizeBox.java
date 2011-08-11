@@ -79,11 +79,6 @@ public class SampleSizeBox extends AbstractFullBox {
         this.sampleSizes = sampleSizes;
     }
 
-
-    public String getDisplayName() {
-        return "Sample Size Box";
-    }
-
     protected long getContentSize() {
         return 8 + (sampleSize == 0 ? sampleSizes.length * 4 : 0);
     }

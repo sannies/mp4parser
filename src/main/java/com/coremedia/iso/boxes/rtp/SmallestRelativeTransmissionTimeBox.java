@@ -29,10 +29,6 @@ public class SmallestRelativeTransmissionTimeBox extends AbstractBox {
         time = in.readUInt32();
     }
 
-    public String getDisplayName() {
-        return "Smallest Relative Transmission Time";
-    }
-
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeUInt32(time);
     }

@@ -55,10 +55,6 @@ public class OmaDrmContentIdBox extends AbstractFullBox {
         this.contentId = contentId;
     }
 
-    public String getDisplayName() {
-        return "Content Id Sub Box";
-    }
-
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeUInt16(contentId.getBytes("UTF-8").length);
         os.write(contentId.getBytes("UTF-8"));

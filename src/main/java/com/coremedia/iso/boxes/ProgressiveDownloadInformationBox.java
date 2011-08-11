@@ -25,11 +25,6 @@ public class ProgressiveDownloadInformationBox extends AbstractFullBox {
     }
 
     @Override
-    public String getDisplayName() {
-        return "Progressive Download Info Box";
-    }
-
-    @Override
     protected void getContent(IsoOutputStream os) throws IOException {
         for (Entry entry : entries) {
             os.writeUInt32(entry.getRate());

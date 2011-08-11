@@ -48,10 +48,6 @@ public class OmaDrmTransactionTrackingBox extends AbstractFullBox {
         return transactionId;
     }
 
-    public String getDisplayName() {
-        return "OMA DRM Tranaction Tracking Box";
-    }
-
     protected long getContentSize() {
         return 16;
     }

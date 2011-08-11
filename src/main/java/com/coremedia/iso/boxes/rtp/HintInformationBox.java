@@ -18,7 +18,6 @@ package com.coremedia.iso.boxes.rtp;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
-import com.coremedia.iso.boxes.Box;
 
 /**
  * Contains SDP information to be used by a streaming server. <br>
@@ -67,7 +66,4 @@ public class HintInformationBox extends AbstractContainerBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public String getDisplayName() {
-        return "Hint Information Box";
-    }
 }

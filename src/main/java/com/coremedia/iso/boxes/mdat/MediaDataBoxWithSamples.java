@@ -24,7 +24,7 @@ import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
 
 /**
  * This box contains the media data. In video tracks, this box would contain video frames. A presentation may
@@ -55,11 +55,6 @@ public class MediaDataBoxWithSamples extends AbstractBox {
 
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    }
-
-    @Override
-    public String getDisplayName() {
-        return null;
     }
 
     @Override

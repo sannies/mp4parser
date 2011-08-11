@@ -11,10 +11,4 @@ public final class AppleSortAlbumBox extends AbstractAppleMetaDataBox {
         super(TYPE);
         appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
-
-    public String getDisplayName() {
-        return "iTunes Sort Album Box";
-    }
-
-
 }

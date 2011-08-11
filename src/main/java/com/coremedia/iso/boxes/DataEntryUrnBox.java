@@ -45,10 +45,6 @@ public class DataEntryUrnBox extends AbstractFullBox {
         return location;
     }
 
-    public String getDisplayName() {
-        return "Data Entry URN Box";
-    }
-
     protected long getContentSize() {
         return utf8StringLengthInBytes(name) + 1 + utf8StringLengthInBytes(location) + 1;
     }

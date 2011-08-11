@@ -14,11 +14,6 @@ public final class AppleCustomGenreBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Custom Genre";
-    }
-
-
     public void setGenre(String genre) {
         appleDataBox = new AppleDataBox();
         appleDataBox.setVersion(0);

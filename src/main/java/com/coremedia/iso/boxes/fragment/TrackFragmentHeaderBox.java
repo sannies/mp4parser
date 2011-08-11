@@ -20,7 +20,6 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
@@ -51,10 +50,6 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
 
     public TrackFragmentHeaderBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
-    }
-
-    public String getDisplayName() {
-        return "Track Fragment Header Box";
     }
 
     protected long getContentSize() {

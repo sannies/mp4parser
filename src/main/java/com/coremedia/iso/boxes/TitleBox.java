@@ -65,10 +65,6 @@ public class TitleBox extends AbstractFullBox {
         this.title = title;
     }
 
-    public String getDisplayName() {
-        return "Title Box";
-    }
-
     protected long getContentSize() {
         try {
             return 3 + title.getBytes("UTF-8").length;

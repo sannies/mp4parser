@@ -131,14 +131,6 @@ public abstract class AbstractBox implements Box {
      */
     public abstract void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException;
 
-    /**
-     * Returns the human readable name of the box.
-     *
-     * @return a display string
-     */
-    public abstract String getDisplayName();
-
-
     protected IsoBufferWrapper deadBytes = null;
 
     public IsoBufferWrapper getDeadBytes() {

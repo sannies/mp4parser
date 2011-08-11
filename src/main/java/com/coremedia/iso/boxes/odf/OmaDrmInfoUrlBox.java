@@ -51,10 +51,6 @@ public class OmaDrmInfoUrlBox extends AbstractFullBox {
         return infoUrl;
     }
 
-    public String getDisplayName() {
-        return "Info URL Box";
-    }
-
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         infoUrl = in.readString((int) (size - 4));

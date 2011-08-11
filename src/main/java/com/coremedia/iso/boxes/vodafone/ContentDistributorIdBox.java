@@ -46,10 +46,6 @@ public class ContentDistributorIdBox extends AbstractFullBox {
         return contentDistributorId;
     }
 
-    public String getDisplayName() {
-        return "Content Distributor ID Box";
-    }
-
     protected long getContentSize() {
         return 2 + utf8StringLengthInBytes(contentDistributorId) + 1;
     }

@@ -12,8 +12,4 @@ public final class AppleGroupingBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Grouping Box";
-    }
-
 }

@@ -12,9 +12,4 @@ public final class AppleTrackTitleBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Track Title";
-    }
-
-
 }

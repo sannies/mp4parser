@@ -50,11 +50,6 @@ public class TimeToSampleBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-
-    public String getDisplayName() {
-        return "Decoding Time to Sample Box";
-    }
-
     protected long getContentSize() {
         return 4 + entries.size() * 8;
     }
@@ -68,7 +63,7 @@ public class TimeToSampleBox extends AbstractFullBox {
         entries = new ArrayList<Entry>((int) entryCount);
 
         for (int i = 0; i < entryCount; i++) {
-            entries.add(new Entry(in.readUInt32(),in.readUInt32()));
+            entries.add(new Entry(in.readUInt32(), in.readUInt32()));
         }
     }
 

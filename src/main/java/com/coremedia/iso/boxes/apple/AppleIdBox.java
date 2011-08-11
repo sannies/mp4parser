@@ -12,9 +12,4 @@ public final class AppleIdBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Apple Id Box";
-    }
-
-
 }

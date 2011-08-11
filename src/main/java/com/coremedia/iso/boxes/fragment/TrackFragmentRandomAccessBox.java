@@ -65,9 +65,6 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public String getDisplayName() {
-        return "Track Fragment Random Access Box";
-    }
 
     protected long getContentSize() {
         long contentSize = 0;

@@ -47,10 +47,6 @@ public abstract class LiteralBox extends AbstractBox {
         }
     }
 
-    public String getDisplayName() {
-        return "Unknown Box";
-    }
-
     protected long getContentSize() {
         return content.length;
     }

@@ -28,11 +28,6 @@ public class AppleMediaTypeBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Media Type Box";
-    }
-
-
     public String getReadableValue() {
         if (mediaTypes.containsKey(getValue())) {
             return mediaTypes.get(getValue());

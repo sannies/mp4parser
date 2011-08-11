@@ -7,14 +7,10 @@ import com.coremedia.iso.boxes.AbstractContainerBox;
  *
  */
 public final class AppleGenericBox extends AbstractContainerBox {
-  public static final String TYPE = "----";
+    public static final String TYPE = "----";
 
-  public AppleGenericBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  public String getDisplayName() {
-    return "Some iTunes Generic dunno Box";
-  }
+    public AppleGenericBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
 }

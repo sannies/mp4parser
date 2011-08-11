@@ -29,10 +29,6 @@ public class LargestHintPacketBox extends AbstractBox {
         this.maxSize = in.readUInt32();
     }
 
-    public String getDisplayName() {
-        return "Largest Hint Packet";
-    }
-
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeUInt32(maxSize);
     }

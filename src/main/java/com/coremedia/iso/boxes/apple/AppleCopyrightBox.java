@@ -12,8 +12,4 @@ public final class AppleCopyrightBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Copyright Box";
-    }
-
 }

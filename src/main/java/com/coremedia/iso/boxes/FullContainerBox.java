@@ -22,9 +22,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -117,7 +115,7 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(getDisplayName()).append("[");
+        buffer.append("FreeBox[");
         for (int i = 0; i < boxes.size(); i++) {
             if (i > 0) {
                 buffer.append(";");

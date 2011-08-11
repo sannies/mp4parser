@@ -12,9 +12,5 @@ public final class AppleNetworkBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes TV Network Box";
-    }
-
 
 }

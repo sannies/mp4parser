@@ -59,10 +59,6 @@ public class CopyrightBox extends AbstractFullBox {
         this.copyright = copyright;
     }
 
-    public String getDisplayName() {
-        return "Copyright Box";
-    }
-
     protected long getContentSize() {
         try {
             return 2 + copyright.getBytes("UTF-8").length + 1;

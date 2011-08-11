@@ -22,12 +22,8 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -98,10 +94,6 @@ public class TextSampleEntry extends SampleEntry {
             contentSize += boxe.getSize();
         }
         return contentSize;
-    }
-
-    public String getDisplayName() {
-        return "Text Sample Entry";
     }
 
     public String toString() {
@@ -282,11 +274,6 @@ public class TextSampleEntry extends SampleEntry {
                 fr.parse(in);
                 fontRecords.add(fr);
             }
-        }
-
-        @Override
-        public String getDisplayName() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
     }

@@ -42,10 +42,6 @@ public class AppleStoreCountryCodeBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getUint32AppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Store Country Type Box";
-    }
-
 
     public String getReadableValue() {
         if (countryCodes.containsKey(getValue())) {

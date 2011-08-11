@@ -36,10 +36,6 @@ public class OmaDrmKeyManagenentSystemBox extends FullContainerBox {
         super(TYPE);
     }
 
-    public String getDisplayName() {
-        return "Oma Drm Key Managenent System Box";
-    }
-
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         assert boxes.get(0) instanceof OmaDrmCommonHeadersBox;

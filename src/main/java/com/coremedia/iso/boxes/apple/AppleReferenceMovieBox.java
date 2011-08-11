@@ -20,15 +20,10 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
 
 public class AppleReferenceMovieBox extends AbstractContainerBox {
-  public static final String TYPE = "rmra";
+    public static final String TYPE = "rmra";
 
-  public AppleReferenceMovieBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
-
-  @Override
-  public String getDisplayName() {
-    return "Apple Reference Movie Box";
-  }
+    public AppleReferenceMovieBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
 
 }

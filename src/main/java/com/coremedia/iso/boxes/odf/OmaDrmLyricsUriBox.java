@@ -42,10 +42,6 @@ public class OmaDrmLyricsUriBox extends AbstractFullBox {
         return lyricsUri;
     }
 
-    public String getDisplayName() {
-        return "Lyrics URI Box";
-    }
-
     protected long getContentSize() {
         return utf8StringLengthInBytes(lyricsUri);
     }

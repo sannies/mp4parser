@@ -78,7 +78,6 @@ public final class Walk {
                     throw new RuntimeException("Real offset " + ((AbstractBox) b).offset + " vs. calculated " + b.calculateOffset() + " Box: " + b);
                 }
                 b.toString(); // Just test if some execption is trown
-                ((AbstractBox) b).getDisplayName(); // Just test if some execption is trown
                 b.getUserType();
 
                 BeanInfo beanInfo = Introspector.getBeanInfo(b.getClass());

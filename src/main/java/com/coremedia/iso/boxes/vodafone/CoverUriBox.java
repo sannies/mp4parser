@@ -45,10 +45,6 @@ public class CoverUriBox extends AbstractFullBox {
         this.coverUri = coverUri;
     }
 
-    public String getDisplayName() {
-        return "Cover URI Box";
-    }
-
     protected long getContentSize() {
         return utf8StringLengthInBytes(coverUri) + 1;
     }

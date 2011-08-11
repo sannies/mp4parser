@@ -12,9 +12,4 @@ public final class AppleEncoderBox extends AbstractAppleMetaDataBox {
         appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
-    public String getDisplayName() {
-        return "iTunes Encoder Box";
-
-    }
-
 }

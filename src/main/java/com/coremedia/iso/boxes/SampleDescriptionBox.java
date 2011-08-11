@@ -21,7 +21,6 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * The sample description table gives detailed information about the coding type used, and any initialization
@@ -79,11 +78,6 @@ public class SampleDescriptionBox extends FullContainerBox {
             long length = (size - (in.position() - offset));
             setDeadBytes(in.getSegment(in.position(), length));
         }
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Sample Description Box";
     }
 
     @Override

@@ -32,10 +32,6 @@ public class PayloadTypeBox extends AbstractBox {
         this.rtpMapString = in.readString(count);
     }
 
-    public String getDisplayName() {
-        return "Payload Type";
-    }
-
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeUInt32(payloadNumber);
         os.writeUInt8(rtpMapString.length());

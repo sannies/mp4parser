@@ -45,10 +45,6 @@ public class SyncSampleBox extends AbstractFullBox {
         return sampleNumber;
     }
 
-    public String getDisplayName() {
-        return "Sync Sample Box";
-    }
-
     protected long getContentSize() {
         return sampleNumber.length * 4 + 4;
     }

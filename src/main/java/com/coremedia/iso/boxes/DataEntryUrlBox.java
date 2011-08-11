@@ -58,10 +58,6 @@ public class DataEntryUrlBox extends AbstractFullBox {
         return 0;
     }
 
-    public String getDisplayName() {
-        return "Data Entry Url Box";
-    }
-
     public String toString() {
         return "DataEntryUrlBox[location=" + getLocation() + "]";
     }

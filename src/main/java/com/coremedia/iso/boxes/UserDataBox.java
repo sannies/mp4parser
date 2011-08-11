@@ -18,8 +18,6 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
 
-import java.util.List;
-
 /**
  * This box contains objects that declare user information about the containing box and its data (presentation or
  * track).<br>
@@ -31,11 +29,6 @@ public class UserDataBox extends AbstractContainerBox {
 
     public UserDataBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "User Data Box";
     }
 
 }

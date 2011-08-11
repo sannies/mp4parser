@@ -65,10 +65,6 @@ public class OmaDrmContentObjectBox extends AbstractFullBox {
         return omaDrmData;
     }
 
-    public String getDisplayName() {
-        return "OMA DRM Content Object Box";
-    }
-
     protected long getContentSize() {
         return 8 + omaDrmDataLength;
     }

@@ -64,10 +64,6 @@ public class AmrSpecificBox extends AbstractBox {
         return framesPerSample;
     }
 
-    public String getDisplayName() {
-        return "AMR Specific Box";
-    }
-
     protected long getContentSize() {
         return 9;
     }

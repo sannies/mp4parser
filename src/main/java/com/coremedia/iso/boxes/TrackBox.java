@@ -36,11 +36,6 @@ public class TrackBox extends AbstractContainerBox implements TrackMetaDataConta
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Track Box (trackId=" + (getTrackHeaderBox() != null ? getTrackHeaderBox().getTrackId() : "? (will be parsed later)") + ")";
-    }
-
     public TrackHeaderBox getTrackHeaderBox() {
         for (Box box : boxes) {
             if (box instanceof TrackHeaderBox) {

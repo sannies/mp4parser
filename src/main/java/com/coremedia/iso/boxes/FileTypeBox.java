@@ -123,11 +123,6 @@ public class FileTypeBox extends AbstractBox {
         this.compatibleBrands = compatibleBrands;
     }
 
-
-    public String getDisplayName() {
-        return "File Type Box";
-    }
-
     public String toString() {
         StringBuffer result = new StringBuffer();
         result.append("FileTypeBox[");

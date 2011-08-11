@@ -316,13 +316,6 @@ public class DefaultMp4IsoBuilder implements IsoBuilder {
         }
 
         @Override
-        public String getDisplayName() {
-            return null;
-        }
-
-
-
-        @Override
         protected void getContent(IsoOutputStream os) throws IOException {
             long aaa = 0;
             // all tracks have the same number of chunks
