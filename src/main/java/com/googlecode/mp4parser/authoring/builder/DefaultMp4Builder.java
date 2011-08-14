@@ -323,7 +323,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             long aaa = 0;
             // all tracks have the same number of chunks
             for (int i = 0; i < chunks.values().iterator().next().length; i++) {
-                for (Track track : chunks.keySet()) {
+                for (Track track : tracks) {
 
                     long[] chunkSizes = chunks.get(track);
                     long firstSampleOfChunk = 0;
