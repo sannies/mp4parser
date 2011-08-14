@@ -1,4 +1,4 @@
-package com.googlecode.mp4parser.authoring;
+package com.googlecode.mp4parser.authoring.builder;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
@@ -31,6 +31,9 @@ import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.coremedia.iso.boxes.VideoMediaHeaderBox;
+import com.googlecode.mp4parser.authoring.DateHelper;
+import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Track;
 
 import java.io.IOException;
 import java.util.Date;
@@ -45,9 +48,9 @@ import java.util.logging.Logger;
 /**
  * Creates a plain MP4 file from a video. Plain as plain can be.
  */
-public class DefaultMp4IsoBuilder implements IsoBuilder {
+public class DefaultMp4Builder implements Mp4Builder {
     Set<StaticChunkOffsetBox> chunkOffsetBoxes = new HashSet<StaticChunkOffsetBox>();
-    private static Logger LOG = Logger.getLogger(DefaultMp4IsoBuilder.class.getName());
+    private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
 
     public IsoFile build(Movie movie) throws IOException {
         LOG.info("Creating movie " + movie);
