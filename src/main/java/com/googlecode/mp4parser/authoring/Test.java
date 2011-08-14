@@ -3,6 +3,7 @@ package com.googlecode.mp4parser.authoring;
 import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -22,7 +23,7 @@ public class Test {
         isoFile.parse();
         Movie movie = new Movie(isoFile);
 
-        IsoFile out = new DefaultMp4IsoBuilder().build(movie);
+        IsoFile out = new DefaultMp4Builder().build(movie);
 
         FileOutputStream fos = new FileOutputStream("/home/sannies/suckerpunch-samurai_h640w.mp4");
         BufferedOutputStream bos = new BufferedOutputStream(fos);

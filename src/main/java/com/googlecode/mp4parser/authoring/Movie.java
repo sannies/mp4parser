@@ -22,7 +22,7 @@ public class Movie {
 
         List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
         for (TrackBox trackBox : trackBoxes) {
-            tracks.add(new Track(trackBox));
+            tracks.add(new Mp4TrackImpl(trackBox));
         }
     }
 

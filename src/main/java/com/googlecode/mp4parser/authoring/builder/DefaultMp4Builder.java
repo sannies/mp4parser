@@ -87,7 +87,6 @@ public class DefaultMp4Builder implements Mp4Builder {
         List<Box> movieBoxChildren = new LinkedList<Box>();
         MovieHeaderBox mvhd = new MovieHeaderBox();
         mvhd.setCreationTime(DateHelper.convert(new Date()));
-        mvhd.setDuration(movie.getMovieMetaData().getDuration());
         mvhd.setModificationTime(DateHelper.convert(new Date()));
         mvhd.setDuration(movie.getMovieMetaData().getDuration());
         mvhd.setTimescale(movie.getMovieMetaData().getTimescale());
@@ -110,7 +109,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     }
 
     private TrackBox createTrackBox(Track track, Movie movie) {
-        LOG.info("Creating Track " + track);
+        LOG.info("Creating Mp4TrackImpl " + track);
         TrackBox trackBox = new TrackBox();
         TrackHeaderBox tkhd = new TrackHeaderBox();
         int flags = 0;
@@ -136,7 +135,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         // We need to take edit list box into account in trackheader duration
         // but as long as I don't support edit list boxes it is sufficient to
         // just translate media duration to movie timescale
-        tkhd.setDuration(track.getTrackMetaData().getDuration() * movie.getMovieMetaData().getTimescale() / track.getTrackMetaData().getTimescale());
+        tkhd.setDuration(getDuration(track) * movie.getMovieMetaData().getTimescale() / track.getTrackMetaData().getTimescale());
         tkhd.setHeight(track.getTrackMetaData().getHeight());
         tkhd.setWidth(track.getTrackMetaData().getWidth());
         tkhd.setLayer(track.getTrackMetaData().getLayer());
@@ -148,7 +147,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         trackBox.addBox(mdia);
         MediaHeaderBox mdhd = new MediaHeaderBox();
         mdhd.setCreationTime(DateHelper.convert(track.getTrackMetaData().getCreationTime()));
-        mdhd.setDuration(track.getTrackMetaData().getDuration());
+        mdhd.setDuration(getDuration(track));
         mdhd.setTimescale(track.getTrackMetaData().getTimescale());
         mdhd.setLanguage(track.getTrackMetaData().getLanguage());
         mdia.addBox(mdhd);
@@ -163,6 +162,9 @@ public class DefaultMp4Builder implements Mp4Builder {
                 break;
             case HINT:
                 hdlr.setHandlerType("hint");
+                break;
+            case TEXT:
+                hdlr.setHandlerType("text");
                 break;
             default:
                 throw new RuntimeException("Dont know handler type " + track.getType());
@@ -182,6 +184,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                 HintMediaHeaderBox hmhd = new HintMediaHeaderBox();
                 minf.addBox(hmhd);
                 break;
+            case TEXT:
             case NULL:
                 NullMediaHeaderBox nmhd = new NullMediaHeaderBox();
                 minf.addBox(nmhd);
@@ -410,5 +413,13 @@ public class DefaultMp4Builder implements Mp4Builder {
             rc += l;
         }
         return rc;
+    }
+
+    protected long getDuration(Track track) {
+        long duration = 0;
+        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
+            duration += entry.getCount() * entry.getDelta();
+        }
+        return duration;
     }
 }

@@ -7,14 +7,13 @@ import java.util.Date;
  */
 public class TrackMetaData {
     private String language;
-    private long duration;
     private long timescale;
     private Date modificationTime;
     private Date creationTime;
     private double width;
     private double height;
     private float volume;
-    private long trackId;
+    private long trackId = 1; // zero is not allowed
 
 
     /**
@@ -30,14 +29,6 @@ public class TrackMetaData {
 
     public void setLanguage(String language) {
         this.language = language;
-    }
-
-    public long getDuration() {
-        return duration;
-    }
-
-    public void setDuration(long duration) {
-        this.duration = duration;
     }
 
     public long getTimescale() {
