@@ -30,10 +30,14 @@ public class Movie {
         return tracks;
     }
 
-    public void addTrack(Track track) {
+    public void addTrack(Track nuTrack) {
         // do some checking
         // perhaps the movie needs to get longer!
-        tracks.add(track);
+        if (getTrackByTrackId(nuTrack.getTrackMetaData().getTrackId()) != null) {
+            // We already have a track with that trackId. Create a new one
+            nuTrack.getTrackMetaData().setTrackId(getNextTrackId());
+        }
+        tracks.add(nuTrack);
     }
 
     public MovieMetaData getMovieMetaData() {
@@ -53,6 +57,24 @@ public class Movie {
 
         s += ", movieMetaData=" + movieMetaData + '}';
         return s;
+    }
+
+    public long getNextTrackId() {
+        long nextTrackId = 0;
+        for (Track track : tracks) {
+            nextTrackId = nextTrackId < track.getTrackMetaData().getTrackId() ? track.getTrackMetaData().getTrackId() : nextTrackId;
+        }
+        return ++nextTrackId;
+    }
+
+
+    public Track getTrackByTrackId(long trackId) {
+        for (Track track : tracks) {
+            if (track.getTrackMetaData().getTrackId() == trackId) {
+                return track;
+            }
+        }
+        return null;
     }
 
 
