@@ -228,7 +228,6 @@ public abstract class AbstractBox implements Box {
 
 
     public long calculateOffset() {
-        //todo: doesn't work for fragmented files as it doesn't take mdats into account (as they are not in the parent structure)
         long offsetFromParentBoxStart = parent.getNumOfBytesToFirstChild();
         for (Box box : parent.getBoxes()) {
             if (box.equals(this)) {

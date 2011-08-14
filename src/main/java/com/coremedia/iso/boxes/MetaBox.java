@@ -38,13 +38,13 @@ public class MetaBox extends AbstractContainerBox {
     }
 
     @Override
-    public long getSize() {
+    public long getContentSize() {
         if (isMp4Box()) {
             // it's a fullbox
-            return 4 + super.getSize();
+            return 4 + super.getContentSize();
         } else {
             // it's an apple metabox
-            return super.getSize();
+            return super.getContentSize();
         }
     }
 

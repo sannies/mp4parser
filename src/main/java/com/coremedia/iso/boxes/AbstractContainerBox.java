@@ -130,6 +130,12 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         return buffer.toString();
     }
 
+    /**
+     * The number of bytes from box start (first length byte) to the
+     * first length byte of the first child box
+     *
+     * @return offset to first child box
+     */
     public long getNumOfBytesToFirstChild() {
         return 8;
     }

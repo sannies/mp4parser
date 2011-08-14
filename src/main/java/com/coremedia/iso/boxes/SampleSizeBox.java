@@ -105,11 +105,14 @@ public class SampleSizeBox extends AbstractFullBox {
 
     protected void getContent(IsoOutputStream isos) throws IOException {
         isos.writeUInt32(sampleSize);
-        isos.writeUInt32(sampleSizes.length);
+
         if (sampleSize == 0) {
-            for (int i = 0; i < sampleSizes.length; i++) {
-                isos.writeUInt32(sampleSizes[i]);
+            isos.writeUInt32(sampleSizes.length);
+            for (long sampleSize1 : sampleSizes) {
+                isos.writeUInt32(sampleSize1);
             }
+        } else {
+            isos.writeUInt32(sampleCount);
         }
 
     }
