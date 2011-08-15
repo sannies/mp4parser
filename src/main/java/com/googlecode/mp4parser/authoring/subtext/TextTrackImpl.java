@@ -1,4 +1,4 @@
-package com.googlecode.mp4parser.authoring;
+package com.googlecode.mp4parser.authoring.subtext;
 
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoBufferWrapperImpl;
@@ -8,6 +8,8 @@ import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.coremedia.iso.boxes.sampleentry.TextSampleEntry;
+import com.googlecode.mp4parser.authoring.AbstractTrack;
+import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.threegpp26245.FontTableBox;
 
 import java.io.ByteArrayOutputStream;
@@ -21,7 +23,7 @@ import java.util.List;
 /**
  *
  */
-public class TextTrackImpl implements Track {
+public class TextTrackImpl extends AbstractTrack {
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
     List<Line> subs = new LinkedList<Line>();
@@ -116,21 +118,6 @@ public class TextTrackImpl implements Track {
         return Type.TEXT;
     }
 
-    public boolean isEnabled() {
-        return true;
-    }
-
-    public boolean isInMovie() {
-        return true;
-    }
-
-    public boolean isInPreview() {
-        return false;
-    }
-
-    public boolean isInPoster() {
-        return false;
-    }
 
     public static class Line {
         long from;

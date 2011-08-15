@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Represents a single track of an MP4 file.
  */
-public class Mp4TrackImpl implements Track {
+public class Mp4TrackImpl extends AbstractTrack {
 
     private SampleList samples;
     private SampleDescriptionBox sampleDescriptionBox;
@@ -30,10 +30,7 @@ public class Mp4TrackImpl implements Track {
     private List<SampleDependencyTypeBox.Entry> sampleDependencies;
     private TrackMetaData trackMetaData = new TrackMetaData();
     private Type type;
-    private boolean enabled = true;
-    private boolean inMovie = true;
-    private boolean inPreview = true;
-    private boolean inPoster = true;
+
 
     public Mp4TrackImpl(TrackBox trackBox) {
         samples = new SampleList(trackBox);
@@ -65,10 +62,10 @@ public class Mp4TrackImpl implements Track {
         MediaHeaderBox mdhd = trackBox.getMediaBox().getMediaHeaderBox();
         TrackHeaderBox tkhd = trackBox.getTrackHeaderBox();
 
-        enabled = tkhd.isEnabled();
-        inMovie = tkhd.isInMovie();
-        inPoster = tkhd.isInPoster();
-        inPreview = tkhd.isInPreview();
+        setEnabled(tkhd.isEnabled());
+        setInMovie(tkhd.isInMovie());
+        setInPoster(tkhd.isInPoster());
+        setInPreview(tkhd.isInPreview());
 
         trackMetaData.setTrackId(tkhd.getTrackId());
         trackMetaData.setCreationTime(DateHelper.convert(mdhd.getCreationTime()));
@@ -117,45 +114,4 @@ public class Mp4TrackImpl implements Track {
         return type;
     }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public boolean isInMovie() {
-        return inMovie;
-    }
-
-    public boolean isInPreview() {
-        return inPreview;
-    }
-
-    public boolean isInPoster() {
-        return inPoster;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public void setInMovie(boolean inMovie) {
-        this.inMovie = inMovie;
-    }
-
-    public void setInPreview(boolean inPreview) {
-        this.inPreview = inPreview;
-    }
-
-    public void setInPoster(boolean inPoster) {
-        this.inPoster = inPoster;
-    }
-
-    @Override
-    public String toString() {
-        return "Mp4TrackImpl{ type=" + type +
-                ", enabled=" + enabled +
-                ", inMovie=" + inMovie +
-                ", inPreview=" + inPreview +
-                ", inPoster=" + inPoster +
-                '}';
-    }
 }
