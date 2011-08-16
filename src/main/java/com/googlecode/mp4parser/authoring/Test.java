@@ -20,9 +20,7 @@ import java.io.IOException;
  */
 public class Test {
     public static void main(String[] args) throws IOException {
-        IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(new File("/home/sannies/suckerpunch-samurai_h640w.mov")));
-        isoFile.parse();
-        Movie movie = new MovieCreator().build(isoFile);
+        Movie movie = new MovieCreator().build(new IsoBufferWrapperImpl(new File("/home/sannies/suckerpunch-samurai_h640w.mov")));
 
         IsoFile out = new DefaultMp4Builder().build(movie);
 
