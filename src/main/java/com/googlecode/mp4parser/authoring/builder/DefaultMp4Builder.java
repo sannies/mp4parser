@@ -88,8 +88,21 @@ public class DefaultMp4Builder implements Mp4Builder {
         MovieHeaderBox mvhd = new MovieHeaderBox();
         mvhd.setCreationTime(DateHelper.convert(new Date()));
         mvhd.setModificationTime(DateHelper.convert(new Date()));
-        mvhd.setDuration(movie.getMovieMetaData().getDuration());
-        mvhd.setTimescale(movie.getMovieMetaData().getTimescale());
+
+        long movieTimeScale = getTimescale(movie);
+        long duration = 0;
+
+        for (Track track : movie.getTracks()) {
+            long tracksDuration = getDuration(track) * movieTimeScale / track.getTrackMetaData().getTimescale();
+            if (tracksDuration > duration) {
+                duration = tracksDuration;
+            }
+
+
+        }
+
+        mvhd.setDuration(duration);
+        mvhd.setTimescale(movieTimeScale);
         // find the next available trackId
         long nextTrackId = 0;
         for (Track track : movie.getTracks()) {
@@ -135,7 +148,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         // We need to take edit list box into account in trackheader duration
         // but as long as I don't support edit list boxes it is sufficient to
         // just translate media duration to movie timescale
-        tkhd.setDuration(getDuration(track) * movie.getMovieMetaData().getTimescale() / track.getTrackMetaData().getTimescale());
+        tkhd.setDuration(getDuration(track) * getTimescale(movie) / track.getTrackMetaData().getTimescale());
         tkhd.setHeight(track.getTrackMetaData().getHeight());
         tkhd.setWidth(track.getTrackMetaData().getWidth());
         tkhd.setLayer(track.getTrackMetaData().getLayer());
@@ -421,5 +434,20 @@ public class DefaultMp4Builder implements Mp4Builder {
             duration += entry.getCount() * entry.getDelta();
         }
         return duration;
+    }
+
+    public long getTimescale(Movie movie) {
+        long timescale = movie.getTracks().iterator().next().getTrackMetaData().getTimescale();
+        for (Track track : movie.getTracks()) {
+            timescale = gcd(track.getTrackMetaData().getTimescale(), timescale);
+        }
+        return timescale;
+    }
+
+    public static long gcd(long a, long b) {
+        if (b == 0) {
+            return a;
+        }
+        return gcd(b, a % b);
     }
 }

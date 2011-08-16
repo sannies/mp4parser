@@ -4,6 +4,7 @@ import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -21,7 +22,7 @@ public class Test {
     public static void main(String[] args) throws IOException {
         IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(new File("/home/sannies/suckerpunch-samurai_h640w.mov")));
         isoFile.parse();
-        Movie movie = new Movie(isoFile);
+        Movie movie = new MovieCreator().build(isoFile);
 
         IsoFile out = new DefaultMp4Builder().build(movie);
 
