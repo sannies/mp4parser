@@ -39,18 +39,20 @@ import java.util.List;
  */
 public class MediaDataBoxWithSamples extends AbstractBox {
 
-    private List<byte[]> samples;
-    private long size;
+    private List<IsoBufferWrapper> samples;
 
-    public MediaDataBoxWithSamples(List<byte[]> samples, long size) {
+    public MediaDataBoxWithSamples(List<IsoBufferWrapper> samples) {
         super(IsoFile.fourCCtoBytes("mdat"));
         this.samples = samples;
-        this.size = size;
     }
 
     @Override
     protected long getContentSize() {
-        return size;
+        long size = 0;
+        for (IsoBufferWrapper sample : samples) {
+            size += sample.size();
+        }
+        return 0;
     }
 
     @Override
@@ -59,12 +61,19 @@ public class MediaDataBoxWithSamples extends AbstractBox {
 
     @Override
     protected void getContent(IsoOutputStream os) throws IOException {
-        for (byte[] sample : samples) {
-            os.write(sample);
+        for (IsoBufferWrapper ibw : samples) {
+
+            while (ibw.remaining() >= 1024) {
+                os.write(ibw.read(1024));
+            }
+            while (ibw.remaining() > 0) {
+                os.write(ibw.read());
+            }
+
         }
     }
 
-    public List<byte[]> getSamples() {
+    public List<IsoBufferWrapper> getSamples() {
         return samples;
     }
 }

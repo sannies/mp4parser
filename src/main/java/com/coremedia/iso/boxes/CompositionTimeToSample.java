@@ -77,6 +77,14 @@ public class CompositionTimeToSample extends AbstractFullBox {
             return offset;
         }
 
+        public void setCount(long count) {
+            this.count = count;
+        }
+
+        public void setOffset(int offset) {
+            this.offset = offset;
+        }
+
         @Override
         public String toString() {
             return "Entry{" +

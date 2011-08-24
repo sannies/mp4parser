@@ -15,6 +15,10 @@ public class Movie {
         return tracks;
     }
 
+    public void setTracks(List<Track> tracks) {
+        this.tracks = tracks;
+    }
+
     public void addTrack(Track nuTrack) {
         // do some checking
         // perhaps the movie needs to get longer!

@@ -104,6 +104,14 @@ public class TimeToSampleBox extends AbstractFullBox {
             return delta;
         }
 
+        public void setCount(long count) {
+            this.count = count;
+        }
+
+        public void setDelta(long delta) {
+            this.delta = delta;
+        }
+
         @Override
         public String toString() {
             return "Entry{" +
@@ -112,4 +120,6 @@ public class TimeToSampleBox extends AbstractFullBox {
                     '}';
         }
     }
+
+
 }

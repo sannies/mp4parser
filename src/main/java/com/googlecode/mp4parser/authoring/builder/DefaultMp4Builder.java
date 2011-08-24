@@ -402,12 +402,12 @@ public class DefaultMp4Builder implements Mp4Builder {
         // are needed for the time one sample in reference track is presented.
         double stretch = (double) sc / referenceSampleCount;
         for (int i = 0; i < chunkSizes.length; i++) {
-            long start = Math.round(stretch * (referenceChunkStarts[i] - 1));
+            long start = Math.round(stretch * (referenceChunkStarts[i]));
             long end = 0;
             if (referenceChunkStarts.length == i + 1) {
                 end = Math.round(stretch * (referenceSampleCount));
             } else {
-                end = Math.round(stretch * (referenceChunkStarts[i + 1] - 1));
+                end = Math.round(stretch * (referenceChunkStarts[i + 1]));
             }
 
             chunkSizes[i] = end - start;
