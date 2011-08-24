@@ -18,7 +18,6 @@ package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
-import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.TrackBoxContainer;
 import com.coremedia.iso.boxes.TrackMetaData;
@@ -86,13 +85,5 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
         throw new RuntimeException("TrackId " + trackId + " not contained in " + this);
     }
 
-    public TrackFragmentBox getTrackFragmentBox() {
-        for (Box box : boxes) {
-            if (box instanceof TrackFragmentBox) {
-                return (TrackFragmentBox) box;
-            }
-        }
-        return null;
-    }
 
 }
