@@ -43,7 +43,7 @@ public class CroppedTrack extends AbstractTrack {
 
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
         if (origTrack.getDecodingTimeEntries() != null && !origTrack.getDecodingTimeEntries().isEmpty()) {
-            long[] decodingTimes = blowupTimeToSamples(origTrack.getDecodingTimeEntries());
+            long[] decodingTimes = TimeToSampleBox.blowupTimeToSamples(origTrack.getDecodingTimeEntries());
             long[] nuDecodingTimes = new long[toSample - fromSample];
             System.arraycopy(decodingTimes, fromSample, nuDecodingTimes, 0, toSample - fromSample);
 
@@ -120,32 +120,6 @@ public class CroppedTrack extends AbstractTrack {
 
     public Type getType() {
         return origTrack.getType();
-    }
-
-
-    /**
-     * Decompresses the list of entries and returns the list of decoding times.
-     *
-     * @return decoding time per sample
-     */
-    public static long[] blowupTimeToSamples(List<TimeToSampleBox.Entry> entries) {
-        long numOfSamples = 0;
-        for (TimeToSampleBox.Entry entry : entries) {
-            numOfSamples += entry.getCount();
-        }
-        assert numOfSamples <= Integer.MAX_VALUE;
-        long[] decodingTime = new long[(int) numOfSamples];
-
-        int current = 0;
-
-
-        for (TimeToSampleBox.Entry entry : entries) {
-            for (int i = 0; i < entry.getCount(); i++) {
-                decodingTime[current++] = entry.getDelta();
-            }
-        }
-
-        return decodingTime;
     }
 
 
