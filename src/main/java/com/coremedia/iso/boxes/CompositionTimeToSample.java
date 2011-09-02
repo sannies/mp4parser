@@ -93,4 +93,30 @@ public class CompositionTimeToSample extends AbstractFullBox {
                     '}';
         }
     }
+
+
+    /**
+     * Decompresses the list of entries and returns the list of composition times.
+     *
+     * @return decoding time per sample
+     */
+    public static int[] blowupCompositionTimes(List<CompositionTimeToSample.Entry> entries) {
+        long numOfSamples = 0;
+        for (CompositionTimeToSample.Entry entry : entries) {
+            numOfSamples += entry.getCount();
+        }
+        assert numOfSamples <= Integer.MAX_VALUE;
+        int[] decodingTime = new int[(int) numOfSamples];
+
+        int current = 0;
+
+
+        for (CompositionTimeToSample.Entry entry : entries) {
+            for (int i = 0; i < entry.getCount(); i++) {
+                decodingTime[current++] = entry.getOffset();
+            }
+        }
+
+        return decodingTime;
+    }
 }

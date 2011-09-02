@@ -66,7 +66,7 @@ public class CroppedTrack extends AbstractTrack {
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
         if (origTrack.getCompositionTimeEntries() != null && !origTrack.getCompositionTimeEntries().isEmpty()) {
-            int[] compositionTime = blowupCompositionTimes(origTrack.getCompositionTimeEntries());
+            int[] compositionTime = CompositionTimeToSample.blowupCompositionTimes(origTrack.getCompositionTimeEntries());
             int[] nuCompositionTimes = new int[toSample - fromSample];
             System.arraycopy(compositionTime, fromSample, nuCompositionTimes, 0, toSample - fromSample);
 
@@ -149,28 +149,4 @@ public class CroppedTrack extends AbstractTrack {
     }
 
 
-    /**
-     * Decompresses the list of entries and returns the list of composition times.
-     *
-     * @return decoding time per sample
-     */
-    public static int[] blowupCompositionTimes(List<CompositionTimeToSample.Entry> entries) {
-        long numOfSamples = 0;
-        for (CompositionTimeToSample.Entry entry : entries) {
-            numOfSamples += entry.getCount();
-        }
-        assert numOfSamples <= Integer.MAX_VALUE;
-        int[] decodingTime = new int[(int) numOfSamples];
-
-        int current = 0;
-
-
-        for (CompositionTimeToSample.Entry entry : entries) {
-            for (int i = 0; i < entry.getCount(); i++) {
-                decodingTime[current++] = entry.getOffset();
-            }
-        }
-
-        return decodingTime;
-    }
 }
