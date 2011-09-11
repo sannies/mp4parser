@@ -17,9 +17,7 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoFileConvenienceHelper;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.mdat.MediaDataBox;
 import junit.framework.TestCase;
 import junitx.framework.ArrayAssert;
 import org.apache.commons.io.IOUtils;
@@ -45,6 +43,19 @@ public class RoundTripTest extends TestCase {
       handler.setLevel(Level.ALL);
     }*/
     }
+
+    public void testRoundTrip_TinyExamples_Old() throws Exception {
+        testRoundTrip_1("/Tiny Sample - OLD.mp4");
+    }
+
+    public void testRoundTrip_TinyExamples_Metaxed() throws Exception {
+        testRoundTrip_1("/Tiny Sample - NEW - Metaxed.mp4");
+    }
+
+    public void testRoundTrip_TinyExamples_Untouched() throws Exception {
+        testRoundTrip_1("/Tiny Sample - NEW - Untouched.mp4");
+    }
+
 
     public void testRoundTrip_1a() throws Exception {
         testRoundTrip_1("/multiTrack.3gp");
@@ -76,10 +87,20 @@ public class RoundTripTest extends TestCase {
 
         IsoFile isoFile = new IsoFile(InputStreamIsoBufferHelper.get(getClass().getResourceAsStream(resource), 20000));
         isoFile.parse();
-        Walk.through(isoFile);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         isoFile.getBox(new IsoOutputStream(baos));
+
+
+        File f = File.createTempFile("RoundTripTest", "debug");
+        System.err.println(f.getAbsolutePath());
+        FileOutputStream fos2 = new FileOutputStream(f);
+        fos2.write(baos.toByteArray());
+        fos2.close();
+
+
+        Walk.through(isoFile);
+
 
         ArrayAssert.assertEquals(content, baos.toByteArray());
 

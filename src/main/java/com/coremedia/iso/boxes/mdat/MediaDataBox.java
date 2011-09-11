@@ -39,6 +39,7 @@ import java.io.IOException;
 public final class MediaDataBox extends AbstractBox {
     public static final String TYPE = "mdat";
 
+    private boolean smallBox = false;
 
     private byte[] deadBytesBefore = new byte[0];
 
@@ -54,6 +55,13 @@ public final class MediaDataBox extends AbstractBox {
 
 
     @Override
+    protected long getHeaderSize() {
+        return 4 + // size
+                4 + // type
+                (smallBox ? 0 : 8);
+    }
+
+    @Override
     public void getBox(IsoOutputStream os) throws IOException {
         os.write(getHeader());
         os.write(getDeadBytesBefore());
@@ -67,12 +75,12 @@ public final class MediaDataBox extends AbstractBox {
 
     }
 
+
     @Override
     public long getSize() {
         long contentSize = getContentSize();  // avoid calling getContentSize() twice
-        long headerSize = 4 + // headerSize
-                4 + // type
-                (contentSize >= 4294967296L ? 8 : 0);
+
+        long headerSize = getHeaderSize();
         return headerSize + contentSize + (deadBytes == null ? 0 : deadBytes.size()) + getDeadBytesBefore().length;
     }
 
@@ -85,9 +93,19 @@ public final class MediaDataBox extends AbstractBox {
     @Override
     public void parse(final IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         long start = in.position();
+        if (start - offset > 8) {
+            smallBox = false;
+        } else {
+            smallBox = true;
+        }
         this.isoBufferWrapper = in.getSegment(start, size);
         in.position(start);
         in.skip(size);
+    }
+
+    @Override
+    protected boolean isSmallBox() {
+        return smallBox;
     }
 
     @Override

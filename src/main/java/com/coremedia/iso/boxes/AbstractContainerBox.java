@@ -94,7 +94,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
 
 
-        while (size > 8) {
+        while (size >= 8) {
             long sp = in.position();
             Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
             long parsedBytes = in.position() - sp;

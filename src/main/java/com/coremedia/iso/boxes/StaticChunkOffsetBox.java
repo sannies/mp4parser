@@ -29,6 +29,10 @@ public class StaticChunkOffsetBox extends ChunkOffsetBox {
 
     private long[] chunkOffsets = new long[0];
 
+    public StaticChunkOffsetBox() {
+        super(TYPE);
+    }
+
     public long[] getChunkOffsets() {
         return chunkOffsets;
     }

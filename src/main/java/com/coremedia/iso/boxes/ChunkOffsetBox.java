@@ -9,10 +9,9 @@ import java.io.IOException;
  * Abstract Chunk Offset Box
  */
 public abstract class ChunkOffsetBox extends AbstractFullBox {
-    public static final String TYPE = "stco";
 
-    public ChunkOffsetBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+    public ChunkOffsetBox(String type) {
+        super(IsoFile.fourCCtoBytes(type));
     }
 
     public abstract long[] getChunkOffsets();
