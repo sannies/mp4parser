@@ -92,11 +92,11 @@ public class RoundTripTest extends TestCase {
         isoFile.getBox(new IsoOutputStream(baos));
 
 
-        File f = File.createTempFile("RoundTripTest", "debug");
+        /*  File f = File.createTempFile("RoundTripTest", "debug");
         System.err.println(f.getAbsolutePath());
         FileOutputStream fos2 = new FileOutputStream(f);
         fos2.write(baos.toByteArray());
-        fos2.close();
+        fos2.close();*/
 
 
         Walk.through(isoFile);
