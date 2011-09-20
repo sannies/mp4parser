@@ -18,10 +18,13 @@ package com.coremedia.iso.boxes.h264;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
+import com.googlecode.mp4parser.h264.model.PictureParameterSet;
+import com.googlecode.mp4parser.h264.model.SeqParameterSet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -136,6 +139,7 @@ public final class AvcConfigurationBox extends AbstractBox {
 
     }
 
+
     protected long getContentSize() {
         long size = 5;
         size += 1; // sequenceParamsetLength
@@ -169,5 +173,38 @@ public final class AvcConfigurationBox extends AbstractBox {
             os.write(pictureParameterSetNALUnit);
         }
     }
+
+    // just to display sps in isoviewer no practical use
+    public String[] getPPS() {
+        ArrayList<String> l = new ArrayList<String>();
+        for (byte[] pictureParameterSet : pictureParameterSets) {
+            String details = "not parsable";
+            try {
+                details = PictureParameterSet.read(new IsoBufferWrapperImpl(pictureParameterSet)).toString();
+            } catch (IOException e) {
+
+            }
+
+            l.add(details);
+        }
+        return l.toArray(new String[l.size()]);
+    }
+
+    // just to display sps in isoviewer no practical use
+    public String[] getSPS() {
+        ArrayList<String> l = new ArrayList<String>();
+        for (byte[] sequenceParameterSet : sequenceParameterSets) {
+            String detail = "not parsable";
+            try {
+                detail = SeqParameterSet.read(new IsoBufferWrapperImpl(sequenceParameterSet)).toString();
+            } catch (IOException e) {
+
+            }
+            l.add(detail);
+        }
+        return l.toArray(new String[l.size()]);
+    }
+
+
 }
 

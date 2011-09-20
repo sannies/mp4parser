@@ -340,4 +340,33 @@ public class PictureParameterSet extends BitstreamElement {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "PictureParameterSet{" +
+                "\n       entropy_coding_mode_flag=" + entropy_coding_mode_flag +
+                ",\n       num_ref_idx_l0_active_minus1=" + num_ref_idx_l0_active_minus1 +
+                ",\n       num_ref_idx_l1_active_minus1=" + num_ref_idx_l1_active_minus1 +
+                ",\n       slice_group_change_rate_minus1=" + slice_group_change_rate_minus1 +
+                ",\n       pic_parameter_set_id=" + pic_parameter_set_id +
+                ",\n       seq_parameter_set_id=" + seq_parameter_set_id +
+                ",\n       pic_order_present_flag=" + pic_order_present_flag +
+                ",\n       num_slice_groups_minus1=" + num_slice_groups_minus1 +
+                ",\n       slice_group_map_type=" + slice_group_map_type +
+                ",\n       weighted_pred_flag=" + weighted_pred_flag +
+                ",\n       weighted_bipred_idc=" + weighted_bipred_idc +
+                ",\n       pic_init_qp_minus26=" + pic_init_qp_minus26 +
+                ",\n       pic_init_qs_minus26=" + pic_init_qs_minus26 +
+                ",\n       chroma_qp_index_offset=" + chroma_qp_index_offset +
+                ",\n       deblocking_filter_control_present_flag=" + deblocking_filter_control_present_flag +
+                ",\n       constrained_intra_pred_flag=" + constrained_intra_pred_flag +
+                ",\n       redundant_pic_cnt_present_flag=" + redundant_pic_cnt_present_flag +
+                ",\n       top_left=" + top_left +
+                ",\n       bottom_right=" + bottom_right +
+                ",\n       run_length_minus1=" + run_length_minus1 +
+                ",\n       slice_group_change_direction_flag=" + slice_group_change_direction_flag +
+                ",\n       slice_group_id=" + slice_group_id +
+                ",\n       extended=" + extended +
+                '}';
+    }
 }

@@ -490,4 +490,48 @@ public class SeqParameterSet extends BitstreamElement {
                 "HRD: dpb_output_delay_length_minus1");
         writer.writeNBit(hrd.time_offset_length, 5, "HRD: time_offset_length");
     }
+
+    @Override
+    public String toString() {
+        return "SeqParameterSet{ " +
+                "\n        pic_order_cnt_type=" + pic_order_cnt_type +
+                ", \n        field_pic_flag=" + field_pic_flag +
+                ", \n        delta_pic_order_always_zero_flag=" + delta_pic_order_always_zero_flag +
+                ", \n        weighted_pred_flag=" + weighted_pred_flag +
+                ", \n        weighted_bipred_idc=" + weighted_bipred_idc +
+                ", \n        entropy_coding_mode_flag=" + entropy_coding_mode_flag +
+                ", \n        mb_adaptive_frame_field_flag=" + mb_adaptive_frame_field_flag +
+                ", \n        direct_8x8_inference_flag=" + direct_8x8_inference_flag +
+                ", \n        chroma_format_idc=" + chroma_format_idc +
+                ", \n        log2_max_frame_num_minus4=" + log2_max_frame_num_minus4 +
+                ", \n        log2_max_pic_order_cnt_lsb_minus4=" + log2_max_pic_order_cnt_lsb_minus4 +
+                ", \n        pic_height_in_map_units_minus1=" + pic_height_in_map_units_minus1 +
+                ", \n        pic_width_in_mbs_minus1=" + pic_width_in_mbs_minus1 +
+                ", \n        bit_depth_luma_minus8=" + bit_depth_luma_minus8 +
+                ", \n        bit_depth_chroma_minus8=" + bit_depth_chroma_minus8 +
+                ", \n        qpprime_y_zero_transform_bypass_flag=" + qpprime_y_zero_transform_bypass_flag +
+                ", \n        profile_idc=" + profile_idc +
+                ", \n        constraint_set_0_flag=" + constraint_set_0_flag +
+                ", \n        constraint_set_1_flag=" + constraint_set_1_flag +
+                ", \n        constraint_set_2_flag=" + constraint_set_2_flag +
+                ", \n        constraint_set_3_flag=" + constraint_set_3_flag +
+                ", \n        level_idc=" + level_idc +
+                ", \n        seq_parameter_set_id=" + seq_parameter_set_id +
+                ", \n        residual_color_transform_flag=" + residual_color_transform_flag +
+                ", \n        offset_for_non_ref_pic=" + offset_for_non_ref_pic +
+                ", \n        offset_for_top_to_bottom_field=" + offset_for_top_to_bottom_field +
+                ", \n        num_ref_frames=" + num_ref_frames +
+                ", \n        gaps_in_frame_num_value_allowed_flag=" + gaps_in_frame_num_value_allowed_flag +
+                ", \n        frame_mbs_only_flag=" + frame_mbs_only_flag +
+                ", \n        frame_cropping_flag=" + frame_cropping_flag +
+                ", \n        frame_crop_left_offset=" + frame_crop_left_offset +
+                ", \n        frame_crop_right_offset=" + frame_crop_right_offset +
+                ", \n        frame_crop_top_offset=" + frame_crop_top_offset +
+                ", \n        frame_crop_bottom_offset=" + frame_crop_bottom_offset +
+                ", \n        offsetForRefFrame=" + offsetForRefFrame +
+                ", \n        vuiParams=" + vuiParams +
+                ", \n        scalingMatrix=" + scalingMatrix +
+                ", \n        num_ref_frames_in_pic_order_cnt_cycle=" + num_ref_frames_in_pic_order_cnt_cycle +
+                '}';
+    }
 }
