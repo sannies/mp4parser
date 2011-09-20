@@ -59,7 +59,7 @@ public class OriginalFormatBox extends AbstractBox {
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         assert size == 4;
-        //in.read(dataFormat)
+        //in.readByte(dataFormat)
         dataFormat[0] = (byte) in.readUInt8();
         dataFormat[1] = (byte) in.readUInt8();
         dataFormat[2] = (byte) in.readUInt8();

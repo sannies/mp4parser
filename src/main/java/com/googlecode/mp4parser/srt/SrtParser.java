@@ -1,4 +1,6 @@
-package com.googlecode.mp4parser.authoring.subtext;
+package com.googlecode.mp4parser.srt;
+
+import com.googlecode.mp4parser.authoring.tracks.TextTrackImpl;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -185,7 +185,7 @@ public abstract class AbstractBox implements Box {
         if (deadBytes != null) {
             deadBytes.position(0);
             while (deadBytes.remaining() > 0) {
-                os.write(deadBytes.read());
+                os.write(deadBytes.readByte());
             }
         }
 

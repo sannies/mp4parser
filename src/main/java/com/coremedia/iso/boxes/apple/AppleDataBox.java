@@ -73,10 +73,10 @@ public final class AppleDataBox extends AbstractFullBox {
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
-        fourBytes[0] = (byte) in.read();
-        fourBytes[1] = (byte) in.read();
-        fourBytes[2] = (byte) in.read();
-        fourBytes[3] = (byte) in.read();
+        fourBytes[0] = (byte) in.readByte();
+        fourBytes[1] = (byte) in.readByte();
+        fourBytes[2] = (byte) in.readByte();
+        fourBytes[3] = (byte) in.readByte();
         size -= (4 + 4);
         content = in.read((int) size);
 

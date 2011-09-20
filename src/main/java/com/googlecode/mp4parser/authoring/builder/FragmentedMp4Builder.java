@@ -285,7 +285,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         }
         tkhd.setFlags(flags);
 
-        tkhd.setAlternateGroup(0);
+        tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
         tkhd.setCreationTime(DateHelper.convert(track.getTrackMetaData().getCreationTime()));
         // We need to take edit list box into account in trackheader duration
         // but as long as I don't support edit list boxes it is sufficient to

@@ -87,7 +87,7 @@ public class EditListBox extends AbstractFullBox {
         }
         entries = new LinkedList<Entry>();
         for (int i = 0; i < entryCount; i++) {
-            entries.add(new Entry(in));
+            entries.add(new Entry(this, in));
 
         }
     }
@@ -106,10 +106,11 @@ public class EditListBox extends AbstractFullBox {
                 '}';
     }
 
-    public class Entry {
+    public static class Entry {
         private long segmentDuration;
         private long mediaTime;
         private double mediaRate;
+        EditListBox editListBox;
 
         /**
          * Creates a new <code>Entry</code> with all values set.
@@ -118,14 +119,15 @@ public class EditListBox extends AbstractFullBox {
          * @param mediaTime       starting time
          * @param mediaRate       relative play rate
          */
-        public Entry(long segmentDuration, long mediaTime, double mediaRate) {
+        public Entry(EditListBox editListBox, long segmentDuration, long mediaTime, double mediaRate) {
             this.segmentDuration = segmentDuration;
             this.mediaTime = mediaTime;
             this.mediaRate = mediaRate;
+            this.editListBox = editListBox;
         }
 
-        public Entry(IsoBufferWrapper in) throws IOException {
-            if (getVersion() == 1) {
+        public Entry(EditListBox editListBox, IsoBufferWrapper in) throws IOException {
+            if (editListBox.getVersion() == 1) {
                 segmentDuration = in.readUInt64();
                 mediaTime = in.readUInt64();
                 mediaRate = in.readFixedPoint1616();
@@ -134,6 +136,7 @@ public class EditListBox extends AbstractFullBox {
                 mediaTime = in.readUInt32();
                 mediaRate = in.readFixedPoint1616();
             }
+            this.editListBox = editListBox;
         }
 
         /**
@@ -221,7 +224,7 @@ public class EditListBox extends AbstractFullBox {
         }
 
         public void getContent(IsoOutputStream isos) throws IOException {
-            if (getVersion() == 1) {
+            if (editListBox.getVersion() == 1) {
                 isos.writeUInt64(segmentDuration);
                 isos.writeUInt64(mediaTime);
             } else {

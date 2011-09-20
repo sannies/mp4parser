@@ -14,6 +14,8 @@ public class TrackMetaData {
     private double height;
     private float volume;
     private long trackId = 1; // zero is not allowed
+    private int group = 0;
+    private double startTime = 0;
 
 
     /**
@@ -93,5 +95,21 @@ public class TrackMetaData {
 
     public void setVolume(float volume) {
         this.volume = volume;
+    }
+
+    public int getGroup() {
+        return group;
+    }
+
+    public void setGroup(int group) {
+        this.group = group;
+    }
+
+    public double getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(double startTime) {
+        this.startTime = startTime;
     }
 }

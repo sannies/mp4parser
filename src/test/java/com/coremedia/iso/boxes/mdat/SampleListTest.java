@@ -1,16 +1,16 @@
 package com.coremedia.iso.boxes.mdat;
 
 
-import com.coremedia.drm.packager.isoparser.InputStreamIsoBufferHelper;
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoBufferWrapperImpl;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.MovieBox;
 import com.coremedia.iso.boxes.TrackBox;
 import junitx.framework.Assert;
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.core.Is;
 import org.junit.Test;
 
-import javax.print.attribute.standard.Media;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,7 +38,7 @@ public class SampleListTest {
         for (IsoBufferWrapper isoBufferWrapper : sl) {
             long remaining = isoBufferWrapper.remaining();
             while (remaining > 0) {
-                byte ist = isoBufferWrapper.read();
+                byte ist = isoBufferWrapper.readByte();
                 byte soll = contentOfMdat[((int) currentOffset)];
                 if (soll != ist) {
                     System.err.println("Offset " + currentOffset + " soll: " + soll + " ist: " + ist);

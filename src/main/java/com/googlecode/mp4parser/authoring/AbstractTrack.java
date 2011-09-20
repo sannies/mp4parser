@@ -40,4 +40,5 @@ public abstract class AbstractTrack implements Track {
     public void setInPoster(boolean inPoster) {
         this.inPoster = inPoster;
     }
+
 }

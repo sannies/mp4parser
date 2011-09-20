@@ -69,7 +69,7 @@ public final class MediaDataBox extends AbstractBox {
         if (deadBytes != null) {
             deadBytes.position(0);
             while (deadBytes.remaining() > 0) {
-                os.write(deadBytes.read());
+                os.write(deadBytes.readByte());
             }
         }
 
@@ -119,7 +119,7 @@ public final class MediaDataBox extends AbstractBox {
             os.write(buf);
         }
         while (isoBufferWrapper.remaining() > 0) {
-            os.write(isoBufferWrapper.read());
+            os.write(isoBufferWrapper.readByte());
         }
     }
 

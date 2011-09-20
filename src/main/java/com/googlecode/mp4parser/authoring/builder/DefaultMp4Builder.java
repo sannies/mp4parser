@@ -11,6 +11,8 @@ import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.DataEntryUrlBox;
 import com.coremedia.iso.boxes.DataInformationBox;
 import com.coremedia.iso.boxes.DataReferenceBox;
+import com.coremedia.iso.boxes.EditBox;
+import com.coremedia.iso.boxes.EditListBox;
 import com.coremedia.iso.boxes.FileTypeBox;
 import com.coremedia.iso.boxes.HandlerBox;
 import com.coremedia.iso.boxes.HintMediaHeaderBox;
@@ -36,6 +38,7 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -143,7 +146,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
         tkhd.setFlags(flags);
 
-        tkhd.setAlternateGroup(0);
+        tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
         tkhd.setCreationTime(DateHelper.convert(track.getTrackMetaData().getCreationTime()));
         // We need to take edit list box into account in trackheader duration
         // but as long as I don't support edit list boxes it is sufficient to
@@ -156,6 +159,14 @@ public class DefaultMp4Builder implements Mp4Builder {
         tkhd.setTrackId(track.getTrackMetaData().getTrackId());
         tkhd.setVolume(track.getTrackMetaData().getVolume());
         trackBox.addBox(tkhd);
+
+        EditBox edit = new EditBox();
+        EditListBox editListBox = new EditListBox();
+        editListBox.setEntries(Collections.singletonList(
+                new EditListBox.Entry(editListBox, (long) (track.getTrackMetaData().getStartTime() * getTimescale(movie)), -1, 1)));
+        edit.addBox(editListBox);
+        trackBox.addBox(edit);
+
         MediaBox mdia = new MediaBox();
         trackBox.addBox(mdia);
         MediaHeaderBox mdhd = new MediaHeaderBox();
@@ -357,7 +368,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                             os.write(ibw.read(1024));
                         }
                         while (ibw.remaining() > 0) {
-                            os.write(ibw.read());
+                            os.write(ibw.readByte());
                         }
 
                     }

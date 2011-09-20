@@ -67,7 +67,7 @@ public class MediaDataBoxWithSamples extends AbstractBox {
                 os.write(ibw.read(1024));
             }
             while (ibw.remaining() > 0) {
-                os.write(ibw.read());
+                os.write(ibw.readByte());
             }
 
         }

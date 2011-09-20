@@ -1,4 +1,4 @@
-package com.googlecode.mp4parser.authoring.subtext;
+package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoBufferWrapperImpl;

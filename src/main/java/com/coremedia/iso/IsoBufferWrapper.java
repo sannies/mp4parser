@@ -34,7 +34,9 @@ public interface IsoBufferWrapper {
 
     long readUInt64() throws IOException;
 
-    byte read() throws IOException;
+    byte readByte() throws IOException;
+
+    int read() throws IOException;
 
     int readUInt16() throws IOException;
 
