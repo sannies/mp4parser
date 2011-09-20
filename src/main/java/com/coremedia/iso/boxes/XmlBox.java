@@ -12,9 +12,10 @@ import java.io.IOException;
  */
 public class XmlBox extends AbstractFullBox {
     String xml;
+    public static final String TYPE = "xml ";
 
     public XmlBox() {
-        super(IsoFile.fourCCtoBytes("xml "));
+        super(IsoFile.fourCCtoBytes(TYPE));
     }
 
     public String getXml() {
