@@ -60,7 +60,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(new byte[]{}));
         isoFile.parse();
         // ouch that is ugly but I don't know how to do it else
-        Set<String> minorBrands = new HashSet<String>();
+        List<String> minorBrands = new LinkedList<String>();
         minorBrands.add("isom");
         minorBrands.add("iso2");
         minorBrands.add("avc1");

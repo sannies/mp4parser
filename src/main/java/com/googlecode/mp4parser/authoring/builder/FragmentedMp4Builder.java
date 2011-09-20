@@ -43,11 +43,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -62,7 +60,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(new byte[]{}));
         isoFile.parse();
         // ouch that is ugly but I don't know how to do it else
-        Set<String> minorBrands = new HashSet<String>();
+        List<String> minorBrands = new LinkedList<String>();
         minorBrands.add("isom");
         minorBrands.add("iso2");
         minorBrands.add("avc1");

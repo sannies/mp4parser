@@ -22,7 +22,6 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,13 +35,13 @@ public class FileTypeBox extends AbstractBox {
 
     private String majorBrand;
     private long minorVersion;
-    private Collection<String> compatibleBrands;
+    private List<String> compatibleBrands;
 
     public FileTypeBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public FileTypeBox(String majorBrand, long minorVersion, Collection<String> compatibleBrands) {
+    public FileTypeBox(String majorBrand, long minorVersion, List<String> compatibleBrands) {
         super(IsoFile.fourCCtoBytes(TYPE));
         this.majorBrand = majorBrand;
         this.minorVersion = minorVersion;
@@ -115,7 +114,7 @@ public class FileTypeBox extends AbstractBox {
      *
      * @return the compatible brands
      */
-    public Collection<String> getCompatibleBrands() {
+    public List<String> getCompatibleBrands() {
         return compatibleBrands;
     }
 
