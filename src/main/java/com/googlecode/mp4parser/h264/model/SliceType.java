@@ -53,4 +53,12 @@ public class SliceType {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "SliceType{" +
+                "type='" + type + '\'' +
+                ", value=" + value +
+                '}';
+    }
 }

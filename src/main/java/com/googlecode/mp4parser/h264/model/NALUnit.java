@@ -53,4 +53,12 @@ public class NALUnit {
         int nalu = type.getValue() | (nal_ref_idc << 5);
         out.write(nalu);
     }
+
+    @Override
+    public String toString() {
+        return "NALUnit{" +
+                "type=" + type +
+                ", nal_ref_idc=" + nal_ref_idc +
+                '}';
+    }
 }

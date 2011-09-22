@@ -100,4 +100,12 @@ public class NALUnitType {
             return AUX_SLICE;
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "NALUnitType{" +
+                "value=" + value +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

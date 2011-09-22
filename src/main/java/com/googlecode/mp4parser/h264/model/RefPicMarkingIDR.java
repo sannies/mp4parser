@@ -41,4 +41,12 @@ public class RefPicMarkingIDR {
     public boolean isUseForlongTerm() {
         return useForlongTerm;
     }
+
+    @Override
+    public String toString() {
+        return "RefPicMarkingIDR{" +
+                "discardDecodedPics=" + discardDecodedPics +
+                ", useForlongTerm=" + useForlongTerm +
+                '}';
+    }
 }

@@ -83,4 +83,48 @@ public class SliceHeader {
     public int slice_beta_offset_div2;
 
     public int slice_group_change_cycle;
+
+    @Override
+    public String toString() {
+        return "SliceHeader{" +
+                "\n       sps=" + sps.seq_parameter_set_id +
+                ",\n       pps=" + pps.pic_parameter_set_id +
+                (refPicMarkingNonIDR != null ? ",\n       refPicMarkingNonIDR=" + refPicMarkingNonIDR : "") +
+                (refPicMarkingIDR != null ? ",\n       refPicMarkingIDR=" + refPicMarkingIDR : "") +
+                (refPicReordering != null ? ",\n       refPicReordering=" + refPicReordering : "") +
+                (pred_weight_table != null ? ",\n       pred_weight_table=" + pred_weight_table : "") +
+                ",\n       first_mb_in_slice=" + first_mb_in_slice +
+                ",\n       field_pic_flag=" + field_pic_flag +
+                ",\n       slice_type=" + slice_type +
+                ",\n       slice_type_restr=" + slice_type_restr +
+                ",\n       pic_parameter_set_id=" + pic_parameter_set_id +
+                ",\n       frame_num=" + frame_num +
+                ",\n       bottom_field_flag=" + bottom_field_flag +
+                ",\n       idr_pic_id=" + idr_pic_id +
+                ",\n       pic_order_cnt_lsb=" + pic_order_cnt_lsb +
+                ",\n       delta_pic_order_cnt_bottom=" + delta_pic_order_cnt_bottom +
+                ",\n       delta_pic_order_cnt=" + intArrToString(delta_pic_order_cnt) +
+                ",\n       redundant_pic_cnt=" + redundant_pic_cnt +
+                ",\n       direct_spatial_mv_pred_flag=" + direct_spatial_mv_pred_flag +
+                ",\n       num_ref_idx_active_override_flag=" + num_ref_idx_active_override_flag +
+                ",\n       num_ref_idx_l0_active_minus1=" + num_ref_idx_l0_active_minus1 +
+                ",\n       num_ref_idx_l1_active_minus1=" + num_ref_idx_l1_active_minus1 +
+                ",\n       cabac_init_idc=" + cabac_init_idc +
+                ",\n       slice_qp_delta=" + slice_qp_delta +
+                ",\n       sp_for_switch_flag=" + sp_for_switch_flag +
+                ",\n       slice_qs_delta=" + slice_qs_delta +
+                ",\n       disable_deblocking_filter_idc=" + disable_deblocking_filter_idc +
+                ",\n       slice_alpha_c0_offset_div2=" + slice_alpha_c0_offset_div2 +
+                ",\n       slice_beta_offset_div2=" + slice_beta_offset_div2 +
+                ",\n       slice_group_change_cycle=" + slice_group_change_cycle +
+                '}';
+    }
+
+    private String intArrToString(int[] delta_pic_order_cnt) {
+        String rc = "";
+        for (int i : delta_pic_order_cnt) {
+            rc += i + ", ";
+        }
+        return rc;
+    }
 }
