@@ -2,6 +2,7 @@ package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoBufferWrapperImpl;
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.MultiplexIsoBufferWrapperImpl;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
@@ -16,9 +17,12 @@ import com.googlecode.mp4parser.h264.AnnexBNALUnitReader;
 import com.googlecode.mp4parser.h264.NALUnitReader;
 import com.googlecode.mp4parser.h264.model.NALUnit;
 import com.googlecode.mp4parser.h264.model.NALUnitType;
+import com.googlecode.mp4parser.h264.model.SEI;
 import com.googlecode.mp4parser.h264.model.SliceHeader;
+import com.googlecode.mp4parser.h264.model.SliceType;
 import com.googlecode.mp4parser.h264.read.CAVLCReader;
 import com.googlecode.mp4parser.h264.read.SliceHeaderReader;
+import com.googlecode.mp4parser.util.Path;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -36,7 +40,13 @@ public class RawH264Track extends AbstractTrack {
 
 
     public static void main(String[] args) throws IOException {
-        RawH264Track track = new RawH264Track(new IsoBufferWrapperImpl(new File("/home/sannies/suckerpunch-samurai_h640w_track1.h264")));
+        IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(new File("/home/sannies/vw.mp4")));
+        Path p = new Path(isoFile);
+        isoFile.parse();
+        CompositionTimeToSample ctts = (CompositionTimeToSample) p.getPath("/moov/trak[1]/mdia/minf/stbl/ctts");
+        int[] cts = CompositionTimeToSample.blowupCompositionTimes(ctts.getEntries());
+        RawH264Track track = new RawH264Track(new IsoBufferWrapperImpl(new File("/home/sannies/vw_track2.h264")));
+        //RawH264Track track = new RawH264Track(new IsoBufferWrapperImpl(new File("/home/sannies/suckerpunch-samurai_h640w_track1.h264")));
     }
 
     public RawH264Track(IsoBufferWrapperImpl rawH264) throws IOException {
@@ -45,20 +55,29 @@ public class RawH264Track extends AbstractTrack {
         SliceHeaderReader sliceHeaderReader = new SliceHeaderReader(accessUnitSource);
         AccessUnit au;
         while ((au = accessUnitSource.nextAccessUnit()) != null) {
-            System.err.println("Start AU");
+            //System.err.println("Start AU");
             List<IsoBufferWrapper> nals = new LinkedList<IsoBufferWrapper>();
+            List<SliceHeader> sliceObject = new LinkedList<SliceHeader>();
             IsoBufferWrapper nalUnit;
+            SliceType sliceType = null;
             while ((nalUnit = au.nextNALUnit()) != null) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 new IsoOutputStream(baos).writeUInt32(nalUnit.size());
                 nals.add(new IsoBufferWrapperImpl(baos.toByteArray()));
                 NALUnit nal = NALUnit.read(nalUnit);
+                System.err.println(nal);
                 if (nal.type == NALUnitType.IDR_SLICE || nal.type == NALUnitType.NON_IDR_SLICE) {
-                    System.err.print(nal + " --- ");
+                    //System.err.print(nal + " --- ");
                     SliceHeader sliceHeader = sliceHeaderReader.read(nal, new CAVLCReader(nalUnit));
-                    System.err.println(sliceHeader);
+                    //System.err.println(sliceHeader);
+                    sliceType = sliceHeader.slice_type;
+                    sliceObject.add(sliceHeader);
+
+                } else if (NALUnitType.SEI.equals(nal.type)) {
+                    SEI sei = SEI.read(nalUnit);
+                    System.err.println(sei);
                 } else {
-                    System.err.println(nal);
+                    //System.err.println(nal);
                 }
 
                 nals.add(nalUnit);
@@ -85,6 +104,9 @@ public class RawH264Track extends AbstractTrack {
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
+        /*
+        MP4AV_calculate_dts_from_pts  in mp4creator's mpeg4.cpp
+         */
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

@@ -33,6 +33,11 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
     private int version;
     private int flags;
 
+
+    protected AbstractFullBox(String type) {
+        super(type);
+    }
+
     protected AbstractFullBox(byte[] type) {
         super(type);
     }
@@ -81,7 +86,7 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
                 ios.write(getType());
                 ios.writeUInt64(getSize());
             }
-          if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(UserBox.TYPE))) {
+            if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(UserBox.TYPE))) {
                 ios.write(getUserType());
             }
             ios.writeUInt8(version);

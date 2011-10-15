@@ -74,6 +74,11 @@ public abstract class AbstractBox implements Box {
     private byte[] userType;
     private ContainerBox parent;
 
+
+    protected AbstractBox(String type) {
+        this.type = IsoFile.fourCCtoBytes(type);
+    }
+
     protected AbstractBox(byte[] type) {
         this.type = type;
     }
