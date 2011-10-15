@@ -58,6 +58,9 @@ public abstract class AbstractIsoBufferWrapper implements IsoBufferWrapper {
 
 
     public byte readByte() throws IOException {
+        if (readBitsRemaining != 0) {
+            // throw new IllegalStateException("Not byte aligned! Use up all bits until you aligned again.");
+        }
         int b = read();
         if (b == -1) {
             throw new RuntimeException("Read beyond buffer's end");
@@ -201,4 +204,6 @@ public abstract class AbstractIsoBufferWrapper implements IsoBufferWrapper {
         this.position(this.position() + n);
         return n;
     }
+
+
 }

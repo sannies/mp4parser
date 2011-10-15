@@ -51,4 +51,20 @@ public interface IsoBufferWrapper {
     int readUInt16BE() throws IOException;
 
     long readUInt32BE() throws IOException;
+
+    /**
+     * Reads i bits from the underlying buffers.
+     * Caveat: this method always consumes full bytes even if just a bit is readByte!
+     *
+     * @param i number of bits to readByte, 31 max
+     * @return bitstring value as unsigned int
+     */
+    public int readBits(int i) throws IOException;
+
+    /**
+     * Gets the number number bits that must be read to be byte aligned again.
+     *
+     * @return offset to next byte in bit
+     */
+    int getReadBitsRemaining();
 }
