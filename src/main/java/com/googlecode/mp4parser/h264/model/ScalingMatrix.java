@@ -20,8 +20,18 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 */
 package com.googlecode.mp4parser.h264.model;
 
+import java.util.Arrays;
+
 public class ScalingMatrix {
 
     public ScalingList[] ScalingList4x4;
     public ScalingList[] ScalingList8x8;
+
+    @Override
+    public String toString() {
+        return "ScalingMatrix{" +
+                "ScalingList4x4=" + (ScalingList4x4 == null ? null : Arrays.asList(ScalingList4x4)) + "\n" +
+                ", ScalingList8x8=" + (ScalingList8x8 == null ? null : Arrays.asList(ScalingList8x8)) + "\n" +
+                '}';
+    }
 }

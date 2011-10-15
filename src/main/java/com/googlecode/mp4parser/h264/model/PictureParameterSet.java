@@ -39,9 +39,19 @@ public class PictureParameterSet extends BitstreamElement {
 
     public static class PPSExt {
         public boolean transform_8x8_mode_flag;
-        public ScalingMatrix scalindMatrix;
+        public ScalingMatrix scalindMatrix = new ScalingMatrix();
         public int second_chroma_qp_index_offset;
         public boolean[] pic_scaling_list_present_flag;
+
+        @Override
+        public String toString() {
+            return "PPSExt{" +
+                    "transform_8x8_mode_flag=" + transform_8x8_mode_flag +
+                    ", scalindMatrix=" + scalindMatrix +
+                    ", second_chroma_qp_index_offset=" + second_chroma_qp_index_offset +
+                    ", pic_scaling_list_present_flag=" + pic_scaling_list_present_flag +
+                    '}';
+        }
     }
 
     public boolean entropy_coding_mode_flag;

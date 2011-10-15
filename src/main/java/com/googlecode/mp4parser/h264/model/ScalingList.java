@@ -72,4 +72,12 @@ public class ScalingList {
         }
         return sl;
     }
+
+    @Override
+    public String toString() {
+        return "ScalingList{" +
+                "scalingList=" + scalingList +
+                ", useDefaultScalingMatrixFlag=" + useDefaultScalingMatrixFlag +
+                '}';
+    }
 }

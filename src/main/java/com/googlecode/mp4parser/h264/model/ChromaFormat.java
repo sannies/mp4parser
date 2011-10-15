@@ -65,4 +65,13 @@ public class ChromaFormat {
     public int getSubHeight() {
         return subHeight;
     }
+
+    @Override
+    public String toString() {
+        return "ChromaFormat{" + "\n" +
+                "id=" + id + ",\n" +
+                " subWidth=" + subWidth + ",\n" +
+                " subHeight=" + subHeight +
+                '}';
+    }
 }
