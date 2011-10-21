@@ -31,6 +31,8 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
     private short defaultSampleInfoSize;
     private long sampleCount;
     private List<Short> sampleInfoSizes = new LinkedList<Short>();
+    private long auxInfoType;
+    private long auxInfoTypeParameter;
 
     public SampleAuxiliaryInformationSizesBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -38,11 +40,16 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 5 + defaultSampleInfoSize == 0 ? sampleCount : 0;
+        return 5 + ((getFlags() & 1) == 1 ? 8 : 0) + (defaultSampleInfoSize == 0 ? sampleCount : 0);
     }
 
     @Override
     protected void getContent(IsoOutputStream os) throws IOException {
+        if ((getFlags() & 1) == 1) {
+            os.writeUInt32(auxInfoType);
+            os.writeUInt32(auxInfoTypeParameter);
+        }
+
         os.writeUInt8(defaultSampleInfoSize);
         os.writeUInt32(sampleCount);
 
@@ -54,6 +61,12 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
+
+        if ((getFlags() & 1) == 1) {
+            auxInfoType = in.readUInt32();
+            auxInfoTypeParameter = in.readUInt32();
+        }
+
         defaultSampleInfoSize = (short) in.readUInt8();
         sampleCount = in.readUInt32();
 
@@ -64,6 +77,22 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
                 sampleInfoSizes.add((short) in.readUInt8());
             }
         }
+    }
+
+    public long getAuxInfoType() {
+        return auxInfoType;
+    }
+
+    public void setAuxInfoType(long auxInfoType) {
+        this.auxInfoType = auxInfoType;
+    }
+
+    public long getAuxInfoTypeParameter() {
+        return auxInfoTypeParameter;
+    }
+
+    public void setAuxInfoTypeParameter(long auxInfoTypeParameter) {
+        this.auxInfoTypeParameter = auxInfoTypeParameter;
     }
 
     public short getDefaultSampleInfoSize() {

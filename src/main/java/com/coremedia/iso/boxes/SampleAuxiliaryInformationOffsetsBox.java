@@ -25,11 +25,32 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+/*
+aligned(8) class SampleAuxiliaryInformationOffsetsBox
+            extends FullBox(‘saio’, version, flags)
+{
+            if (flags & 1) {
+                        unsigned int(32) aux_info_type;
+                        unsigned int(32) aux_info_type_parameter;
+            }
+            unsigned int(32) entry_count;
+            if ( version == 0 )
+            {
+                        unsigned int(32) offset[ entry_count ];
+            }
+            else
+            {
+                        unsigned int(64) offset[ entry_count ];
+            }
+}
+ */
 public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
     public static final String TYPE = "saio";
 
     private long entryCount;
     private List<Long> offsets = new LinkedList<Long>();
+    private long auxInfoType;
+    private long auxInfoTypeParameter;
 
     public SampleAuxiliaryInformationOffsetsBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -37,11 +58,16 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 4 + getVersion() == 0 ? 4 * entryCount : 8 * entryCount;
+        return 4 + (getVersion() == 0 ? 4 * entryCount : 8 * entryCount) + ((getFlags() & 1) == 1 ? 8 : 0);
     }
 
     @Override
     protected void getContent(IsoOutputStream os) throws IOException {
+        if ((getFlags() & 1) == 1) {
+            os.writeUInt32(auxInfoType);
+            os.writeUInt32(auxInfoTypeParameter);
+        }
+
         os.writeUInt32(entryCount);
         for (Long offset : offsets) {
             if (getVersion() == 0) {
@@ -55,6 +81,12 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
+
+        if ((getFlags() & 1) == 1) {
+            auxInfoType = in.readUInt32();
+            auxInfoTypeParameter = in.readUInt32();
+        }
+
         entryCount = in.readUInt32();
         offsets.clear();
 
@@ -65,6 +97,22 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
                 offsets.add(in.readUInt64());
             }
         }
+    }
+
+    public long getAuxInfoType() {
+        return auxInfoType;
+    }
+
+    public void setAuxInfoType(long auxInfoType) {
+        this.auxInfoType = auxInfoType;
+    }
+
+    public long getAuxInfoTypeParameter() {
+        return auxInfoTypeParameter;
+    }
+
+    public void setAuxInfoTypeParameter(long auxInfoTypeParameter) {
+        this.auxInfoTypeParameter = auxInfoTypeParameter;
     }
 
     public long getEntryCount() {
