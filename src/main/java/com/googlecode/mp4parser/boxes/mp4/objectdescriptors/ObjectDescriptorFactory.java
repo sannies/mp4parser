@@ -156,7 +156,7 @@ public class ObjectDescriptorFactory {
             }
             for (int tag : tags) {
                 tagMap.put(tag, clazz);
-                System.out.println("added tag code " + Integer.toHexString(tag) + " for objectTypeId " + objectTypeInd + " with " + aClass);
+                //System.out.println("added tag code " + Integer.toHexString(tag) + " for objectTypeId " + objectTypeInd + " with " + aClass);
             }
             descriptorRegistry.put(objectTypeInd, tagMap);
         }
