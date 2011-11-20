@@ -11,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,8 +47,8 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     Pattern p = Pattern.compile("(.*)\\((.*?)\\)");
 
     @SuppressWarnings("unchecked")
-    public Class<? extends Box> getClassForFourCc(byte[] type, byte[] parent) {
-        FourCcToBox fourCcToBox = new FourCcToBox(type, parent).invoke();
+    public Class<? extends Box> getClassForFourCc(byte[] type, byte[] userType, byte[] parent) {
+        FourCcToBox fourCcToBox = new FourCcToBox(type, userType, parent).invoke();
         try {
             return (Class<? extends Box>) Class.forName(fourCcToBox.clazzName);
         } catch (ClassNotFoundException e) {
@@ -58,7 +59,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     @Override
     public AbstractBox createBox(byte[] type, byte[] userType, byte[] parent, Box lastMovieFragmentBox) {
 
-        FourCcToBox fourCcToBox = new FourCcToBox(type, parent).invoke();
+        FourCcToBox fourCcToBox = new FourCcToBox(type, userType, parent).invoke();
         String[] param = fourCcToBox.getParam();
         String clazzName = fourCcToBox.getClazzName();
         try {
@@ -116,13 +117,15 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
 
     private class FourCcToBox {
         private byte[] type;
+        private byte[] userType;
         private byte[] parent;
         private String clazzName;
         private String[] param;
 
-        public FourCcToBox(byte[] type, byte... parent) {
+        public FourCcToBox(byte[] type, byte[] userType, byte[] parent) {
             this.type = type;
             this.parent = parent;
+            this.userType = userType;
         }
 
         public String getClazzName() {
@@ -134,9 +137,23 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         }
 
         public FourCcToBox invoke() {
-            String constructor = mapping.getProperty(IsoFile.bytesToFourCC(parent) + "-" + IsoFile.bytesToFourCC(type));
-            if (constructor == null) {
-                constructor = mapping.getProperty(IsoFile.bytesToFourCC(type));
+            String constructor;
+            if (userType != null) {
+                if (!"uuid".equals( IsoFile.bytesToFourCC(type))) {
+                    throw new RuntimeException("we have a userType but no uuid box type. Something's wrong");
+                }
+                constructor = mapping.getProperty(IsoFile.bytesToFourCC(parent) + "-uuid[" + Hex.encodeHex(userType).toUpperCase() + "]");
+                if (constructor == null) {
+                    constructor = mapping.getProperty("uuid[" + Hex.encodeHex(userType).toUpperCase() + "]");
+                }
+                if (constructor == null) {
+                    constructor = mapping.getProperty("uuid");
+                }
+            } else {
+                constructor = mapping.getProperty(IsoFile.bytesToFourCC(parent) + "-" + IsoFile.bytesToFourCC(type));
+                if (constructor == null) {
+                    constructor = mapping.getProperty(IsoFile.bytesToFourCC(type));
+                }
             }
             if (constructor == null) {
                 constructor = mapping.getProperty("default");

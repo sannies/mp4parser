@@ -9,7 +9,7 @@ import java.io.IOException;
  * Basic interface to create boxes from a <code>IsoBufferWrapper</code> and its parent.
  */
 public interface BoxParser {
-    Class<? extends Box> getClassForFourCc(byte[] type, byte[] parent);
+    Class<? extends Box> getClassForFourCc(byte[] type, byte[] userType,  byte[] parent);
 
     Box parseBox(IsoBufferWrapper in, ContainerBox parent, Box lastMovieFragmentBox) throws IOException;
 }
