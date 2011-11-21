@@ -145,12 +145,12 @@ public class PiffSampleEncryptionBox extends AbstractFullBox {
 
 
     public static class Entry {
-        byte[] iv;
-        List<Pair> pairs = new LinkedList<Pair>();
+        public byte[] iv;
+        public List<Pair> pairs = new LinkedList<Pair>();
 
         public static class Pair {
-            int clear;
-            long encrypted;
+            public int clear;
+            public long encrypted;
 
             public Pair(int clear, long encrypted) {
                 this.clear = clear;
