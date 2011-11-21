@@ -21,7 +21,7 @@ import static org.junit.Assert.fail;
  * Time: 4:06 PM
  * To change this template use File | Settings | File Templates.
  */
-public class UserTypePiffSampleEncryptionBoxTest {
+public class PiffSampleEncryptionBoxTest {
 
 
     @Before
@@ -31,9 +31,9 @@ public class UserTypePiffSampleEncryptionBoxTest {
 
     @Test
     public void testRoundTripFlagsZero() throws IOException {
-        UserTypePiffSampleEncryptionBox senc = new UserTypePiffSampleEncryptionBox();
-        List<UserTypePiffSampleEncryptionBox.Entry> entries = new LinkedList<UserTypePiffSampleEncryptionBox.Entry>();
-        UserTypePiffSampleEncryptionBox.Entry entry = new UserTypePiffSampleEncryptionBox.Entry();
+        PiffSampleEncryptionBox senc = new PiffSampleEncryptionBox();
+        List<PiffSampleEncryptionBox.Entry> entries = new LinkedList<PiffSampleEncryptionBox.Entry>();
+        PiffSampleEncryptionBox.Entry entry = new PiffSampleEncryptionBox.Entry();
         entry.iv = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
         entries.add(entry);
 
@@ -45,8 +45,8 @@ public class UserTypePiffSampleEncryptionBoxTest {
         IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
         iso.parse();
 
-        Assert.assertTrue(iso.getBoxes().get(0) instanceof UserTypePiffSampleEncryptionBox);
-        UserTypePiffSampleEncryptionBox senc2 = (UserTypePiffSampleEncryptionBox) iso.getBoxes().get(0);
+        Assert.assertTrue(iso.getBoxes().get(0) instanceof PiffSampleEncryptionBox);
+        PiffSampleEncryptionBox senc2 = (PiffSampleEncryptionBox) iso.getBoxes().get(0);
         Assert.assertEquals(0, senc2.getFlags());
         Assert.assertTrue(senc.equals(senc2));
         Assert.assertTrue(senc2.equals(senc));
@@ -55,13 +55,13 @@ public class UserTypePiffSampleEncryptionBoxTest {
 
     @Test
     public void testRoundTripFlagsOne() throws IOException {
-        UserTypePiffSampleEncryptionBox senc = new UserTypePiffSampleEncryptionBox();
+        PiffSampleEncryptionBox senc = new PiffSampleEncryptionBox();
         senc.setAlgorithmId(0x333333);
         senc.setIvSize(8);
         senc.setKid(new byte[]{1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,});
         
-        List<UserTypePiffSampleEncryptionBox.Entry> entries = new LinkedList<UserTypePiffSampleEncryptionBox.Entry>();
-        UserTypePiffSampleEncryptionBox.Entry entry = new UserTypePiffSampleEncryptionBox.Entry();
+        List<PiffSampleEncryptionBox.Entry> entries = new LinkedList<PiffSampleEncryptionBox.Entry>();
+        PiffSampleEncryptionBox.Entry entry = new PiffSampleEncryptionBox.Entry();
         entry.iv = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
         entries.add(entry);
 
@@ -73,8 +73,8 @@ public class UserTypePiffSampleEncryptionBoxTest {
         IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
         iso.parse();
 
-        Assert.assertTrue(iso.getBoxes().get(0) instanceof UserTypePiffSampleEncryptionBox);
-        UserTypePiffSampleEncryptionBox senc2 = (UserTypePiffSampleEncryptionBox) iso.getBoxes().get(0);
+        Assert.assertTrue(iso.getBoxes().get(0) instanceof PiffSampleEncryptionBox);
+        PiffSampleEncryptionBox senc2 = (PiffSampleEncryptionBox) iso.getBoxes().get(0);
         Assert.assertEquals(1, senc2.getFlags());
         Assert.assertTrue(senc.equals(senc2));
         Assert.assertTrue(senc2.equals(senc));
@@ -82,15 +82,15 @@ public class UserTypePiffSampleEncryptionBoxTest {
 
     @Test
     public void testRoundTripFlagsTwo() throws IOException {
-        UserTypePiffSampleEncryptionBox senc = new UserTypePiffSampleEncryptionBox();
-        List<UserTypePiffSampleEncryptionBox.Entry> entries = new LinkedList<UserTypePiffSampleEncryptionBox.Entry>();
-        UserTypePiffSampleEncryptionBox.Entry entry = new UserTypePiffSampleEncryptionBox.Entry();
+        PiffSampleEncryptionBox senc = new PiffSampleEncryptionBox();
+        List<PiffSampleEncryptionBox.Entry> entries = new LinkedList<PiffSampleEncryptionBox.Entry>();
+        PiffSampleEncryptionBox.Entry entry = new PiffSampleEncryptionBox.Entry();
         entry.iv = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
-        entry.pairs.add(new UserTypePiffSampleEncryptionBox.Entry.Pair(5,15));
-        entry.pairs.add(new UserTypePiffSampleEncryptionBox.Entry.Pair(5,16));
-        entry.pairs.add(new UserTypePiffSampleEncryptionBox.Entry.Pair(5,17));
-        entry.pairs.add(new UserTypePiffSampleEncryptionBox.Entry.Pair(5,18));
-        entry.pairs.add(new UserTypePiffSampleEncryptionBox.Entry.Pair(5,19));
+        entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,15));
+        entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,16));
+        entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,17));
+        entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,18));
+        entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,19));
         entries.add(entry);
 
 
@@ -102,8 +102,8 @@ public class UserTypePiffSampleEncryptionBoxTest {
         IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
         iso.parse();
 
-        Assert.assertTrue(iso.getBoxes().get(0) instanceof UserTypePiffSampleEncryptionBox);
-        UserTypePiffSampleEncryptionBox senc2 = (UserTypePiffSampleEncryptionBox) iso.getBoxes().get(0);
+        Assert.assertTrue(iso.getBoxes().get(0) instanceof PiffSampleEncryptionBox);
+        PiffSampleEncryptionBox senc2 = (PiffSampleEncryptionBox) iso.getBoxes().get(0);
         Assert.assertEquals(2, senc2.getFlags());
         Assert.assertTrue(senc.equals(senc2));
         Assert.assertTrue(senc2.equals(senc));
@@ -112,18 +112,18 @@ public class UserTypePiffSampleEncryptionBoxTest {
 
     @Test
     public void testRoundTripFlagsThree() throws IOException {
-        UserTypePiffSampleEncryptionBox senc = new UserTypePiffSampleEncryptionBox();
+        PiffSampleEncryptionBox senc = new PiffSampleEncryptionBox();
         senc.setAlgorithmId(0x333333);
         senc.setIvSize(8);
         senc.setKid(new byte[]{1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,});
-        List<UserTypePiffSampleEncryptionBox.Entry> entries = new LinkedList<UserTypePiffSampleEncryptionBox.Entry>();
-        UserTypePiffSampleEncryptionBox.Entry entry = new UserTypePiffSampleEncryptionBox.Entry();
+        List<PiffSampleEncryptionBox.Entry> entries = new LinkedList<PiffSampleEncryptionBox.Entry>();
+        PiffSampleEncryptionBox.Entry entry = new PiffSampleEncryptionBox.Entry();
         entry.iv = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
-        entry.pairs.add(new UserTypePiffSampleEncryptionBox.Entry.Pair(5,15));
-        entry.pairs.add(new UserTypePiffSampleEncryptionBox.Entry.Pair(5,16));
-        entry.pairs.add(new UserTypePiffSampleEncryptionBox.Entry.Pair(5,17));
-        entry.pairs.add(new UserTypePiffSampleEncryptionBox.Entry.Pair(5,18));
-        entry.pairs.add(new UserTypePiffSampleEncryptionBox.Entry.Pair(5,19));
+        entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,15));
+        entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,16));
+        entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,17));
+        entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,18));
+        entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,19));
         entries.add(entry);
 
         senc.setEntries(entries);
@@ -134,8 +134,8 @@ public class UserTypePiffSampleEncryptionBoxTest {
         IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
         iso.parse();
 
-        Assert.assertTrue(iso.getBoxes().get(0) instanceof UserTypePiffSampleEncryptionBox);
-        UserTypePiffSampleEncryptionBox senc2 = (UserTypePiffSampleEncryptionBox) iso.getBoxes().get(0);
+        Assert.assertTrue(iso.getBoxes().get(0) instanceof PiffSampleEncryptionBox);
+        PiffSampleEncryptionBox senc2 = (PiffSampleEncryptionBox) iso.getBoxes().get(0);
         Assert.assertEquals(3, senc2.getFlags());
         Assert.assertTrue(senc.equals(senc2));
         Assert.assertTrue(senc2.equals(senc));

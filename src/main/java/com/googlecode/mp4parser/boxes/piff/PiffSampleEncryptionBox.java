@@ -3,7 +3,6 @@ package com.googlecode.mp4parser.boxes.piff;
 import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,7 +20,7 @@ import java.util.List;
  * }[ sample_count ]
  * }
  */
-public class UserTypePiffSampleEncryptionBox extends AbstractFullBox {
+public class PiffSampleEncryptionBox extends AbstractFullBox {
     int algorithmId = -1;
     int ivSize = -1;
     byte[] kid = null;
@@ -30,7 +29,7 @@ public class UserTypePiffSampleEncryptionBox extends AbstractFullBox {
     /**
      * Creates a SampleEncryptionBox for non-h264 tracks.
      */
-    public UserTypePiffSampleEncryptionBox() {
+    public PiffSampleEncryptionBox() {
         super(IsoFile.fourCCtoBytes("uuid"));
 
     }
@@ -218,7 +217,7 @@ public class UserTypePiffSampleEncryptionBox extends AbstractFullBox {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UserTypePiffSampleEncryptionBox that = (UserTypePiffSampleEncryptionBox) o;
+        PiffSampleEncryptionBox that = (PiffSampleEncryptionBox) o;
 
         if (algorithmId != that.algorithmId) return false;
         if (ivSize != that.ivSize) return false;
