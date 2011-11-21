@@ -63,6 +63,10 @@ public class PiffSampleEncryptionBox extends AbstractFullBox {
         return (entries.get(0).pairs.size() > 0);
     }
 
+    public boolean isOverrideTrackEncryptionBoxParameters() {
+        return kid != null && algorithmId > 0 && ivSize > 0;
+    }
+
     public int getAlgorithmId() {
         return algorithmId;
     }
@@ -90,7 +94,7 @@ public class PiffSampleEncryptionBox extends AbstractFullBox {
     @Override
     public void getBox(IsoOutputStream os) throws IOException {
         setFlags(0x0);
-        if (kid != null && algorithmId > 0 && ivSize > 0) {
+        if (isOverrideTrackEncryptionBoxParameters()) {
             setFlags(getFlags() | 0x1);
         }
         if (isSubSampleEncryption()) {
@@ -125,7 +129,7 @@ public class PiffSampleEncryptionBox extends AbstractFullBox {
 
     @Override
     protected void getContent(IsoOutputStream os) throws IOException {
-        if (kid != null && algorithmId > 0 && ivSize > 0) {
+        if (isOverrideTrackEncryptionBoxParameters()) {
             os.writeUInt24(algorithmId);
             os.writeUInt8(ivSize);
             os.write(kid);
@@ -133,7 +137,7 @@ public class PiffSampleEncryptionBox extends AbstractFullBox {
         os.writeUInt32(entries.size());
         for (Entry entry : entries) {
             os.write(entry.iv);
-            if ((getFlags() & 0x2) > 0) {
+            if (isSubSampleEncryption()) {
                 os.writeUInt16(entry.pairs.size());
                 for (Entry.Pair pair : entry.pairs) {
                     os.writeUInt16(pair.clear);

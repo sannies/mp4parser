@@ -40,8 +40,10 @@ public class PiffSampleEncryptionBoxTest {
         senc.setEntries(entries);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        long sizeBeforeWrite = senc.getSize();
         senc.getBox(new IsoOutputStream(baos));
-
+        Assert.assertEquals(baos.size(), senc.getSize());
+        Assert.assertEquals(baos.size(), sizeBeforeWrite);
         IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
         iso.parse();
 
@@ -66,10 +68,11 @@ public class PiffSampleEncryptionBoxTest {
         entries.add(entry);
 
         senc.setEntries(entries);
-
+        long sizeBeforeWrite = senc.getSize();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         senc.getBox(new IsoOutputStream(baos));
-
+        Assert.assertEquals(baos.size(), senc.getSize());
+        Assert.assertEquals(sizeBeforeWrite, senc.getSize());
         IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
         iso.parse();
 
@@ -98,7 +101,7 @@ public class PiffSampleEncryptionBoxTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         senc.getBox(new IsoOutputStream(baos));
-
+        Assert.assertEquals(baos.size(), senc.getSize());
         IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
         iso.parse();
 
@@ -125,12 +128,17 @@ public class PiffSampleEncryptionBoxTest {
         entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,18));
         entry.pairs.add(new PiffSampleEncryptionBox.Entry.Pair(5,19));
         entries.add(entry);
+        entries.add(entry);
+        entries.add(entry);
+        entries.add(entry);
 
         senc.setEntries(entries);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         senc.getBox(new IsoOutputStream(baos));
 
+        Assert.assertEquals(baos.size(), senc.getSize());
+        
         IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
         iso.parse();
 
