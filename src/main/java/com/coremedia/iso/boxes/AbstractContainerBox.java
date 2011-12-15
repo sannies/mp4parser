@@ -62,8 +62,11 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     @SuppressWarnings("unchecked")
     public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
         List<T> boxesToBeReturned = new ArrayList<T>(2);
-        for (Box boxe : boxes) { //clazz.isInstance(boxe) / clazz == boxe.getClass()?
-            if (clazz == boxe.getClass()) {
+        for (Box boxe : boxes) {
+            //clazz.isInstance(boxe) / clazz == boxe.getClass()?
+            // I hereby finally decide to use isInstance
+
+            if (clazz.isInstance(boxe)) {
                 boxesToBeReturned.add((T) boxe);
             }
 
@@ -71,9 +74,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
                 boxesToBeReturned.addAll(((ContainerBox) boxe).getBoxes(clazz, recursive));
             }
         }
-        // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
         return boxesToBeReturned;
-        //return (T[]) boxesToBeReturned.toArray();
     }
 
     /**
