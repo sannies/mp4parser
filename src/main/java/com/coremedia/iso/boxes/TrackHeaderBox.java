@@ -21,7 +21,6 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.assistui.isDate;
 
 import java.io.IOException;
 
@@ -56,12 +55,10 @@ public class TrackHeaderBox extends AbstractFullBox {
         setFlags(7);
     }
 
-    @isDate
     public long getCreationTime() {
         return creationTime;
     }
 
-    @isDate
     public long getModificationTime() {
         return modificationTime;
     }

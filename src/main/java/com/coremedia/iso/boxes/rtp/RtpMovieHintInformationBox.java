@@ -21,7 +21,6 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.assistui.multiline;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 
@@ -32,7 +31,6 @@ public class RtpMovieHintInformationBox extends AbstractBox {
 
     private String descriptionFormat;
 
-    @multiline(linebreak = "\r\n")
     private String sdpText;
 
     public RtpMovieHintInformationBox() {

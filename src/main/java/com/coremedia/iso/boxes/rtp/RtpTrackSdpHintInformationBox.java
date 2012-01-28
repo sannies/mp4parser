@@ -20,7 +20,6 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.assistui.multiline;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 
@@ -32,7 +31,6 @@ import java.io.IOException;
 public class RtpTrackSdpHintInformationBox extends AbstractBox {
     public static final String TYPE = "sdp ";
 
-    @multiline(linebreak = "\r\n")
     private String sdpText;
 
 
