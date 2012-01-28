@@ -139,7 +139,7 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
             compressorname = new String(bytes, "UTF-8");
             if (compressornameDisplayAbleData < 31) {
                 byte[] zeros = in.read(31 - compressornameDisplayAbleData);
-                assert Arrays.equals(zeros, new byte[zeros.length]) : "The compressor name length was not filled up with zeros";
+                //assert Arrays.equals(zeros, new byte[zeros.length]) : "The compressor name length was not filled up with zeros";
             }
             depth = in.readUInt16();
             tmp = in.readUInt16();

@@ -46,6 +46,10 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         super(type);
     }
 
+    public AbstractContainerBox(String type) {
+        super(type);
+    }
+
     public List<Box> getBoxes() {
         return Collections.unmodifiableList(boxes);
     }

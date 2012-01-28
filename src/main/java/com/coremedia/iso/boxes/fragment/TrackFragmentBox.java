@@ -42,12 +42,4 @@ public class TrackFragmentBox extends AbstractContainerBox implements TrackMetaD
         return null;
     }
 
-    public TrackRunBox getTrackRunBox() {
-        for (Box box : getBoxes()) {
-            if (box instanceof TrackRunBox) {
-                return (TrackRunBox) box;
-            }
-        }
-        return null;
-    }
 }

@@ -44,6 +44,7 @@ public interface Track {
         VIDEO(),
         HINT(),
         TEXT(),
+        AMF0(),
         NULL(),
         SOUND(),
         UNKNOWN()

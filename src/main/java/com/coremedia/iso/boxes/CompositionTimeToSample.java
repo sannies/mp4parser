@@ -46,7 +46,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
         assert numberOfEntries <= Integer.MAX_VALUE : "Too many entries";
         entries = new ArrayList<Entry>((int) numberOfEntries);
         for (int i = 0; i < numberOfEntries; i++) {
-            Entry e = new Entry(in.readUInt32(), in.readInt32());
+            Entry e = new Entry(toint(in.readUInt32()), toint(in.readInt32()));
             entries.add(e);
         }
     }
@@ -61,15 +61,15 @@ public class CompositionTimeToSample extends AbstractFullBox {
     }
 
     public static class Entry {
-        long count;
+        int count;
         int offset;
 
-        public Entry(long count, int offset) {
+        public Entry(int count, int offset) {
             this.count = count;
             this.offset = offset;
         }
 
-        public long getCount() {
+        public int getCount() {
             return count;
         }
 
@@ -77,7 +77,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
             return offset;
         }
 
-        public void setCount(long count) {
+        public void setCount(int count) {
             this.count = count;
         }
 
@@ -118,5 +118,13 @@ public class CompositionTimeToSample extends AbstractFullBox {
         }
 
         return decodingTime;
+    }
+    
+    public static int toint(long l)  {
+        if (l>Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Event though I didn't expect it the given long is greater than Integer.MAX_VALUE");
+        } else {
+            return (int) l;
+        }
     }
 }

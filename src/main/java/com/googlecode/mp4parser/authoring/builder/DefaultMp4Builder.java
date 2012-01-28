@@ -190,6 +190,9 @@ public class DefaultMp4Builder implements Mp4Builder {
             case TEXT:
                 hdlr.setHandlerType("text");
                 break;
+            case AMF0:
+                hdlr.setHandlerType("data");
+                break;
             default:
                 throw new RuntimeException("Dont know handler type " + track.getType());
         }
@@ -209,6 +212,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                 minf.addBox(hmhd);
                 break;
             case TEXT:
+            case AMF0:
             case NULL:
                 NullMediaHeaderBox nmhd = new NullMediaHeaderBox();
                 minf.addBox(nmhd);
@@ -392,20 +396,32 @@ public class DefaultMp4Builder implements Mp4Builder {
         Track referenceTrack = null;
         long[] referenceChunkStarts = null;
         long referenceSampleCount = 0;
+        long[] chunkSizes = null;
         for (Track test : movie.getTracks()) {
             if (test.getSyncSamples() != null && test.getSyncSamples().length > 0) {
                 referenceTrack = test;
                 referenceChunkStarts = test.getSyncSamples();
                 referenceSampleCount = test.getSamples().size();
+                chunkSizes = new long[referenceTrack.getSyncSamples().length]; 
             }
+            
         }
         if (referenceTrack == null) {
-            throw new RuntimeException("need some sync samples");
+            referenceTrack = movie.getTracks().get(0);
+            referenceSampleCount = referenceTrack.getSamples().size();
+            int chunkCount = (int) (Math.ceil(getDuration(referenceTrack)/referenceTrack.getTrackMetaData().getTimescale()) / 2);
+            referenceChunkStarts = new long[chunkCount];
+            long chunkSize = referenceTrack.getSamples().size() / chunkCount;
+            for (int i = 0; i < referenceChunkStarts.length; i++) {
+                referenceChunkStarts[i] = i * chunkSize;
+                
+            }
 
+            chunkSizes = new long[chunkCount];
         }
 
 
-        long[] chunkSizes = new long[referenceTrack.getSyncSamples().length];
+         
 
         long sc = track.getSamples().size();
         // Since the number of sample differs per track enormously 25 fps vs Audio for example
@@ -416,7 +432,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             long start = Math.round(stretch * ((referenceChunkStarts[i]) - 1));
             long end = 0;
             if (referenceChunkStarts.length == i + 1) {
-                end = Math.round(stretch * (referenceSampleCount));
+                end = Math.round(stretch * (referenceSampleCount - 1));
             } else {
                 end = Math.round(stretch * ((referenceChunkStarts[i + 1] - 1)));
             }
@@ -439,7 +455,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         return rc;
     }
 
-    protected long getDuration(Track track) {
+    protected static long getDuration(Track track) {
         long duration = 0;
         for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
             duration += entry.getCount() * entry.getDelta();

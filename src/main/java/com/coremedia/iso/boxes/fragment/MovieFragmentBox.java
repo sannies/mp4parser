@@ -34,7 +34,7 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
     public static final String TYPE = "moof";
 
     public MovieFragmentBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 

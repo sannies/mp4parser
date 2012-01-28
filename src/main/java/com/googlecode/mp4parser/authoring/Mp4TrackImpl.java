@@ -1,20 +1,15 @@
 package com.googlecode.mp4parser.authoring;
 
-import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.HintMediaHeaderBox;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.NullMediaHeaderBox;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SoundMediaHeaderBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
-import com.coremedia.iso.boxes.VideoMediaHeaderBox;
+import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
+import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -43,21 +38,68 @@ public class Mp4TrackImpl extends AbstractTrack {
         } else if (mihd instanceof HintMediaHeaderBox) {
             type = Type.HINT;
         } else if (mihd instanceof NullMediaHeaderBox) {
-            type = Type.NULL;
+            if (stbl.getSampleDescriptionBox().getBoxes(ActionMessageFormat0SampleEntryBox.class).size() > 0) {
+                type = Type.AMF0;
+            } else {
+                type = Type.NULL;
+            }
         } else {
             type = Type.UNKNOWN;
         }
 
         sampleDescriptionBox = stbl.getSampleDescriptionBox();
-        decodingTimeEntries = stbl.getTimeToSampleBox().getEntries();
-        if (stbl.getCompositionTimeToSample() != null) {
-            compositionTimeEntries = stbl.getCompositionTimeToSample().getEntries();
-        }
-        if (stbl.getSyncSampleBox() != null) {
-            syncSamples = stbl.getSyncSampleBox().getSampleNumber();
-        }
-        if (stbl.getSampleDependencyTypeBox() != null) {
-            sampleDependencies = stbl.getSampleDependencyTypeBox().getEntries();
+        if (trackBox.getParent().getBoxes(MovieExtendsBox.class).size() > 0) {
+
+            decodingTimeEntries = new LinkedList<TimeToSampleBox.Entry>();
+            compositionTimeEntries = new LinkedList<CompositionTimeToSample.Entry>();
+            sampleDependencies = new LinkedList<SampleDependencyTypeBox.Entry>();
+
+            for (MovieFragmentBox movieFragmentBox : trackBox.getIsoFile().getBoxes(MovieFragmentBox.class)) {
+                List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
+                for (TrackFragmentBox traf : trafs) {
+                    if (traf.getTrackFragmentHeaderBox().getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
+                        List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
+                        for (TrackRunBox trun : truns) {
+                            for (TrackRunBox.Entry entry : trun.getEntries()) {
+                                if (trun.isSampleDurationPresent()) {
+                                    if (decodingTimeEntries.size() == 0 ||
+                                            decodingTimeEntries.get(decodingTimeEntries.size() - 1).getDelta() != entry.getSampleDuration()) {
+                                        decodingTimeEntries.add(new TimeToSampleBox.Entry(1, entry.getSampleDuration()));
+                                    } else {
+                                        TimeToSampleBox.Entry e = decodingTimeEntries.get(decodingTimeEntries.size() - 1);
+                                        e.setCount(e.getCount() + 1);
+                                    }
+                                }
+                                if (trun.isSampleCompositionTimeOffsetPresent()) {
+                                    if (compositionTimeEntries.size() == 0 ||
+                                            compositionTimeEntries.get(compositionTimeEntries.size() - 1).getOffset() != entry.getSampleCompositionTimeOffset()) {
+                                        compositionTimeEntries.add(new CompositionTimeToSample.Entry(1, CompositionTimeToSample.toint(entry.getSampleCompositionTimeOffset())));
+                                    } else {
+                                        CompositionTimeToSample.Entry e = compositionTimeEntries.get(compositionTimeEntries.size() - 1);
+                                        e.setCount(e.getCount() + 1);
+                                    }
+                                }
+
+                            }
+
+
+                        }
+
+
+                    }
+                }
+            }
+        } else {
+            decodingTimeEntries = stbl.getTimeToSampleBox().getEntries();
+            if (stbl.getCompositionTimeToSample() != null) {
+                compositionTimeEntries = stbl.getCompositionTimeToSample().getEntries();
+            }
+            if (stbl.getSyncSampleBox() != null) {
+                syncSamples = stbl.getSyncSampleBox().getSampleNumber();
+            }
+            if (stbl.getSampleDependencyTypeBox() != null) {
+                sampleDependencies = stbl.getSampleDependencyTypeBox().getEntries();
+            }
         }
         MediaHeaderBox mdhd = trackBox.getMediaBox().getMediaHeaderBox();
         TrackHeaderBox tkhd = trackBox.getTrackHeaderBox();

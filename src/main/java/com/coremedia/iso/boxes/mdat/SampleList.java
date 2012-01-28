@@ -2,11 +2,7 @@ package com.coremedia.iso.boxes.mdat;
 
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFileConvenienceHelper;
-import com.coremedia.iso.boxes.ChunkOffsetBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
@@ -51,7 +47,6 @@ public class SampleList extends AbstractList<IsoBufferWrapper> {
         isoBufferWrapper = moof.getIsoFile().getOriginalIso();
         SortedMap<Long, Long> offsets2Sizes = new TreeMap<Long, Long>();
         List<TrackFragmentBox> traf = moof.getBoxes(TrackFragmentBox.class);
-        assert traf.size() == 1 : "I cannot deal with movie fragments containing more than one track fragment";
         for (TrackFragmentBox trackFragmentBox : traf) {
             if (trackFragmentBox.getTrackFragmentHeaderBox().getTrackId() == trackId) {
                 long baseDataOffset;
@@ -60,12 +55,14 @@ public class SampleList extends AbstractList<IsoBufferWrapper> {
                 } else {
                     baseDataOffset = moof.getOffset();
                 }
-                TrackRunBox trun = trackFragmentBox.getTrackRunBox();
-                long sampleBaseOffset = baseDataOffset + trun.getDataOffset();
-                long[] sampleOffsets = trun.getSampleOffsets();
-                long[] sampleSizes = trun.getSampleSizes();
-                for (int i = 0; i < sampleSizes.length; i++) {
-                    offsets2Sizes.put(sampleOffsets[i] + sampleBaseOffset, sampleSizes[i]);
+
+                for (TrackRunBox trun: trackFragmentBox.getBoxes(TrackRunBox.class)) {
+                    long sampleBaseOffset = baseDataOffset + trun.getDataOffset();
+                    long[] sampleOffsets = trun.getSampleOffsets();
+                    long[] sampleSizes = trun.getSampleSizes();
+                    for (int i = 0; i < sampleSizes.length; i++) {
+                        offsets2Sizes.put(sampleOffsets[i] + sampleBaseOffset, sampleSizes[i]);
+                    }
                 }
             }
         }
