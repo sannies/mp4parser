@@ -17,13 +17,11 @@
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
 import com.coremedia.iso.IsoBufferWrapper;
-import org.scannotation.AnnotationDB;
-import org.scannotation.ClasspathUrlFinder;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -126,27 +124,22 @@ public class ObjectDescriptorFactory {
     protected static Map<Integer, Map<Integer, Class<? extends BaseDescriptor>>> descriptorRegistry = new HashMap<Integer, Map<Integer, Class<? extends BaseDescriptor>>>();
 
     static {
-        URL url = ClasspathUrlFinder.findClassBase(BaseDescriptor.class);
-        AnnotationDB db = new AnnotationDB();
-        try {
-            db.scanArchives(url);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Map<String, Set<String>> annotationIndex = db.getAnnotationIndex();
-        Set<String> annotated = annotationIndex.get(Descriptor.class.getName());
+        Set<Class<? extends BaseDescriptor>> annotated = new HashSet<Class<? extends BaseDescriptor>>();
 
+        annotated.add(DecoderSpecificInfo.class);
+        annotated.add(SLConfigDescriptor.class);
+        annotated.add(BaseDescriptor.class);
+        annotated.add(ExtensionDescriptor.class);
+        annotated.add(ObjectDescriptorBase.class);
+        annotated.add(ProfileLevelIndicationDescriptor.class);
+        annotated.add(AudioSpecificConfig.class);
+        annotated.add(ExtensionProfileLevelDescriptor.class);
+        annotated.add(ESDescriptor.class);
+        annotated.add(DecoderConfigDescriptor.class);
+        annotated.add(ObjectDescriptor.class);
 
-        for (String aClass : annotated) {
-            final Descriptor descriptor;
-            Class<? extends BaseDescriptor> clazz;
-            try {
-                clazz = (Class<? extends BaseDescriptor>) Class.forName(aClass);
-                descriptor = clazz.getAnnotation(Descriptor.class);
-
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException();
-            }
+        for (Class<? extends BaseDescriptor> clazz : annotated) {
+            final Descriptor descriptor = clazz.getAnnotation(Descriptor.class);
             final int[] tags = descriptor.tags();
             final int objectTypeInd = descriptor.objectTypeIndication();
 
@@ -156,7 +149,6 @@ public class ObjectDescriptorFactory {
             }
             for (int tag : tags) {
                 tagMap.put(tag, clazz);
-                //System.out.println("added tag code " + Integer.toHexString(tag) + " for objectTypeId " + objectTypeInd + " with " + aClass);
             }
             descriptorRegistry.put(objectTypeInd, tagMap);
         }
