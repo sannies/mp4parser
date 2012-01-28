@@ -40,15 +40,13 @@ import java.util.List;
 public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     private int dataReferenceIndex;
     protected List<Box> boxes = new LinkedList<Box>();
-    byte[] type;
 
     protected SampleEntry(byte[] type) {
         super(type);
-        this.type = type;
     }
 
-    public byte[] getType() {
-        return type;
+    protected SampleEntry(String type) {
+        super(type);
     }
 
     public void setType(byte[] type) {

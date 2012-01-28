@@ -70,7 +70,7 @@ public abstract class AbstractBox implements Box {
      */
     protected abstract long getContentSize();
 
-    private byte[] type;
+    protected byte[] type;
     private byte[] userType;
     private ContainerBox parent;
 
