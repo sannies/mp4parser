@@ -3,58 +3,48 @@ package com.googlecode.mp4parser.authoring.builder;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.DataEntryUrlBox;
-import com.coremedia.iso.boxes.DataInformationBox;
-import com.coremedia.iso.boxes.DataReferenceBox;
-import com.coremedia.iso.boxes.FileTypeBox;
-import com.coremedia.iso.boxes.HandlerBox;
-import com.coremedia.iso.boxes.HintMediaHeaderBox;
-import com.coremedia.iso.boxes.MediaBox;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.MediaInformationBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.MovieHeaderBox;
-import com.coremedia.iso.boxes.NullMediaHeaderBox;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.SoundMediaHeaderBox;
-import com.coremedia.iso.boxes.StaticChunkOffsetBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
-import com.coremedia.iso.boxes.VideoMediaHeaderBox;
-import com.coremedia.iso.boxes.WriteListener;
-import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentHeaderBox;
-import com.coremedia.iso.boxes.fragment.SampleFlags;
-import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
-import com.coremedia.iso.boxes.fragment.TrackRunBox;
+import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.fragment.*;
 import com.coremedia.iso.boxes.mdat.MediaDataBoxWithSamples;
 import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
- * Creates a fragmented MP4 file.
+ * Creates a fragmented MP4 file with tracks interleaved in each fragment.
  */
-public class FragmentedMp4Builder implements Mp4Builder {
-    FragmentIntersectionFinder intersectionFinder;
-    private static final Logger LOG = Logger.getLogger(FragmentedMp4Builder.class.getName());
+public class TrackInterleavedFragmentedMp4Builder implements Mp4Builder {
+    public static void main(String[] args) throws IOException {
+        MovieCreator movieCreator = new MovieCreator();
+        Movie movie = movieCreator.build(new IsoBufferWrapperImpl(new File("/home/sannies/example.f4v")));
 
+        TrackInterleavedFragmentedMp4Builder builder = new TrackInterleavedFragmentedMp4Builder();
+        builder.setIntersectionFinder(new TwoSecondIntersectionFinder());
+        IsoFile recreated =  builder.build(movie);
+
+        FileOutputStream fos = new FileOutputStream("/home/sannies/recreated.mp4");
+        recreated.getBox(new IsoOutputStream(fos));
+        fos.close();
+
+    }
+
+
+    FragmentIntersectionFinder intersectionFinder;
+    private static final Logger LOG = Logger.getLogger(TrackInterleavedFragmentedMp4Builder.class.getName());
+
+    /**
+     * @param movie data source
+     * @return
+     * @throws IOException
+     */
     public IsoFile build(Movie movie) throws IOException {
         LOG.info("Creating movie " + movie);
         IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(new byte[]{}));
@@ -80,14 +70,14 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 int[] startSamples = intersectionFinder.sampleNumbers(track, movie);
                 if (i < startSamples.length) {
                     int startSample = startSamples[i];
-                    int endSample = i + 1 < startSamples.length ? startSamples[i + 1] : track.getSamples().size();
+                    int endSample = startSamples.length >= (i + 1) ? track.getSamples().size() : startSamples[i + 1];
 
                     isoFile.addBox(createMoof(startSample, endSample, track, i));
                     isoFile.addBox(new MediaDataBoxWithSamples(track.getSamples().subList(startSample, endSample)));
 
 
                 } else {
-                    //obvious this track has not that many fragments
+                    //obivous this track has not that many fragments
                 }
             }
         }
@@ -154,7 +144,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
             trun.setFlags(trun.getFlags() | 0x400);
         }
 
-        for (int i = 0; i < sampleSizes.length; i++) {
+
+        for (int i = startSample; i < endSample; i++) {
             TrackRunBox.Entry entry = new TrackRunBox.Entry();
             entry.setSampleSize(sampleSizes[i]);
             mdatSize += sampleSizes[i];
@@ -321,6 +312,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
             case AMF0:
                 hdlr.setHandlerType("data");
                 break;
+            case NULL:
+
             default:
                 throw new RuntimeException("Dont know handler type " + track.getType());
         }
@@ -339,8 +332,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 HintMediaHeaderBox hmhd = new HintMediaHeaderBox();
                 minf.addBox(hmhd);
                 break;
-            case TEXT:
             case AMF0:
+            case TEXT:
             case NULL:
                 NullMediaHeaderBox nmhd = new NullMediaHeaderBox();
                 minf.addBox(nmhd);

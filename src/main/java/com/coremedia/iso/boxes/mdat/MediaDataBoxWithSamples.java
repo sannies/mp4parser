@@ -52,7 +52,7 @@ public class MediaDataBoxWithSamples extends AbstractBox {
         for (IsoBufferWrapper sample : samples) {
             size += sample.size();
         }
-        return 0;
+        return size;
     }
 
     @Override
