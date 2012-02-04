@@ -57,6 +57,10 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
         return dataReferenceIndex;
     }
 
+    public void setDataReferenceIndex(int dataReferenceIndex) {
+        this.dataReferenceIndex = dataReferenceIndex;
+    }
+
     public void setBoxes(List<Box> boxes) {
         this.boxes = new LinkedList<Box>(boxes);
     }

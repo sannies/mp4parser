@@ -80,11 +80,16 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 int[] startSamples = intersectionFinder.sampleNumbers(track, movie);
                 if (i < startSamples.length) {
                     int startSample = startSamples[i];
+
                     int endSample = i + 1 < startSamples.length ? startSamples[i + 1] : track.getSamples().size();
 
-                    isoFile.addBox(createMoof(startSample, endSample, track, i));
-                    isoFile.addBox(new MediaDataBoxWithSamples(track.getSamples().subList(startSample, endSample)));
-
+                    if (startSample == endSample) {
+                        // empty fragment
+                        // just don't add any boxes.
+                    } else {
+                        isoFile.addBox(createMoof(startSample, endSample, track, i));
+                        isoFile.addBox(new MediaDataBoxWithSamples(track.getSamples().subList(startSample, endSample)));
+                    }
 
                 } else {
                     //obvious this track has not that many fragments
@@ -261,7 +266,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     private TrackBox createTrackBox(Track track, Movie movie) {
-        LOG.info("Creating Mp4TrackImpl " + track);
+        LOG.info("Creating Track " + track);
         TrackBox trackBox = new TrackBox();
         TrackHeaderBox tkhd = new TrackHeaderBox();
         int flags = 0;
