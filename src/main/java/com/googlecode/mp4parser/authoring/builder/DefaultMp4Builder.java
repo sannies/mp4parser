@@ -326,7 +326,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         Map<Track, long[]> chunks = new HashMap<Track, long[]>();
 
         private InterleaveChunkMdat(Movie movie) {
-            super(IsoFile.fourCCtoBytes("mdat"));
+            super("mdat");
             tracks = movie.getTracks();
             for (Track track : movie.getTracks()) {
                 chunks.put(track, getChunkSizes(track, movie));
@@ -371,9 +371,8 @@ public class DefaultMp4Builder implements Mp4Builder {
                         while (ibw.remaining() >= 1024) {
                             os.write(ibw.read(1024));
                         }
-                        while (ibw.remaining() > 0) {
-                            os.write(ibw.readByte());
-                        }
+                        // it's safe to cast since there are less than 1024 byte remaining
+                        os.write(ibw.read((int) ibw.remaining()));
 
                     }
 
@@ -402,26 +401,24 @@ public class DefaultMp4Builder implements Mp4Builder {
                 referenceTrack = test;
                 referenceChunkStarts = test.getSyncSamples();
                 referenceSampleCount = test.getSamples().size();
-                chunkSizes = new long[referenceTrack.getSyncSamples().length]; 
+                chunkSizes = new long[referenceTrack.getSyncSamples().length];
             }
-            
+
         }
         if (referenceTrack == null) {
             referenceTrack = movie.getTracks().get(0);
             referenceSampleCount = referenceTrack.getSamples().size();
-            int chunkCount = (int) (Math.ceil(getDuration(referenceTrack)/referenceTrack.getTrackMetaData().getTimescale()) / 2);
+            int chunkCount = (int) (Math.ceil(getDuration(referenceTrack) / referenceTrack.getTrackMetaData().getTimescale()) / 2);
             referenceChunkStarts = new long[chunkCount];
             long chunkSize = referenceTrack.getSamples().size() / chunkCount;
             for (int i = 0; i < referenceChunkStarts.length; i++) {
                 referenceChunkStarts[i] = i * chunkSize;
-                
+
             }
 
             chunkSizes = new long[chunkCount];
         }
 
-
-         
 
         long sc = track.getSamples().size();
         // Since the number of sample differs per track enormously 25 fps vs Audio for example

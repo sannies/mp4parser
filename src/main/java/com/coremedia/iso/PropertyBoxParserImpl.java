@@ -23,20 +23,34 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
 
     public PropertyBoxParserImpl(String... customProperties) {
         InputStream is = getClass().getResourceAsStream("/isoparser-default.properties");
-        mapping = new Properties();
         try {
-            mapping.load(is);
-            Enumeration<URL> enumeration = Thread.currentThread().getContextClassLoader().getResources("isoparser-custom.properties");
+            mapping = new Properties();
+            try {
+                mapping.load(is);
+                Enumeration<URL> enumeration = Thread.currentThread().getContextClassLoader().getResources("isoparser-custom.properties");
 
-            while (enumeration.hasMoreElements()) {
-                URL url = enumeration.nextElement();
-                mapping.load(url.openStream());
+                while (enumeration.hasMoreElements()) {
+                    URL url = enumeration.nextElement();
+                    InputStream customIS = url.openStream();
+                    try {
+                        mapping.load(customIS);
+                    } finally {
+                        customIS.close();
+                    }
+                }
+                for (String customProperty : customProperties) {
+                    mapping.load(getClass().getResourceAsStream(customProperty));
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            for (String customProperty : customProperties) {
-                mapping.load(getClass().getResourceAsStream(customProperty));
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                // ignore - I can't help
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -139,7 +153,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         public FourCcToBox invoke() {
             String constructor;
             if (userType != null) {
-                if (!"uuid".equals( IsoFile.bytesToFourCC(type))) {
+                if (!"uuid".equals(IsoFile.bytesToFourCC(type))) {
                     throw new RuntimeException("we have a userType but no uuid box type. Something's wrong");
                 }
                 constructor = mapping.getProperty(IsoFile.bytesToFourCC(parent) + "-uuid[" + Hex.encodeHex(userType).toUpperCase() + "]");
