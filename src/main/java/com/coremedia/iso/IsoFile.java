@@ -22,7 +22,7 @@ import com.coremedia.iso.boxes.MovieBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.UnsupportedEncodingException;
 
 /**
  * The most upper container for ISO Boxes. It is a container box that is a file.
@@ -106,11 +106,13 @@ public class IsoFile extends AbstractContainerBox {
     public static String bytesToFourCC(byte[] type) {
         byte[] result = new byte[]{0, 0, 0, 0};
         if (type != null) {
-            for (int i = 0; i < Math.min(type.length, 4); i++) {
-                result[i] = type[i];
-            }
+            System.arraycopy(type, 0, result, 0, Math.min(type.length, 4));
         }
-        return new String(result, Charset.forName("ISO-8859-1"));
+        try {
+            return new String(result, "ISO-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            throw new Error("Required character encoding is missing", e);
+        }
     }
 
 
