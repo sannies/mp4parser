@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 /**
  *
@@ -62,12 +63,7 @@ public class RandomAccessFileIsoBufferWrapperImpl extends AbstractIsoBufferWrapp
 
     public IsoBufferWrapper getSegment(long startPos, long length) throws IOException {
         assert length < Integer.MAX_VALUE;
-
-        long pos = raf.getFilePointer();
-        byte[] bb = new byte[(int) length];
-        raf.read(bb);
-        raf.seek(pos);
-        return new IsoBufferWrapperImpl(ByteBuffer.wrap(bb));
+        return new IsoBufferWrapperImpl(raf.getChannel().map(FileChannel.MapMode.READ_ONLY, startPos, length));
     }
 
 }

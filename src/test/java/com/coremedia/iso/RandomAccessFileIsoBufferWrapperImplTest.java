@@ -8,7 +8,7 @@ import java.io.IOException;
  *
  */
 public class RandomAccessFileIsoBufferWrapperImplTest extends AbstractIsoBufferWrapperTest {
-    private IsoBufferWrapper isoBufferWrapper;
+
     File temp;
 
     public IsoBufferWrapper getTestIsoBufferWrapper() throws IOException {
