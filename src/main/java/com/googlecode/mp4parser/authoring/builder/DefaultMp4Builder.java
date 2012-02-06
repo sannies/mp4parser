@@ -368,10 +368,10 @@ public class DefaultMp4Builder implements Mp4Builder {
                         }
 
                         IsoBufferWrapper ibw = track.getSamples().get((int) j);
-                        while (ibw.remaining() >= 1024) {
-                            os.write(ibw.read(1024));
+                        while (ibw.remaining() >= 1024*1024) {
+                            os.write(ibw.read(1024*1024));
                         }
-                        // it's safe to cast since there are less than 1024 byte remaining
+                        // it's safe to cast since there are less than 1024*1024 byte remaining
                         os.write(ibw.read((int) ibw.remaining()));
 
                     }
