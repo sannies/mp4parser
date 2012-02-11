@@ -33,6 +33,7 @@ import java.io.IOException;
 public class SampleFlags {
   private int reserved;
   private int sampleDependsOn;
+  private int sampleIsDependentOn;
   private int sampleHasRedundancy;
   private int samplePaddingValue;
   private boolean sampleIsDifferenceSample;
@@ -41,23 +42,54 @@ public class SampleFlags {
   public SampleFlags(long flags) {
     reserved = (int) (flags >> 26);
     sampleDependsOn = (int) (flags >> 24) & 0x3;
-    sampleHasRedundancy = (int) (flags >> 22) & 0x3;
-    samplePaddingValue = (int) (flags >> 19) & 0x7;
-    sampleIsDifferenceSample = ((flags >> 18) & 0x1) == 1;
+    sampleIsDependentOn = (int) (flags >> 22) & 0x3;
+    sampleHasRedundancy = (int) (flags >> 20) & 0x3;
+    samplePaddingValue = (int) (flags >> 17) & 0x7;
+    sampleIsDifferenceSample = ((flags >> 16) & 0x1) == 1;
     sampleDegradationPriority = (int) flags & 0xFFFF;
   }
 
-  @Override
-  public String toString() {
-    return "SampleFlags{" +
-            "reserved=" + reserved +
-            ", sampleDependsOn=" + sampleDependsOn +
-            ", sampleHasRedundancy=" + sampleHasRedundancy +
-            ", samplePaddingValue=" + samplePaddingValue +
-            ", sampleIsDifferenceSample=" + sampleIsDifferenceSample +
-            ", sampleDegradationPriority=" + sampleDegradationPriority +
-            '}';
-  }
+    public int getReserved() {
+        return reserved;
+    }
+
+    public int getSampleDependsOn() {
+        return sampleDependsOn;
+    }
+
+    public int getSampleIsDependentOn() {
+        return sampleIsDependentOn;
+    }
+
+    public int getSampleHasRedundancy() {
+        return sampleHasRedundancy;
+    }
+
+    public int getSamplePaddingValue() {
+        return samplePaddingValue;
+    }
+
+    public boolean isSampleIsDifferenceSample() {
+        return sampleIsDifferenceSample;
+    }
+
+    public int getSampleDegradationPriority() {
+        return sampleDegradationPriority;
+    }
+
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("SampleFlags");
+        sb.append("{reserved=").append(reserved);
+        sb.append(", sampleDependsOn=").append(sampleDependsOn);
+        sb.append(", sampleIsDependentOn=").append(sampleIsDependentOn);
+        sb.append(", sampleHasRedundancy=").append(sampleHasRedundancy);
+        sb.append(", samplePaddingValue=").append(samplePaddingValue);
+        sb.append(", sampleIsDifferenceSample=").append(sampleIsDifferenceSample);
+        sb.append(", sampleDegradationPriority=").append(sampleDegradationPriority);
+        sb.append('}');
+        return sb.toString();
+    }
 
   public void getContent(IsoOutputStream os) throws IOException {
     long flags = reserved << 26;

@@ -66,11 +66,12 @@ public abstract class AbstractSampleEncryptionBox  extends AbstractFullBox {
                 }
             }
             entries.add(e);
-
         }
     }
 
-
+    public int getSampleCount() {
+        return entries.size();
+    }
 
     public List<Entry> getEntries() {
         return entries;

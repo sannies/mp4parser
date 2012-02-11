@@ -65,4 +65,13 @@ public class TrackFragmentBaseMediaDecodeTimeBox extends AbstractFullBox {
     public void setBaseMediaDecodeTime(long baseMediaDecodeTime) {
         this.baseMediaDecodeTime = baseMediaDecodeTime;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("TrackFragmentBaseMediaDecodeTimeBox");
+        sb.append("{baseMediaDecodeTime=").append(baseMediaDecodeTime);
+        sb.append('}');
+        return sb.toString();
+    }
 }

@@ -39,7 +39,10 @@ import java.util.List;
  * unsigned int(32) sample_duration;
  * unsigned int(32) sample_size;
  * unsigned int(32) sample_flags
- * unsigned int(32) sample_composition_time_offset;
+ * if (version == 0)
+ *     { unsigned int(32)	sample_composition_time_offset; }
+ * else
+ *     { signed int(32)		sample_composition_time_offset; }
  * }[ sample_count ]
  * }
  */
@@ -70,7 +73,11 @@ public class TrackRunBox extends AbstractFullBox {
             return sampleSize;
         }
 
-        public String getSampleFlags() {
+        public SampleFlags getSampleFlags() {
+            return sampleFlags;
+        }
+
+        public String getSampleFlagsAsString() {
             return sampleFlags.toString();
         }
 
@@ -261,6 +268,10 @@ public class TrackRunBox extends AbstractFullBox {
         return (getFlags() & 0x1) == 1;
     }
 
+    public boolean isFirstSampleFlagsPresent() {
+        return (getFlags() & 0x4) == 0x4;
+    }
+
     public boolean isSampleSizePresent() {
         return (getFlags() & 0x200) == 0x200;
     }
@@ -281,7 +292,11 @@ public class TrackRunBox extends AbstractFullBox {
         return dataOffset;
     }
 
-    public String getFirstSampleFlags() {
+    public SampleFlags getFirstSampleFlags() {
+        return firstSampleFlags;
+    }
+
+    public String getFirstSampleFlagsAsString() {
         return firstSampleFlags != null ? firstSampleFlags.toString() : "";
     }
 

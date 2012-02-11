@@ -30,10 +30,21 @@ public class TrickPlayBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
+    public List<Entry> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
+    }
+
     public static class Entry {
 
         public Entry(int value) {
             this.value = value;
+        }
+
+        public Entry() {
         }
 
         private int value;
@@ -52,6 +63,16 @@ public class TrickPlayBox extends AbstractFullBox {
 
         public void setDependencyLevel(int dependencyLevel) {
             value = (dependencyLevel & 0x3f) | value;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Entry");
+            sb.append("{picType=").append(getPicType());
+            sb.append(",dependencyLevel=").append(getDependencyLevel());
+            sb.append('}');
+            return sb.toString();
         }
     }
 
@@ -78,4 +99,12 @@ public class TrickPlayBox extends AbstractFullBox {
         }
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("TrickPlayBox");
+        sb.append("{entries=").append(entries);
+        sb.append('}');
+        return sb.toString();
+    }
 }

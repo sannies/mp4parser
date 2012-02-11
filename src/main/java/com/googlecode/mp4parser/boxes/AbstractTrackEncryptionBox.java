@@ -7,7 +7,10 @@ import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;import java.lang.Override;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.UUID;
 
 /**
  *
@@ -37,8 +40,10 @@ public abstract class AbstractTrackEncryptionBox extends AbstractFullBox {
         this.defaultIvSize = defaultIvSize;
     }
 
-    public byte[] getDefault_KID() {
-        return default_KID;
+    public String getDefault_KID() {
+        ByteBuffer b = ByteBuffer.wrap(default_KID);
+        b.order(ByteOrder.BIG_ENDIAN);
+        return new UUID(b.getLong(), b.getLong()).toString();
     }
 
     public void setDefault_KID(byte[] default_KID) {

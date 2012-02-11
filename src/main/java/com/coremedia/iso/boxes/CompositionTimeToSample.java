@@ -11,12 +11,34 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * aligned(8) class CompositionOffsetBox
+extends FullBox(‘ctts’, version = 0, 0) {
+unsigned int(32) entry_count;
+int i;
+if (version==0) {
+for (i=0; i < entry_count; i++) {
+unsigned int(32) sample_count;
+unsigned int(32) sample_offset;
+}
+}
+else if (version == 1) {
+for (i=0; i < entry_count; i++) {
+unsigned int(32) sample_count;
+signed int(32) sample_offset;
+}
+}
+}
+ *
  * This box provides the offset between decoding time and composition time.
- * Since decoding time must be less than the composition time, the offsets
- * are expressed as unsigned numbers such that CT(n) = DT(n) + CTTS(n) where
- * CTTS(n) is the (uncompressed) table entry for sample n. The composition
- * time to sample table is optional and must only be present if DT and CT
- * differ for any samples. Hint tracks do not use this box.
+ * In version 0 of this box the decoding time must be less than the composition time, and
+ * the offsets are expressed as unsigned numbers such that
+ * CT(n) = DT(n) + CTTS(n) where CTTS(n) is the (uncompressed) table entry for sample n.
+ *
+ * In version 1 of this box, the composition timeline and the decoding timeline are
+ * still derived from each other, but the offsets are signed.
+ * It is recommended that for the computed composition timestamps, there is
+ * exactly one with the value 0 (zero).
+ * 
  */
 public class CompositionTimeToSample extends AbstractFullBox {
     public static final String TYPE = "ctts";

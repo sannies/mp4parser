@@ -16,10 +16,7 @@
 
 package com.googlecode.mp4parser.boxes.basemediaformat;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
@@ -78,5 +75,14 @@ public class AvcNalUnitStorageBox extends AbstractBox {
     @Override
     protected void getContent(IsoOutputStream os) throws IOException {
         os.write(content);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("AvcNalUnitStorageBox");
+        sb.append("{content='").append(Hex.encodeHex(content)).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

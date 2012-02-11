@@ -23,6 +23,8 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * aligned(8) class ItemLocationBox extends FullBox(‘iloc’, version, 0) {
@@ -59,7 +61,6 @@ public class ItemLocationBox extends AbstractFullBox {
     public int lengthSize;
     public int baseOffsetSize;
     public int indexSize;
-    public int itemCount;
     public Item[] items;
 
     public static final String TYPE = "iloc";
@@ -70,7 +71,7 @@ public class ItemLocationBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        long size = 2 + (getVersion() != 1 ? 2 : 0);
+        long size = 4;
         for (Item item : items) {
             size += item.getContentSize();
         }
@@ -89,10 +90,9 @@ public class ItemLocationBox extends AbstractFullBox {
 
         if (getVersion() == 1) {
             indexSize = tmp & 0xf;
-        } else {
-            itemCount = in.readUInt16();
         }
 
+        int itemCount = in.readUInt16();
         items = new Item[itemCount];
         for (int i = 0; i < items.length; i++) {
             items[i] = new Item(in);
@@ -107,92 +107,38 @@ public class ItemLocationBox extends AbstractFullBox {
             os.writeUInt8((baseOffsetSize << 4 | indexSize));
         } else {
             os.writeUInt8((baseOffsetSize << 4));
-            os.writeUInt16(itemCount);
         }
+
+        os.writeUInt16(items.length);
 
         for (Item item : items) {
             item.getContent(os);
         }
     }
 
-    public class Item {
-        public int itemId;
-        public int constructionMethod;
-        public int dataReferenceIndex;
-        public byte[] baseOffset = new byte[(baseOffsetSize)];
-        public int extentCount;
-        public Extent[] extents;
+    public static long toLong(byte[] bytes) {
+      return ((ByteBuffer) ByteBuffer.allocate(8).position(Math.max(0, 8 - bytes.length))).put(bytes, 0, Math.min(8, bytes.length)).getLong(0);
+    }
 
-        public Item(IsoBufferWrapper in) throws IOException {
-            itemId = in.readUInt16();
+    public Item createItem(int itemId, int constructionMethod, int dataReferenceIndex, byte[] baseOffset, Extent[] extents) {
+        return new Item(itemId, constructionMethod, dataReferenceIndex, baseOffset, extents);
+    }
 
-            if (getVersion() == 1) {
-                int tmp = in.readUInt16();
-                constructionMethod = tmp & 0xf;
-            }
+    public Extent createExtent(byte[] extentOffset, byte[] extentLength, byte[] extentIndex) {
+        return new Extent(extentOffset, extentLength, extentIndex);
+    }
 
-            dataReferenceIndex = in.readUInt16();
-            in.read(baseOffset);
-            extentCount = in.readUInt16();
-            extents = new Extent[extentCount];
-
-            for (int i = 0; i < extents.length; i++) {
-                extents[i] = new Extent(in);
-            }
-        }
-
-        public long getContentSize() {
-            long size = 2 + (getVersion() == 1 ? 2 : 0) + 2 + baseOffsetSize + 2;
-
-            //add extent sizes
-            if ((getVersion() == 1) && getIndexSize() > 0) {
-                size += extentCount * getIndexSize();
-            }
-            size += extentCount * (offsetSize + lengthSize);
-
-            return size;
-        }
-
-        public void getContent(IsoOutputStream os) throws IOException {
-            os.writeUInt16(itemId);
-
-            if (getVersion() == 1) {
-                os.writeUInt16(constructionMethod);
-            }
-
-            os.writeUInt16(dataReferenceIndex);
-            os.writeUInt16(extentCount);
-
-            for (Extent extent : extents) {
-                extent.getContent(os);
-            }
-        }
-
-        public class Extent {
-            public byte[] extentOffset;
-            public byte[] extentLength;
-            public byte[] extentIndex;
-
-
-            public Extent(IsoBufferWrapper in) throws IOException {
-                if ((getVersion() == 1) && getIndexSize() > 0) {
-                    extentIndex = new byte[getIndexSize()];
-                    in.read(extentIndex);
-                }
-                extentOffset = new byte[offsetSize];
-                extentLength = new byte[lengthSize];
-                in.read(extentOffset);
-                in.read(extentLength);
-            }
-
-            public void getContent(IsoOutputStream os) throws IOException {
-                if ((getVersion() == 1) && getIndexSize() > 0) {
-                    os.write(extentIndex);
-                }
-                os.write(extentOffset);
-                os.write(extentLength);
-            }
-        }
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("ItemLocationBox");
+        sb.append("{offsetSize=").append(offsetSize);
+        sb.append(", lengthSize=").append(lengthSize);
+        sb.append(", baseOffsetSize=").append(baseOffsetSize);
+        sb.append(", indexSize=").append(indexSize);
+        sb.append(", items=").append(items == null ? "null" : Arrays.asList(items).toString());
+        sb.append('}');
+        return sb.toString();
     }
 
     public int getOffsetSize() {
@@ -228,11 +174,7 @@ public class ItemLocationBox extends AbstractFullBox {
     }
 
     public int getItemCount() {
-        return itemCount;
-    }
-
-    public void setItemCount(int itemCount) {
-        this.itemCount = itemCount;
+        return items.length;
     }
 
     public Item[] getItems() {
@@ -241,5 +183,158 @@ public class ItemLocationBox extends AbstractFullBox {
 
     public void setItems(Item[] items) {
         this.items = items;
+    }
+
+    public class Item {
+        public int itemId;
+        public int constructionMethod;
+        public int dataReferenceIndex;
+        public byte[] baseOffset = new byte[(baseOffsetSize)];
+        public Extent[] extents;
+
+        public int getExtentCount() {
+            return extents.length;
+        }
+
+        public void setBaseOffsetAdjustingExtents(long offsetToData) {
+            this.baseOffset = toByteArray(offsetToData, baseOffsetSize);
+            int base = 0;
+            for (Extent extent : extents) {
+                extent.extentOffset = toByteArray(base + offsetToData, offsetSize);
+                base += toLong(extent.extentLength);
+            }
+        }
+
+        public Item(int itemId, int constructionMethod, int dataReferenceIndex, byte[] baseOffset, Extent[] extents) {
+            this.itemId = itemId;
+            this.constructionMethod = constructionMethod;
+            this.dataReferenceIndex = dataReferenceIndex;
+            this.baseOffset = baseOffset;
+            this.extents = extents;
+        }
+
+        public Item(IsoBufferWrapper in) throws IOException {
+            itemId = in.readUInt16();
+
+            if (getVersion() == 1) {
+                int tmp = in.readUInt16();
+                constructionMethod = tmp & 0xf;
+            }
+
+            dataReferenceIndex = in.readUInt16();
+            in.read(baseOffset);
+            int extentCount = in.readUInt16();
+            extents = new Extent[extentCount];
+
+            for (int i = 0; i < extents.length; i++) {
+                extents[i] = new Extent(in);
+            }
+        }
+
+        public long getContentSize() {
+            long size = 2 + (getVersion() == 1 ? 2 : 0) + 2 + baseOffsetSize + 2;
+
+            //add extent sizes
+            if ((getVersion() == 1) && getIndexSize() > 0) {
+                size += extents.length * getIndexSize();
+            }
+            size += extents.length * (offsetSize + lengthSize);
+
+            return size;
+        }
+
+        public void getContent(IsoOutputStream os) throws IOException {
+            os.writeUInt16(itemId);
+
+            if (getVersion() == 1) {
+                os.writeUInt16(constructionMethod);
+            }
+
+            os.writeUInt16(dataReferenceIndex);
+            os.write(baseOffset);
+            os.writeUInt16(extents.length);
+
+            for (Extent extent : extents) {
+                extent.getContent(os);
+            }
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Item");
+            sb.append("{itemId=").append(itemId);
+            sb.append(", constructionMethod=").append(constructionMethod);
+            sb.append(", dataReferenceIndex=").append(dataReferenceIndex);
+            sb.append(", baseOffset=").append(baseOffset == null ? "null" : toLong(baseOffset));
+            sb.append(", extentCount=").append(extents == null ? 0 : extents.length);
+            sb.append(", extents=").append(extents == null ? "null" : Arrays.asList(extents).toString());
+            sb.append('}');
+            return sb.toString();
+        }
+    }
+
+    public class Extent {
+        public byte[] extentOffset;
+        public byte[] extentLength;
+        public byte[] extentIndex;
+
+        public Extent(byte[] extentOffset, byte[] extentLength, byte[] extentIndex) {
+            this.extentOffset = extentOffset;
+            this.extentLength = extentLength;
+            this.extentIndex = extentIndex;
+        }
+
+        public Extent(IsoBufferWrapper in) throws IOException {
+            if ((getVersion() == 1) && getIndexSize() > 0) {
+                extentIndex = new byte[getIndexSize()];
+                in.read(extentIndex);
+            }
+            extentOffset = new byte[offsetSize];
+            extentLength = new byte[lengthSize];
+            in.read(extentOffset);
+            in.read(extentLength);
+        }
+
+        public void getContent(IsoOutputStream os) throws IOException {
+            if ((getVersion() == 1) && getIndexSize() > 0) {
+                os.write(extentIndex);
+            }
+            os.write(extentOffset);
+            os.write(extentLength);
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Extent");
+            sb.append("{extentOffset=").append(extentOffset == null ? "null" : toLong(extentOffset));
+            sb.append(", extentLength=").append(extentLength == null ? "null" : toLong(extentLength));
+            sb.append(", extentIndex=").append(extentIndex == null ? "null" : toLong(extentIndex));
+            sb.append('}');
+            return sb.toString();
+        }
+    }
+
+    public static byte[] toByteArray(long number, int bytes) {
+      ByteBuffer result = ByteBuffer.allocate(bytes);
+      //todo: how does casting overflow?
+      switch (bytes) {
+        case 1:
+          result.put((byte) number);
+          break;
+        case 2:
+          result.putShort((short) number);
+          break;
+        case 4:
+          result.putInt((int) number);
+          break;
+        case 8:
+          result.putLong(number);
+          break;
+        default:
+          throw new NumberFormatException();
+      }
+      return result.array();
     }
 }
