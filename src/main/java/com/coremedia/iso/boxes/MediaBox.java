@@ -48,4 +48,13 @@ public class MediaBox extends AbstractContainerBox {
         return null;
     }
 
+    public HandlerBox getHandlerReferenceBox() {
+        for (Box box : boxes) {
+            if (box instanceof HandlerBox) {
+                return (HandlerBox) box;
+            }
+        }
+        return null;
+    }
+
 }

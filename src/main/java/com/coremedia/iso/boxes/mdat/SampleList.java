@@ -97,6 +97,7 @@ public class SampleList extends AbstractList<IsoBufferWrapper> {
         }
         for (int i = 0; i < numberOfSamplesInChunk.length; i++) {
             long thisChunksNumberOfSamples = numberOfSamplesInChunk[i];
+            //todo doesn't work for fragmented files
             long sampleOffset = chunkOffsetBox.getChunkOffsets()[i];
             for (int j = 0; j < thisChunksNumberOfSamples; j++) {
                 long sampleSize = sampleSizeBox.getSampleSizeAtIndex(sampleIndex);
