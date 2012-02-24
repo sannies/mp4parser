@@ -10,6 +10,7 @@ import com.coremedia.iso.boxes.Box;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,6 +65,7 @@ public abstract class AbstractSampleEncryptionBox  extends AbstractFullBox {
         long numOfEntries = in.readUInt32();
         while (numOfEntries-- > 0) {
             Entry e = new Entry();
+            //todo shouldn't default to 8 but to ivSize from trackEncryptionBox
             e.iv = in.read(((getFlags() & 0x1) > 0) ? ivSize : 8);
             if ((getFlags() & 0x2) > 0) {
                 int numOfPairs = in.readUInt16();
@@ -142,6 +144,19 @@ public abstract class AbstractSampleEncryptionBox  extends AbstractFullBox {
         }
 
         super.getBox(os);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    public List<Short> getEntrySizes() {
+        List<Short> entrySizes = new ArrayList<Short>(entries.size());
+        for (Entry entry : entries) {
+            short size = (short) entry.iv.length;
+            if (isSubSampleEncryption()) {
+                size += 2; //numPairs
+                size += entry.pairs.size() * 6;
+            }
+            entrySizes.add(size);
+        }
+        return entrySizes;
     }
 
     public static class Entry {
