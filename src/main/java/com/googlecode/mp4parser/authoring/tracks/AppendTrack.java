@@ -110,16 +110,19 @@ public class AppendTrack extends AbstractTrack {
             long[] returnSyncSamples = new long[numSyncSamples];
 
             int pos = 0;
+            long samplesBefore = 0;
             for (Track track : tracks) {
                 for (long l : track.getSyncSamples()) {
-                    returnSyncSamples[pos++] = l;
+                    returnSyncSamples[pos++] = samplesBefore + l;
                 }
+                samplesBefore += track.getSamples().size();
             }
             return returnSyncSamples;
         } else {
             return null;
         }
     }
+
 
     public List<SampleDependencyTypeBox.Entry> getSampleDependencies() {
         if (tracks[0].getSampleDependencies() != null && !tracks[0].getSampleDependencies().isEmpty()) {
