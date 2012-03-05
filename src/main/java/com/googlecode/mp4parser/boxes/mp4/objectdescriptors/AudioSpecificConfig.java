@@ -15,10 +15,8 @@
  */
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
-import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoBufferWrapper;
-
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -264,7 +262,7 @@ import java.util.Map;
 
 @Descriptor(tags = 0x5, objectTypeIndication = 0x40)
 public class AudioSpecificConfig extends BaseDescriptor {
-    byte[] configBytes;
+    ByteBuffer configBytes;
     long endPos;
 
     public static Map<Integer, Integer> samplingFrequencyIndexMap = new HashMap<Integer, Integer>();
@@ -317,34 +315,21 @@ public class AudioSpecificConfig extends BaseDescriptor {
     boolean parametricSpecificConfig;
 
     @Override
-    public void parse(int tag, IsoBufferWrapper in, int maxLength) throws IOException {
-        super.parse(tag, in, maxLength);
+    public void parseDetail(ByteBuffer bb) throws IOException {
+        configBytes = bb.slice();
+        configBytes.limit(sizeOfInstance);
+        bb.position(bb.position() + sizeOfInstance);
 
-        parse(in, maxLength - sizeBytes);
-    }
 
-    public int getSamplingFrequency() {
-        return samplingFrequencyIndex == 0xf ? samplingFrequency : samplingFrequencyIndexMap.get(samplingFrequencyIndex);
-    }
-
-    public int getChannelConfiguration() {
-        return channelConfiguration;
-    }
-
-    private void parse(IsoBufferWrapper in, int maxLength) throws IOException {
-        final long position = in.position();
-        endPos = position + maxLength;
-        configBytes = in.read(maxLength);
-        in.position(position);
-
-        audioObjectType = getAudioObjectType(in);
-        samplingFrequencyIndex = in.readBits(4);
+        BitReaderBuffer bitReaderBuffer = new BitReaderBuffer(configBytes);
+        audioObjectType = getAudioObjectType(bitReaderBuffer);
+        samplingFrequencyIndex = bitReaderBuffer.readBits(4);
 
         if (samplingFrequencyIndex == 0xf) {
-            samplingFrequency = in.readBits(24);
+            samplingFrequency = bitReaderBuffer.readBits(24);
         }
 
-        channelConfiguration = in.readBits(4);
+        channelConfiguration = bitReaderBuffer.readBits(4);
 
         if (audioObjectType == 5 ||
                 audioObjectType == 29) {
@@ -353,12 +338,12 @@ public class AudioSpecificConfig extends BaseDescriptor {
             if (audioObjectType == 29) {
                 psPresentFlag = 1;
             }
-            extensionSamplingFrequencyIndex = in.readBits(4);
+            extensionSamplingFrequencyIndex = bitReaderBuffer.readBits(4);
             if (extensionSamplingFrequencyIndex == 0xf)
-                extensionSamplingFrequency = in.readBits(24);
-            audioObjectType = getAudioObjectType(in);
+                extensionSamplingFrequency = bitReaderBuffer.readBits(24);
+            audioObjectType = getAudioObjectType(bitReaderBuffer);
             if (audioObjectType == 22)
-                extensionChannelConfiguration = in.readBits(4);
+                extensionChannelConfiguration = bitReaderBuffer.readBits(4);
         } else {
             extensionAudioObjectType = 0;
         }
@@ -376,7 +361,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
             case 21:
             case 22:
             case 23:
-                parseGaSpecificConfig(samplingFrequencyIndex, channelConfiguration, audioObjectType, in);
+                parseGaSpecificConfig(samplingFrequencyIndex, channelConfiguration, audioObjectType, bitReaderBuffer);
                 //GASpecificConfig();
                 break;
             case 8:
@@ -408,7 +393,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
                 //break;
             case 26:
             case 27:
-                parseParametricSpecificConfig(samplingFrequencyIndex, channelConfiguration, audioObjectType, in);
+                parseParametricSpecificConfig(samplingFrequencyIndex, channelConfiguration, audioObjectType, bitReaderBuffer);
                 //ParametricSpecificConfig();
                 break;
             case 28:
@@ -416,7 +401,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
                 //SSCSpecificConfig();
                 //break;
             case 30:
-                sacPayloadEmbedding = in.readBits(1);
+                sacPayloadEmbedding = bitReaderBuffer.readBits(1);
                 throw new UnsupportedOperationException("can't parse SpatialSpecificConfig yet");
                 //SpatialSpecificConfig();
                 //break;
@@ -431,7 +416,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
                 //DSTSpecificConfig();
                 //break;
             case 36:
-                fillBits = in.readBits(5);
+                fillBits = bitReaderBuffer.readBits(5);
                 throw new UnsupportedOperationException("can't parse ALSSpecificConfig yet");
                 //ALSSpecificConfig();
                 //break;
@@ -465,57 +450,55 @@ public class AudioSpecificConfig extends BaseDescriptor {
             case 26:
             case 27:
             case 39:
-                epConfig = in.readBits(2);
+                epConfig = bitReaderBuffer.readBits(2);
                 if (epConfig == 2 || epConfig == 3) {
                     throw new UnsupportedOperationException("can't parse ErrorProtectionSpecificConfig yet");
                     //ErrorProtectionSpecificConfig();
                 }
                 if (epConfig == 3) {
-                    directMapping = in.readBits(1);
+                    directMapping = bitReaderBuffer.readBits(1);
                     if (directMapping == 0) {
                         /* tbd */
+                        throw new RuntimeException("not implemented");
                     }
                 }
         }
 
-        if (extensionAudioObjectType != 5 && bits_to_decode(in) >= 16) {
-            syncExtensionType = in.readBits(11);
+        if (extensionAudioObjectType != 5 && bitReaderBuffer.remainingBits() >= 16) {
+            syncExtensionType = bitReaderBuffer.readBits(11);
             if (syncExtensionType == 0x2b7) {
-                extensionAudioObjectType = getAudioObjectType(in);
+                extensionAudioObjectType = getAudioObjectType(bitReaderBuffer);
                 if (extensionAudioObjectType == 5) {
-                    sbrPresentFlag = in.readBits(1);
+                    sbrPresentFlag = bitReaderBuffer.readBits(1);
                     if (sbrPresentFlag == 1) {
-                        extensionSamplingFrequencyIndex = in.readBits(4);
+                        extensionSamplingFrequencyIndex = bitReaderBuffer.readBits(4);
                         if (extensionSamplingFrequencyIndex == 0xf) {
-                            extensionSamplingFrequency = in.readBits(24);
+                            extensionSamplingFrequency = bitReaderBuffer.readBits(24);
                         }
-                        if (bits_to_decode(in) >= 12) {
-                            syncExtensionType = in.readBits(11); //10101001000
+                        if (bitReaderBuffer.remainingBits() >= 12) {
+                            syncExtensionType = bitReaderBuffer.readBits(11); //10101001000
                             if (syncExtensionType == 0x548) {
-                                psPresentFlag = in.readBits(1);
+                                psPresentFlag = bitReaderBuffer.readBits(1);
                             }
                         }
                     }
                 }
                 if (extensionAudioObjectType == 22) {
-                    sbrPresentFlag = in.readBits(1);
+                    sbrPresentFlag = bitReaderBuffer.readBits(1);
                     if (sbrPresentFlag == 1) {
-                        extensionSamplingFrequencyIndex = in.readBits(4);
+                        extensionSamplingFrequencyIndex = bitReaderBuffer.readBits(4);
                         if (extensionSamplingFrequencyIndex == 0xf) {
-                            extensionSamplingFrequency = in.readBits(24);
+                            extensionSamplingFrequency = bitReaderBuffer.readBits(24);
                         }
                     }
-                    extensionChannelConfiguration = in.readBits(4);
+                    extensionChannelConfiguration = bitReaderBuffer.readBits(4);
                 }
             }
         }
     }
 
-    private int bits_to_decode(IsoBufferWrapper in) throws IOException {
-        return (int) ((endPos - in.position()) * 8 + in.getReadBitsRemaining());
-    }
 
-    private int getAudioObjectType(IsoBufferWrapper in) throws IOException {
+    private int getAudioObjectType(BitReaderBuffer in) throws IOException {
         int audioObjectType = in.readBits(5);
         if (audioObjectType == 31) {
             audioObjectType = 32 + in.readBits(6);
@@ -523,7 +506,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         return audioObjectType;
     }
 
-    private void parseGaSpecificConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, IsoBufferWrapper in) throws IOException {
+    private void parseGaSpecificConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, BitReaderBuffer in) throws IOException {
 //    GASpecificConfig (samplingFrequencyIndex,
 //            channelConfiguration,
 //            audioObjectType)
@@ -561,7 +544,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         gaSpecificConfig = true;
     }
 
-    private void parseParametricSpecificConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, IsoBufferWrapper in) throws IOException {
+    private void parseParametricSpecificConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, BitReaderBuffer in) throws IOException {
         /*
         ParametricSpecificConfig() {
             isBaseLayer; 1 uimsbf
@@ -580,7 +563,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         }
     }
 
-    private void parseParaConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, IsoBufferWrapper in) throws IOException {
+    private void parseParaConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, BitReaderBuffer in) throws IOException {
         /*
         PARAconfig()
         {
@@ -610,7 +593,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         parametricSpecificConfig = true;
     }
 
-    private void parseErHvxcConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, IsoBufferWrapper in) throws IOException {
+    private void parseErHvxcConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, BitReaderBuffer in) throws IOException {
         /*
         ErHVXCconfig()
         {
@@ -631,7 +614,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         }
     }
 
-    private void parseHilnConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, IsoBufferWrapper in) throws IOException {
+    private void parseHilnConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, BitReaderBuffer in) throws IOException {
         /*
         HILNconfig()
         {
@@ -643,13 +626,13 @@ public class AudioSpecificConfig extends BaseDescriptor {
         }
         */
         hilnQuantMode = in.readBits(1);
-        hilnMaxNumLine = in.readUInt8();
+        hilnMaxNumLine = in.readBits(8);
         hilnSampleRateCode = in.readBits(4);
         hilnFrameLength = in.readBits(12);
         hilnContMode = in.readBits(2);
     }
 
-    private void parseHilnEnexConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, IsoBufferWrapper in) throws IOException {
+    private void parseHilnEnexConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, BitReaderBuffer in) throws IOException {
         /*
         HILNenexConfig()
         {
@@ -665,7 +648,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         }
     }
 
-    public byte[] getConfigBytes() {
+    public ByteBuffer getConfigBytes() {
         return configBytes;
     }
 
@@ -689,7 +672,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("AudioSpecificConfig");
-        sb.append("{configBytes=").append(Hex.encodeHex(configBytes));
+        sb.append("{configBytes=").append(configBytes);
         sb.append(", audioObjectType=").append(audioObjectType).append(" (").append(audioObjectTypeMap.get(audioObjectType)).append(")");
         sb.append(", samplingFrequencyIndex=").append(samplingFrequencyIndex).append(" (").append(samplingFrequencyIndexMap.get(samplingFrequencyIndex)).append(")");
         sb.append(", samplingFrequency=").append(samplingFrequency);
@@ -935,5 +918,14 @@ public class AudioSpecificConfig extends BaseDescriptor {
      0xFF no audio capability required -
 
         */
+    }
+
+
+    public int getSamplingFrequency() {
+        return samplingFrequencyIndex == 0xf ? samplingFrequency : samplingFrequencyIndexMap.get(samplingFrequencyIndex);
+    }
+
+    public int getChannelConfiguration() {
+        return channelConfiguration;
     }
 }

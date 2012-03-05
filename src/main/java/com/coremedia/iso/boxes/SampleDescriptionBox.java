@@ -16,11 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * The sample description table gives detailed information about the coding type used, and any initialization
@@ -43,7 +43,6 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.sampleentry.VisualSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry
- * @see com.coremedia.iso.boxes.rtp.RtpHintSampleEntry
  */
 public class SampleDescriptionBox extends FullContainerBox {
     public static final String TYPE = "stsd";
@@ -54,37 +53,29 @@ public class SampleDescriptionBox extends FullContainerBox {
 
     @Override
     protected long getContentSize() {
-        long size = 4;
+        return super.getContentSize() + 4;
+    }
+
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        content.get(new byte[4]);
+        parseChildBoxes(content);
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, boxes.size());
+        writeChildBoxes(bb);
+    }
+
+    public SampleEntry getSampleEntry() {
         for (Box box : boxes) {
-            size += box.getSize();
+            if (box instanceof SampleEntry) {
+                return (SampleEntry) box;
+            }
         }
-        return size;
-    }
-
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        parseHeader(in, size);
-        long entryCount = in.readUInt32();
-        if (entryCount > Integer.MAX_VALUE) {
-            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE subboxes");
-        }
-        long sp = in.position();
-        for (int i = 0; i < entryCount; i++) {
-            boxes.add(boxParser.parseBox(in, this, lastMovieFragmentBox));
-        }
-
-        if (in.position() - offset < size) {
-            // System.out.println("dead bytes found in " + box);
-            long length = (size - (in.position() - offset));
-            setDeadBytes(in.getSegment(in.position(), length));
-        }
-    }
-
-    @Override
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt32(boxes.size());
-        for (Box boxe : boxes) {
-            boxe.getBox(isos);
-        }
+        return null;
     }
 }

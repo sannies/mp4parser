@@ -16,11 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * The hint media header contains general information, independent of the protocaol, for hint tracks. Resides
@@ -56,25 +56,28 @@ public class HintMediaHeaderBox extends AbstractMediaHeaderBox {
     }
 
     protected long getContentSize() {
-        return 16;
+        return 20;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        maxPduSize = in.readUInt16();
-        avgPduSize = in.readUInt16();
-        maxBitrate = in.readUInt32();
-        avgBitrate = in.readUInt32();
-        in.readUInt32();    // reserved!
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        maxPduSize = IsoTypeReader.readUInt16(content);
+        avgPduSize = IsoTypeReader.readUInt16(content);
+        maxBitrate = IsoTypeReader.readUInt32(content);
+        avgBitrate = IsoTypeReader.readUInt32(content);
+        IsoTypeReader.readUInt32(content);    // reserved!
+
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt16(maxPduSize);
-        isos.writeUInt16(avgPduSize);
-        isos.writeUInt32(maxBitrate);
-        isos.writeUInt32(avgBitrate);
-        isos.writeUInt32(0);
-
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt16(bb, maxPduSize);
+        IsoTypeWriter.writeUInt16(bb, avgPduSize);
+        IsoTypeWriter.writeUInt32(bb, maxBitrate);
+        IsoTypeWriter.writeUInt32(bb, avgBitrate);
+        IsoTypeWriter.writeUInt32(bb, 0);
     }
 
     @Override

@@ -1,8 +1,8 @@
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,11 +23,11 @@ public class BaseLocationBoxTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bloc.getBox(new IsoOutputStream(baos));
         byte[] boxAsBytes = baos.toByteArray();
-        IsoBufferWrapper ibw = new IsoBufferWrapperImpl(ByteBuffer.wrap(boxAsBytes));
-        long lengthWritten = ibw.readUInt32();
-        Assert.assertEquals("bloc", ibw.readString(4));
+        ByteBuffer bb = (ByteBuffer.wrap(boxAsBytes));
+        long lengthWritten = IsoTypeReader.readUInt32(bb);
+        Assert.assertEquals("bloc", IsoTypeReader.read4cc(bb));
         BaseLocationBox bloc2 = new BaseLocationBox();
-        bloc2.parse(ibw, lengthWritten - 8, null, null);
+        bloc2.parse(new ByteBufferByteChannel(bb), null, lengthWritten - 8, null);
 
         Assert.assertEquals(lengthWritten, bloc2.getSize());
         Assert.assertEquals(lengthWritten, bloc.getSize());

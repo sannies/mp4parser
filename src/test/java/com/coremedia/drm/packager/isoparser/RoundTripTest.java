@@ -17,17 +17,19 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
 import junit.framework.TestCase;
-import junitx.framework.ArrayAssert;
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Tests ISO Roundtrip.
@@ -44,6 +46,9 @@ public class RoundTripTest extends TestCase {
     }*/
     }
 
+    /*    public void testRoundDeleteMe() throws Exception {
+        testRoundTrip_1("/suckerpunch-distantplanet_h1080p.mov");
+    }*/
     public void testRoundTrip_TinyExamples_Old() throws Exception {
         testRoundTrip_1("/Tiny Sample - OLD.mp4");
     }
@@ -79,30 +84,37 @@ public class RoundTripTest extends TestCase {
 
     public void testRoundTrip_1(String resource) throws Exception {
 
-        File originalFile = File.createTempFile("pdcf", "original");
+        long start1 = System.currentTimeMillis();
+        File originalFile = File.createTempFile("RoundTripTest", "testRoundTrip_1");
         FileOutputStream fos = new FileOutputStream(originalFile);
-        byte[] content = IOUtils.toByteArray(getClass().getResourceAsStream(resource));
-        fos.write(content);
+        IOUtils.copy(getClass().getResourceAsStream(resource), fos);
         fos.close();
+        long start2 = System.currentTimeMillis();
 
-        IsoFile isoFile = new IsoFile(InputStreamIsoBufferHelper.get(getClass().getResourceAsStream(resource), 20000));
-        isoFile.parse();
+
+        IsoFile isoFile = new IsoFile(new FileInputStream(originalFile).getChannel());
+        long start3 = System.currentTimeMillis();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        isoFile.getBox(new IsoOutputStream(baos));
-
-
-        /*  File f = File.createTempFile("RoundTripTest", "debug");
-        System.err.println(f.getAbsolutePath());
-        FileOutputStream fos2 = new FileOutputStream(f);
-        fos2.write(baos.toByteArray());
-        fos2.close();*/
-
-
+        WritableByteChannel wbc = Channels.newChannel(baos);
+        long start4 = System.currentTimeMillis();
         Walk.through(isoFile);
+        long start5 = System.currentTimeMillis();
+        isoFile.getBox(wbc);
+        wbc.close();
+        long start6 = System.currentTimeMillis();
+
+        System.err.println("Preparing tmp copy took: " + (start2 - start1) + "ms");
+        System.err.println("Parsing took           : " + (start3 - start2) + "ms");
+        System.err.println("Writing took           : " + (start6 - start3) + "ms");
+        System.err.println("Walking took           : " + (start5 - start4) + "ms");
 
 
-        ArrayAssert.assertEquals(content, baos.toByteArray());
+        byte[] a = IOUtils.toByteArray(getClass().getResourceAsStream(resource));
+        byte[] b = baos.toByteArray();
+//        new FileOutputStream("a.mp4").write(a);
+//        new FileOutputStream("b.mp4").write(b);
+        Assert.assertArrayEquals(a, b);
 
     }
 

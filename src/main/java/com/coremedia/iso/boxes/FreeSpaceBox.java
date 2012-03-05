@@ -16,55 +16,47 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * The contents of a free-space box are irrelevant and may be ignored, or the object deleted, without affecting the
  * presentation. Care should be excercized when deleting the object, as this may invalidate the offsets used in the
  * sample table.
- *
- * @see com.coremedia.iso.boxes.SampleTableBox
  */
 public class FreeSpaceBox extends AbstractBox {
     public static final String TYPE = "skip";
 
-    byte[] content;
+    byte[] data;
 
     protected long getContentSize() {
-        return content.length;
+        return data.length;
     }
 
     public FreeSpaceBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
-    }
-
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        if (((int) size) != size) {
-            throw new RuntimeException("The FreeSpaceBox cannot be larger than 2^32 bytes!");
-        }
-        content = in.read((int) size);
-
+        super(TYPE);
     }
 
     public void setData(byte[] data) {
-        this.content = data;
+        this.data = data;
     }
 
     public byte[] getData() {
-        return content;
+        return data;
     }
 
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        data = new byte[content.remaining()];
+        content.get(data);
+    }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.write(content);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        bb.put(data);
     }
 
     public String toString() {
-        return "FreeSpaceBox[size=" + content.length + ";type=" + IsoFile.bytesToFourCC(getType()) + "]";
+        return "FreeSpaceBox[size=" + data.length + ";type=" + getType() + "]";
     }
 }

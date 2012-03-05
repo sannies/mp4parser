@@ -21,17 +21,17 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 package com.googlecode.mp4parser.h264.read;
 
 
-import com.coremedia.iso.IsoBufferWrapper;
 import com.googlecode.mp4parser.h264.BTree;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import static com.googlecode.mp4parser.h264.Debug.println;
 
 
 public class CAVLCReader extends BitstreamReader {
 
-    public CAVLCReader(IsoBufferWrapper is) throws IOException {
+    public CAVLCReader(InputStream is) throws IOException {
         super(is);
     }
 

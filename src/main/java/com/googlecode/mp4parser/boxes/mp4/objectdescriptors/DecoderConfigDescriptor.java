@@ -17,9 +17,10 @@
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
 import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoTypeReader;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,37 +59,32 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
     byte[] configDescriptorDeadBytes;
 
     @Override
-    public void parse(int tag, IsoBufferWrapper in, int maxLength) throws IOException {
-        super.parse(tag, in, maxLength);
+    public void parseDetail(ByteBuffer bb) throws IOException {
+        objectTypeIndication = IsoTypeReader.readUInt8(bb);
 
-        objectTypeIndication = in.readUInt8();
-
-        int data = in.readUInt8();
+        int data = IsoTypeReader.readUInt8(bb);
         streamType = data >>> 2;
         upStream = (data >> 1) & 0x1;
 
-        bufferSizeDB = in.readUInt24();
-        maxBitRate = in.readUInt32();
-        avgBitRate = in.readUInt32();
+        bufferSizeDB = IsoTypeReader.readUInt24(bb);
+        maxBitRate = IsoTypeReader.readUInt32(bb);
+        avgBitRate = IsoTypeReader.readUInt32(bb);
 
-        int remainungSize = getSizeOfInstance() - 13;
+
 
         BaseDescriptor descriptor;
-        if (remainungSize > 2) { //1byte tag + at least 1byte size
-            final long begin = in.position();
-            descriptor = ObjectDescriptorFactory.createFrom(objectTypeIndication, in, remainungSize);
-            final long read = in.position() - begin;
+        if (bb.remaining() > 2) { //1byte tag + at least 1byte size
+            final int begin = bb.position();
+            descriptor = ObjectDescriptorFactory.createFrom(objectTypeIndication, bb);
+            final int read = bb.position() - begin;
             log.finer(descriptor + " - DecoderConfigDescr1 read: " + read + ", size: " + (descriptor != null ? descriptor.getSize() : null));
             if (descriptor != null) {
                 final int size = descriptor.getSize();
                 if (read < size) {
                     //skip
-                    configDescriptorDeadBytes = in.read((int) (size - read));
-                    in.position(begin + size);
+                    configDescriptorDeadBytes = new byte[size - read];
+                    bb.get(configDescriptorDeadBytes);
                 }
-                remainungSize -= size;
-            } else {
-                remainungSize -= read;
             }
             if (descriptor instanceof DecoderSpecificInfo) {
                 decoderSpecificInfo = (DecoderSpecificInfo) descriptor;
@@ -98,19 +94,11 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
             }
         }
 
-        while (remainungSize > 2) {
-            final long begin = in.position();
-            descriptor = ObjectDescriptorFactory.createFrom(objectTypeIndication, in, remainungSize);
-            final long read = in.position() - begin;
+        while (bb.remaining() > 2) {
+            final long begin = bb.position();
+            descriptor = ObjectDescriptorFactory.createFrom(objectTypeIndication, bb);
+            final long read = bb.position() - begin;
             log.finer(descriptor + " - DecoderConfigDescr2 read: " + read + ", size: " + (descriptor != null ? descriptor.getSize() : null));
-            if (descriptor != null) {
-                final int size = descriptor.getSize();
-                in.position(begin + size);
-                remainungSize -= size;
-            } else {
-                remainungSize -= read;
-            }
-
             if (descriptor instanceof ProfileLevelIndicationDescriptor) {
                 profileLevelIndicationDescriptors.add((ProfileLevelIndicationDescriptor) descriptor);
             }

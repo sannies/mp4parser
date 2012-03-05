@@ -16,12 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Describes the format of media access units in PDCF files.
@@ -36,11 +35,11 @@ public final class OmaDrmAccessUnitFormatBox extends AbstractFullBox {
     private int initVectorLength;
 
     protected long getContentSize() {
-        return 3;
+        return 7;
     }
 
     public OmaDrmAccessUnitFormatBox() {
-        super(IsoFile.fourCCtoBytes("odaf"));
+        super("odaf");
     }
 
     public boolean isSelectiveEncryption() {
@@ -68,19 +67,21 @@ public final class OmaDrmAccessUnitFormatBox extends AbstractFullBox {
         selectiveEncryption = (allBits & 0x80) == 0x80;
     }
 
-
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt8(allBits);
-        isos.writeUInt8(keyIndicatorLength);
-        isos.writeUInt8(initVectorLength);
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        allBits = (byte) IsoTypeReader.readUInt8(content);
+        selectiveEncryption = (allBits & 0x80) == 0x80;
+        keyIndicatorLength = IsoTypeReader.readUInt8(content);
+        initVectorLength = IsoTypeReader.readUInt8(content);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        allBits = (byte) in.readUInt8();
-        selectiveEncryption = (allBits & 0x80) == 0x80;
-        keyIndicatorLength = in.readUInt8();
-        initVectorLength = in.readUInt8();
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt8(bb, allBits);
+        IsoTypeWriter.writeUInt8(bb, keyIndicatorLength);
+        IsoTypeWriter.writeUInt8(bb, initVectorLength);
     }
 
 }

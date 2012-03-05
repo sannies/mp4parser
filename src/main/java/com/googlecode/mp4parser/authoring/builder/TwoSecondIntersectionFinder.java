@@ -21,7 +21,13 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
     public int[] sampleNumbers(Track track, Movie movie) {
         List<TimeToSampleBox.Entry> entries = track.getDecodingTimeEntries();
 
-        double trackLength = getDuration(track) / track.getTrackMetaData().getTimescale();
+        double trackLength = 0;
+        for (Track thisTrack : movie.getTracks()) {
+            double thisTracksLength = getDuration(thisTrack) / thisTrack.getTrackMetaData().getTimescale();
+            if (trackLength < thisTracksLength) {
+                trackLength = thisTracksLength;
+            }
+        }
 
         int fragments[] = new int[(int) Math.ceil(trackLength / 2) - 1];
         Arrays.fill(fragments, -1);
@@ -41,7 +47,7 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
         }
         int last = samples;
         // fill all -1 ones.
-        for (int i = fragments.length - 1; i >= 0 ; i--) {
+        for (int i = fragments.length - 1; i >= 0; i--) {
             if (fragments[i] == -1) {
                 fragments[i] = last;
             }

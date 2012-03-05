@@ -21,27 +21,27 @@ public final class AppleTrackNumberBox extends AbstractAppleMetaDataBox {
         appleDataBox.setVersion(0);
         appleDataBox.setFlags(0);
         appleDataBox.setFourBytes(new byte[4]);
-        appleDataBox.setContent(new byte[]{0, 0, 0, track, 0, of, 0, 0});
+        appleDataBox.setData(new byte[]{0, 0, 0, track, 0, of, 0, 0});
     }
 
     public byte getTrackNumber() {
-        return appleDataBox.getContent()[3];
+        return appleDataBox.getData()[3];
     }
 
     public byte getNumberOfTracks() {
-        return appleDataBox.getContent()[5];
+        return appleDataBox.getData()[5];
     }
 
     public void setNumberOfTracks(byte numberOfTracks) {
-        byte[] content = appleDataBox.getContent();
+        byte[] content = appleDataBox.getData();
         content[5] = numberOfTracks;
-        appleDataBox.setContent(content);
+        appleDataBox.setData(content);
     }
 
     public void setTrackNumber(byte trackNumber) {
-        byte[] content = appleDataBox.getContent();
+        byte[] content = appleDataBox.getData();
         content[3] = trackNumber;
-        appleDataBox.setContent(content);
+        appleDataBox.setData(content);
     }
 
 

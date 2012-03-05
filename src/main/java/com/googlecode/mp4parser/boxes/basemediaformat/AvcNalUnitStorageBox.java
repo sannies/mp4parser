@@ -16,73 +16,57 @@
 
 package com.googlecode.mp4parser.boxes.basemediaformat;
 
-import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;import java.lang.Override;import java.lang.RuntimeException;import java.lang.System;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * The AVC NAL Unit Storage Box SHALL contain an AVCDecoderConfigurationRecord,
  * as defined in section 5.2.4.1 of the ISO 14496-12.
  */
 public class AvcNalUnitStorageBox extends AbstractBox {
-    byte[] content;
+    byte[] data;
 
     public AvcNalUnitStorageBox() {
-        super(IsoFile.fourCCtoBytes("avcn"));
+        super("avcn");
     }
 
 
     public AvcNalUnitStorageBox(AvcConfigurationBox avcConfigurationBox) {
-        super(IsoFile.fourCCtoBytes("avcn"));
+        super("avcn");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
+        ByteBuffer content = ByteBuffer.allocate(l2i(avcConfigurationBox.getContentSize()));
         try {
-            avcConfigurationBox.getBox(new IsoOutputStream(baos));
+            avcConfigurationBox.getContent(content);
         } catch (IOException e) {
-            // cannot happen ?! haha!
             throw new RuntimeException(e);
         }
-        byte[] header = avcConfigurationBox.getHeader();
-        content = new byte[baos.size() - header.length];
-        System.arraycopy(baos.toByteArray(), header.length, content, 0, content.length);
+        data = content.array();
     }
 
     @Override
     protected long getContentSize() {
-        return content.length;
+        return data.length;
+    }
+
+
+    public void setData(byte[] data) {
+        this.data = data;
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        if (size == -1) { // length = rest of file!
-            throw new IOException("box size of -1 is not supported. Boxsize -1 means box reaches until the end of the file.");
-        } else if (((int) size) != size) {
-            throw new IOException("The UnknownBox cannot be larger than 2^32 bytes(Plz enhance parser!!)");
-        } else {
-            content = in.read((int) size);
-        }
-    }
-
-
-    public void setContent(byte[] content) {
-        this.content = content;
+    public void _parseDetails(ByteBuffer content) {
+        data = new byte[content.remaining()];
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.write(content);
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("AvcNalUnitStorageBox");
-        sb.append("{content='").append(Hex.encodeHex(content)).append('\'');
-        sb.append('}');
-        return sb.toString();
+    protected void getContent(ByteBuffer bb) throws IOException {
+        bb.put(data);
     }
 }

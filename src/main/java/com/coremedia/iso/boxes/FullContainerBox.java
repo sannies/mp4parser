@@ -17,21 +17,24 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Abstract base class for a full iso box only containing ither boxes.
  */
 public abstract class FullContainerBox extends AbstractFullBox implements ContainerBox {
     protected List<Box> boxes = new LinkedList<Box>();
-
+    private static Logger LOG = Logger.getLogger(FullContainerBox.class.getName());
+    BoxParser boxParser;
 
     public void setBoxes(List<Box> boxes) {
         this.boxes = new LinkedList<Box>(boxes);
@@ -60,7 +63,7 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
     }
 
     protected long getContentSize() {
-        long contentSize = 0;
+        long contentSize = 4; // flags and version
         for (Box boxe : boxes) {
             contentSize += boxe.getSize();
         }
@@ -76,7 +79,7 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
     }
 
     public FullContainerBox(String type) {
-        super(IsoFile.fourCCtoBytes(type));
+        super(type);
     }
 
     public List<Box> getBoxes() {
@@ -84,38 +87,35 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        long pos = in.position();
-        int version = in.readUInt8();
-        long flags = in.readUInt24();
-        // perhaps we don't have a full box here. In that case the flags and version
-        // will be in a non-plausible range.
-        if (version > 3) {
-            // that's not plausible
-            if (flags > 7) {
-                // and thats not plausible too
-                // we have one of those stupid apple meta boxes
-                version = 0;
-                flags = 0;
-                in.position(pos); // reset position to before trying to parse flags and vewrsion
-            }
-
-        }
-        parseBoxes(size, in, boxParser, lastMovieFragmentBox);
+    public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        super.parse(in, header, contentSize, boxParser);
+        this.boxParser = boxParser;
     }
 
-    protected void parseBoxes(long size, IsoBufferWrapper in, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        long remainingContentSize = size - 4;
-        while (remainingContentSize > 0) {
-            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-            remainingContentSize -= box.getSize();
-            boxes.add(box);
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        parseChildBoxes(content);
+    }
+
+    protected final void parseChildBoxes(ByteBuffer content) {
+        try {
+            while (content.remaining() >= 8) { //  8 is the minimal size for a sane box
+                boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));
+            }
+
+            if (content.remaining() != 0) {
+                deadBytes = content.slice();
+                LOG.severe("Some sizes are wrong");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("FreeBox[");
+        buffer.append(this.getClass().getSimpleName()).append("[");
         for (int i = 0; i < boxes.size(); i++) {
             if (i > 0) {
                 buffer.append(";");
@@ -126,9 +126,16 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
         return buffer.toString();
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        for (Box boxe : boxes) {
-            boxe.getBox(os);
+
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        writeChildBoxes(bb);
+    }
+
+    protected final void writeChildBoxes(ByteBuffer bb) throws IOException {
+        WritableByteChannel wbc = new ByteBufferByteChannel(bb);
+        for (Box box : boxes) {
+            box.getBox(wbc);
         }
     }
 

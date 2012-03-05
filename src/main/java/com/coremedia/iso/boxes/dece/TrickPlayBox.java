@@ -1,13 +1,11 @@
 package com.coremedia.iso.boxes.dece;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,24 +25,13 @@ public class TrickPlayBox extends AbstractFullBox {
     private List<Entry> entries = new ArrayList<Entry>();
 
     public TrickPlayBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
-    }
-
-    public List<Entry> getEntries() {
-        return entries;
-    }
-
-    public void setEntries(List<Entry> entries) {
-        this.entries = entries;
+        super(TYPE);
     }
 
     public static class Entry {
 
         public Entry(int value) {
             this.value = value;
-        }
-
-        public Entry() {
         }
 
         private int value;
@@ -64,47 +51,26 @@ public class TrickPlayBox extends AbstractFullBox {
         public void setDependencyLevel(int dependencyLevel) {
             value = (dependencyLevel & 0x3f) | value;
         }
-
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder();
-            sb.append("Entry");
-            sb.append("{picType=").append(getPicType());
-            sb.append(",dependencyLevel=").append(getDependencyLevel());
-            sb.append('}');
-            return sb.toString();
-        }
     }
 
     @Override
     protected long getContentSize() {
-        return entries.size();
+        return 4 + entries.size();
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        while (content.remaining() > 0) {
+            entries.add(new Entry(IsoTypeReader.readUInt8(content)));
+        }
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
         for (Entry entry : entries) {
-            os.write(entry.value);
+            IsoTypeWriter.writeUInt8(bb, entry.value);
         }
-    }
-
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long remainingBytes = size - 4;
-
-        while (remainingBytes > 0) {
-            entries.add(new Entry(in.readUInt8()));
-            remainingBytes--;
-        }
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("TrickPlayBox");
-        sb.append("{entries=").append(entries);
-        sb.append('}');
-        return sb.toString();
     }
 }

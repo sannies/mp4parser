@@ -16,10 +16,12 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.BoxParser;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Defines basic interaction possibilities for any ISO box. Each box has a parent box and a type.
@@ -29,20 +31,11 @@ public interface Box {
 
     void setParent(ContainerBox parent);
 
-    boolean isParsed();
-
     long getSize();
 
-    long getOffset();
+    String getType();
 
-    long calculateOffset();
+    void getBox(WritableByteChannel writableByteChannel) throws IOException;
 
-    byte[] getType();
-
-    byte[] getUserType();
-
-    void getBox(IsoOutputStream os) throws IOException;
-
-    IsoFile getIsoFile();
-
+    void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
 }

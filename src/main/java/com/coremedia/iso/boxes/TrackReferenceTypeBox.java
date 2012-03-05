@@ -16,12 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Contains a reference to a track. The type of the box gives the kind of reference.
@@ -33,7 +32,7 @@ public class TrackReferenceTypeBox extends AbstractBox {
 
     private long[] trackIds;
 
-    public TrackReferenceTypeBox(byte[] type) {
+    public TrackReferenceTypeBox(String type) {
         super(type);
     }
 
@@ -41,28 +40,30 @@ public class TrackReferenceTypeBox extends AbstractBox {
         return trackIds;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        int count = (int) (size / 4);
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        int count = (int) (content.remaining() / 4);
         trackIds = new long[count];
         for (int i = 0; i < count; i++) {
-            trackIds[i] = in.readUInt32();
-
+            trackIds[i] = IsoTypeReader.readUInt32(content);
         }
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
         for (long trackId : trackIds) {
-            os.writeUInt32(trackId);
+            IsoTypeWriter.writeUInt32(bb, trackId);
         }
     }
+
 
     protected long getContentSize() {
         return trackIds.length * 4;
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("TrackReferenceTypeBox[type=").append(IsoFile.bytesToFourCC(getType()));
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("TrackReferenceTypeBox[type=").append(getType());
         for (int i = 0; i < trackIds.length; i++) {
             buffer.append(";trackId");
             buffer.append(i);

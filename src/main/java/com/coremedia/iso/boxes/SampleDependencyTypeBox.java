@@ -16,12 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,31 +93,28 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
     }
 
     public SampleDependencyTypeBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override
     protected long getContentSize() {
-        return entries.size();
+        return 4 + entries.size();
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
         for (Entry entry : entries) {
-            os.write(entry.value);
+            IsoTypeWriter.writeUInt8(bb, entry.value);
         }
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long remainingBytes = size - 4;
-
-        while (remainingBytes > 0) {
-            entries.add(new Entry(in.readUInt8()));
-            remainingBytes--;
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        while (content.remaining() > 0) {
+            entries.add(new Entry(IsoTypeReader.readUInt8(content)));
         }
-
     }
 
     public List<Entry> getEntries() {

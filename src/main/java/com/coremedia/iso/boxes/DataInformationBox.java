@@ -16,8 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * <code>
  * Box Type: 'dinf'<br>
@@ -30,7 +28,7 @@ public class DataInformationBox extends AbstractContainerBox {
     public static final String TYPE = "dinf";
 
     public DataInformationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

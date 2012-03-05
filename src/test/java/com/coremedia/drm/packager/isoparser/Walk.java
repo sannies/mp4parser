@@ -36,7 +36,6 @@ public final class Walk {
     private static final Collection<String> skipList = Arrays.asList("class",
             "boxes",
             "type",
-            "userType",
             "size",
             "displayName",
             "contentSize",
@@ -73,27 +72,26 @@ public final class Walk {
             if (b instanceof ContainerBox) {
                 Walk.through((ContainerBox) b);
             }
-            if (b instanceof AbstractBox) {
-                if (((AbstractBox) b).offset != b.calculateOffset()) {
-                    throw new RuntimeException("Real offset " + ((AbstractBox) b).offset + " vs. calculated " + b.calculateOffset() + " Box: " + b);
-                }
-                b.toString(); // Just test if some execption is trown
-                b.getUserType();
 
-                BeanInfo beanInfo = Introspector.getBeanInfo(b.getClass());
-                PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
 
-                for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-                    String name = propertyDescriptor.getName();
-                    if (!Walk.skipList.contains(name) &&
-                            propertyDescriptor.getReadMethod() != null &&
-                            !AbstractBox.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
-                        propertyDescriptor.getReadMethod().invoke(b, (Object[]) null);
-                    }
+            b.toString(); // Just test if some execption is trown
+
+            BeanInfo beanInfo = Introspector.getBeanInfo(b.getClass());
+            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+
+            for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+                String name = propertyDescriptor.getName();
+                if (!Walk.skipList.contains(name) &&
+                        propertyDescriptor.getReadMethod() != null &&
+                        !Box.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
+                    propertyDescriptor.getReadMethod().invoke(b, (Object[]) null);
                 }
-            } else {
-                throw new RuntimeException("dunno how top handle that");
+
             }
+            if (b instanceof AbstractBox) {
+                assert ((AbstractBox) b).isParsed();
+            }
+
         }
     }
 }

@@ -16,9 +16,10 @@
 
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoTypeReader;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * class SLConfigDescriptor extends BaseDescriptor : bit(8) tag=SLConfigDescrTag {
@@ -59,9 +60,8 @@ public class SLConfigDescriptor extends BaseDescriptor {
     int predefined;
 
     @Override
-    public void parse(int tag, IsoBufferWrapper in, int maxLength) throws IOException {
-        super.parse(tag, in, maxLength);
-        predefined = in.readUInt8();
+    public void parseDetail(ByteBuffer bb) throws IOException {
+        predefined =  IsoTypeReader.readUInt8(bb);
     }
 
     @Override

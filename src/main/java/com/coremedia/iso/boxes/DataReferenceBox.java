@@ -17,11 +17,10 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * The data reference object contains a table of data references (normally URLs) that declare the location(s) of
@@ -49,23 +48,18 @@ public class DataReferenceBox extends FullContainerBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        setVersion(in.readUInt8());
-        setFlags(in.readUInt24());
-        in.readUInt32();
-        long remainingContentSize = size - 8;
-        while (remainingContentSize > 0) {
-            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-            remainingContentSize -= box.getSize();
-            boxes.add(box);
-        }
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        content.get(new byte[4]); // basically a skip of 4 bytes signaling the number of child boxes
+        parseChildBoxes(content);
     }
 
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(getBoxes().size());
-        super.getContent(os);
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, getBoxes().size());
+        writeChildBoxes(bb);
     }
 
 }

@@ -1,15 +1,6 @@
 package com.googlecode.mp4parser.boxes.piff;
 
-import com.coremedia.iso.*;
-import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.boxes.AbstractSampleEncryptionBox;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * <pre>

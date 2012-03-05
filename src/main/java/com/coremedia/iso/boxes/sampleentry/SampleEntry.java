@@ -17,15 +17,20 @@
 package com.coremedia.iso.boxes.sampleentry;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,22 +39,21 @@ import java.util.List;
  *
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.VisualSampleEntry
- * @see com.coremedia.iso.boxes.rtp.RtpHintSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  */
 public abstract class SampleEntry extends AbstractBox implements ContainerBox {
+
+
     private int dataReferenceIndex;
     protected List<Box> boxes = new LinkedList<Box>();
+    private BoxParser boxParser;
 
-    protected SampleEntry(byte[] type) {
-        super(type);
-    }
 
     protected SampleEntry(String type) {
         super(type);
     }
 
-    public void setType(byte[] type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -99,10 +103,44 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
         return getBoxes(clazz, false);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        byte[] tmp = in.read(6);
-        assert Arrays.equals(new byte[6], tmp) : "reserved byte not 0";
-        dataReferenceIndex = in.readUInt16();
+    @Override
+    public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        super.parse(in, header, contentSize, boxParser);
+        this.boxParser = boxParser;
+    }
+
+
+    public void _parseReservedAndDataReferenceIndex(ByteBuffer content) {
+        content.get(new byte[6]); // ignore 6 reserved bytes;
+        dataReferenceIndex = IsoTypeReader.readUInt16(content);
+    }
+
+    public void _parseChildBoxes(ByteBuffer content) {
+        while (content.remaining() > 8) {
+            try {
+                boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+        deadBytes = content.slice();
+    }
+
+    public void _writeReservedAndDataReferenceIndex(ByteBuffer bb) {
+        bb.put(new byte[6]);
+        IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
+    }
+
+    public void _writeChildBoxes(ByteBuffer bb) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        WritableByteChannel wbc = Channels.newChannel(baos);
+        for (Box box : boxes) {
+
+            box.getBox(wbc);
+        }
+        wbc.close();
+        bb.put(baos.toByteArray());
     }
 
     public long getNumOfBytesToFirstChild() {
@@ -112,4 +150,5 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
         }
         return getSize() - sizeOfChildren;
     }
+
 }

@@ -46,9 +46,9 @@ public class Path {
             List<?> boxesOfBoxType = box.getParent().getBoxes(box.getClass());
             int index = boxesOfBoxType.indexOf(box);
             if (index != 0) {
-                path = String.format("/%s[%d]", IsoFile.bytesToFourCC(box.getType()), index) + path;
+                path = String.format("/%s[%d]", box.getType(), index) + path;
             } else {
-                path = String.format("/%s", IsoFile.bytesToFourCC(box.getType())) + path;
+                path = String.format("/%s", box.getType()) + path;
             }
             return createPath(box.getParent(), path);
         }
@@ -84,7 +84,7 @@ public class Path {
                     index = Integer.parseInt(indexString);
                 }
                 for (Box box1 : ((ContainerBox) box).getBoxes()) {
-                    if (IsoFile.bytesToFourCC(box1.getType()).equals(type)) {
+                    if (box1.getType().equals(type)) {
                         if (index == 0) {
                             return getPath(box1, later);
                         }

@@ -1,10 +1,13 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Abstract Chunk Offset Box
@@ -24,27 +27,31 @@ public class ChunkOffset64BitBox extends ChunkOffsetBox {
 
     @Override
     protected long getContentSize() {
-        return 4 + 8 * chunkOffsets.length;
+        return 8 + 8 * chunkOffsets.length;
     }
 
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        int entryCount = l2i(IsoTypeReader.readUInt32(content));
+        chunkOffsets = new long[entryCount];
+        for (int i = 0; i < entryCount; i++) {
+            chunkOffsets[i] = IsoTypeReader.readUInt64(content);
+        }
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, chunkOffsets.length);
+        for (long chunkOffset : chunkOffsets) {
+            IsoTypeWriter.writeUInt64(bb, chunkOffset);
+        }
+    }
 
     protected void getContent(IsoOutputStream os) throws IOException {
         final long[] chunkOffsets = getChunkOffsets();
         os.writeUInt32(chunkOffsets.length);
-        for (long chunkOffet : chunkOffsets) {
-            os.writeUInt64(chunkOffet);
-        }
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long entryCount = in.readUInt32();
-        if (entryCount > Integer.MAX_VALUE) {
-            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
-        }
-        chunkOffsets = new long[(int) entryCount];
-        for (int i = 0; i < entryCount; i++) {
-            chunkOffsets[i] = in.readUInt64();
-        }
-    }
 }

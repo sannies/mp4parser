@@ -16,8 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * <code>
  * Box Type: 'tref'<br>
@@ -36,6 +34,6 @@ public class TrackReferenceBox extends AbstractContainerBox {
     public static final String TYPE = "tref";
 
     public TrackReferenceBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 }

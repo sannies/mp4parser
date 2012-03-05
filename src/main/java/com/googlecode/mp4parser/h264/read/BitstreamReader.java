@@ -20,10 +20,10 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 */
 package com.googlecode.mp4parser.h264.read;
 
-import com.coremedia.iso.IsoBufferWrapper;
 import com.googlecode.mp4parser.h264.CharCache;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A dummy implementation of H264 RBSP reading
@@ -31,7 +31,7 @@ import java.io.IOException;
  * @author Stanislav Vitvitskiy
  */
 public class BitstreamReader {
-    private IsoBufferWrapper is;
+    private InputStream is;
     private int curByte;
     private int nextByte;
     int nBit;
@@ -39,7 +39,7 @@ public class BitstreamReader {
 
     protected CharCache debugBits = new CharCache(50);
 
-    public BitstreamReader(IsoBufferWrapper is) throws IOException {
+    public BitstreamReader(InputStream is) throws IOException {
         this.is = is;
         curByte = is.read();
         nextByte = is.read();

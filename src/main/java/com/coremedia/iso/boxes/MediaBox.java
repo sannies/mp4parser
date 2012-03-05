@@ -17,8 +17,6 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * The media declaration container contains all the objects that declare information about the media data within a
  * track.
@@ -27,7 +25,7 @@ public class MediaBox extends AbstractContainerBox {
     public static final String TYPE = "mdia";
 
     public MediaBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public MediaInformationBox getMediaInformationBox() {
@@ -48,7 +46,7 @@ public class MediaBox extends AbstractContainerBox {
         return null;
     }
 
-    public HandlerBox getHandlerReferenceBox() {
+    public HandlerBox getHandlerBox() {
         for (Box box : boxes) {
             if (box instanceof HandlerBox) {
                 return (HandlerBox) box;
@@ -56,5 +54,6 @@ public class MediaBox extends AbstractContainerBox {
         }
         return null;
     }
+
 
 }

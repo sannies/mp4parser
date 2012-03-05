@@ -16,12 +16,13 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.DoNotParseDetail;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -38,11 +39,11 @@ public class FileTypeBox extends AbstractBox {
     private List<String> compatibleBrands;
 
     public FileTypeBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public FileTypeBox(String majorBrand, long minorVersion, List<String> compatibleBrands) {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
         this.majorBrand = majorBrand;
         this.minorVersion = minorVersion;
         this.compatibleBrands = compatibleBrands;
@@ -53,21 +54,23 @@ public class FileTypeBox extends AbstractBox {
 
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        majorBrand = IsoFile.bytesToFourCC(in.read(4));
-        minorVersion = in.readUInt32();
-        int compatibleBrandsCount = (int) ((size - 8) / 4);
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        majorBrand = IsoTypeReader.read4cc(content);
+        minorVersion = IsoTypeReader.readUInt32(content);
+        int compatibleBrandsCount = content.remaining() / 4;
         compatibleBrands = new LinkedList<String>();
         for (int i = 0; i < compatibleBrandsCount; i++) {
-            compatibleBrands.add(IsoFile.bytesToFourCC(in.read(4)));
+            compatibleBrands.add(IsoTypeReader.read4cc(content));
         }
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.write(IsoFile.fourCCtoBytes(majorBrand));
-        isos.writeUInt32(minorVersion);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        bb.put(IsoFile.fourCCtoBytes(majorBrand));
+        IsoTypeWriter.writeUInt32(bb, minorVersion);
         for (String compatibleBrand : compatibleBrands) {
-            isos.write(IsoFile.fourCCtoBytes(compatibleBrand));
+            bb.put(IsoFile.fourCCtoBytes(compatibleBrand));
         }
 
     }
@@ -122,8 +125,9 @@ public class FileTypeBox extends AbstractBox {
         this.compatibleBrands = compatibleBrands;
     }
 
+    @DoNotParseDetail
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append("FileTypeBox[");
         result.append("majorBrand=").append(getMajorBrand());
         result.append(";");

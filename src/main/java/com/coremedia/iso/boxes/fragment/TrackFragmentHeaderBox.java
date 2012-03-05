@@ -16,14 +16,12 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * aligned(8) class TrackFragmentHeaderBox
@@ -49,11 +47,11 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
     private boolean durationIsEmpty;
 
     public TrackFragmentHeaderBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {
-        long size = 4;
+        long size = 8;
         if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
             size += 8;
         }
@@ -72,43 +70,46 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         return size;
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(trackId);
+
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, trackId);
+
         if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
-            os.writeUInt64(baseDataOffset);
+            IsoTypeWriter.writeUInt64(bb, getBaseDataOffset());
         }
         if ((getFlags() & 0x2) == 0x2) { //sampleDescriptionIndexPresent
-            os.writeUInt32(sampleDescriptionIndex);
+            IsoTypeWriter.writeUInt32(bb, getSampleDescriptionIndex());
         }
         if ((getFlags() & 0x8) == 0x8) { //defaultSampleDurationPresent
-            os.writeUInt32(defaultSampleDuration);
+            IsoTypeWriter.writeUInt32(bb, getDefaultSampleDuration());
         }
         if ((getFlags() & 0x10) == 0x10) { //defaultSampleSizePresent
-            os.writeUInt32(defaultSampleSize);
+            IsoTypeWriter.writeUInt32(bb, getDefaultSampleSize());
         }
         if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
-            defaultSampleFlags.getContent(os);
+            defaultSampleFlags.getContent(bb);
         }
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        trackId = in.readUInt32();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        trackId = IsoTypeReader.readUInt32(content);
         if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
-            baseDataOffset = in.readUInt64();
+            baseDataOffset = IsoTypeReader.readUInt64(content);
         }
         if ((getFlags() & 0x2) == 0x2) { //sampleDescriptionIndexPresent
-            sampleDescriptionIndex = in.readUInt32();
+            sampleDescriptionIndex = IsoTypeReader.readUInt32(content);
         }
         if ((getFlags() & 0x8) == 0x8) { //defaultSampleDurationPresent
-            defaultSampleDuration = in.readUInt32();
+            defaultSampleDuration = IsoTypeReader.readUInt32(content);
         }
         if ((getFlags() & 0x10) == 0x10) { //defaultSampleSizePresent
-            defaultSampleSize = in.readUInt32();
+            defaultSampleSize = IsoTypeReader.readUInt32(content);
         }
         if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
-            defaultSampleFlags = new SampleFlags(in.readUInt32());
+            defaultSampleFlags = new SampleFlags(content);
         }
         if ((getFlags() & 0x10000) == 0x10000) { //durationIsEmpty
             durationIsEmpty = true;
@@ -152,12 +153,20 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
     }
 
     public void setBaseDataOffset(long baseDataOffset) {
-        setFlags(getFlags() | 0x1); // activate the field
+        if (baseDataOffset == -1) {
+            setFlags(getFlags() & (Integer.MAX_VALUE ^ 0x1));
+        } else {
+            setFlags(getFlags() | 0x1); // activate the field
+        }
         this.baseDataOffset = baseDataOffset;
     }
 
     public void setSampleDescriptionIndex(long sampleDescriptionIndex) {
-        setFlags(getFlags() | 0x2); // activate the field
+        if (sampleDescriptionIndex == -1) {
+            setFlags(getFlags() & (Integer.MAX_VALUE ^ 0x2));
+        } else {
+            setFlags(getFlags() | 0x2); // activate the field
+        }
         this.sampleDescriptionIndex = sampleDescriptionIndex;
     }
 

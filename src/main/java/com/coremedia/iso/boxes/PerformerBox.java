@@ -16,12 +16,12 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.Utf8;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Used to give information about the performer. Mostly used in confunction with music files.
@@ -34,7 +34,7 @@ public class PerformerBox extends AbstractFullBox {
     private String performer;
 
     public PerformerBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {
@@ -54,18 +54,22 @@ public class PerformerBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 2 + utf8StringLengthInBytes(performer) + 1;
+        return 6 + Utf8.utf8StringLengthInBytes(performer) + 1;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        language = in.readIso639();
-        performer = in.readString();
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeIso639(bb, language);
+        bb.put(Utf8.convert(performer));
+        bb.put((byte) 0);
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeIso639(language);
-        isos.writeStringZeroTerm(performer);
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        language = IsoTypeReader.readIso639(content);
+        performer = IsoTypeReader.readString(content);
     }
 
     public String toString() {

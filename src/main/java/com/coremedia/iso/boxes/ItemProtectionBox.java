@@ -16,11 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * The Item Protection Box provides an array of item protection information, for use by the Item Information Box.
@@ -28,7 +28,6 @@ import java.io.IOException;
  * @see com.coremedia.iso.boxes.ItemProtectionBox
  */
 public class ItemProtectionBox extends FullContainerBox {
-    int protectionCount;
 
     public static final String TYPE = "ipro";
 
@@ -44,17 +43,19 @@ public class ItemProtectionBox extends FullContainerBox {
         }
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        parseHeader(in, size);
-        protectionCount = in.readUInt16();
-        parseBoxes(size, in, boxParser, lastMovieFragmentBox);
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        IsoTypeReader.readUInt16(content);
+        parseChildBoxes(content);
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt16(protectionCount);
-        for (Box boxe : boxes) {
-            boxe.getBox(os);
-        }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt16(bb, getBoxes().size());
+        writeChildBoxes(bb);
     }
 
 }

@@ -16,12 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -53,51 +52,53 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
     private long auxInfoTypeParameter;
 
     public SampleAuxiliaryInformationOffsetsBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override
     protected long getContentSize() {
-        return 4 + (getVersion() == 0 ? 4 * entryCount : 8 * entryCount) + ((getFlags() & 1) == 1 ? 8 : 0);
+        return 8 + (getVersion() == 0 ? 4 * entryCount : 8 * entryCount) + ((getFlags() & 1) == 1 ? 8 : 0);
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
         if ((getFlags() & 1) == 1) {
-            os.writeUInt32(auxInfoType);
-            os.writeUInt32(auxInfoTypeParameter);
+            IsoTypeWriter.writeUInt32(bb, auxInfoType);
+            IsoTypeWriter.writeUInt32(bb, auxInfoTypeParameter);
         }
 
-        os.writeUInt32(entryCount);
+        IsoTypeWriter.writeUInt32(bb, entryCount);
         for (Long offset : offsets) {
             if (getVersion() == 0) {
-                os.writeUInt32(offset);
+                IsoTypeWriter.writeUInt32(bb, offset);
             } else {
-                os.writeUInt64(offset);
+                IsoTypeWriter.writeUInt64(bb, offset);
             }
         }
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
 
         if ((getFlags() & 1) == 1) {
-            auxInfoType = in.readUInt32();
-            auxInfoTypeParameter = in.readUInt32();
+            auxInfoType = IsoTypeReader.readUInt32(content);
+            auxInfoTypeParameter = IsoTypeReader.readUInt32(content);
         }
 
-        entryCount = in.readUInt32();
+        entryCount = IsoTypeReader.readUInt32(content);
         offsets.clear();
 
         for (int i = 0; i < entryCount; i++) {
             if (getVersion() == 0) {
-                offsets.add(in.readUInt32());
+                offsets.add(IsoTypeReader.readUInt32(content));
             } else {
-                offsets.add(in.readUInt64());
+                offsets.add(IsoTypeReader.readUInt64(content));
             }
         }
     }
+
 
     public long getAuxInfoType() {
         return auxInfoType;

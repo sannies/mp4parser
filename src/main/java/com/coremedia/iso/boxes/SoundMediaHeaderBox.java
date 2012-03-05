@@ -16,11 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class SoundMediaHeaderBox extends AbstractMediaHeaderBox {
 
@@ -36,18 +36,21 @@ public class SoundMediaHeaderBox extends AbstractMediaHeaderBox {
     }
 
     protected long getContentSize() {
-        return 2 + 2;
+        return 8;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        balance = in.readFixedPoint88();
-        in.readUInt16();
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        balance = IsoTypeReader.readFixedPoint88(content);
+        IsoTypeReader.readUInt16(content);
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeFixedPont88(balance);
-        isos.writeUInt16(0);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeFixedPont88(bb, balance);
+        IsoTypeWriter.writeUInt16(bb, 0);
     }
 
     public String toString() {

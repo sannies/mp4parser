@@ -17,9 +17,9 @@
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
 import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoBufferWrapper;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * abstract class ExtensionDescriptor extends BaseDescriptor
@@ -33,11 +33,10 @@ public class ExtensionProfileLevelDescriptor extends BaseDescriptor {
     byte[] bytes;
 
     @Override
-    public void parse(int tag, IsoBufferWrapper in, int maxLength) throws IOException {
-        super.parse(tag, in, maxLength);
-
+    public void parseDetail(ByteBuffer bb) throws IOException {
         if (getSize() > 0) {
-            bytes = in.read(getSize());
+            bytes = new byte[getSize()];
+            bb.get(bytes);
         }
     }
 

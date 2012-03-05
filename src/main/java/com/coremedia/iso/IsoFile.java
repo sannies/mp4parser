@@ -19,63 +19,78 @@ package com.coremedia.iso;
 import com.coremedia.iso.boxes.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.googlecode.mp4parser.DoNotParseDetail;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * The most upper container for ISO Boxes. It is a container box that is a file.
  * Uses IsoBufferWrapper  to access the underlying file.
  */
+@DoNotParseDetail
 public class IsoFile extends AbstractContainerBox {
     protected BoxParser boxParser = new PropertyBoxParserImpl();
-    protected IsoBufferWrapper originalIso;
+    ReadableByteChannel byteChannel;
 
-    public IsoFile(IsoBufferWrapper originalIso) {
-        super(new byte[]{});
-        boxParser = createBoxParser();
-        this.originalIso = originalIso;
+    public IsoFile() {
+        super("");
     }
 
-    public IsoFile(IsoBufferWrapper originalIso, BoxParser boxParser) {
-        this(originalIso);
+    public IsoFile(ReadableByteChannel byteChannel) throws IOException {
+        super("");
+        this.byteChannel = byteChannel;
+        boxParser = createBoxParser();
+        parse();
+    }
+
+    public IsoFile(ReadableByteChannel byteChannel, BoxParser boxParser) throws IOException {
+        super("");
+        this.byteChannel = byteChannel;
         this.boxParser = boxParser;
+        parse();
+
+
     }
 
     protected BoxParser createBoxParser() {
         return new PropertyBoxParserImpl();
     }
 
+
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        throw new RuntimeException("This method is not meant to be used. Use parse() instead");
-        //super.parse(in, size, boxParser, lastMovieFragmentBox);    //To change body of overridden methods use File | Settings | File Templates.
+    public void _parseDetails(ByteBuffer content) {
+        // there are no details to parse we should be just file
     }
 
-    public void parse() throws IOException {
+    public void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, AbstractBoxParser abstractBoxParser) throws IOException {
+        throw new IOException("This method is not meant to be called. Use #parse() directly.");
+    }
+
+    private void parse() throws IOException {
 
         boolean done = false;
-        Box lastMovieFragmentBox = null;
         while (!done) {
-            long sp = originalIso.position();
-            if (originalIso.remaining() >= 8) {
-                Box box = boxParser.parseBox(originalIso, this, lastMovieFragmentBox);
+            try {
+                Box box = boxParser.parseBox(byteChannel, this);
                 if (box != null) {
-                    if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
+                    //  System.err.println(box.getType());
                     boxes.add(box);
-                    assert box.calculateOffset() == sp : "calculated offset differs from offset in file";
                 } else {
                     done = true;
                 }
-            } else {
+            } catch (EOFException e) {
                 done = true;
             }
         }
-        parsed = done;
     }
 
-
+    @DoNotParseDetail
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append("IsoFile[");
@@ -93,6 +108,7 @@ public class IsoFile extends AbstractContainerBox {
         return buffer.toString();
     }
 
+    @DoNotParseDetail
     public static byte[] fourCCtoBytes(String fourCC) {
         byte[] result = new byte[4];
         if (fourCC != null) {
@@ -103,6 +119,7 @@ public class IsoFile extends AbstractContainerBox {
         return result;
     }
 
+    @DoNotParseDetail
     public static String bytesToFourCC(byte[] type) {
         byte[] result = new byte[]{0, 0, 0, 0};
         if (type != null) {
@@ -131,16 +148,6 @@ public class IsoFile extends AbstractContainerBox {
     }
 
     @Override
-    public long calculateOffset() {
-        return 0;
-    }
-
-    @Override
-    public long getOffset() {
-        return 0;
-    }
-
-    @Override
     public IsoFile getIsoFile() {
         return this;
     }
@@ -150,18 +157,6 @@ public class IsoFile extends AbstractContainerBox {
         return 0;
     }
 
-    @Override
-    public byte[] getHeader() {
-        return new byte[0];
-    }
-
-    public BoxParser getBoxParser() {
-        return boxParser;
-    }
-
-    public IsoBufferWrapper getOriginalIso() {
-        return originalIso;
-    }
 
     /**
      * Shortcut to get the MovieBox since it is often needed and present in
@@ -169,6 +164,7 @@ public class IsoFile extends AbstractContainerBox {
      *
      * @return the MovieBox or <code>null</code>
      */
+    @DoNotParseDetail
     public MovieBox getMovieBox() {
         for (Box box : boxes) {
             if (box instanceof MovieBox) {
@@ -176,5 +172,20 @@ public class IsoFile extends AbstractContainerBox {
             }
         }
         return null;
+    }
+
+    public void getBox(WritableByteChannel os) throws IOException {
+        for (Box box : boxes) {
+
+            if (os instanceof FileChannel) {
+                long startPos = ((FileChannel) os).position();
+                box.getBox(os);
+                long size = ((FileChannel) os).position() - startPos;
+                assert size == box.getSize();
+            } else {
+                box.getBox(os);
+            }
+
+        }
     }
 }

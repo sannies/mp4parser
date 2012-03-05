@@ -16,14 +16,12 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,7 +60,7 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
     private List<Entry> entries = Collections.emptyList();
 
     public TrackFragmentRandomAccessBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 
@@ -80,76 +78,79 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         return contentSize;
     }
 
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
 
-        trackId = in.readUInt32();
-        long temp = in.readUInt32();
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        trackId = IsoTypeReader.readUInt32(content);
+        long temp = IsoTypeReader.readUInt32(content);
         reserved = (int) (temp >> 6);
         lengthSizeOfTrafNum = (int) (temp & 0x3F) >> 4;
         lengthSizeOfTrunNum = (int) (temp & 0xC) >> 2;
         lengthSizeOfSampleNum = (int) (temp & 0x3);
-        long numberOfEntries = in.readUInt32();
+        long numberOfEntries = IsoTypeReader.readUInt32(content);
 
         entries = new ArrayList<Entry>();
 
         for (int i = 0; i < numberOfEntries; i++) {
             Entry entry = new Entry();
             if (getVersion() == 1) {
-                entry.time = in.readUInt64();
-                entry.moofOffset = in.readUInt64();
+                entry.time = IsoTypeReader.readUInt64(content);
+                entry.moofOffset = IsoTypeReader.readUInt64(content);
             } else {
-                entry.time = in.readUInt32();
-                entry.moofOffset = in.readUInt32();
+                entry.time = IsoTypeReader.readUInt32(content);
+                entry.moofOffset = IsoTypeReader.readUInt32(content);
             }
-            entry.trafNumber = getVariable(lengthSizeOfTrafNum, in);
-            entry.trunNumber = getVariable(lengthSizeOfTrunNum, in);
-            entry.sampleNumber = getVariable(lengthSizeOfSampleNum, in);
+            entry.trafNumber = getVariable(lengthSizeOfTrafNum, content);
+            entry.trunNumber = getVariable(lengthSizeOfTrunNum, content);
+            entry.sampleNumber = getVariable(lengthSizeOfSampleNum, content);
 
             entries.add(entry);
         }
+
     }
 
-    private long getVariable(long length, IsoBufferWrapper in) throws IOException {
+    private long getVariable(long length, ByteBuffer bb) {
         long ret;
         if (((length + 1) * 8) == 8) {
-            ret = in.readUInt8();
+            ret = IsoTypeReader.readUInt8(bb);
         } else if (((length + 1) * 8) == 16) {
-            ret = in.readUInt16();
+            ret = IsoTypeReader.readUInt16(bb);
         } else if (((length + 1) * 8) == 24) {
-            ret = in.readUInt24();
+            ret = IsoTypeReader.readUInt24(bb);
         } else if (((length + 1) * 8) == 32) {
-            ret = in.readUInt32();
+            ret = IsoTypeReader.readUInt32(bb);
         } else if (((length + 1) * 8) == 64) {
-            ret = in.readUInt64();
+            ret = IsoTypeReader.readUInt64(bb);
         } else {
-            throw new IOException("lengthSize not power of two");
+            throw new RuntimeException("lengthSize not power of two");
         }
         return ret;
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(trackId);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, trackId);
         long temp;
         temp = reserved << 6;
         temp = temp | ((lengthSizeOfTrafNum & 0x3) << 4);
         temp = temp | ((lengthSizeOfTrunNum & 0x3) << 2);
         temp = temp | (lengthSizeOfSampleNum & 0x3);
-        os.writeUInt32(temp);
-        os.writeUInt32(entries.size());
+        IsoTypeWriter.writeUInt32(bb, temp);
+        IsoTypeWriter.writeUInt32(bb, entries.size());
 
         for (Entry entry : entries) {
             if (getVersion() == 1) {
-                os.writeUInt64(entry.time);
-                os.writeUInt64(entry.moofOffset);
+                IsoTypeWriter.writeUInt64(bb, entry.time);
+                IsoTypeWriter.writeUInt64(bb, entry.moofOffset);
             } else {
-                os.writeUInt32(entry.time);
-                os.writeUInt32(entry.moofOffset);
+                IsoTypeWriter.writeUInt32(bb, entry.time);
+                IsoTypeWriter.writeUInt32(bb, entry.moofOffset);
             }
-            os.write(toByteArray(lengthSizeOfTrafNum + 1, entry.trafNumber));
-            os.write(toByteArray(lengthSizeOfTrunNum + 1, entry.trunNumber));
-            os.write(toByteArray(lengthSizeOfSampleNum + 1, entry.sampleNumber));
+            bb.put(toByteArray(lengthSizeOfTrafNum + 1, entry.trafNumber));
+            bb.put(toByteArray(lengthSizeOfTrunNum + 1, entry.trunNumber));
+            bb.put(toByteArray(lengthSizeOfSampleNum + 1, entry.sampleNumber));
         }
     }
 

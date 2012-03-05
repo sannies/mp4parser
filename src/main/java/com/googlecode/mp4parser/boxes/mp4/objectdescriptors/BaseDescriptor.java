@@ -16,9 +16,10 @@
 
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoTypeReader;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /*
 abstract aligned(8) expandable(228-1) class BaseDescriptor : bit(8) tag=0 {
@@ -38,7 +39,6 @@ sizeOfInstance = sizeOfInstance<<7 | sizeByte;
 public abstract class BaseDescriptor {
     int tag;
     int sizeOfInstance;
-    byte[] data;
     int sizeBytes;
 
     public BaseDescriptor() {
@@ -62,25 +62,30 @@ public abstract class BaseDescriptor {
         return sizeBytes;
     }
 
-    public void parse(int tag, IsoBufferWrapper in, int maxLength) throws IOException {
+    public final void parse(int tag, ByteBuffer bb) throws IOException {
         this.tag = tag;
 
         int i = 0;
-        int tmp = in.readUInt8();
+        int tmp = IsoTypeReader.readUInt8(bb);
         i++;
         sizeOfInstance = tmp & 0x7f;
         while (tmp >>> 7 == 1) { //nextbyte indicator bit
-            tmp = in.readUInt8();
+            tmp = IsoTypeReader.readUInt8(bb);
             i++;
             //sizeOfInstance = sizeOfInstance<<7 | sizeByte;
             sizeOfInstance = sizeOfInstance << 7 | tmp & 0x7f;
         }
         sizeBytes = i;
+        ByteBuffer detailSource = bb.slice();
+        detailSource.limit(sizeOfInstance);
+        parseDetail(detailSource);
+        assert detailSource.remaining() == 0: this.getClass().getSimpleName() + " has not been fully parsed";
+        bb.position(bb.position() + sizeOfInstance);
     }
+    
+    public abstract void parseDetail(ByteBuffer bb) throws IOException;
 
-    public void setData(byte[] data) {
-        this.data = data;
-    }
+
 
     @Override
     public String toString() {

@@ -16,12 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.Utf8;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Only used within the DataReferenceBox. Find more information there.
@@ -34,7 +33,7 @@ public class DataEntryUrnBox extends AbstractFullBox {
     public static final String TYPE = "urn ";
 
     public DataEntryUrnBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getName() {
@@ -46,18 +45,22 @@ public class DataEntryUrnBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return utf8StringLengthInBytes(name) + 1 + utf8StringLengthInBytes(location) + 1;
+        return Utf8.utf8StringLengthInBytes(name) + 1 + Utf8.utf8StringLengthInBytes(location) + 1;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        name = in.readString();
-        location = in.readString();
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        name = IsoTypeReader.readString(content);
+        location = IsoTypeReader.readString(content);
+
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeStringZeroTerm(name);
-        isos.writeStringZeroTerm(location);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        bb.put(Utf8.convert(name));
+        bb.put((byte) 0);
+        bb.put(Utf8.convert(location));
+        bb.put((byte) 0);
     }
 
     public String toString() {

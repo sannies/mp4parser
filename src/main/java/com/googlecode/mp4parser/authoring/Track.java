@@ -1,11 +1,12 @@
 package com.googlecode.mp4parser.authoring;
 
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
@@ -16,7 +17,6 @@ import java.util.List;
  * corresponds to a streaming channel.
  */
 public interface Track {
-    List<IsoBufferWrapper> getSamples();
 
     SampleDescriptionBox getSampleDescriptionBox();
 
@@ -30,7 +30,7 @@ public interface Track {
 
     TrackMetaData getTrackMetaData();
 
-    Type getType();
+    String getHandler();
 
     boolean isEnabled();
 
@@ -40,13 +40,8 @@ public interface Track {
 
     boolean isInPoster();
 
-    public enum Type {
-        VIDEO(),
-        HINT(),
-        TEXT(),
-        AMF0(),
-        NULL(),
-        SOUND(),
-        UNKNOWN()
-    }
+    List<ByteBuffer> getSamples();
+
+    public AbstractMediaHeaderBox getMediaHeaderBox();
+
 }

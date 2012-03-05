@@ -16,14 +16,12 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * A common superclass for all MediaInformationHeaderBoxes. E.g.
  * VideoMediaHeaderBox, SoundMediaHeaderBox & HintMediaHeaderBox
  */
 public abstract class AbstractMediaHeaderBox extends AbstractFullBox {
     protected AbstractMediaHeaderBox(String type) {
-        super(IsoFile.fourCCtoBytes(type));
+        super(type);
     }
 }

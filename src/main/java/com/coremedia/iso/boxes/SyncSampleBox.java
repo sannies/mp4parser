@@ -16,12 +16,13 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * This box provides a compact marking of the random access points withinthe stream. The table is arranged in
@@ -33,7 +34,7 @@ public class SyncSampleBox extends AbstractFullBox {
     private long[] sampleNumber;
 
     public SyncSampleBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     /**
@@ -46,27 +47,30 @@ public class SyncSampleBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return sampleNumber.length * 4 + 4;
+        return sampleNumber.length * 4 + 8;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long entryCount = in.readUInt32();
-        if (entryCount > Integer.MAX_VALUE) {
-            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
-        }
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        int entryCount = l2i(IsoTypeReader.readUInt32(content));
 
-        sampleNumber = new long[(int) entryCount];
+        sampleNumber = new long[entryCount];
         for (int i = 0; i < entryCount; i++) {
-            sampleNumber[i] = in.readUInt32();
+            sampleNumber[i] = IsoTypeReader.readUInt32(content);
         }
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt32(sampleNumber.length);
+    @Override
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+
+        IsoTypeWriter.writeUInt32(byteBuffer, sampleNumber.length);
+
         for (long aSampleNumber : sampleNumber) {
-            isos.writeUInt32(aSampleNumber);
+            IsoTypeWriter.writeUInt32(byteBuffer, aSampleNumber);
         }
+
     }
 
     public String toString() {

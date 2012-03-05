@@ -1,51 +1,49 @@
 package com.googlecode.mp4parser.authoring;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.MediaHeaderBox;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SampleTableBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
-import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.util.LinkedList;
 import java.util.List;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Represents a single track of an MP4 file.
  */
 public class Mp4TrackImpl extends AbstractTrack {
-
-    private SampleList samples;
+    private List<ByteBuffer> samples;
     private SampleDescriptionBox sampleDescriptionBox;
     private List<TimeToSampleBox.Entry> decodingTimeEntries;
     private List<CompositionTimeToSample.Entry> compositionTimeEntries;
     private long[] syncSamples;
     private List<SampleDependencyTypeBox.Entry> sampleDependencies;
     private TrackMetaData trackMetaData = new TrackMetaData();
-    private Type type;
+    private String handler;
+    private AbstractMediaHeaderBox mihd;
 
-
-    public Mp4TrackImpl(TrackBox trackBox) {
+    public Mp4TrackImpl(TrackBox trackBox, ReadableByteChannel source) {
         samples = new SampleList(trackBox);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
-        AbstractMediaHeaderBox mihd = trackBox.getMediaBox().getMediaInformationBox().getMediaHeaderBox();
-        if (mihd instanceof VideoMediaHeaderBox) {
-            type = Type.VIDEO;
-        } else if (mihd instanceof SoundMediaHeaderBox) {
-            type = Type.SOUND;
-        } else if (mihd instanceof HintMediaHeaderBox) {
-            type = Type.HINT;
-        } else if (mihd instanceof NullMediaHeaderBox) {
-            if (stbl.getSampleDescriptionBox().getBoxes(ActionMessageFormat0SampleEntryBox.class).size() > 0) {
-                type = Type.AMF0;
-            } else {
-                type = Type.NULL;
-            }
-        } else {
-            type = Type.UNKNOWN;
-        }
+        handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
+
+
+        mihd = trackBox.getMediaBox().getMediaInformationBox().getMediaHeaderBox();
+
 
         sampleDescriptionBox = stbl.getSampleDescriptionBox();
         if (trackBox.getParent().getBoxes(MovieExtendsBox.class).size() > 0) {
@@ -73,7 +71,7 @@ public class Mp4TrackImpl extends AbstractTrack {
                                 if (trun.isSampleCompositionTimeOffsetPresent()) {
                                     if (compositionTimeEntries.size() == 0 ||
                                             compositionTimeEntries.get(compositionTimeEntries.size() - 1).getOffset() != entry.getSampleCompositionTimeOffset()) {
-                                        compositionTimeEntries.add(new CompositionTimeToSample.Entry(1, CompositionTimeToSample.toint(entry.getSampleCompositionTimeOffset())));
+                                        compositionTimeEntries.add(new CompositionTimeToSample.Entry(1, l2i(entry.getSampleCompositionTimeOffset())));
                                     } else {
                                         CompositionTimeToSample.Entry e = compositionTimeEntries.get(compositionTimeEntries.size() - 1);
                                         e.setCount(e.getCount() + 1);
@@ -112,10 +110,10 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setTrackId(tkhd.getTrackId());
         trackMetaData.setCreationTime(DateHelper.convert(mdhd.getCreationTime()));
         trackMetaData.setLanguage(mdhd.getLanguage());
-        System.err.println(mdhd.getModificationTime());
+/*        System.err.println(mdhd.getModificationTime());
         System.err.println(DateHelper.convert(mdhd.getModificationTime()));
         System.err.println(DateHelper.convert(DateHelper.convert(mdhd.getModificationTime())));
-        System.err.println(DateHelper.convert(DateHelper.convert(DateHelper.convert(mdhd.getModificationTime()))));
+        System.err.println(DateHelper.convert(DateHelper.convert(DateHelper.convert(mdhd.getModificationTime()))));*/
 
         trackMetaData.setModificationTime(DateHelper.convert(mdhd.getModificationTime()));
         trackMetaData.setTimescale(mdhd.getTimescale());
@@ -124,9 +122,10 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setLayer(tkhd.getLayer());
     }
 
-    public SampleList getSamples() {
+    public List<ByteBuffer> getSamples() {
         return samples;
     }
+
 
     public SampleDescriptionBox getSampleDescriptionBox() {
         return sampleDescriptionBox;
@@ -152,8 +151,12 @@ public class Mp4TrackImpl extends AbstractTrack {
         return trackMetaData;
     }
 
-    public Type getType() {
-        return type;
+    public String getHandler() {
+        return handler;
+    }
+
+    public AbstractMediaHeaderBox getMediaHeaderBox() {
+        return mihd;
     }
 
 }

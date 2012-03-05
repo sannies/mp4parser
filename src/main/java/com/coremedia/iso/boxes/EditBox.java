@@ -16,8 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * An Edit Box maps the presentation time-line to the media time-line as it is stored in the file.
  * The Edit Box is a container fpr the edit lists. Defined in ISO/IEC 14496-12.
@@ -28,7 +26,7 @@ public class EditBox extends AbstractContainerBox {
     public static final String TYPE = "edts";
 
     public EditBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

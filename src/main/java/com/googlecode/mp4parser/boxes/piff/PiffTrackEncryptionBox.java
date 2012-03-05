@@ -2,18 +2,15 @@ package com.googlecode.mp4parser.boxes.piff;
 
 import com.googlecode.mp4parser.boxes.AbstractTrackEncryptionBox;
 
-import java.lang.Override;
-
 /**
  * aligned(8) class TrackEncryptionBox extends FullBox(‘uuid’,
-extended_type=0x8974dbce-7be7-4c51-84f9-7148f9882554, version=0,
-flags=0)
-{
-unsigned int(24) default_AlgorithmID;
-unsigned int(8) default_IV_size;
-unsigned int(8)[16] default_KID;
-}
-
+ * extended_type=0x8974dbce-7be7-4c51-84f9-7148f9882554, version=0,
+ * flags=0)
+ * {
+ * unsigned int(24) default_AlgorithmID;
+ * unsigned int(8) default_IV_size;
+ * unsigned int(8)[16] default_KID;
+ * }
  */
 public class PiffTrackEncryptionBox extends AbstractTrackEncryptionBox {
 
@@ -32,7 +29,6 @@ public class PiffTrackEncryptionBox extends AbstractTrackEncryptionBox {
     public int getFlags() {
         return 0;
     }
-
 
 
 }

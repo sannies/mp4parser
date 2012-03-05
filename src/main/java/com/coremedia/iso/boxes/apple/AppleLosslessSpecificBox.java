@@ -1,13 +1,11 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  *
@@ -122,43 +120,45 @@ public final class AppleLosslessSpecificBox extends AbstractFullBox {
         this.sampleRate = sampleRate;
     }
 
+
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        maxSamplePerFrame = in.readUInt32();
-        unknown1 = in.readUInt8();
-        sampleSize = in.readUInt8();
-        historyMult = in.readUInt8();
-        initialHistory = in.readUInt8();
-        kModifier = in.readUInt8();
-        channels = in.readUInt8();
-        unknown2 = in.readUInt16();
-        maxCodedFrameSize = in.readUInt32();
-        bitRate = in.readUInt32();
-        sampleRate = in.readUInt32();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        maxSamplePerFrame = IsoTypeReader.readUInt32(content);
+        unknown1 = IsoTypeReader.readUInt8(content);
+        sampleSize = IsoTypeReader.readUInt8(content);
+        historyMult = IsoTypeReader.readUInt8(content);
+        initialHistory = IsoTypeReader.readUInt8(content);
+        kModifier = IsoTypeReader.readUInt8(content);
+        channels = IsoTypeReader.readUInt8(content);
+        unknown2 = IsoTypeReader.readUInt16(content);
+        maxCodedFrameSize = IsoTypeReader.readUInt32(content);
+        bitRate = IsoTypeReader.readUInt32(content);
+        sampleRate = IsoTypeReader.readUInt32(content);
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(maxSamplePerFrame);
-        os.writeUInt8(unknown1);
-        os.writeUInt8(sampleSize);
-        os.writeUInt8(historyMult);
-        os.writeUInt8(initialHistory);
-        os.writeUInt8(kModifier);
-        os.writeUInt8(channels);
-        os.writeUInt16(unknown2);
-        os.writeUInt32(maxCodedFrameSize);
-        os.writeUInt32(bitRate);
-        os.writeUInt32(sampleRate);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, maxSamplePerFrame);
+        IsoTypeWriter.writeUInt8(bb, unknown1);
+        IsoTypeWriter.writeUInt8(bb, sampleSize);
+        IsoTypeWriter.writeUInt8(bb, historyMult);
+        IsoTypeWriter.writeUInt8(bb, initialHistory);
+        IsoTypeWriter.writeUInt8(bb, kModifier);
+        IsoTypeWriter.writeUInt8(bb, channels);
+        IsoTypeWriter.writeUInt16(bb, unknown2);
+        IsoTypeWriter.writeUInt32(bb, maxCodedFrameSize);
+        IsoTypeWriter.writeUInt32(bb, bitRate);
+        IsoTypeWriter.writeUInt32(bb, sampleRate);
     }
-
 
     public AppleLosslessSpecificBox() {
-        super(IsoFile.fourCCtoBytes("alac"));
+        super("alac");
     }
 
     protected long getContentSize() {
-        return 24;
+        return 28;
     }
 
 }

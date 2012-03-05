@@ -16,15 +16,14 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.ByteBuffer;
 
 /**
  * Contains information common to all visual tracks.
@@ -53,7 +52,6 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
     public static final String TYPE1 = "mp4v";
     public static final String TYPE2 = "s263";
     public static final String TYPE3 = "avc1";
-    public static final String TYPE4 = "ovc1";
 
 
     /**
@@ -74,10 +72,7 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
 
     private long[] predefined = new long[3];
 
-    //VC-1 sample entries don't seem to be spec compliant - so we just copy the content
-    private byte[] vc1Content;
-
-    public VisualSampleEntry(byte[] type) {
+    public VisualSampleEntry(String type) {
         super(type);
     }
 
@@ -105,67 +100,50 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         return compressorname;
     }
 
-    public void setCompressorname(String compressorname) {
-        this.compressorname = compressorname;
-    }
-
     public int getDepth() {
         return depth;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        if (TYPE4.equals(IsoFile.bytesToFourCC(type))) {
-            byte[] vc1 = new byte[(int) size - 8]; //substract reserved and dataReferenceIndex (see super#parse)
-            in.read(vc1);
-            vc1Content = vc1;
-        } else {
-            long tmp = in.readUInt16();
-            assert 0 == tmp : "reserved byte not 0";
-            tmp = in.readUInt16();
-            assert 0 == tmp : "reserved byte not 0";
-            predefined[0] = in.readUInt32();     // should be zero
-            predefined[1] = in.readUInt32();     // should be zero
-            predefined[2] = in.readUInt32();     // should be zero
-            width = in.readUInt16();
-            height = in.readUInt16();
-            horizresolution = in.readFixedPoint1616();
-            vertresolution = in.readFixedPoint1616();
-            tmp = in.readUInt32();
-            assert 0 == tmp : "reserved byte not 0";
-            frameCount = in.readUInt16();
-            int compressornameDisplayAbleData = in.readUInt8();
-            if (compressornameDisplayAbleData > 31) {
-                System.out.println("invalid compressor name displayable data: " + compressornameDisplayAbleData);
-                compressornameDisplayAbleData = 31;
-            }
-            byte[] bytes = in.read(compressornameDisplayAbleData);
-            compressorname = new String(bytes, "UTF-8");
-            if (compressornameDisplayAbleData < 31) {
-                byte[] zeros = in.read(31 - compressornameDisplayAbleData);
-                //assert Arrays.equals(zeros, new byte[zeros.length]) : "The compressor name length was not filled up with zeros";
-            }
-            depth = in.readUInt16();
-            tmp = in.readUInt16();
-            assert 0xFFFF == tmp;
-
-            size -= 78;
-
-            while (size > 8) { // If there are just some stupid dead bytes don't try to make a new box
-                Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
-                boxes.add(b);
-                size -= b.getSize();
-            }
-
-            // commented out since it forbids deadbytes
-            //  assert size == 0 : "After parsing all boxes there are " + size + " bytes left. 0 bytes required";
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        _parseReservedAndDataReferenceIndex(content);
+        long tmp = IsoTypeReader.readUInt16(content);
+        assert 0 == tmp : "reserved byte not 0";
+        tmp = IsoTypeReader.readUInt16(content);
+        assert 0 == tmp : "reserved byte not 0";
+        predefined[0] = IsoTypeReader.readUInt32(content);     // should be zero
+        predefined[1] = IsoTypeReader.readUInt32(content);     // should be zero
+        predefined[2] = IsoTypeReader.readUInt32(content);     // should be zero
+        width = IsoTypeReader.readUInt16(content);
+        height = IsoTypeReader.readUInt16(content);
+        horizresolution = IsoTypeReader.readFixedPoint1616(content);
+        vertresolution = IsoTypeReader.readFixedPoint1616(content);
+        tmp = IsoTypeReader.readUInt32(content);
+        assert 0 == tmp : "reserved byte not 0";
+        frameCount = IsoTypeReader.readUInt16(content);
+        int compressornameDisplayAbleData = IsoTypeReader.readUInt8(content);
+        if (compressornameDisplayAbleData > 31) {
+            System.out.println("invalid compressor name displayable data: " + compressornameDisplayAbleData);
+            compressornameDisplayAbleData = 31;
         }
+        byte[] bytes = new byte[compressornameDisplayAbleData];
+        content.get(bytes);
+        compressorname = Utf8.convert(bytes);
+        if (compressornameDisplayAbleData < 31) {
+            byte[] zeros = new byte[31 - compressornameDisplayAbleData];
+            content.get(zeros);
+            //assert Arrays.equals(zeros, new byte[zeros.length]) : "The compressor name length was not filled up with zeros";
+        }
+        depth = IsoTypeReader.readUInt16(content);
+        tmp = IsoTypeReader.readUInt16(content);
+        assert 0xFFFF == tmp;
+
+        _parseChildBoxes(content);
+
     }
 
+
     protected long getContentSize() {
-        if (TYPE4.equals(IsoFile.bytesToFourCC(type))) {
-            return vc1Content.length + 8;
-        }
         long contentSize = 78;
         for (Box boxe : boxes) {
             contentSize += boxe.getSize();
@@ -173,41 +151,36 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         return contentSize;
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        if (TYPE4.equals(IsoFile.bytesToFourCC(type))) {
-            isos.write(new byte[6]);
-            isos.writeUInt16(getDataReferenceIndex());
-            isos.write(vc1Content);
-        } else {
-            isos.write(new byte[6]);
-            isos.writeUInt16(getDataReferenceIndex());
-            isos.writeUInt16(0);
-            isos.writeUInt16(0);
-            isos.writeUInt32(predefined[0]);
-            isos.writeUInt32(predefined[1]);
-            isos.writeUInt32(predefined[2]);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        _writeReservedAndDataReferenceIndex(bb);
+        IsoTypeWriter.writeUInt16(bb, 0);
+        IsoTypeWriter.writeUInt16(bb, 0);
+        IsoTypeWriter.writeUInt32(bb, predefined[0]);
+        IsoTypeWriter.writeUInt32(bb, predefined[1]);
+        IsoTypeWriter.writeUInt32(bb, predefined[2]);
 
-            isos.writeUInt16(getWidth());
-            isos.writeUInt16(getHeight());
+        IsoTypeWriter.writeUInt16(bb, getWidth());
+        IsoTypeWriter.writeUInt16(bb, getHeight());
 
-            isos.writeFixedPont1616(getHorizresolution());
-            isos.writeFixedPont1616(getVertresolution());
+        IsoTypeWriter.writeFixedPont1616(bb, getHorizresolution());
+        IsoTypeWriter.writeFixedPont1616(bb, getVertresolution());
 
-            isos.writeUInt32(0);
-            isos.writeUInt16(getFrameCount());
-            isos.writeUInt8(utf8StringLengthInBytes(getCompressorname()));
-            isos.writeStringNoTerm(getCompressorname());
-            int a = utf8StringLengthInBytes(getCompressorname());
-            while (a < 31) {
-                a++;
-                isos.write(0);
-            }
-            isos.writeUInt16(getDepth());
-            isos.writeUInt16(0xFFFF);
-            for (Box boxe : boxes) {
-                boxe.getBox(isos);
-            }
+
+        IsoTypeWriter.writeUInt32(bb, 0);
+        IsoTypeWriter.writeUInt16(bb, getFrameCount());
+        IsoTypeWriter.writeUInt8(bb, Utf8.utf8StringLengthInBytes(getCompressorname()));
+        bb.put(Utf8.convert(getCompressorname()));
+        int a = Utf8.utf8StringLengthInBytes(getCompressorname());
+        while (a < 31) {
+            a++;
+            bb.put((byte) 0);
         }
+        IsoTypeWriter.writeUInt16(bb, getDepth());
+        IsoTypeWriter.writeUInt16(bb, 0xFFFF);
+
+        _writeChildBoxes(bb);
+
     }
 
 }

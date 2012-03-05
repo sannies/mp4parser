@@ -1,11 +1,10 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.Utf8;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  *
@@ -15,7 +14,7 @@ public class XmlBox extends AbstractFullBox {
     public static final String TYPE = "xml ";
 
     public XmlBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getXml() {
@@ -28,21 +27,18 @@ public class XmlBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return IsoFile.utf8StringLengthInBytes(xml);
+        return 4 + Utf8.utf8StringLengthInBytes(xml);
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeStringNoTerm(xml);
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        xml = IsoTypeReader.readString(content, content.remaining());
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        long a = in.remaining();
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long b = in.remaining();
-        size -= (a - b);
-        assert size < Integer.MAX_VALUE;
-        xml = in.readString((int) size);
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.put(Utf8.convert(xml));
     }
 }

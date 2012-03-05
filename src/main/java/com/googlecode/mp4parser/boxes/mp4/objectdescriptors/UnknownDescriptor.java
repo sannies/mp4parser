@@ -16,26 +16,17 @@
 
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
-import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoBufferWrapper;
-
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
 public class UnknownDescriptor extends BaseDescriptor {
+    private ByteBuffer data;
     private static Logger log = Logger.getLogger(UnknownDescriptor.class.getName());
 
     @Override
-    public void parse(int tag, IsoBufferWrapper in, int maxLength) throws IOException {
-        super.parse(tag, in, maxLength);
-
-        final long remaining = in.remaining();
-        if (remaining < getSize()) {
-            log.warning("Wrong size parsed! size: " + getSize() + ", remaining: " + remaining + " for " + this);
-            setData(in.read((int) remaining));
-        } else {
-            setData(in.read(getSize()));
-        }
+    public void parseDetail(ByteBuffer bb) throws IOException {
+        data = (ByteBuffer) bb.slice().limit(this.getSizeOfInstance());
     }
 
     @Override
@@ -44,7 +35,7 @@ public class UnknownDescriptor extends BaseDescriptor {
         sb.append("UnknownDescriptor");
         sb.append("{tag=").append(tag);
         sb.append(", sizeOfInstance=").append(sizeOfInstance);
-        sb.append(", data=").append(data == null ? "null" : Hex.encodeHex(data));
+        sb.append(", data=").append(data);
         sb.append('}');
         return sb.toString();
     }

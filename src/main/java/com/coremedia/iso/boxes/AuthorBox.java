@@ -17,12 +17,12 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.Utf8;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Meta information in a 'udta' box about a track.
@@ -37,7 +37,7 @@ public class AuthorBox extends AbstractFullBox {
     private String author;
 
     public AuthorBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     /**
@@ -69,18 +69,22 @@ public class AuthorBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 2 + utf8StringLengthInBytes(author) + 1;
+        return 7 + Utf8.utf8StringLengthInBytes(author);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        language = in.readIso639();
-        author = in.readString();
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        language = IsoTypeReader.readIso639(content);
+        author = IsoTypeReader.readString(content);
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeIso639(language);
-        isos.writeStringZeroTerm(author);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeIso639(bb, language);
+        bb.put(Utf8.convert(author));
+        bb.put((byte) 0);
     }
 
 

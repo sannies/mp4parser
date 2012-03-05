@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
 
 /**
@@ -29,7 +28,7 @@ public class MovieFragmentRandomAccessBox extends AbstractContainerBox {
     public static final String TYPE = "mfra";
 
     public MovieFragmentRandomAccessBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

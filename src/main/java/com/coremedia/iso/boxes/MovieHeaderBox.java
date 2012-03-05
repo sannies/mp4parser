@@ -16,12 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * <code>
@@ -45,7 +44,7 @@ public class MovieHeaderBox extends AbstractFullBox {
     public static final String TYPE = "mvhd";
 
     public MovieHeaderBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public long getCreationTime() {
@@ -81,7 +80,7 @@ public class MovieHeaderBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        long contentSize = 0;
+        long contentSize = 4;
         if (getVersion() == 1) {
             contentSize += 28;
         } else {
@@ -91,32 +90,34 @@ public class MovieHeaderBox extends AbstractFullBox {
         return contentSize;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         if (getVersion() == 1) {
-            creationTime = in.readUInt64();
-            modificationTime = in.readUInt64();
-            timescale = in.readUInt32();
-            duration = in.readUInt64();
+            creationTime = IsoTypeReader.readUInt64(content);
+            modificationTime = IsoTypeReader.readUInt64(content);
+            timescale = IsoTypeReader.readUInt32(content);
+            duration = IsoTypeReader.readUInt64(content);
         } else {
-            creationTime = in.readUInt32();
-            modificationTime = in.readUInt32();
-            timescale = in.readUInt32();
-            duration = in.readUInt32();
+            creationTime = IsoTypeReader.readUInt32(content);
+            modificationTime = IsoTypeReader.readUInt32(content);
+            timescale = IsoTypeReader.readUInt32(content);
+            duration = IsoTypeReader.readUInt32(content);
         }
-        rate = in.readFixedPoint1616();
-        volume = in.readFixedPoint88();
-        in.readUInt16();
-        in.readUInt32();
-        in.readUInt32();
+        rate = IsoTypeReader.readFixedPoint1616(content);
+        volume = IsoTypeReader.readFixedPoint88(content);
+        IsoTypeReader.readUInt16(content);
+        IsoTypeReader.readUInt32(content);
+        IsoTypeReader.readUInt32(content);
         matrix = new long[9];
         for (int i = 0; i < 9; i++) {
-            matrix[i] = in.readUInt32();
+            matrix[i] = IsoTypeReader.readUInt32(content);
         }
         for (int i = 0; i < 6; i++) {
-            in.readUInt32();
+            IsoTypeReader.readUInt32(content);
         }
-        nextTrackId = in.readUInt32();
+        nextTrackId = IsoTypeReader.readUInt32(content);
+
     }
 
     public String toString() {
@@ -143,34 +144,37 @@ public class MovieHeaderBox extends AbstractFullBox {
         return result.toString();
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
 
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
         if (getVersion() == 1) {
-            isos.writeUInt64(creationTime);
-            isos.writeUInt64(modificationTime);
-            isos.writeUInt32(timescale);
-            isos.writeUInt64(duration);
+            IsoTypeWriter.writeUInt64(bb, creationTime);
+            IsoTypeWriter.writeUInt64(bb, modificationTime);
+            IsoTypeWriter.writeUInt32(bb, timescale);
+            IsoTypeWriter.writeUInt64(bb, duration);
         } else {
-            isos.writeUInt32((int) creationTime);
-            isos.writeUInt32((int) modificationTime);
-            isos.writeUInt32(timescale);
-            isos.writeUInt32((int) duration);
+            IsoTypeWriter.writeUInt32(bb, creationTime);
+            IsoTypeWriter.writeUInt32(bb, modificationTime);
+            IsoTypeWriter.writeUInt32(bb, timescale);
+            IsoTypeWriter.writeUInt32(bb, duration);
         }
-        isos.writeFixedPont1616(rate);
-        isos.writeFixedPont88(volume);
-        isos.writeUInt16(0);
-        isos.writeUInt32(0);
-        isos.writeUInt32(0);
+        IsoTypeWriter.writeFixedPont1616(bb, rate);
+        IsoTypeWriter.writeFixedPont88(bb, volume);
+        IsoTypeWriter.writeUInt16(bb, 0);
+        IsoTypeWriter.writeUInt32(bb, 0);
+        IsoTypeWriter.writeUInt32(bb, 0);
 
 
         for (int i = 0; i < 9; i++) {
-            isos.writeUInt32(matrix[i]);
+            IsoTypeWriter.writeUInt32(bb, matrix[i]);
         }
         for (int i = 0; i < 6; i++) {
-            isos.writeUInt32(0);
+            IsoTypeWriter.writeUInt32(bb, 0);
         }
-        isos.writeUInt32(nextTrackId);
+        IsoTypeWriter.writeUInt32(bb, nextTrackId);
     }
+
 
     public void setCreationTime(long creationTime) {
         this.creationTime = creationTime;

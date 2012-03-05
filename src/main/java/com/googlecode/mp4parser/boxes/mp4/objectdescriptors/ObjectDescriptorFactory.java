@@ -16,10 +16,11 @@
 
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoTypeReader;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -136,7 +137,7 @@ public class ObjectDescriptorFactory {
         annotated.add(ExtensionProfileLevelDescriptor.class);
         annotated.add(ESDescriptor.class);
         annotated.add(DecoderConfigDescriptor.class);
-        annotated.add(ObjectDescriptor.class);
+        //annotated.add(ObjectDescriptor.class);
 
         for (Class<? extends BaseDescriptor> clazz : annotated) {
             final Descriptor descriptor = clazz.getAnnotation(Descriptor.class);
@@ -154,8 +155,8 @@ public class ObjectDescriptorFactory {
         }
     }
 
-    public static BaseDescriptor createFrom(int objectTypeIndication, IsoBufferWrapper in, long size) throws IOException {
-        int tag = in.readUInt8();
+    public static BaseDescriptor createFrom(int objectTypeIndication, ByteBuffer bb) throws IOException {
+        int tag = IsoTypeReader.readUInt8(bb);
 
         Map<Integer, Class<? extends BaseDescriptor>> tagMap = descriptorRegistry.get(objectTypeIndication);
         if (tagMap == null) {
@@ -182,8 +183,7 @@ public class ObjectDescriptorFactory {
                 throw new RuntimeException(e);
             }
         }
-        baseDescriptor.parse(tag, in, (int) size - 1);
-
+        baseDescriptor.parse(tag, bb);
         return baseDescriptor;
     }
 }

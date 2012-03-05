@@ -16,17 +16,18 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Samples within the media data are grouped into chunks. Chunks can be of different sizes, and the
@@ -39,7 +40,7 @@ public class SampleToChunkBox extends AbstractFullBox {
     public static final String TYPE = "stsc";
 
     public SampleToChunkBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public List<Entry> getEntries() {
@@ -51,31 +52,32 @@ public class SampleToChunkBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return entries.size() * 12 + 4;
+        return entries.size() * 12 + 8;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long entryCount = in.readUInt32();
-        if (entryCount > Integer.MAX_VALUE) {
-            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
-        }
-        entries = new ArrayList<Entry>((int) entryCount);
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+
+        int entryCount = l2i(IsoTypeReader.readUInt32(content));
+        entries = new ArrayList<Entry>(entryCount);
         for (int i = 0; i < entryCount; i++) {
-            entries.add(new Entry(in.readUInt32(), in.readUInt32(), in.readUInt32()));
+            entries.add(new Entry(
+                    IsoTypeReader.readUInt32(content),
+                    IsoTypeReader.readUInt32(content),
+                    IsoTypeReader.readUInt32(content)));
         }
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        long l = isos.getStreamPosition();
-        isos.writeUInt32(entries.size());
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, entries.size());
         for (Entry entry : entries) {
-            isos.writeUInt32(entry.getFirstChunk());
-            isos.writeUInt32(entry.getSamplesPerChunk());
-            isos.writeUInt32(entry.getSampleDescriptionIndex());
-
+            IsoTypeWriter.writeUInt32(bb, entry.getFirstChunk());
+            IsoTypeWriter.writeUInt32(bb, entry.getSamplesPerChunk());
+            IsoTypeWriter.writeUInt32(bb, entry.getSampleDescriptionIndex());
         }
-        assert getContentSize() == (isos.getStreamPosition() - l);
     }
 
     public String toString() {
@@ -86,7 +88,7 @@ public class SampleToChunkBox extends AbstractFullBox {
      * Decompresses the list of entries and returns the number of samples per chunk for
      * every single chunk.
      *
-     * @param chunkCount
+     * @param chunkCount overall number of chunks
      * @return number of samples per chunk
      */
     public long[] blowup(int chunkCount) {

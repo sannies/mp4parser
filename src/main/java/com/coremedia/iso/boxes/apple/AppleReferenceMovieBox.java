@@ -16,14 +16,13 @@
 
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
 
 public class AppleReferenceMovieBox extends AbstractContainerBox {
     public static final String TYPE = "rmra";
 
     public AppleReferenceMovieBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

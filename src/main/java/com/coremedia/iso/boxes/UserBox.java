@@ -16,55 +16,49 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * A user specifc box. See ISO/IEC 14496-12 for details.
  */
 public class UserBox extends AbstractBox {
-    byte[] content;
+    byte[] data;
     public static final String TYPE = "uuid";
 
     public UserBox(byte[] userType) {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
         setUserType(userType);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        if (((int) size) != size) {
-            throw new RuntimeException("The UserBox cannot be larger than 2^32 bytes (Plz enhance the parser!!!)");
-        }
-        content = in.read((int) size);
-    }
 
     protected long getContentSize() {
-        return content.length;
+        return data.length;
     }
 
     public String toString() {
-        return "UserBox[type=" + IsoFile.bytesToFourCC(getType()) +
+        return "UserBox[type=" + (getType()) +
                 ";userType=" + new String(getUserType()) +
-                ";contentLength=" + content.length + "]";
+                ";contentLength=" + data.length + "]";
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.write(content);
+
+    public byte[] getData() {
+        return data;
     }
 
-    public byte[] getBox() {
-        return content;
+    public void setData(byte[] data) {
+        this.data = data;
     }
 
-    public byte[] getContent() {
-        return content;
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        data = new byte[content.remaining()];
+        content.get(data);
     }
 
-    public void setContent(byte[] content) {
-        this.content = content;
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        bb.put(data);
     }
 }

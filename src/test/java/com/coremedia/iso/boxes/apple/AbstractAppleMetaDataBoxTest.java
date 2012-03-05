@@ -1,11 +1,11 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.IsoOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.channels.Channels;
 
 public class AbstractAppleMetaDataBoxTest {
     @Test
@@ -16,7 +16,7 @@ public class AbstractAppleMetaDataBoxTest {
                 super("test");
                 this.appleDataBox = new AppleDataBox();
                 this.appleDataBox.setFlags(21);
-                this.appleDataBox.setContent(new byte[4]);
+                this.appleDataBox.setData(new byte[4]);
             }
 
         }
@@ -24,8 +24,7 @@ public class AbstractAppleMetaDataBoxTest {
         MyConcreteAppleMetaDataBox myConcreteAppleMetaDataBox = new MyConcreteAppleMetaDataBox();
         myConcreteAppleMetaDataBox.setValue("9");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IsoOutputStream isoOutputStream = new IsoOutputStream(baos);
-        myConcreteAppleMetaDataBox.getContent(isoOutputStream);
+        myConcreteAppleMetaDataBox.getBox(Channels.newChannel(baos));
         Assert.assertEquals("9", myConcreteAppleMetaDataBox.getValue());
 
     }

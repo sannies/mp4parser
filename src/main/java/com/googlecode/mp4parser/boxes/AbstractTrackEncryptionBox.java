@@ -1,16 +1,12 @@
 package com.googlecode.mp4parser.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
-import java.io.IOException;import java.lang.Override;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Arrays;
-import java.util.UUID;
 
 /**
  *
@@ -40,10 +36,8 @@ public abstract class AbstractTrackEncryptionBox extends AbstractFullBox {
         this.defaultIvSize = defaultIvSize;
     }
 
-    public String getDefault_KID() {
-        ByteBuffer b = ByteBuffer.wrap(default_KID);
-        b.order(ByteOrder.BIG_ENDIAN);
-        return new UUID(b.getLong(), b.getLong()).toString();
+    public byte[] getDefault_KID() {
+        return default_KID;
     }
 
     public void setDefault_KID(byte[] default_KID) {
@@ -51,23 +45,25 @@ public abstract class AbstractTrackEncryptionBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt24(defaultAlgorithmId);
-        os.writeUInt8(defaultIvSize);
-        os.write(default_KID);
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        defaultAlgorithmId = IsoTypeReader.readUInt24(content);
+        defaultIvSize = IsoTypeReader.readUInt8(content);
+        default_KID = new byte[16];
+        content.get(default_KID);
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt24(bb, defaultAlgorithmId);
+        IsoTypeWriter.writeUInt8(bb, defaultIvSize);
+        bb.put(default_KID);
     }
 
     @Override
     protected long getContentSize() {
-        return 20;
-    }
-
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        defaultAlgorithmId = in.readUInt24();
-        defaultIvSize = in.readUInt8();
-        default_KID = in.read(16);
+        return 24;
     }
 
     @Override

@@ -16,12 +16,13 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.Utf8;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 
 /**
@@ -37,7 +38,7 @@ public class RatingBox extends AbstractFullBox {
     private String ratingInfo;
 
     public RatingBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 
@@ -87,26 +88,31 @@ public class RatingBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 4 + 4 + 2 + utf8StringLengthInBytes(ratingInfo) + 1;
+        return 15 + Utf8.utf8StringLengthInBytes(ratingInfo);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        ratingEntity = IsoFile.bytesToFourCC(in.read(4));
-        ratingCriteria = IsoFile.bytesToFourCC(in.read(4));
-        language = in.readIso639();
-        ratingInfo = in.readString();
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        ratingEntity = IsoTypeReader.read4cc(content);
+        ratingCriteria = IsoTypeReader.read4cc(content);
+        language = IsoTypeReader.readIso639(content);
+        ratingInfo = IsoTypeReader.readString(content);
+
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.write(IsoFile.fourCCtoBytes(ratingEntity));
-        isos.write(IsoFile.fourCCtoBytes(ratingCriteria));
-        isos.writeIso639(language);
-        isos.writeStringZeroTerm(ratingInfo);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.put(IsoFile.fourCCtoBytes(ratingEntity));
+        bb.put(IsoFile.fourCCtoBytes(ratingCriteria));
+        IsoTypeWriter.writeIso639(bb, language);
+        bb.put(Utf8.convert(ratingInfo));
+        bb.put((byte) 0);
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("RatingBox[language=").append(getLanguage());
         buffer.append("ratingEntity=").append(getRatingEntity());
         buffer.append(";ratingCriteria=").append(getRatingCriteria());

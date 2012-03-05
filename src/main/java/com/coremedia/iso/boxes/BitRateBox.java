@@ -16,12 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * <code>class BitRateBox extends Box('btrt') {<br/>
@@ -45,23 +44,25 @@ public final class BitRateBox extends AbstractBox {
     private long avgBitrate;
 
     public BitRateBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {
         return 12;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        bufferSizeDb = in.readUInt32();
-        maxBitrate = in.readUInt32();
-        avgBitrate = in.readUInt32();
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        bufferSizeDb = IsoTypeReader.readUInt32(content);
+        maxBitrate = IsoTypeReader.readUInt32(content);
+        avgBitrate = IsoTypeReader.readUInt32(content);
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(bufferSizeDb);
-        os.writeUInt32(maxBitrate);
-        os.writeUInt32(avgBitrate);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        IsoTypeWriter.writeUInt32(bb, bufferSizeDb);
+        IsoTypeWriter.writeUInt32(bb, maxBitrate);
+        IsoTypeWriter.writeUInt32(bb, avgBitrate);
     }
 
     public long getBufferSizeDb() {

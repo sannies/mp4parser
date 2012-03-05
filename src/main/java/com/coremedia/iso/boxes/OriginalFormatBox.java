@@ -16,13 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.ByteBuffer;
 
 /**
  * The Original Format Box contains the four-character-code of the original untransformed sample description.
@@ -34,22 +32,19 @@ import java.util.Arrays;
 public class OriginalFormatBox extends AbstractBox {
     public static final String TYPE = "frma";
 
-    private byte[] dataFormat = new byte[4];
+    private String dataFormat = "    ";
 
     public OriginalFormatBox() {
-        super(IsoFile.fourCCtoBytes("frma"));
+        super("frma");
     }
 
-    public byte[] getDataFormat() {
+    public String getDataFormat() {
         return dataFormat;
     }
 
-    public String getFourCC() {
-        return IsoFile.bytesToFourCC(dataFormat);
-    }
 
-    public void setDataFormat(byte[] dataFormat) {
-        assert dataFormat.length == 4;
+    public void setDataFormat(String dataFormat) {
+        assert dataFormat.length() == 4;
         this.dataFormat = dataFormat;
     }
 
@@ -57,20 +52,18 @@ public class OriginalFormatBox extends AbstractBox {
         return 4;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        assert size == 4;
-        //in.readByte(dataFormat)
-        dataFormat[0] = (byte) in.readUInt8();
-        dataFormat[1] = (byte) in.readUInt8();
-        dataFormat[2] = (byte) in.readUInt8();
-        dataFormat[3] = (byte) in.readUInt8();
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        dataFormat = IsoTypeReader.read4cc(content);
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.write(dataFormat);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        bb.put(IsoFile.fourCCtoBytes(dataFormat));
     }
+
 
     public String toString() {
-        return "OriginalFormatBox[dataFormat=" + Arrays.toString(getDataFormat()) + "]";
+        return "OriginalFormatBox[dataFormat=" + getDataFormat() + "]";
     }
 }

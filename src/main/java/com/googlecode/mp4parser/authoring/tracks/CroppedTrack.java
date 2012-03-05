@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
@@ -9,6 +9,7 @@ import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class CroppedTrack extends AbstractTrack {
     Track origTrack;
     private int fromSample;
     private int toSample;
+    private long[] syncSampleArray;
 
     public CroppedTrack(Track origTrack, long fromSample, long toSample) {
         this.origTrack = origTrack;
@@ -33,7 +35,7 @@ public class CroppedTrack extends AbstractTrack {
         this.toSample = (int) toSample;
     }
 
-    public List<IsoBufferWrapper> getSamples() {
+    public List<ByteBuffer> getSamples() {
         return origTrack.getSamples().subList(fromSample, toSample);
     }
 
@@ -87,22 +89,26 @@ public class CroppedTrack extends AbstractTrack {
         }
     }
 
-    public long[] getSyncSamples() {
-        if (origTrack.getSyncSamples() != null && origTrack.getSyncSamples().length > 0) {
-            List<Long> syncSamples = new LinkedList<Long>();
-            for (long l : origTrack.getSyncSamples()) {
-                if (l >= fromSample && l < toSample) {
-                    syncSamples.add(l - fromSample);
+    synchronized public long[] getSyncSamples() {
+        if (this.syncSampleArray == null) {
+            if (origTrack.getSyncSamples() != null && origTrack.getSyncSamples().length > 0) {
+                List<Long> syncSamples = new LinkedList<Long>();
+                for (long l : origTrack.getSyncSamples()) {
+                    if (l >= fromSample && l < toSample) {
+                        syncSamples.add(l - fromSample);
+                    }
                 }
-            }
-            long[] syncSampleArray = new long[syncSamples.size()];
-            for (int i = 0; i < syncSampleArray.length; i++) {
-                syncSampleArray[i] = syncSamples.get(i);
+                syncSampleArray = new long[syncSamples.size()];
+                for (int i = 0; i < syncSampleArray.length; i++) {
+                    syncSampleArray[i] = syncSamples.get(i);
 
+                }
+                return syncSampleArray;
+            } else {
+                return null;
             }
-            return syncSampleArray;
         } else {
-            return null;
+            return this.syncSampleArray;
         }
     }
 
@@ -118,9 +124,11 @@ public class CroppedTrack extends AbstractTrack {
         return origTrack.getTrackMetaData();
     }
 
-    public Type getType() {
-        return origTrack.getType();
+    public String getHandler() {
+        return origTrack.getHandler();
     }
 
-
+    public AbstractMediaHeaderBox getMediaHeaderBox() {
+        return origTrack.getMediaHeaderBox();
+    }
 }

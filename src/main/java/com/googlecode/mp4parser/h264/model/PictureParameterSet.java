@@ -20,10 +20,10 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 */
 package com.googlecode.mp4parser.h264.model;
 
-import com.coremedia.iso.IsoBufferWrapper;
 import com.googlecode.mp4parser.h264.read.CAVLCReader;
 import com.googlecode.mp4parser.h264.write.CAVLCWriter;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -78,8 +78,8 @@ public class PictureParameterSet extends BitstreamElement {
     public int[] slice_group_id;
     public PPSExt extended;
 
-    public static PictureParameterSet read(IsoBufferWrapper is) throws IOException {
-        CAVLCReader reader = new CAVLCReader(is);
+    public static PictureParameterSet read(byte[] b) throws IOException {
+        CAVLCReader reader = new CAVLCReader(new ByteArrayInputStream(b));
         PictureParameterSet pps = new PictureParameterSet();
 
         pps.pic_parameter_set_id = reader.readUE("PPS: pic_parameter_set_id");

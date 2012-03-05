@@ -16,10 +16,13 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * The chunk offset table gives the index of each chunk into the containing file. Defined in ISO/IEC 14496-12.
@@ -38,23 +41,32 @@ public class StaticChunkOffsetBox extends ChunkOffsetBox {
     }
 
     protected long getContentSize() {
-        return getChunkOffsets().length * 4 + 4;
+        return 8 + chunkOffsets.length * 4;
     }
 
     public void setChunkOffsets(long[] chunkOffsets) {
         this.chunkOffsets = chunkOffsets;
     }
 
-
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long entryCount = in.readUInt32();
-        if (entryCount > Integer.MAX_VALUE) {
-            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
-        }
-        chunkOffsets = new long[(int) entryCount];
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        int entryCount = l2i(IsoTypeReader.readUInt32(content));
+        chunkOffsets = new long[entryCount];
         for (int i = 0; i < entryCount; i++) {
-            chunkOffsets[i] = in.readUInt32();
+            chunkOffsets[i] = IsoTypeReader.readUInt32(content);
+        }
+
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, chunkOffsets.length);
+        for (long chunkOffset : chunkOffsets) {
+            IsoTypeWriter.writeUInt32(bb, chunkOffset);
         }
     }
+
+
 }

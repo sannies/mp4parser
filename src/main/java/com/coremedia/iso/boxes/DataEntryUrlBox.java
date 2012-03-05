@@ -16,12 +16,8 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Only used within the DataReferenceBox. Find more information there.
@@ -31,34 +27,26 @@ import java.io.IOException;
 public class DataEntryUrlBox extends AbstractFullBox {
     public static final String TYPE = "url ";
 
-    private String location;
-
     public DataEntryUrlBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
-    public String getLocation() {
-        return location;
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        if ((getFlags() & 0x1) != 0x1) {
-            throw new UnsupportedOperationException();
-        }
-    }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        if ((getFlags() & 0x1) != 0x1) {
-            throw new UnsupportedOperationException();
-        }
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
     }
 
     protected long getContentSize() {
-        return 0;
+        return 4;
     }
 
     public String toString() {
-        return "DataEntryUrlBox[location=" + getLocation() + "]";
+        return "DataEntryUrlBox[]";
     }
 }

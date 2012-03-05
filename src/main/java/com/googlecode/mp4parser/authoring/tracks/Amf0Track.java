@@ -1,8 +1,8 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.NullMediaHeaderBox;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
@@ -10,7 +10,14 @@ import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 
-import java.util.*;
+import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -20,30 +27,30 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class Amf0Track extends AbstractTrack {
-    Map<Long, byte[]> rawSamples = new HashMap<Long, byte[]>();
+    SortedMap<Long, byte[]> rawSamples = new TreeMap<Long, byte[]>() {
+    };
     private TrackMetaData trackMetaData = new TrackMetaData();
 
 
     /**
      * Creates a new AMF0 track from
+     *
      * @param rawSamples
      */
     public Amf0Track(Map<Long, byte[]> rawSamples) {
-        this.rawSamples = rawSamples;
+        this.rawSamples = new TreeMap<Long, byte[]>(rawSamples);
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
         trackMetaData.setTimescale(1000); // Text tracks use millieseconds
         trackMetaData.setLanguage("eng");
     }
 
-    public List<IsoBufferWrapper> getSamples() {
-        List<Long> keys = new LinkedList<Long>(rawSamples.keySet());
-        List<IsoBufferWrapper> ibws = new LinkedList<IsoBufferWrapper>();
-        Collections.sort(keys);
-        for (Long key : keys) {
-            ibws.add(new IsoBufferWrapperImpl(rawSamples.get(key)));
+    public List<ByteBuffer> getSamples() {
+        LinkedList<ByteBuffer> samples = new LinkedList<ByteBuffer>();
+        for (byte[] bytes : rawSamples.values()) {
+            samples.add(ByteBuffer.wrap(bytes));
         }
-        return ibws;
+        return samples;
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
@@ -90,7 +97,11 @@ public class Amf0Track extends AbstractTrack {
         return trackMetaData;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Type getType() {
-        return Type.AMF0;
+    public String getHandler() {
+        return "data";
+    }
+
+    public AbstractMediaHeaderBox getMediaHeaderBox() {
+        return new NullMediaHeaderBox();
     }
 }

@@ -17,19 +17,17 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.IsoFile;
-
 import java.util.List;
 
 /**
  * The metadata for a presentation is stored in the single Movie Box which occurs at the top-level of a file.
  * Normally this box is close to the beginning or end of the file, though this is not required.
  */
-public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<TrackBox> {
+public class MovieBox extends AbstractContainerBox {
     public static final String TYPE = "moov";
 
     public MovieBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public int getTrackCount() {
@@ -52,16 +50,6 @@ public class MovieBox extends AbstractContainerBox implements TrackBoxContainer<
             trackNumbers[trackCounter] = trackBox.getTrackHeaderBox().getTrackId();
         }
         return trackNumbers;
-    }
-
-    public TrackMetaData<TrackBox> getTrackMetaData(long trackId) {
-        List<TrackBox> trackBoxes = this.getBoxes(TrackBox.class);
-        for (TrackBox trackBox : trackBoxes) {
-            if (trackBox.getTrackHeaderBox().getTrackId() == trackId) {
-                return new TrackMetaData<TrackBox>(trackId, trackBox);
-            }
-        }
-        throw new RuntimeException("TrackId " + trackId + " not contained in " + this);
     }
 
     public MovieHeaderBox getMovieHeaderBox() {

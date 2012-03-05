@@ -16,12 +16,7 @@
 
 package com.googlecode.mp4parser.boxes.mp4;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BaseDescriptor;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ObjectDescriptorFactory;
 
@@ -38,21 +33,22 @@ public class AbstractDescriptorBox extends AbstractFullBox {
 
 
     public BaseDescriptor descriptor;
-    public byte[] data;
+    public ByteBuffer data;
 
     public AbstractDescriptorBox(String type) {
         super(type);
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.write(data);
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        data.rewind(); // has been fforwarded by parsing
+        bb.put(data);
     }
 
     @Override
     protected long getContentSize() {
-        //return 4 + esDescriptor.getSize();
-        return descriptor.getSize();
+        return 4 + data.limit();
     }
 
     public BaseDescriptor getDescriptor() {
@@ -63,15 +59,15 @@ public class AbstractDescriptorBox extends AbstractFullBox {
         return descriptor.toString();
     }
 
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
 
-        //read the descriptor and copy it to avoid broken descriptors reading beyond the box
-        data = in.read((int) size - 4);
-        final IsoBufferWrapper descriptorBuffer = new IsoBufferWrapperImpl(ByteBuffer.wrap(data));
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        data = content.slice();
+        content.position(content.position() + content.remaining());
         try {
-            descriptor = ObjectDescriptorFactory.createFrom(-1, descriptorBuffer, descriptorBuffer.size());
+            data.rewind();
+            descriptor = ObjectDescriptorFactory.createFrom(-1, data);
         } catch (IOException e) {
             log.log(Level.WARNING, "Error parsing ObjectDescriptor", e);
             //that's why we copied it ;)
@@ -79,5 +75,6 @@ public class AbstractDescriptorBox extends AbstractFullBox {
             log.log(Level.WARNING, "Error parsing ObjectDescriptor", e);
             //that's why we copied it ;)
         }
+
     }
 }

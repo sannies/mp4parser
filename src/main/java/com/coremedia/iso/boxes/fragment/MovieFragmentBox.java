@@ -16,11 +16,9 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.TrackBoxContainer;
-import com.coremedia.iso.boxes.TrackMetaData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +28,7 @@ import java.util.List;
  * }
  */
 
-public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxContainer<TrackFragmentBox> {
+public class MovieFragmentBox extends AbstractContainerBox {
     public static final String TYPE = "moof";
 
     public MovieFragmentBox() {
@@ -51,6 +49,21 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
         }
 
         return result;
+    }
+
+    public long getOffset() {
+        Box b = this;
+        long offset = 0;
+        while (b.getParent() != null) {
+            for (Box box : b.getParent().getBoxes()) {
+                if (b == box) {
+                    break;
+                }
+                offset += box.getSize();
+            }
+            b = b.getParent();
+        }
+        return offset;
     }
 
 
@@ -75,15 +88,7 @@ public class MovieFragmentBox extends AbstractContainerBox implements TrackBoxCo
         return trackNumbers;
     }
 
-    public TrackMetaData<TrackFragmentBox> getTrackMetaData(long trackId) {
-        List<TrackFragmentBox> trackBoxes = this.getBoxes(TrackFragmentBox.class, false);
-        for (TrackFragmentBox trackFragmentBox : trackBoxes) {
-            if (trackFragmentBox.getTrackFragmentHeaderBox().getTrackId() == trackId) {
-                return new TrackMetaData<TrackFragmentBox>(trackId, trackFragmentBox);
-            }
-        }
-        throw new RuntimeException("TrackId " + trackId + " not contained in " + this);
+    public List<TrackRunBox> getTrackRunBoxes() {
+        return getBoxes(TrackRunBox.class, true);
     }
-
-
 }

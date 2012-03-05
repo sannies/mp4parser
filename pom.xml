@@ -7,7 +7,7 @@
     <description>A generic parser and writer for all ISO 14496 based files (MP4, Quicktime, DCF, PDCF, ...)
     </description>
     <url>http://code.google.com/p/mp4parser/</url>
-    <version>1.0-beta-7-SNAPSHOT</version>
+    <version>1.0-RC-1-SNAPSHOT</version>
 
 
     <properties>
@@ -91,7 +91,7 @@
     <build>
         <defaultGoal>install</defaultGoal>
         <plugins>
-        <!--    <plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
                 <version>1.4</version>
@@ -111,7 +111,10 @@
                     </dependency>
 
                 </dependencies>
-            </plugin>-->
+                <configuration>
+                    <source>1.5</source>
+                </configuration>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -147,22 +150,23 @@
     </build>
 
     <dependencies>
-<!--        <dependency>
+        <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
             <version>1.6.11</version>
-        </dependency>-->
+        </dependency>
+
+        <dependency>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
+            <version>1.2.5</version>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.8.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit-addons</groupId>
-            <artifactId>junit-addons</artifactId>
-            <version>1.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>

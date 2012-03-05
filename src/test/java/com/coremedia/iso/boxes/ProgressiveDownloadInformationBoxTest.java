@@ -1,14 +1,14 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 import junit.framework.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,16 +24,16 @@ public class ProgressiveDownloadInformationBoxTest {
         entries.add(new ProgressiveDownloadInformationBox.Entry(20, 10));
         pdin.setEntries(entries);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        pdin.getBox(new IsoOutputStream(baos));
+        pdin.getBox(Channels.newChannel(baos));
         byte[] fullBox = baos.toByteArray();
-        IsoBufferWrapper isoBufferWrapper = new IsoBufferWrapperImpl(ByteBuffer.wrap(fullBox));
-        long lengthWritten = isoBufferWrapper.readUInt32();
+        ByteBuffer bb = ByteBuffer.wrap(fullBox);
+        long lengthWritten = IsoTypeReader.readUInt32(bb);
         Assert.assertEquals(fullBox.length, lengthWritten);
-        String type = isoBufferWrapper.readString(4);
+        String type = IsoTypeReader.read4cc(bb);
         Assert.assertEquals("pdin", type);
 
         ProgressiveDownloadInformationBox pdin2 = new ProgressiveDownloadInformationBox();
-        pdin2.parse(isoBufferWrapper, lengthWritten - 8, null, null);
+        pdin2.parse(new ByteBufferByteChannel(bb), null, lengthWritten - 8, null);
         List<ProgressiveDownloadInformationBox.Entry> parsedEntries = pdin2.getEntries();
 
         Assert.assertEquals(20, parsedEntries.get(0).getInitialDelay());

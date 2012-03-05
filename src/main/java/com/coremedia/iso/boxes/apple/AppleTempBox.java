@@ -14,7 +14,7 @@ public final class AppleTempBox extends AbstractAppleMetaDataBox {
 
 
     public int getTempo() {
-        return appleDataBox.getContent()[1];
+        return appleDataBox.getData()[1];
     }
 
     public void setTempo(int tempo) {
@@ -22,7 +22,7 @@ public final class AppleTempBox extends AbstractAppleMetaDataBox {
         appleDataBox.setVersion(0);
         appleDataBox.setFlags(21);
         appleDataBox.setFourBytes(new byte[4]);
-        appleDataBox.setContent(new byte[]{0, (byte) (tempo & 0xFF)});
+        appleDataBox.setData(new byte[]{0, (byte) (tempo & 0xFF)});
 
     }
 }

@@ -16,14 +16,12 @@
 
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  *
@@ -33,11 +31,11 @@ public class BaseLocationBox extends AbstractFullBox {
     String purchaseLocation;
 
     public BaseLocationBox() {
-        super(IsoFile.fourCCtoBytes("bloc"));
+        super("bloc");
     }
 
     public BaseLocationBox(String baseLocation, String purchaseLocation) {
-        super(IsoFile.fourCCtoBytes("bloc"));
+        super("bloc");
         this.baseLocation = baseLocation;
         this.purchaseLocation = purchaseLocation;
     }
@@ -60,26 +58,27 @@ public class BaseLocationBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 1024;
+        return 1028;
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeStringZeroTerm(baseLocation);
-        os.write(new byte[256 - IsoFile.utf8StringLengthInBytes(baseLocation) - 1]); // string plus term zero
-        os.writeStringZeroTerm(purchaseLocation);
-        os.write(new byte[256 - IsoFile.utf8StringLengthInBytes(purchaseLocation) - 1]); // string plus term zero
-        os.write(new byte[512]);
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        baseLocation = IsoTypeReader.readString(content);
+        content.get(new byte[256 - Utf8.utf8StringLengthInBytes(baseLocation) - 1]);
+        purchaseLocation = IsoTypeReader.readString(content);
+        content.get(new byte[256 - Utf8.utf8StringLengthInBytes(purchaseLocation) - 1]);
+        content.get(new byte[512]);
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        baseLocation = in.readString();
-        in.skip(256 - IsoFile.utf8StringLengthInBytes(baseLocation) - 1);
-        purchaseLocation = in.readString();
-        in.skip(256 - IsoFile.utf8StringLengthInBytes(purchaseLocation) - 1);
-        in.skip(512);
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.put(Utf8.convert(baseLocation));
+        bb.put(new byte[256 - Utf8.utf8StringLengthInBytes(baseLocation)]); // string plus term zero
+        bb.put(Utf8.convert(purchaseLocation));
+        bb.put(new byte[256 - Utf8.utf8StringLengthInBytes(purchaseLocation)]); // string plus term zero
+        bb.put(new byte[512]);
     }
 
     @Override

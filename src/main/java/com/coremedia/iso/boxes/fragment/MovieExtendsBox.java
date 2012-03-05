@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
 
 /**
@@ -27,6 +26,6 @@ public class MovieExtendsBox extends AbstractContainerBox {
     public static final String TYPE = "mvex";
 
     public MovieExtendsBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 }

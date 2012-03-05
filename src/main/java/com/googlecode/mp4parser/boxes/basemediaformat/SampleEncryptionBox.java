@@ -19,5 +19,6 @@ public class SampleEncryptionBox extends AbstractSampleEncryptionBox {
      */
     public SampleEncryptionBox() {
         super("senc");
+
     }
 }

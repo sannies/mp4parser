@@ -17,9 +17,10 @@
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
 
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoTypeReader;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,10 +71,8 @@ public class InitialObjectDescriptor extends ObjectDescriptorBase {
     List<BaseDescriptor> unknownDescriptors = new ArrayList<BaseDescriptor>();
 
     @Override
-    public void parse(int tag, IsoBufferWrapper in, int maxLength) throws IOException {
-        super.parse(tag, in, maxLength);
-
-        int data = in.readUInt16();
+    public void parseDetail(ByteBuffer bb) throws IOException {
+        int data = IsoTypeReader.readUInt16(bb);
         objectDescriptorId = (data & 0xFFC0) >> 6;
 
         urlFlag = (data & 0x3F) >> 5;
@@ -81,20 +80,20 @@ public class InitialObjectDescriptor extends ObjectDescriptorBase {
 
         int sizeLeft = getSize() - 2;
         if (urlFlag == 1) {
-            urlLength = in.readUInt8();
-            urlString = new String(in.read(urlLength));
+            urlLength = IsoTypeReader.readUInt8(bb);
+            urlString = IsoTypeReader.readString(bb, urlLength);
             sizeLeft = sizeLeft - (1 + urlLength);
         } else {
-            oDProfileLevelIndication = in.readUInt8();
-            sceneProfileLevelIndication = in.readUInt8();
-            audioProfileLevelIndication = in.readUInt8();
-            visualProfileLevelIndication = in.readUInt8();
-            graphicsProfileLevelIndication = in.readUInt8();
+            oDProfileLevelIndication = IsoTypeReader.readUInt8(bb);
+            sceneProfileLevelIndication = IsoTypeReader.readUInt8(bb);
+            audioProfileLevelIndication = IsoTypeReader.readUInt8(bb);
+            visualProfileLevelIndication = IsoTypeReader.readUInt8(bb);
+            graphicsProfileLevelIndication = IsoTypeReader.readUInt8(bb);
 
             sizeLeft = sizeLeft - 5;
 
             if (sizeLeft > 2) {
-                final BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, in, sizeLeft);
+                final BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, bb);
                 sizeLeft = sizeLeft - descriptor.getSize();
                 if (descriptor instanceof ESDescriptor) {
                     esDescriptors.add((ESDescriptor) descriptor);
@@ -105,8 +104,7 @@ public class InitialObjectDescriptor extends ObjectDescriptorBase {
         }
 
         if (sizeLeft > 2) {
-            final BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, in, sizeLeft);
-            sizeLeft = sizeLeft - descriptor.getSize();
+            final BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, bb);
             if (descriptor instanceof ExtensionDescriptor) {
                 extensionDescriptors.add((ExtensionDescriptor) descriptor);
             } else {

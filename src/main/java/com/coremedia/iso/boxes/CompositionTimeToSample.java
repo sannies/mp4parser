@@ -1,44 +1,23 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.coremedia.iso.boxes.CastUtils.l2i;
+
 /**
- * aligned(8) class CompositionOffsetBox
-extends FullBox(‘ctts’, version = 0, 0) {
-unsigned int(32) entry_count;
-int i;
-if (version==0) {
-for (i=0; i < entry_count; i++) {
-unsigned int(32) sample_count;
-unsigned int(32) sample_offset;
-}
-}
-else if (version == 1) {
-for (i=0; i < entry_count; i++) {
-unsigned int(32) sample_count;
-signed int(32) sample_offset;
-}
-}
-}
- *
  * This box provides the offset between decoding time and composition time.
- * In version 0 of this box the decoding time must be less than the composition time, and
- * the offsets are expressed as unsigned numbers such that
- * CT(n) = DT(n) + CTTS(n) where CTTS(n) is the (uncompressed) table entry for sample n.
- *
- * In version 1 of this box, the composition timeline and the decoding timeline are
- * still derived from each other, but the offsets are signed.
- * It is recommended that for the computed composition timestamps, there is
- * exactly one with the value 0 (zero).
- * 
+ * Since decoding time must be less than the composition time, the offsets
+ * are expressed as unsigned numbers such that CT(n) = DT(n) + CTTS(n) where
+ * CTTS(n) is the (uncompressed) table entry for sample n. The composition
+ * time to sample table is optional and must only be present if DT and CT
+ * differ for any samples. Hint tracks do not use this box.
  */
 public class CompositionTimeToSample extends AbstractFullBox {
     public static final String TYPE = "ctts";
@@ -46,11 +25,11 @@ public class CompositionTimeToSample extends AbstractFullBox {
     List<Entry> entries = Collections.emptyList();
 
     public CompositionTimeToSample() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {
-        return 4 + 8 * entries.size();
+        return 8 + 8 * entries.size();
     }
 
     public List<Entry> getEntries() {
@@ -62,25 +41,28 @@ public class CompositionTimeToSample extends AbstractFullBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long numberOfEntries = in.readUInt32();
-        assert numberOfEntries <= Integer.MAX_VALUE : "Too many entries";
-        entries = new ArrayList<Entry>((int) numberOfEntries);
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        int numberOfEntries = l2i(IsoTypeReader.readUInt32(content));
+        entries = new ArrayList<Entry>(numberOfEntries);
         for (int i = 0; i < numberOfEntries; i++) {
-            Entry e = new Entry(toint(in.readUInt32()), toint(in.readInt32()));
+            Entry e = new Entry(l2i(IsoTypeReader.readUInt32(content)), content.getInt());
             entries.add(e);
         }
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(entries.size());
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, entries.size());
 
         for (Entry entry : entries) {
-            os.writeUInt32(entry.getCount());
-            os.writeInt32(entry.getOffset());
+            IsoTypeWriter.writeUInt32(bb, entry.getCount());
+            bb.putInt(entry.getOffset());
         }
+
     }
+
 
     public static class Entry {
         int count;
@@ -141,12 +123,5 @@ public class CompositionTimeToSample extends AbstractFullBox {
 
         return decodingTime;
     }
-    
-    public static int toint(long l)  {
-        if (l>Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("Event though I didn't expect it the given long is greater than Integer.MAX_VALUE");
-        } else {
-            return (int) l;
-        }
-    }
+
 }

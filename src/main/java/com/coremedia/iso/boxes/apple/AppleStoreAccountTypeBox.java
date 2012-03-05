@@ -13,7 +13,7 @@ public class AppleStoreAccountTypeBox extends AbstractAppleMetaDataBox {
     }
 
     public String getReadableValue() {
-        byte value = this.appleDataBox.getContent()[0];
+        byte value = this.appleDataBox.getData()[0];
         switch (value) {
             case 0:
                 return "iTunes Account";

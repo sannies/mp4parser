@@ -16,13 +16,12 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.Utf8;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 
 /**
  * <code>
@@ -41,7 +40,7 @@ public class TitleBox extends AbstractFullBox {
     private String title;
 
     public TitleBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {
@@ -66,23 +65,22 @@ public class TitleBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        try {
-            return 3 + title.getBytes("UTF-8").length;
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException();
-        }
+        return 7 + Utf8.utf8StringLengthInBytes(title);
     }
 
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeIso639(language);
-        isos.writeStringZeroTerm(title);
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeIso639(bb, language);
+        bb.put(Utf8.convert(title));
+        bb.put((byte) 0);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        language = in.readIso639();
-        title = in.readString();
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        language = IsoTypeReader.readIso639(content);
+        title = IsoTypeReader.readString(content);
     }
 
     public String toString() {

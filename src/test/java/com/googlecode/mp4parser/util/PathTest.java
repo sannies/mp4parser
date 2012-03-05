@@ -1,16 +1,15 @@
 package com.googlecode.mp4parser.util;
 
 
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.TrackBox;
 import junit.framework.Assert;
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.channels.Channels;
 
 public class PathTest {
     IsoFile isoFile;
@@ -18,8 +17,7 @@ public class PathTest {
 
     @Before
     public void setup() throws IOException {
-        isoFile = new IsoFile(new IsoBufferWrapperImpl(IOUtils.toByteArray(PathTest.class.getResourceAsStream("/multiTrack.3gp"))));
-        isoFile.parse();
+        isoFile = new IsoFile(Channels.newChannel(PathTest.class.getResourceAsStream("/multiTrack.3gp")));
         path = new Path(isoFile);
     }
 

@@ -19,10 +19,10 @@ public final class AppleCustomGenreBox extends AbstractAppleMetaDataBox {
         appleDataBox.setVersion(0);
         appleDataBox.setFlags(1);
         appleDataBox.setFourBytes(new byte[4]);
-        appleDataBox.setContent(Utf8.convert(genre));
+        appleDataBox.setData(Utf8.convert(genre));
     }
 
     public String getGenre() {
-        return Utf8.convert(appleDataBox.getContent());
+        return Utf8.convert(appleDataBox.getData());
     }
 }

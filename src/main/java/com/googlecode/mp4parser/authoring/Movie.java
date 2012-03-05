@@ -41,7 +41,7 @@ public class Movie {
     public String toString() {
         String s = "Movie{ ";
         for (Track track : tracks) {
-            s += "track_" + track.getTrackMetaData().getTrackId() + " (" + track.getType() + "), ";
+            s += "track_" + track.getTrackMetaData().getTrackId() + " (" + track.getHandler() + "), ";
         }
 
         s += ", movieMetaData=" + movieMetaData + '}';
@@ -66,5 +66,20 @@ public class Movie {
         return null;
     }
 
+
+    public long getTimescale() {
+        long timescale = this.getTracks().iterator().next().getTrackMetaData().getTimescale();
+        for (Track track : this.getTracks()) {
+            timescale = gcd(track.getTrackMetaData().getTimescale(), timescale);
+        }
+        return timescale;
+    }
+
+    public static long gcd(long a, long b) {
+        if (b == 0) {
+            return a;
+        }
+        return gcd(b, a % b);
+    }
 
 }

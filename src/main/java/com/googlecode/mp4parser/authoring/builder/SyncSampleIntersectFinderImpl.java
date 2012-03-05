@@ -3,6 +3,8 @@ package com.googlecode.mp4parser.authoring.builder;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
+import java.util.Arrays;
+
 /**
  *
  */
@@ -15,9 +17,9 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             long[] currentTrackSyncSamples = currentTrack.getSyncSamples();
 
             if (currentTrackSyncSamples != null && currentTrackSyncSamples.length > 0) {
-                if (syncSampleContainingTrack == null) {
+                if (syncSampleContainingTrack == null || Arrays.equals(syncSamples, currentTrackSyncSamples)) {
                     syncSampleContainingTrack = currentTrack;
-                    syncSampleContainingTrackSampleCount = track.getSamples().size();
+                    syncSampleContainingTrackSampleCount = currentTrack.getSamples().size();
                     syncSamples = currentTrackSyncSamples;
                 } else {
                     throw new RuntimeException("There is more than one track containing a Sync Sample Box but the algorithm cannot deal with it. What is the most important track?");
@@ -28,8 +30,6 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             throw new RuntimeException("There was no track containing a Sync Sample Box but the Sync Sample Box is required to determine the fragment size.");
         }
 
-        int numberOfFragments = 0;
-
         int[] chunkSizes = new int[syncSamples.length];
         long sc = track.getSamples().size();
         double stretch = (double) sc / syncSampleContainingTrackSampleCount;
@@ -38,7 +38,6 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             chunkSizes[i] = start;
             // The Stretch makes sure that there are as much audio and video chunks!
         }
-        numberOfFragments = chunkSizes.length;
         return chunkSizes;
 
     }

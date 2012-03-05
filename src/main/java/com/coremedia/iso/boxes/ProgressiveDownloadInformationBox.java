@@ -1,11 +1,10 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,19 +15,20 @@ public class ProgressiveDownloadInformationBox extends AbstractFullBox {
     List<Entry> entries = Collections.emptyList();
 
     public ProgressiveDownloadInformationBox() {
-        super(IsoFile.fourCCtoBytes("pdin"));
+        super("pdin");
     }
 
     @Override
     protected long getContentSize() {
-        return entries.size() * 8;
+        return 4 + entries.size() * 8;
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
         for (Entry entry : entries) {
-            os.writeUInt32(entry.getRate());
-            os.writeUInt32(entry.getInitialDelay());
+            IsoTypeWriter.writeUInt32(bb, entry.getRate());
+            IsoTypeWriter.writeUInt32(bb, entry.getInitialDelay());
         }
     }
 
@@ -41,17 +41,15 @@ public class ProgressiveDownloadInformationBox extends AbstractFullBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        size -= 4; // flags/version
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         entries = new LinkedList<Entry>();
-        while (size >= 8) {
-            Entry entry = new Entry(in.readUInt32(), in.readUInt32());
+        while (content.remaining() >= 8) {
+            Entry entry = new Entry(IsoTypeReader.readUInt32(content), IsoTypeReader.readUInt32(content));
             entries.add(entry);
-            size -= 8;
         }
-
     }
+
 
     public static class Entry {
         long rate;

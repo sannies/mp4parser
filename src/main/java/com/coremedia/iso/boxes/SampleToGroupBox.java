@@ -1,11 +1,10 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,39 +25,77 @@ public class SampleToGroupBox extends AbstractFullBox {
     public static final String TYPE = "sbgp";
     private long groupingType;
     private long entryCount;
+    private long groupingTypeParameter;
     private List<Entry> entries = new ArrayList<Entry>();
 
     public SampleToGroupBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override
     protected long getContentSize() {
-        return 4 + 4 + entryCount * 8;
+        return 12 + entryCount * 8;
+    }
+
+    public long getGroupingTypeParameter() {
+        return groupingTypeParameter;
+    }
+
+    /**
+     * Usage of this parameter requires version == 1. The version must be set manually.
+     */
+    public void setGroupingTypeParameter(long groupingTypeParameter) {
+        this.groupingTypeParameter = groupingTypeParameter;
+    }
+
+    public List<Entry> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
+    }
+
+    public long getGroupingType() {
+        return groupingType;
+    }
+
+
+    public void setGroupingType(long groupingType) {
+        this.groupingType = groupingType;
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-
-        groupingType = in.readUInt32();
-        entryCount = in.readUInt32();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        groupingType = IsoTypeReader.readUInt32(content);
+        if (getVersion() == 1) {
+            groupingTypeParameter = IsoTypeReader.readUInt32(content);
+        } else {
+            groupingTypeParameter = -1;
+        }
+        entryCount = IsoTypeReader.readUInt32(content);
 
         for (int i = 0; i < entryCount; i++) {
             Entry entry = new Entry();
-            entry.setSampleCount(in.readUInt32());
-            entry.setGroupDescriptionIndex(in.readUInt32());
+            entry.setSampleCount(IsoTypeReader.readUInt32(content));
+            entry.setGroupDescriptionIndex(IsoTypeReader.readUInt32(content));
             entries.add(entry);
         }
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(groupingType);
-        os.writeUInt32(entryCount);
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+
+        IsoTypeWriter.writeUInt32(bb, groupingType);
+        if (getVersion() == 1) {
+            IsoTypeWriter.writeUInt32(bb, groupingTypeParameter);
+        }
+        IsoTypeWriter.writeUInt32(bb, entryCount);
         for (Entry entry : entries) {
-            os.writeUInt32(entry.getSampleCount());
-            os.writeUInt32(entry.getGroupDescriptionIndex());
+            IsoTypeWriter.writeUInt32(bb, entry.getSampleCount());
+            IsoTypeWriter.writeUInt32(bb, entry.getGroupDescriptionIndex());
         }
     }
 

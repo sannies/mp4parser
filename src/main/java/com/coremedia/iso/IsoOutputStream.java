@@ -19,11 +19,13 @@ package com.coremedia.iso;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * An output stream for easy writing of ISO boxes. May calculate DCF hashes.
  */
-public class IsoOutputStream extends FilterOutputStream {
+public class IsoOutputStream extends FilterOutputStream implements WritableByteChannel {
     private int streamPosition;
 
     public IsoOutputStream(OutputStream os) {
@@ -134,4 +136,13 @@ public class IsoOutputStream extends FilterOutputStream {
         writeUInt8(uint16 >> 8);
     }
 
+    public int write(ByteBuffer src) throws IOException {
+        byte[] b = src.array();
+        this.write(b);
+        return b.length;
+    }
+
+    public boolean isOpen() {
+        return true;
+    }
 }

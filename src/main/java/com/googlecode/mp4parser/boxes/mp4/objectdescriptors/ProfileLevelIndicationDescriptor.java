@@ -16,9 +16,10 @@
 
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoTypeReader;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * class ProfileLevelIndicationIndexDescriptor () extends BaseDescriptor
@@ -31,9 +32,8 @@ public class ProfileLevelIndicationDescriptor extends BaseDescriptor {
     int profileLevelIndicationIndex;
 
     @Override
-    public void parse(int tag, IsoBufferWrapper in, int maxLength) throws IOException {
-        super.parse(tag, in, maxLength);
-        profileLevelIndicationIndex = in.readUInt8();
+    public void parseDetail( ByteBuffer bb) throws IOException {
+        profileLevelIndicationIndex = IsoTypeReader.readUInt8(bb);
     }
 
     @Override

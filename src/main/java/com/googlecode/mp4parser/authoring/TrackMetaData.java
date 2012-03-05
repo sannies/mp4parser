@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  *
  */
-public class TrackMetaData {
+public class TrackMetaData implements Cloneable {
     private String language;
     private long timescale;
     private Date modificationTime;
@@ -112,4 +112,13 @@ public class TrackMetaData {
     public void setStartTime(double startTime) {
         this.startTime = startTime;
     }
+
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
+    }
+
 }

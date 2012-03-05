@@ -2,7 +2,6 @@ package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -12,7 +11,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,7 +60,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     Pattern p = Pattern.compile("(.*)\\((.*?)\\)");
 
     @SuppressWarnings("unchecked")
-    public Class<? extends Box> getClassForFourCc(byte[] type, byte[] userType, byte[] parent) {
+    public Class<? extends Box> getClassForFourCc(String type, byte[] userType, String parent) {
         FourCcToBox fourCcToBox = new FourCcToBox(type, userType, parent).invoke();
         try {
             return (Class<? extends Box>) Class.forName(fourCcToBox.clazzName);
@@ -72,7 +70,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     }
 
     @Override
-    public AbstractBox createBox(byte[] type, byte[] userType, byte[] parent, Box lastMovieFragmentBox) {
+    public Box createBox(String type, byte[] userType, String parent) {
 
         FourCcToBox fourCcToBox = new FourCcToBox(type, userType, parent).invoke();
         String[] param = fourCcToBox.getParam();
@@ -92,13 +90,10 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
                     constructorArgsClazz[i] = byte[].class;
                 } else if ("type".equals(param[i])) {
                     constructorArgs[i] = type;
-                    constructorArgsClazz[i] = byte[].class;
+                    constructorArgsClazz[i] = String.class;
                 } else if ("parent".equals(param[i])) {
                     constructorArgs[i] = parent;
-                    constructorArgsClazz[i] = byte[].class;
-                } else if ("lastMovieFragmentBox".equals(param[i])) {
-                    constructorArgs[i] = lastMovieFragmentBox;
-                    constructorArgsClazz[i] = MovieFragmentBox.class;
+                    constructorArgsClazz[i] = String.class;
                 } else {
                     throw new InternalError("No such param: " + param[i]);
                 }
@@ -131,13 +126,13 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     }
 
     private class FourCcToBox {
-        private byte[] type;
+        private String type;
         private byte[] userType;
-        private byte[] parent;
+        private String parent;
         private String clazzName;
         private String[] param;
 
-        public FourCcToBox(byte[] type, byte[] userType, byte[] parent) {
+        public FourCcToBox(String type, byte[] userType, String parent) {
             this.type = type;
             this.parent = parent;
             this.userType = userType;
@@ -154,10 +149,10 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         public FourCcToBox invoke() {
             String constructor;
             if (userType != null) {
-                if (!"uuid".equals(IsoFile.bytesToFourCC(type))) {
+                if (!"uuid".equals((type))) {
                     throw new RuntimeException("we have a userType but no uuid box type. Something's wrong");
                 }
-                constructor = mapping.getProperty(IsoFile.bytesToFourCC(parent) + "-uuid[" + Hex.encodeHex(userType).toUpperCase() + "]");
+                constructor = mapping.getProperty((parent) + "-uuid[" + Hex.encodeHex(userType).toUpperCase() + "]");
                 if (constructor == null) {
                     constructor = mapping.getProperty("uuid[" + Hex.encodeHex(userType).toUpperCase() + "]");
                 }
@@ -165,16 +160,16 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
                     constructor = mapping.getProperty("uuid");
                 }
             } else {
-                constructor = mapping.getProperty(IsoFile.bytesToFourCC(parent) + "-" + IsoFile.bytesToFourCC(type));
+                constructor = mapping.getProperty((parent) + "-" + (type));
                 if (constructor == null) {
-                    constructor = mapping.getProperty(IsoFile.bytesToFourCC(type));
+                    constructor = mapping.getProperty((type));
                 }
             }
             if (constructor == null) {
                 constructor = mapping.getProperty("default");
             }
             if (constructor == null) {
-                throw new RuntimeException("No box object found for " + IsoFile.bytesToFourCC(type));
+                throw new RuntimeException("No box object found for " + type);
             }
             Matcher m = p.matcher(constructor);
             boolean matches = m.matches();

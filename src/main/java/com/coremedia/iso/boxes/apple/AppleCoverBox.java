@@ -20,7 +20,7 @@ public final class AppleCoverBox extends AbstractAppleMetaDataBox {
         appleDataBox.setVersion(0);
         appleDataBox.setFlags(0xe);
         appleDataBox.setFourBytes(new byte[4]);
-        appleDataBox.setContent(pngData);
+        appleDataBox.setData(pngData);
     }
 
 
@@ -29,7 +29,7 @@ public final class AppleCoverBox extends AbstractAppleMetaDataBox {
         appleDataBox.setVersion(0);
         appleDataBox.setFlags(0xd);
         appleDataBox.setFourBytes(new byte[4]);
-        appleDataBox.setContent(jpgData);
+        appleDataBox.setData(jpgData);
     }
 
     @Override

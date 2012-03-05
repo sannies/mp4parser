@@ -17,9 +17,9 @@
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
 import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoBufferWrapper;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * abstract class DecoderSpecificInfo extends BaseDescriptor : bit(8)
@@ -33,11 +33,10 @@ public class DecoderSpecificInfo extends BaseDescriptor {
     byte[] bytes;
 
     @Override
-    public void parse(int tag, IsoBufferWrapper in, int maxLength) throws IOException {
-        super.parse(tag, in, maxLength);
-
+    public void parseDetail(ByteBuffer bb) throws IOException {
         if (sizeOfInstance > 0) {
-            bytes = in.read(sizeOfInstance);
+            bytes = new byte[sizeOfInstance];
+            bb.get(bytes);
         }
     }
 

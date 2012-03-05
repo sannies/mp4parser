@@ -1,14 +1,12 @@
 package com.coremedia.iso.boxes.threegpp26244;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Location Information Box as specified in TS 26.244.
@@ -26,7 +24,7 @@ public class LocationInformationBox extends AbstractFullBox {
     private String additionalNotes = "";
 
     public LocationInformationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {
@@ -94,30 +92,36 @@ public class LocationInformationBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 18 + Utf8.convert(name).length + Utf8.convert(astronomicalBody).length + Utf8.convert(additionalNotes).length;
+        return 22 + Utf8.convert(name).length + Utf8.convert(astronomicalBody).length + Utf8.convert(additionalNotes).length;
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        language = in.readIso639();
-        name = in.readString();
-        role = in.readUInt8();
-        longitude = in.readFixedPoint1616();
-        latitude = in.readFixedPoint1616();
-        altitude = in.readFixedPoint1616();
-        astronomicalBody = in.readString();
-        additionalNotes = in.readString();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        language = IsoTypeReader.readIso639(content);
+        name = IsoTypeReader.readString(content);
+        role = IsoTypeReader.readUInt8(content);
+        longitude = IsoTypeReader.readFixedPoint1616(content);
+        latitude = IsoTypeReader.readFixedPoint1616(content);
+        altitude = IsoTypeReader.readFixedPoint1616(content);
+        astronomicalBody = IsoTypeReader.readString(content);
+        additionalNotes = IsoTypeReader.readString(content);
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeIso639(language);
-        os.writeStringZeroTerm(name);
-        os.writeUInt8(role);
-        os.writeFixedPont1616(longitude);
-        os.writeFixedPont1616(latitude);
-        os.writeFixedPont1616(altitude);
-        os.writeStringZeroTerm(astronomicalBody);
-        os.writeStringZeroTerm(additionalNotes);
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeIso639(bb, language);
+        bb.put(Utf8.convert(name));
+        bb.put((byte) 0);
+        IsoTypeWriter.writeUInt8(bb, role);
+        IsoTypeWriter.writeFixedPont1616(bb, longitude);
+        IsoTypeWriter.writeFixedPont1616(bb, latitude);
+        IsoTypeWriter.writeFixedPont1616(bb, altitude);
+        bb.put(Utf8.convert(astronomicalBody));
+        bb.put((byte) 0);
+        bb.put(Utf8.convert(additionalNotes));
+        bb.put((byte) 0);
     }
 }

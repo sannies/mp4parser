@@ -17,15 +17,17 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * This box contains a compact version of a table that allows indexing from decoding time to sample number.
@@ -47,32 +49,36 @@ public class TimeToSampleBox extends AbstractFullBox {
 
 
     public TimeToSampleBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {
-        return 4 + entries.size() * 8;
+        return 8 + entries.size() * 8;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long entryCount = in.readUInt32();
-        if (entryCount > Integer.MAX_VALUE) {
-            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
-        }
-        entries = new ArrayList<Entry>((int) entryCount);
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        int entryCount = l2i(IsoTypeReader.readUInt32(content));
+        entries = new ArrayList<Entry>(entryCount);
 
         for (int i = 0; i < entryCount; i++) {
-            entries.add(new Entry(in.readUInt32(), in.readUInt32()));
+            entries.add(new Entry(IsoTypeReader.readUInt32(content), IsoTypeReader.readUInt32(content)));
+        }
+
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, entries.size());
+        for (Entry entry : entries) {
+            IsoTypeWriter.writeUInt32(bb, entry.getCount());
+            IsoTypeWriter.writeUInt32(bb, entry.getDelta());
         }
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt32(entries.size());
-        for (Entry entry : entries) {
-            isos.writeUInt32(entry.getCount());
-            isos.writeUInt32(entry.getDelta());
-        }
     }
 
     public List<Entry> getEntries() {

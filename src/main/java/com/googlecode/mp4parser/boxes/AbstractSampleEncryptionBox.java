@@ -1,85 +1,74 @@
 package com.googlecode.mp4parser.boxes;
 
-import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 
-public abstract class AbstractSampleEncryptionBox  extends AbstractFullBox {
+public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     int algorithmId = -1;
     int ivSize = -1;
-    byte[] kid = new byte[16];
+    byte[] kid = null;
     List<Entry> entries = new LinkedList<Entry>();
 
     protected AbstractSampleEncryptionBox(String type) {
         super(type);
     }
 
-    public int getOffsetToFirstIV() {
-        int offset = (int) getHeaderSize();
-        offset += isOverrideTrackEncryptionBoxParameters() ? 20 : 0;
-        offset += 4; //num entries
-        return offset;
-    }
-
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        if (isOverrideTrackEncryptionBoxParameters()) {
-            os.writeUInt24(algorithmId);
-            os.writeUInt8(ivSize);
-            os.write(kid);
-        }
-        os.writeUInt32(entries.size());
-        for (Entry entry : entries) {
-            os.write(entry.iv);
-            if (isSubSampleEncryption()) {
-                os.writeUInt16(entry.pairs.size());
-                for (Entry.Pair pair : entry.pairs) {
-                    os.writeUInt16(pair.clear);
-                    os.writeUInt32(pair.encrypted);
-                }
-            }
-        }
-    }
-
-
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         if ((getFlags() & 0x1) > 0) {
-            algorithmId = in.readUInt24();
-            ivSize = in.readUInt8();
-            kid = in.read(16);
+            algorithmId = IsoTypeReader.readUInt24(content);
+            ivSize = IsoTypeReader.readUInt8(content);
+            kid = new byte[16];
+            content.get(kid);
         }
-        long numOfEntries = in.readUInt32();
+        long numOfEntries = IsoTypeReader.readUInt32(content);
         while (numOfEntries-- > 0) {
             Entry e = new Entry();
-            //todo shouldn't default to 8 but to ivSize from trackEncryptionBox
-            e.iv = in.read(((getFlags() & 0x1) > 0) ? ivSize : 8);
+            e.iv = new byte[((getFlags() & 0x1) > 0) ? ivSize : 8];
+            content.get(e.iv);
             if ((getFlags() & 0x2) > 0) {
-                int numOfPairs = in.readUInt16();
+                int numOfPairs = IsoTypeReader.readUInt16(content);
                 while (numOfPairs-- > 0) {
-                    e.pairs.add(new Entry.Pair(in.readUInt16(), in.readUInt32()));
+                    e.pairs.add(new Entry.Pair(IsoTypeReader.readUInt16(content), IsoTypeReader.readUInt32(content)));
                 }
             }
             entries.add(e);
+
         }
     }
 
-    public int getSampleCount() {
-        return entries.size();
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        if (isOverrideTrackEncryptionBoxParameters()) {
+            IsoTypeWriter.writeUInt24(bb, algorithmId);
+            IsoTypeWriter.writeUInt8(bb, ivSize);
+            bb.put(kid);
+        }
+        IsoTypeWriter.writeUInt32(bb, entries.size());
+        for (Entry entry : entries) {
+            bb.put(entry.iv);
+            if (isSubSampleEncryption()) {
+                IsoTypeWriter.writeUInt16(bb, entry.pairs.size());
+                for (Entry.Pair pair : entry.pairs) {
+                    IsoTypeWriter.writeUInt16(bb, pair.clear);
+                    IsoTypeWriter.writeUInt32(bb, pair.encrypted);
+                }
+            }
+        }
     }
+
 
     public List<Entry> getEntries() {
         return entries;
@@ -124,17 +113,27 @@ public abstract class AbstractSampleEncryptionBox  extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            getContent(new IsoOutputStream(baos));
-        } catch (IOException e) {
-            return -1;
+        long contentSize = 4;
+        if (isOverrideTrackEncryptionBoxParameters()) {
+            contentSize += 4;
+            contentSize += kid.length;
         }
-        return baos.toByteArray().length;
+        contentSize += 4;
+        for (Entry entry : entries) {
+            contentSize += entry.iv.length;
+
+            if (isSubSampleEncryption()) {
+                contentSize += 2;
+                for (Entry.Pair pair : entry.pairs) {
+                    contentSize += 6;
+                }
+            }
+        }
+        return contentSize;
     }
 
     @Override
-    public void getBox(IsoOutputStream os) throws IOException {
+    public void getBox(WritableByteChannel os) throws IOException {
         setFlags(0x0);
         if (isOverrideTrackEncryptionBoxParameters()) {
             setFlags(getFlags() | 0x1);
@@ -143,20 +142,7 @@ public abstract class AbstractSampleEncryptionBox  extends AbstractFullBox {
             setFlags(getFlags() | 0x2);
         }
 
-        super.getBox(os);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    public List<Short> getEntrySizes() {
-        List<Short> entrySizes = new ArrayList<Short>(entries.size());
-        for (Entry entry : entries) {
-            short size = (short) entry.iv.length;
-            if (isSubSampleEncryption()) {
-                size += 2; //numPairs
-                size += entry.pairs.size() * 6;
-            }
-            entrySizes.add(size);
-        }
-        return entrySizes;
+        super.getBox(os);
     }
 
     public static class Entry {

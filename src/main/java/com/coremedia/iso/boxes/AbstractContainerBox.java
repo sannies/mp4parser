@@ -17,21 +17,27 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 
 /**
  * Abstract base class suitable for most boxes acting purely as container for other boxes.
  */
 public abstract class AbstractContainerBox extends AbstractBox implements ContainerBox {
+    private static Logger LOG = Logger.getLogger(AbstractContainerBox.class.getName());
+
     protected List<Box> boxes = new LinkedList<Box>();
+    protected BoxParser boxParser;
 
     @Override
     protected long getContentSize() {
@@ -40,10 +46,6 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
             contentSize += boxe.getSize();
         }
         return contentSize;
-    }
-
-    public AbstractContainerBox(byte[] type) {
-        super(type);
     }
 
     public AbstractContainerBox(String type) {
@@ -96,30 +98,16 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-
-
-        while (size >= 8) {
-            long sp = in.position();
-            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-            long parsedBytes = in.position() - sp;
-            assert parsedBytes == box.getSize() ||
-                    box instanceof HandlerBox :
-                    box + " didn't parse well. number of parsed bytes (" + parsedBytes + ") doesn't match getSize (" + box.getSize() + ")";
-            size -= parsedBytes;
-
-            boxes.add(box);
-            //update field after each box
-        }
-
+    public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        super.parse(in, header, contentSize, boxParser);
+        this.boxParser = boxParser;
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        for (Box boxe : boxes) {
-            boxe.getBox(os);
-        }
+    public void _parseDetails(ByteBuffer content) {
+        parseChildBoxes(content);
     }
+
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
@@ -144,4 +132,32 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     public long getNumOfBytesToFirstChild() {
         return 8;
     }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeChildBoxes(bb);
+    }
+
+    protected final void parseChildBoxes(ByteBuffer content) {
+        try {
+            while (content.remaining() >= 8) { //  8 is the minimal size for a sane box
+                boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));
+            }
+
+            if (content.remaining() != 0) {
+                deadBytes = content.slice();
+                LOG.warning("Some sizes are wrong");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected final void writeChildBoxes(ByteBuffer bb) throws IOException {
+        WritableByteChannel wbc = new ByteBufferByteChannel(bb);
+        for (Box box : boxes) {
+            box.getBox(wbc);
+        }
+    }
+
 }

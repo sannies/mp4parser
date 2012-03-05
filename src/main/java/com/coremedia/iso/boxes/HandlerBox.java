@@ -17,12 +17,13 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.Utf8;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,8 +68,10 @@ public class HandlerBox extends AbstractFullBox {
     private long a, b, c;
     private boolean zeroTerm = true;
 
+    private long shouldBeZeroButAppleWritesHereSomeValue;
+
     public HandlerBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getHandlerType() {
@@ -98,22 +101,23 @@ public class HandlerBox extends AbstractFullBox {
 
     protected long getContentSize() {
         if (zeroTerm) {
-            return 21 + utf8StringLengthInBytes(name);
+            return 25 + Utf8.utf8StringLengthInBytes(name);
         } else {
-            return 20 + utf8StringLengthInBytes(name);
+            return 24 + Utf8.utf8StringLengthInBytes(name);
         }
 
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        in.readUInt32();
-        handlerType = IsoFile.bytesToFourCC(in.read(4));
-        a = in.readUInt32();
-        b = in.readUInt32();
-        c = in.readUInt32();
-        if ((int) (size - 24) > 0) {
-            name = in.readString((int) (size - 24));
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        shouldBeZeroButAppleWritesHereSomeValue = IsoTypeReader.readUInt32(content);
+        handlerType = IsoTypeReader.read4cc(content);
+        a = IsoTypeReader.readUInt32(content);
+        b = IsoTypeReader.readUInt32(content);
+        c = IsoTypeReader.readUInt32(content);
+        if (content.remaining() > 0) {
+            name = IsoTypeReader.readString(content, content.remaining());
             if (name.endsWith("\0")) {
                 name = name.substring(0, name.length() - 1);
                 zeroTerm = true;
@@ -125,15 +129,19 @@ public class HandlerBox extends AbstractFullBox {
         }
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt32(0);
-        isos.write(IsoFile.fourCCtoBytes(handlerType));
-        isos.writeUInt32(a);
-        isos.writeUInt32(b);
-        isos.writeUInt32(c);
-        isos.writeStringNoTerm(name);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, shouldBeZeroButAppleWritesHereSomeValue);
+        bb.put(IsoFile.fourCCtoBytes(handlerType));
+        IsoTypeWriter.writeUInt32(bb, a);
+        IsoTypeWriter.writeUInt32(bb, b);
+        IsoTypeWriter.writeUInt32(bb, c);
+        if (name != null) {
+            bb.put(Utf8.convert(name));
+        }
         if (zeroTerm) {
-            isos.write(0);
+            bb.put((byte) 0);
         }
     }
 

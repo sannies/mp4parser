@@ -30,7 +30,7 @@ public class IsoFileConvenienceHelper {
         }
 
         if (partList.size() > 0) {
-            return get((List<Box>)containerBox.getBoxes(), partList);
+            return get((List<Box>) containerBox.getBoxes(), partList);
         }
         return null;
     }
@@ -43,10 +43,10 @@ public class IsoFileConvenienceHelper {
         for (Box box : boxes) {
             if (box instanceof ContainerBox) {
                 ContainerBox boxContainer = (ContainerBox) box;
-                String type = IsoFile.bytesToFourCC(boxContainer.getType());
+                String type = boxContainer.getType();
 
                 if (typeInPath.equals(type)) {
-                    List<Box> children = (List<Box>) boxContainer.getBoxes();
+                    List<Box> children = boxContainer.getBoxes();
                     if (path.size() > 0) {
                         if (children.size() > 0) {
                             return get(children, path);
@@ -57,7 +57,7 @@ public class IsoFileConvenienceHelper {
                 }
 
             } else {
-                String type = IsoFile.bytesToFourCC(box.getType());
+                String type = box.getType();
 
                 if (path.size() == 0 && typeInPath.equals(type)) {
                     return box;

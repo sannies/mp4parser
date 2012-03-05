@@ -16,12 +16,12 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.Utf8;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * List of keywords according to 3GPP 26.244.
@@ -33,7 +33,7 @@ public class KeywordsBox extends AbstractFullBox {
     private String[] keywords;
 
     public KeywordsBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {
@@ -53,31 +53,33 @@ public class KeywordsBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        long contentSize = 2 + 1;
+        long contentSize = 7;
         for (String keyword : keywords) {
-            contentSize += 1 + utf8StringLengthInBytes(keyword) + 1;
+            contentSize += 1 + Utf8.utf8StringLengthInBytes(keyword) + 1;
         }
         return contentSize;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        language = in.readIso639();
-        int keywordCount = in.readUInt8();
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        language = IsoTypeReader.readIso639(content);
+        int keywordCount = IsoTypeReader.readUInt8(content);
         keywords = new String[keywordCount];
         for (int i = 0; i < keywordCount; i++) {
-            in.readUInt8();
-            keywords[i] = in.readString();
+            IsoTypeReader.readUInt8(content);
+            keywords[i] = IsoTypeReader.readString(content);
         }
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-
-        isos.writeIso639(language);
-        isos.writeUInt8(keywords.length);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeIso639(bb, language);
+        IsoTypeWriter.writeUInt8(bb, keywords.length);
         for (String keyword : keywords) {
-            isos.writeUInt8(utf8StringLengthInBytes(keyword) + 1);
-            isos.writeStringZeroTerm(keyword);
+            IsoTypeWriter.writeUInt8(bb, Utf8.utf8StringLengthInBytes(keyword) + 1);
+            bb.put(Utf8.convert(keyword));
         }
     }
 

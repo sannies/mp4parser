@@ -16,9 +16,10 @@
 
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoTypeReader;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -79,38 +80,36 @@ public class ESDescriptor extends BaseDescriptor {
     List<BaseDescriptor> otherDescriptors = new ArrayList<BaseDescriptor>();
 
     @Override
-    public void parse(int tag, IsoBufferWrapper in, int maxLength) throws IOException {
-        super.parse(tag, in, maxLength);
+    public void parseDetail(ByteBuffer bb) throws IOException {
+        esId = IsoTypeReader.readUInt16(bb);
 
-        esId = in.readUInt16();
-
-        int data = in.readUInt8();
+        int data = IsoTypeReader.readUInt8(bb);
         streamDependenceFlag = data >>> 7;
         URLFlag = (data >>> 6) & 0x1;
         oCRstreamFlag = (data >>> 5) & 0x1;
         streamPriority = data & 0x1f;
 
         if (streamDependenceFlag == 1) {
-            dependsOnEsId = in.readUInt16();
+            dependsOnEsId = IsoTypeReader.readUInt16(bb);
         }
         if (URLFlag == 1) {
-            URLLength = in.readUInt8();
-            URLString = new String(in.read(URLLength));
+            URLLength = IsoTypeReader.readUInt8(bb);
+            URLString = IsoTypeReader.readString(bb, URLLength);
         }
         if (oCRstreamFlag == 1) {
-            oCREsId = in.readUInt16();
+            oCREsId = IsoTypeReader.readUInt16(bb);
         }
 
         int baseSize = 1 /*tag*/ + getSizeBytes() + 2 + 1 + (streamDependenceFlag == 1 ? 2 : 0) + (URLFlag == 1 ? 1 + URLLength : 0) + (oCRstreamFlag == 1 ? 2 : 0);
 
-        long begin = in.position();
+        int begin = bb.position();
         if (getSize() > baseSize + 2) {
-            BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, in, getSize() - baseSize);
-            final long read = in.position() - begin;
+            BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, bb);
+            final long read = bb.position() - begin;
             log.finer(descriptor + " - ESDescriptor1 read: " + read + ", size: " + (descriptor != null ? descriptor.getSize() : null));
             if (descriptor != null) {
                 final int size = descriptor.getSize();
-                in.position(begin + size);
+                bb.position(begin + size);
                 baseSize += size;
             } else {
                 baseSize += read;
@@ -120,14 +119,14 @@ public class ESDescriptor extends BaseDescriptor {
             }
         }
 
-        begin = in.position();
+        begin = bb.position();
         if (getSize() > baseSize + 2) {
-            BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, in, getSize() - baseSize);
-            final long read = in.position() - begin;
+            BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, bb);
+            final long read = bb.position() - begin;
             log.finer(descriptor + " - ESDescriptor2 read: " + read + ", size: " + (descriptor != null ? descriptor.getSize() : null));
             if (descriptor != null) {
                 final int size = descriptor.getSize();
-                in.position(begin + size);
+                bb.position(begin + size);
                 baseSize += size;
             } else {
                 baseSize += read;
@@ -140,13 +139,13 @@ public class ESDescriptor extends BaseDescriptor {
         }
 
         while (getSize() - baseSize > 2) {
-            begin = in.position();
-            BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, in, getSize() - baseSize);
-            final long read = in.position() - begin;
+            begin = bb.position();
+            BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, bb);
+            final long read = bb.position() - begin;
             log.finer(descriptor + " - ESDescriptor3 read: " + read + ", size: " + (descriptor != null ? descriptor.getSize() : null));
             if (descriptor != null) {
                 final int size = descriptor.getSize();
-                in.position(begin + size);
+                bb.position(begin + size);
                 baseSize += size;
             } else {
                 baseSize += read;

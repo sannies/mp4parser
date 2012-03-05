@@ -1,11 +1,7 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * The optional composition shift least greatest atom summarizes the calculated
@@ -17,7 +13,7 @@ import java.io.IOException;
  */
 public class CompositionShiftLeastGreatestAtom extends AbstractFullBox {
     public CompositionShiftLeastGreatestAtom() {
-        super(IsoFile.fourCCtoBytes("cslg"));
+        super("cslg");
     }
 
     // A 32-bit unsigned integer that specifies the calculated value.
@@ -38,27 +34,29 @@ public class CompositionShiftLeastGreatestAtom extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 20;
+        return 24;
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeInt32(compositionOffsetToDisplayOffsetShift);
-        os.writeInt32(leastDisplayOffset);
-        os.writeInt32(greatestDisplayOffset);
-        os.writeInt32(displayStartTime);
-        os.writeInt32(displayEndTime);
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        compositionOffsetToDisplayOffsetShift = content.getInt();
+        leastDisplayOffset = content.getInt();
+        greatestDisplayOffset = content.getInt();
+        displayStartTime = content.getInt();
+        displayEndTime = content.getInt();
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        compositionOffsetToDisplayOffsetShift = in.readInt32();
-        leastDisplayOffset = in.readInt32();
-        greatestDisplayOffset = in.readInt32();
-        displayStartTime = in.readInt32();
-        displayEndTime = in.readInt32();
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.putInt(compositionOffsetToDisplayOffsetShift);
+        bb.putInt(leastDisplayOffset);
+        bb.putInt(greatestDisplayOffset);
+        bb.putInt(displayStartTime);
+        bb.putInt(displayEndTime);
     }
+
 
     public int getCompositionOffsetToDisplayOffsetShift() {
         return compositionOffsetToDisplayOffsetShift;

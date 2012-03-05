@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
@@ -12,6 +12,7 @@ import com.googlecode.mp4parser.authoring.TrackMetaData;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -38,8 +39,8 @@ public class AppendTrack extends AbstractTrack {
         }
     }
 
-    public List<IsoBufferWrapper> getSamples() {
-        ArrayList<IsoBufferWrapper> lists = new ArrayList<IsoBufferWrapper>();
+    public List<ByteBuffer> getSamples() {
+        ArrayList<ByteBuffer> lists = new ArrayList<ByteBuffer>();
 
         for (Track track : tracks) {
             lists.addAll(track.getSamples());
@@ -123,7 +124,6 @@ public class AppendTrack extends AbstractTrack {
         }
     }
 
-
     public List<SampleDependencyTypeBox.Entry> getSampleDependencies() {
         if (tracks[0].getSampleDependencies() != null && !tracks[0].getSampleDependencies().isEmpty()) {
             List<SampleDependencyTypeBox.Entry> list = new LinkedList<SampleDependencyTypeBox.Entry>();
@@ -140,7 +140,11 @@ public class AppendTrack extends AbstractTrack {
         return tracks[0].getTrackMetaData();
     }
 
-    public Type getType() {
-        return tracks[0].getType();
+    public String getHandler() {
+        return tracks[0].getHandler();
+    }
+
+    public AbstractMediaHeaderBox getMediaHeaderBox() {
+        return tracks[0].getMediaHeaderBox();
     }
 }

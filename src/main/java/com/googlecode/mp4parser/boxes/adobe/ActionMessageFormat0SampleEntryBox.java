@@ -1,10 +1,10 @@
 package com.googlecode.mp4parser.boxes.adobe;
 
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Sample Entry as used for Action Message Format tracks.
@@ -24,12 +24,16 @@ public class ActionMessageFormat0SampleEntryBox extends SampleEntry {
         return size;
     }
 
+
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.write(new byte[6]);
-        os.writeUInt16(getDataReferenceIndex());
-        for (Box box : boxes) {
-            box.getBox(os);
-        }
+    public void _parseDetails(ByteBuffer content) {
+        _parseReservedAndDataReferenceIndex(content);
+        _parseChildBoxes(content);
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        _writeReservedAndDataReferenceIndex(bb);
+        _writeChildBoxes(bb);
     }
 }

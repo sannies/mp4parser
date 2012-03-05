@@ -16,14 +16,12 @@
 
 package com.coremedia.iso.boxes.vodafone;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * A box in the {@link com.coremedia.iso.boxes.UserDataBox} containing information about the lyric location.
@@ -35,7 +33,7 @@ public class LyricsUriBox extends AbstractFullBox {
     private String lyricsUri;
 
     public LyricsUriBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLyricsUri() {
@@ -47,16 +45,20 @@ public class LyricsUriBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return utf8StringLengthInBytes(lyricsUri) + 1;
+        return Utf8.utf8StringLengthInBytes(lyricsUri) + 5;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        lyricsUri = in.readString((int) (size - 4));
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        lyricsUri = IsoTypeReader.readString(content);
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeStringZeroTerm(lyricsUri);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.put(Utf8.convert(lyricsUri));
+        bb.put((byte) 0);
     }
 
     public String toString() {

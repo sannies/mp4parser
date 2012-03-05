@@ -16,36 +16,37 @@
 
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class AppleDataRateBox extends AbstractFullBox {
     public static final String TYPE = "rmdr";
     private long dataRate;
 
     public AppleDataRateBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {
-        return 4;
+        return 8;
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        dataRate = in.readUInt32();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        dataRate = IsoTypeReader.readUInt32(content);
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(dataRate);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, dataRate);
     }
+
 
     public long getDataRate() {
         return dataRate;

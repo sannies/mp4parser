@@ -1,31 +1,27 @@
 package com.coremedia.iso.boxes.sampleentry;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class MpegSampleEntry extends SampleEntry implements ContainerBox {
 
-    public MpegSampleEntry(byte[] type) {
+    private BoxParser boxParser;
+
+    public MpegSampleEntry(String type) {
         super(type);
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
+    public void _parseDetails(ByteBuffer content) {
+        _parseReservedAndDataReferenceIndex(content);
+        _parseChildBoxes(content);
 
-        while (size > 8) {
-            Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
-            boxes.add(b);
-            size -= b.getSize();
-        }
     }
-
 
     @Override
     protected long getContentSize() {
@@ -41,13 +37,8 @@ public class MpegSampleEntry extends SampleEntry implements ContainerBox {
     }
 
     @Override
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.write(new byte[6]);
-        isos.writeUInt16(getDataReferenceIndex());
-
-        for (Box boxe : boxes) {
-            boxe.getBox(isos);
-        }
+    protected void getContent(ByteBuffer bb) throws IOException {
+        _writeReservedAndDataReferenceIndex(bb);
+        _writeChildBoxes(bb);
     }
-
 }

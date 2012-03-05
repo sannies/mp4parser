@@ -15,9 +15,8 @@
  */
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoOutputStream;
-
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Streams other than visual and audio (e.g., timed metadata streams) may use a
@@ -30,11 +29,16 @@ public class NullMediaHeaderBox extends AbstractMediaHeaderBox {
 
     @Override
     protected long getContentSize() {
-        return 0;
+        return 4;
     }
 
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+    }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
     }
 }

@@ -17,12 +17,11 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * This box specifies the characteristics of a single track. Exactly one Track Header Box is contained in a track.<br>
@@ -50,9 +49,8 @@ public class TrackHeaderBox extends AbstractFullBox {
 
 
     public TrackHeaderBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
-        // 7 seems to be the only meaningful value
-        setFlags(7);
+        super(TYPE);
+
     }
 
     public long getCreationTime() {
@@ -96,7 +94,7 @@ public class TrackHeaderBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        long contentSize = 0;
+        long contentSize = 4;
         if (getVersion() == 1) {
             contentSize += 32;
         } else {
@@ -106,64 +104,66 @@ public class TrackHeaderBox extends AbstractFullBox {
         return contentSize;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox); //172
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         if (getVersion() == 1) {
-            creationTime = in.readUInt64();
-            modificationTime = in.readUInt64();
-            trackId = in.readUInt32();
-            in.readUInt32();
-            duration = in.readUInt64();
+            creationTime = IsoTypeReader.readUInt64(content);
+            modificationTime = IsoTypeReader.readUInt64(content);
+            trackId = IsoTypeReader.readUInt32(content);
+            IsoTypeReader.readUInt32(content);
+            duration = IsoTypeReader.readUInt64(content);
         } else {
-            creationTime = in.readUInt32();
-            modificationTime = in.readUInt32();
-            trackId = in.readUInt32();
-            in.readUInt32();
-            duration = in.readUInt32();
+            creationTime = IsoTypeReader.readUInt32(content);
+            modificationTime = IsoTypeReader.readUInt32(content);
+            trackId = IsoTypeReader.readUInt32(content);
+            IsoTypeReader.readUInt32(content);
+            duration = IsoTypeReader.readUInt32(content);
         } // 196
-        in.readUInt32();
-        in.readUInt32();
-        layer = in.readUInt16();    // 204
-        alternateGroup = in.readUInt16();
-        volume = in.readFixedPoint88();
-        in.readUInt16();     // 212
+        IsoTypeReader.readUInt32(content);
+        IsoTypeReader.readUInt32(content);
+        layer = IsoTypeReader.readUInt16(content);    // 204
+        alternateGroup = IsoTypeReader.readUInt16(content);
+        volume = IsoTypeReader.readFixedPoint88(content);
+        IsoTypeReader.readUInt16(content);     // 212
         matrix = new long[9];
         for (int i = 0; i < 9; i++) {
-            matrix[i] = in.readUInt32();
+            matrix[i] = IsoTypeReader.readUInt32(content);
         }
-        width = in.readFixedPoint1616();    // 248
-        height = in.readFixedPoint1616();
+        width = IsoTypeReader.readFixedPoint1616(content);    // 248
+        height = IsoTypeReader.readFixedPoint1616(content);
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
+    public void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
         if (getVersion() == 1) {
-            isos.writeUInt64(creationTime);
-            isos.writeUInt64(modificationTime);
-            isos.writeUInt32(trackId);
-            isos.writeUInt32(0);
-            isos.writeUInt64(duration);
+            IsoTypeWriter.writeUInt64(bb, creationTime);
+            IsoTypeWriter.writeUInt64(bb, modificationTime);
+            IsoTypeWriter.writeUInt32(bb, trackId);
+            IsoTypeWriter.writeUInt32(bb, 0);
+            IsoTypeWriter.writeUInt64(bb, duration);
         } else {
-            isos.writeUInt32((int) creationTime);
-            isos.writeUInt32((int) modificationTime);
-            isos.writeUInt32(trackId);
-            isos.writeUInt32(0);
-            isos.writeUInt32((int) duration);
+            IsoTypeWriter.writeUInt32(bb, creationTime);
+            IsoTypeWriter.writeUInt32(bb, modificationTime);
+            IsoTypeWriter.writeUInt32(bb, trackId);
+            IsoTypeWriter.writeUInt32(bb, 0);
+            IsoTypeWriter.writeUInt32(bb, duration);
         } // 196
-        isos.writeUInt32(0);
-        isos.writeUInt32(0);
-        isos.writeUInt16(layer);
-        isos.writeUInt16(alternateGroup);
-        isos.writeFixedPont88(volume);
-        isos.writeUInt16(0);
+        IsoTypeWriter.writeUInt32(bb, 0);
+        IsoTypeWriter.writeUInt32(bb, 0);
+        IsoTypeWriter.writeUInt16(bb, layer);
+        IsoTypeWriter.writeUInt16(bb, alternateGroup);
+        IsoTypeWriter.writeFixedPont88(bb, volume);
+        IsoTypeWriter.writeUInt16(bb, 0);
         for (int i = 0; i < 9; i++) {
-            isos.writeUInt32(matrix[i]);
+            IsoTypeWriter.writeUInt32(bb, matrix[i]);
         }
-        isos.writeFixedPont1616(width);
-        isos.writeFixedPont1616(height);
+        IsoTypeWriter.writeFixedPont1616(bb, width);
+        IsoTypeWriter.writeFixedPont1616(bb, height);
     }
 
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append("TrackHeaderBox[");
         result.append("creationTime=").append(getCreationTime());
         result.append(";");

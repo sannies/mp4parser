@@ -16,8 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * The Scheme Information Box is a container box that is only interpreted by the scheme beeing used.
  * Any information the encryption system needs is stored here. The content of this box is a series of
@@ -27,7 +25,7 @@ public class SchemeInformationBox extends AbstractContainerBox {
     public static final String TYPE = "schi";
 
     public SchemeInformationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

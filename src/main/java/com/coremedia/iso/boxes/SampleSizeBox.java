@@ -17,12 +17,13 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * This box containes the sample count and a table giving the size in bytes of each sample.
@@ -32,10 +33,10 @@ public class SampleSizeBox extends AbstractFullBox {
     private long sampleSize;
     private long[] sampleSizes;
     public static final String TYPE = "stsz";
-    long sampleCount;
+    int sampleCount;
 
     public SampleSizeBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     /**
@@ -80,39 +81,36 @@ public class SampleSizeBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 8 + (sampleSize == 0 ? sampleSizes.length * 4 : 0);
+        return 12 + (sampleSize == 0 ? sampleSizes.length * 4 : 0);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-
-        assert ((int) size) == size;
-
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        sampleSize = in.readUInt32();
-        sampleCount = in.readUInt32();
-        if (sampleCount > Integer.MAX_VALUE) {
-            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE samples!");
-        }
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        sampleSize = IsoTypeReader.readUInt32(content);
+        sampleCount = l2i(IsoTypeReader.readUInt32(content));
 
         if (sampleSize == 0) {
             sampleSizes = new long[(int) sampleCount];
 
             for (int i = 0; i < sampleCount; i++) {
-                sampleSizes[i] = in.readUInt32();
+                sampleSizes[i] = IsoTypeReader.readUInt32(content);
             }
         }
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt32(sampleSize);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, sampleSize);
 
         if (sampleSize == 0) {
-            isos.writeUInt32(sampleSizes.length);
+            IsoTypeWriter.writeUInt32(bb, sampleSizes.length);
             for (long sampleSize1 : sampleSizes) {
-                isos.writeUInt32(sampleSize1);
+                IsoTypeWriter.writeUInt32(bb, sampleSize1);
             }
         } else {
-            isos.writeUInt32(sampleCount);
+            IsoTypeWriter.writeUInt32(bb, sampleCount);
         }
 
     }
