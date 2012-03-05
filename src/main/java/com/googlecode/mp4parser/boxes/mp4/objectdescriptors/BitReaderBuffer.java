@@ -34,6 +34,6 @@ public class BitReaderBuffer {
 
 
     public int remainingBits() {
-        return buffer.remaining() * 8 - position;
+        return buffer.limit() * 8 - position;
     }
 }
