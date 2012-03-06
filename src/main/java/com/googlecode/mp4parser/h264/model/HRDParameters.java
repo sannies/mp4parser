@@ -20,6 +20,8 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 */
 package com.googlecode.mp4parser.h264.model;
 
+import java.util.Arrays;
+
 public class HRDParameters {
 
     public int cpb_cnt_minus1;
@@ -33,4 +35,19 @@ public class HRDParameters {
     public int dpb_output_delay_length_minus1;
     public int time_offset_length;
 
+    @Override
+    public String toString() {
+        return "HRDParameters{" +
+                "cpb_cnt_minus1=" + cpb_cnt_minus1 +
+                ", bit_rate_scale=" + bit_rate_scale +
+                ", cpb_size_scale=" + cpb_size_scale +
+                ", bit_rate_value_minus1=" + Arrays.toString(bit_rate_value_minus1) +
+                ", cpb_size_value_minus1=" + Arrays.toString(cpb_size_value_minus1) +
+                ", cbr_flag=" + Arrays.toString(cbr_flag) +
+                ", initial_cpb_removal_delay_length_minus1=" + initial_cpb_removal_delay_length_minus1 +
+                ", cpb_removal_delay_length_minus1=" + cpb_removal_delay_length_minus1 +
+                ", dpb_output_delay_length_minus1=" + dpb_output_delay_length_minus1 +
+                ", time_offset_length=" + time_offset_length +
+                '}';
+    }
 }
