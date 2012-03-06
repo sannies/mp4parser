@@ -152,11 +152,6 @@ public class IsoFile extends AbstractContainerBox {
         return this;
     }
 
-    @Override
-    protected long getHeaderSize() {
-        return 0;
-    }
-
 
     /**
      * Shortcut to get the MovieBox since it is often needed and present in

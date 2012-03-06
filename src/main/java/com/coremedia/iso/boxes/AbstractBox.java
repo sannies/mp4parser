@@ -39,19 +39,17 @@ public abstract class AbstractBox implements Box {
     private static Logger LOG = Logger.getLogger(AbstractBox.class.getName());
 
     public long getSize() {
-        return (content == null ? getContentSize() : content.limit()) + getHeaderSize() + (deadBytes == null ? 0 : deadBytes.limit());
+        long size = (content == null ? getContentSize() : content.limit());
+        size += (4 + // size
+                4 + // type
+                (size >= ((1L << 32) - 8) ? 8 : 0) + // 32bit - 8 byte size and type
+                (UserBox.TYPE.equals(getType()) ? 16 : 0));
+        size += (deadBytes == null ? 0 : deadBytes.limit());
+        return size;
     }
 
     public boolean isParsed() {
         return content == null;
-    }
-
-    protected long getHeaderSize() {
-        return 4 + // size
-                4 + // type
-                ((content != null ? content.limit() :
-                        getContentSize()) >= ((1L << 32) - 8) ? 8 : 0) + // 32bit - 8 byte size and type
-                (UserBox.TYPE.equals(getType()) ? 16 : 0);
     }
 
     /**

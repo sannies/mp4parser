@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes.fragment;
 import com.coremedia.iso.boxes.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.googlecode.mp4parser.DoNotParseDetail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,7 @@ public class MovieFragmentBox extends AbstractContainerBox {
         return result;
     }
 
+    @DoNotParseDetail
     public long getOffset() {
         Box b = this;
         long offset = 0;

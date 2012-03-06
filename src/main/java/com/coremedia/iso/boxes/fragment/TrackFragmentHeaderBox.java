@@ -52,19 +52,20 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
 
     protected long getContentSize() {
         long size = 8;
-        if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
+        int flags = getFlags();
+        if ((flags & 0x1) == 1) { //baseDataOffsetPresent
             size += 8;
         }
-        if ((getFlags() & 0x2) == 0x2) { //sampleDescriptionIndexPresent
+        if ((flags & 0x2) == 0x2) { //sampleDescriptionIndexPresent
             size += 4;
         }
-        if ((getFlags() & 0x8) == 0x8) { //defaultSampleDurationPresent
+        if ((flags & 0x8) == 0x8) { //defaultSampleDurationPresent
             size += 4;
         }
-        if ((getFlags() & 0x10) == 0x10) { //defaultSampleSizePresent
+        if ((flags & 0x10) == 0x10) { //defaultSampleSizePresent
             size += 4;
         }
-        if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
+        if ((flags & 0x20) == 0x20) { //defaultSampleFlagsPresent
             size += 4;
         }
         return size;
