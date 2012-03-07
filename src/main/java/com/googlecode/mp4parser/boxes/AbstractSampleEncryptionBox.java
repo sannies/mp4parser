@@ -8,6 +8,7 @@ import com.coremedia.iso.boxes.AbstractFullBox;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -235,5 +236,18 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         result = 31 * result + (kid != null ? Arrays.hashCode(kid) : 0);
         result = 31 * result + (entries != null ? entries.hashCode() : 0);
         return result;
+    }
+
+    public List<Short> getEntrySizes() {
+        List<Short> entrySizes = new ArrayList<Short>(entries.size());
+        for (Entry entry : entries) {
+            short size = (short) entry.iv.length;
+            if (isSubSampleEncryption()) {
+                size += 2; //numPairs
+                size += entry.pairs.size() * 6;
+            }
+            entrySizes.add(size);
+        }
+        return entrySizes;
     }
 }
