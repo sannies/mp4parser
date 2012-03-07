@@ -1,14 +1,13 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.googlecode.mp4parser.ByteBufferByteChannel;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -102,24 +101,20 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
             appleDataBox.setVersion(0);
             appleDataBox.setFlags(21);
             appleDataBox.setFourBytes(new byte[4]);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IsoOutputStream isoOutputStream = new IsoOutputStream(baos);
-            try {
-                if (content.length == 1) {
-                    isoOutputStream.writeUInt8((Byte.parseByte(value) & 0xFF));
-                } else if (content.length == 2) {
-                    isoOutputStream.writeUInt16(Integer.parseInt(value));
-                } else if (content.length == 4) {
-                    isoOutputStream.writeUInt32(Long.parseLong(value));
-                } else if (content.length == 8) {
-                    isoOutputStream.writeUInt64(Long.parseLong(value));
-                } else {
-                    throw new Error("The content length within the appleDataBox is neither 1, 2, 4 or 8. I can't handle that!");
-                }
-            } catch (IOException e) {
-                throw new Error(e);
+
+            ByteBuffer bb = ByteBuffer.allocate(content.length);
+            if (content.length == 1) {
+                IsoTypeWriter.writeUInt8(bb, (Byte.parseByte(value) & 0xFF));
+            } else if (content.length == 2) {
+                IsoTypeWriter.writeUInt16(bb, Integer.parseInt(value));
+            } else if (content.length == 4) {
+                IsoTypeWriter.writeUInt32(bb, Long.parseLong(value));
+            } else if (content.length == 8) {
+                IsoTypeWriter.writeUInt64(bb, Long.parseLong(value));
+            } else {
+                throw new Error("The content length within the appleDataBox is neither 1, 2, 4 or 8. I can't handle that!");
             }
-            appleDataBox.setData(baos.toByteArray());
+            appleDataBox.setData(bb.array());
         } else if (appleDataBox.getFlags() == 0) {
             appleDataBox = new AppleDataBox();
             appleDataBox.setVersion(0);

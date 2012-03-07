@@ -17,7 +17,6 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
@@ -76,9 +75,6 @@ public class TimeToSampleBox extends AbstractFullBox {
             IsoTypeWriter.writeUInt32(bb, entry.getCount());
             IsoTypeWriter.writeUInt32(bb, entry.getDelta());
         }
-    }
-
-    protected void getContent(IsoOutputStream isos) throws IOException {
     }
 
     public List<Entry> getEntries() {

@@ -83,7 +83,8 @@ public class SampleList extends AbstractList<ByteBuffer> {
         SampleToChunkBox sampleToChunkBox = trackBox.getSampleTableBox().getSampleToChunkBox();
 
 
-        if (sampleToChunkBox != null && chunkOffsetBox != null && sampleSizeBox != null) {
+        if (sampleToChunkBox != null && sampleToChunkBox.getEntries().size() > 0 && chunkOffsetBox != null &&
+                chunkOffsetBox.getChunkOffsets().length > 0 && sampleSizeBox != null && sampleSizeBox.getSampleCount() > 0) {
             long[] numberOfSamplesInChunk = sampleToChunkBox.blowup(chunkOffsetBox.getChunkOffsets().length);
             if (sampleSizeBox.getSampleSize() > 0) {
                 // Every sample has the same size!

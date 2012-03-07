@@ -1,12 +1,12 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.ByteBufferByteChannel;
 import junit.framework.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class SampleDependencyTypeBoxTest {
         }
         stsc.setEntries(l);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        stsc.getBox(new IsoOutputStream(baos));
+        stsc.getBox(Channels.newChannel(baos));
         byte[] content = baos.toByteArray();
 
         SampleDependencyTypeBox stsc2 = new SampleDependencyTypeBox();

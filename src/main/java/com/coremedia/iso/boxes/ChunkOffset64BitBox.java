@@ -1,6 +1,5 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
@@ -49,9 +48,5 @@ public class ChunkOffset64BitBox extends ChunkOffsetBox {
         }
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        final long[] chunkOffsets = getChunkOffsets();
-        os.writeUInt32(chunkOffsets.length);
-    }
 
 }

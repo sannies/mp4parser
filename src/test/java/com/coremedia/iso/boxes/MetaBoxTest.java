@@ -1,7 +1,6 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.ByteBufferByteChannel;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Assert;
@@ -10,6 +9,7 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 
 
 /**
@@ -21,8 +21,8 @@ public class MetaBoxTest {
     public void testRooundTrip() throws IOException {
         IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(metaBox)));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IsoOutputStream ios = new IsoOutputStream(baos);
-        isoFile.getBox(ios);
+
+        isoFile.getBox(Channels.newChannel(baos));
         Assert.assertArrayEquals(metaBox, baos.toByteArray());
     }
 

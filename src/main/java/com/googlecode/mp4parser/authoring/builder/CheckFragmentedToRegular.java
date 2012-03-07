@@ -1,7 +1,6 @@
 package com.googlecode.mp4parser.authoring.builder;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 
@@ -29,10 +28,10 @@ public class CheckFragmentedToRegular {
         IsoFile recreatedAndFragmented = builder2.build(movie);
 
         FileOutputStream fos1 = new FileOutputStream("/home/sannies/normalized.mp4");
-        recreated.getBox(new IsoOutputStream(fos1));
+        recreated.getBox(fos1.getChannel());
         fos1.close();
         FileOutputStream fos2 = new FileOutputStream("/home/sannies/fragmented.mp4");
-        recreatedAndFragmented.getBox(new IsoOutputStream(fos2));
+        recreatedAndFragmented.getBox(fos2.getChannel());
         fos2.close();
     }
 }

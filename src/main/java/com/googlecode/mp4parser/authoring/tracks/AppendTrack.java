@@ -1,6 +1,5 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
@@ -13,6 +12,7 @@ import com.googlecode.mp4parser.authoring.TrackMetaData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -30,7 +30,7 @@ public class AppendTrack extends AbstractTrack {
         byte[] referenceSampleDescriptionBox = null;
         for (Track track : tracks) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            track.getSampleDescriptionBox().getBox(new IsoOutputStream(baos));
+            track.getSampleDescriptionBox().getBox(Channels.newChannel(baos));
             if (referenceSampleDescriptionBox == null) {
                 referenceSampleDescriptionBox = baos.toByteArray();
             } else if (!Arrays.equals(referenceSampleDescriptionBox, baos.toByteArray())) {

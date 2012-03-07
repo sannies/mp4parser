@@ -11,32 +11,21 @@ import java.nio.ByteBuffer;
  */
 public class IsoTypeReaderTest extends TestCase {
 
-    public void testIntAsFailedDuringDevelop() throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IsoOutputStream ios = new IsoOutputStream(baos);
-        ios.write(0);
-        ios.write(0);
-        ios.write(0x50);
-        ios.write(0xb0);
-        ios.close();
-        ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
-        System.err.println(IsoTypeReader.readUInt32(bb));
-
-    }
 
     public void testInt() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IsoOutputStream ios = new IsoOutputStream(baos);
-        ios.writeUInt8(0);
-        ios.writeUInt8(255);
-        ios.writeUInt16(0);
-        ios.writeUInt16(2 ^ 16 - 1);
-        ios.writeUInt24(0);
-        ios.writeUInt24(2 ^ 24 - 1);
-        ios.writeUInt32(0);
-        ios.writeUInt32(2 ^ 32 - 1);
-        ios.close();
-        ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
+        ByteBuffer bb = ByteBuffer.allocate(20);
+
+        IsoTypeWriter.writeUInt8(bb, 0);
+        IsoTypeWriter.writeUInt8(bb, 255);
+        IsoTypeWriter.writeUInt16(bb, 0);
+        IsoTypeWriter.writeUInt16(bb, 2 ^ 16 - 1);
+        IsoTypeWriter.writeUInt24(bb, 0);
+        IsoTypeWriter.writeUInt24(bb, 2 ^ 24 - 1);
+        IsoTypeWriter.writeUInt32(bb, 0);
+        IsoTypeWriter.writeUInt32(bb, 2 ^ 32 - 1);
+        bb.rewind();
+
         assertEquals(0, IsoTypeReader.readUInt8(bb));
         assertEquals(255, IsoTypeReader.readUInt8(bb));
         assertEquals(0, IsoTypeReader.readUInt16(bb));
@@ -52,12 +41,12 @@ public class IsoTypeReaderTest extends TestCase {
         final double fixedPointTest2 = -10.13;
 
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IsoOutputStream ios = new IsoOutputStream(baos);
-        ios.writeFixedPont1616(fixedPointTest1);
-        ios.writeFixedPont1616(fixedPointTest2);
-        ios.close();
-        ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
+        ByteBuffer bb = ByteBuffer.allocate(8);
+
+        IsoTypeWriter.writeFixedPont1616(bb, fixedPointTest1);
+        IsoTypeWriter.writeFixedPont1616(bb,fixedPointTest2);
+        bb.rewind();
+
         assertEquals("fixedPointTest1", fixedPointTest1, IsoTypeReader.readFixedPoint1616(bb), 1d / 65536);
         assertEquals("fixedPointTest2", fixedPointTest2, IsoTypeReader.readFixedPoint1616(bb), 1d / 65536);
     }
@@ -65,14 +54,14 @@ public class IsoTypeReaderTest extends TestCase {
     public void testFixedPoint88() throws IOException {
         final double fixedPointTest1 = 10.13;
         final double fixedPointTest2 = -10.13;
+        ByteBuffer bb = ByteBuffer.allocate(4);
 
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IsoOutputStream ios = new IsoOutputStream(baos);
-        ios.writeFixedPont88(fixedPointTest1);
-        ios.writeFixedPont88(fixedPointTest2);
-        ios.close();
-        ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
+
+        IsoTypeWriter.writeFixedPont88(bb, fixedPointTest1);
+        IsoTypeWriter.writeFixedPont88(bb, fixedPointTest2);
+        bb.rewind();
+
         assertEquals("fixedPointTest1", fixedPointTest1, IsoTypeReader.readFixedPoint88(bb), 1d / 256);
         assertEquals("fixedPointTest2", fixedPointTest2, IsoTypeReader.readFixedPoint88(bb), 1d / 256);
     }

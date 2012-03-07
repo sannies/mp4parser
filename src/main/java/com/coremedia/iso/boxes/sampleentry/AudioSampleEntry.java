@@ -38,6 +38,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     public static final String TYPE5 = "alac";
     public static final String TYPE7 = "owma";
     public static final String TYPE8 = "ac-3"; /* ETSI TS 102 366 1.2.1 Annex F */
+    public static final String TYPE9 = "ec-3"; /* ETSI TS 102 366 1.2.1 Annex F */
 
     /**
      * Identifier for an encrypted audio track.

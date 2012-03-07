@@ -1,6 +1,5 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractFullBox;
@@ -23,10 +22,6 @@ public final class AppleMeanBox extends AbstractFullBox {
 
     protected long getContentSize() {
         return 4 + Utf8.utf8StringLengthInBytes(meaning);
-    }
-
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeStringNoTerm(meaning);
     }
 
     @Override

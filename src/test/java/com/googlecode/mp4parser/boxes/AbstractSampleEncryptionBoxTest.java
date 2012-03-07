@@ -1,7 +1,6 @@
 package com.googlecode.mp4parser.boxes;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,6 +9,7 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,7 +39,7 @@ public abstract class AbstractSampleEncryptionBoxTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         long sizeBeforeWrite = senc.getSize();
-        senc.getBox(new IsoOutputStream(baos));
+        senc.getBox(Channels.newChannel(baos));
         Assert.assertEquals(baos.size(), senc.getSize());
         Assert.assertEquals(baos.size(), sizeBeforeWrite);
         IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
@@ -67,7 +67,7 @@ public abstract class AbstractSampleEncryptionBoxTest {
         senc.setEntries(entries);
         long sizeBeforeWrite = senc.getSize();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        senc.getBox(new IsoOutputStream(baos));
+        senc.getBox(Channels.newChannel(baos));
         Assert.assertEquals(baos.size(), senc.getSize());
         Assert.assertEquals(sizeBeforeWrite, senc.getSize());
         IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
@@ -95,7 +95,7 @@ public abstract class AbstractSampleEncryptionBoxTest {
         senc.setEntries(entries);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        senc.getBox(new IsoOutputStream(baos));
+        senc.getBox(Channels.newChannel(baos));
         Assert.assertEquals(baos.size(), senc.getSize());
         IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
 
@@ -128,7 +128,7 @@ public abstract class AbstractSampleEncryptionBoxTest {
         senc.setEntries(entries);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        senc.getBox(new IsoOutputStream(baos));
+        senc.getBox(Channels.newChannel(baos));
 
         Assert.assertEquals(baos.size(), senc.getSize());
 

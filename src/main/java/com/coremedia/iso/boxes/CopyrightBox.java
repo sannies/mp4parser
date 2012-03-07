@@ -17,7 +17,6 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
@@ -82,10 +81,6 @@ public class CopyrightBox extends AbstractFullBox {
         return "CopyrightBox[language=" + getLanguage() + ";copyright=" + getCopyright() + "]";
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeIso639(language);
-        os.writeStringZeroTerm(copyright);
-    }
 
 
 }
