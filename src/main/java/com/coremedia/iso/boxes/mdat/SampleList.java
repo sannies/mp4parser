@@ -40,7 +40,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
      *
      * @return the sorted list of sample offsets
      */
-    List<Long> getOffsetKeys() {
+    public List<Long> getOffsetKeys() {
         if (offsetKeys == null) {
             List<Long> offsetKeys = new ArrayList<Long>(offsets2Sizes.size());
             for (Long aLong : offsets2Sizes.keySet()) {
