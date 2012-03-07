@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 /**
  *
  */
-public class ItemDataBox extends AbstractFullBox {
+public class ItemDataBox extends AbstractBox {
     ByteBuffer data;
     public static final String TYPE = "idat";
 
@@ -31,13 +31,12 @@ public class ItemDataBox extends AbstractFullBox {
 
     @Override
     public void _parseDetails(ByteBuffer content) {
-        parseVersionAndFlags(content);
         data = content.slice();
+        content.position(content.position() + content.remaining());
     }
 
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
         bb.put(data);
     }
 }

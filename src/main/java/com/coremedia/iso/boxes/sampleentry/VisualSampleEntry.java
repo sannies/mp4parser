@@ -104,6 +104,10 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         return depth;
     }
 
+    public void setCompressorname(String compressorname) {
+        this.compressorname = compressorname;
+    }
+
     @Override
     public void _parseDetails(ByteBuffer content) {
         _parseReservedAndDataReferenceIndex(content);

@@ -30,6 +30,9 @@ public class TrickPlayBox extends AbstractFullBox {
 
     public static class Entry {
 
+        public Entry() {
+        }
+
         public Entry(int value) {
             this.value = value;
         }
@@ -50,6 +53,17 @@ public class TrickPlayBox extends AbstractFullBox {
 
         public void setDependencyLevel(int dependencyLevel) {
             value = (dependencyLevel & 0x3f) | value;
+        }
+
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Entry");
+            sb.append("{picType=").append(getPicType());
+            sb.append(",dependencyLevel=").append(getDependencyLevel());
+            sb.append('}');
+            return sb.toString();
         }
     }
 
@@ -72,5 +86,14 @@ public class TrickPlayBox extends AbstractFullBox {
         for (Entry entry : entries) {
             IsoTypeWriter.writeUInt8(bb, entry.value);
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("TrickPlayBox");
+        sb.append("{entries=").append(entries);
+        sb.append('}');
+        return sb.toString();
     }
 }

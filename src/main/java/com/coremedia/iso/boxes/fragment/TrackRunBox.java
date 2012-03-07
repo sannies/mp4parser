@@ -280,6 +280,11 @@ public class TrackRunBox extends AbstractFullBox {
         return (getFlags() & 0x1) == 1;
     }
 
+    public boolean isFirstSampleFlagsPresent() {
+        return (getFlags() & 0x4) == 0x4;
+    }
+
+
     public boolean isSampleSizePresent() {
         return (getFlags() & 0x200) == 0x200;
     }
