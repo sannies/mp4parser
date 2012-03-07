@@ -120,6 +120,7 @@ public abstract class AbstractBox implements Box {
         if (in instanceof FileChannel && contentSize > 1024 * 1024) {
             // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
             content = ((FileChannel) in).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) in).position(), contentSize);
+            ((FileChannel) in).position(((FileChannel) in).position() + contentSize);
         } else {
             assert contentSize < Integer.MAX_VALUE;
             content = ChannelHelper.readFully(in, contentSize);
