@@ -31,6 +31,11 @@ public class FreeBox extends AbstractBox {
         super(TYPE);
     }
 
+    public FreeBox(int size) {
+        super(TYPE);
+        this.data = ByteBuffer.allocate(size);
+    }
+
     @Override
     protected long getContentSize() {
         return data.limit();
