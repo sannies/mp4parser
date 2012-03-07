@@ -2,6 +2,7 @@ package com.googlecode.mp4parser.boxes;
 
 import com.coremedia.iso.boxes.AbstractBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
+import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -9,16 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: sannies
- * Date: 3/7/12
- * Time: 2:53 PM
- * To change this template use File | Settings | File Templates.
+ *
  */
 public class EC3SpecificBox extends AbstractBox {
     List<Entry> entries = new LinkedList<Entry>();
     int data_rate;
-    int numIndSub;
 
     public EC3SpecificBox() {
         super("dec3");
@@ -28,7 +24,7 @@ public class EC3SpecificBox extends AbstractBox {
     protected long getContentSize() {
         long size = 2;
         for (Entry entry : entries) {
-            if (entry.num_dep_sub >0) {
+            if (entry.num_dep_sub > 0) {
                 size += 4;
             } else {
                 size += 3;
@@ -41,7 +37,7 @@ public class EC3SpecificBox extends AbstractBox {
     public void _parseDetails(ByteBuffer content) {
         BitReaderBuffer brb = new BitReaderBuffer(content);
         data_rate = brb.readBits(13);
-        numIndSub = brb.readBits(3) + 1;
+        int numIndSub = brb.readBits(3) + 1;
         // This field indicates the number of independent substreams that are present in the Enhanced AC-3 bitstream. The value
         // of this field is one less than the number of independent substreams present.
 
@@ -64,6 +60,28 @@ public class EC3SpecificBox extends AbstractBox {
         }
     }
 
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        BitWriterBuffer bwb = new BitWriterBuffer(bb);
+        bwb.writeBits(data_rate, 13);
+        bwb.writeBits(entries.size() - 1, 3);
+        for (Entry e : entries) {
+            bwb.writeBits(e.fscod, 2);
+            bwb.writeBits(e.bsid, 5);
+            bwb.writeBits(e.bsmod, 5);
+            bwb.writeBits(e.acmod, 3);
+            bwb.writeBits(e.lfeon, 1);
+            bwb.writeBits(e.reserved, 3);
+            bwb.writeBits(e.num_dep_sub, 4);
+            if (e.num_dep_sub > 0) {
+                bwb.writeBits(e.chan_loc, 9);
+            } else {
+                bwb.writeBits(e.reserved2, 1);
+            }
+        }
+    }
+
+
     public List<Entry> getEntries() {
         return entries;
     }
@@ -80,18 +98,6 @@ public class EC3SpecificBox extends AbstractBox {
         this.data_rate = data_rate;
     }
 
-    public int getNumIndSub() {
-        return numIndSub;
-    }
-
-    public void setNumIndSub(int numIndSub) {
-        this.numIndSub = numIndSub;
-    }
-
-    @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
 
     public static class Entry {
         public int fscod;
