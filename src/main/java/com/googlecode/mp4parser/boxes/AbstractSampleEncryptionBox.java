@@ -17,11 +17,18 @@ import java.util.List;
 public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     int algorithmId = -1;
     int ivSize = -1;
-    byte[] kid = null;
+    byte[] kid = new byte[16];
     List<Entry> entries = new LinkedList<Entry>();
 
     protected AbstractSampleEncryptionBox(String type) {
         super(type);
+    }
+
+    public int getOffsetToFirstIV() {
+        int offset = (getSize() > (1l << 32) ? 16 : 8);
+        offset += isOverrideTrackEncryptionBoxParameters() ? 20 : 0;
+        offset += 4; //num entries
+        return offset;
     }
 
     @Override
