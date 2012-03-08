@@ -160,8 +160,10 @@ public abstract class AbstractBox implements Box {
         bb.rewind();
 
 
-        if (content.remaining() != bb.remaining())
+        if (content.remaining() != bb.remaining()) {
+            LOG.severe("remaining differs " + content.remaining() + " vs. " + bb.remaining());
             return false;
+        }
         int p = content.position();
         for (int i = content.limit() - 1, j = bb.limit() - 1; i >= p; i--, j--) {
             byte v1 = content.get(i);
@@ -169,7 +171,7 @@ public abstract class AbstractBox implements Box {
             if (v1 != v2) {
                 if ((v1 != v1) && (v2 != v2))    // For float and double
                     continue;
-                LOG.severe("Some sizes are wrong");
+
                 LOG.severe("buffers differ at " + i + "/" + j);
                 return false;
             }
@@ -238,7 +240,7 @@ public abstract class AbstractBox implements Box {
     /**
      * Writes the box's content into the given <code>ByteBuffer</code>. This must include flags
      * and version in case of a full box. <code>bb</code> has been initialized with
-     * <code>getContentSize()</code> bytes.
+     * <code>getSize()</code> bytes.
      *
      * @param bb the box's content-sink.
      * @throws IOException in case of an exception in the underlying <code>OutputStream</code>.

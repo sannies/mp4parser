@@ -2,14 +2,11 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.ByteBufferByteChannel;
-import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.naming.ldap.ExtendedRequest;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,13 +15,20 @@ import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 public class ItemLocationBoxTest {
 
+    int[] v = new int[]{1, 2, 4, 8};
 
     @Test
     public void testSimpleRoundTrip() throws IOException {
-        testSimpleRoundTrip(1, 2, 4, 8);
-        testSimpleRoundTrip(2, 4, 8, 1);
-        testSimpleRoundTrip(4, 8, 1, 2);
-        testSimpleRoundTrip(8, 1, 2, 4);
+        for (int i : v) {
+            for (int i1 : v) {
+                for (int i2 : v) {
+                    for (int i3 : v) {
+                        testSimpleRoundTrip(i, i1, i2, i3);
+                    }
+                }
+            }
+        }
+
     }
 
     public void testSimpleRoundTrip(int baseOffsetSize, int indexSize, int lengthSize, int offsetSize) throws IOException {
@@ -56,10 +60,15 @@ public class ItemLocationBoxTest {
 
     @Test
     public void testSimpleRoundWithEntriesTrip() throws IOException {
-        testSimpleRoundWithEntriesTrip(1, 2, 4, 8);
-        testSimpleRoundWithEntriesTrip(2, 4, 8, 1);
-        testSimpleRoundWithEntriesTrip(4, 8, 1, 2);
-        testSimpleRoundWithEntriesTrip(8, 1, 2, 4);
+        for (int i : v) {
+            for (int i1 : v) {
+                for (int i2 : v) {
+                    for (int i3 : v) {
+                        testSimpleRoundWithEntriesTrip(i, i1, i2, i3);
+                    }
+                }
+            }
+        }
     }
 
     public void testSimpleRoundWithEntriesTrip(int baseOffsetSize, int indexSize, int lengthSize, int offsetSize) throws IOException {
@@ -92,10 +101,15 @@ public class ItemLocationBoxTest {
 
     @Test
     public void testSimpleRoundWithEntriesAndExtentsTrip() throws IOException {
-        testSimpleRoundWithEntriesAndExtentsTrip(1, 2, 4, 8);
-        testSimpleRoundWithEntriesAndExtentsTrip(2, 4, 8, 1);
-        testSimpleRoundWithEntriesAndExtentsTrip(4, 8, 1, 2);
-        testSimpleRoundWithEntriesAndExtentsTrip(8, 1, 2, 4);
+        for (int i : v) {
+            for (int i1 : v) {
+                for (int i2 : v) {
+                    for (int i3 : v) {
+                        testSimpleRoundWithEntriesAndExtentsTrip(i, i1, i2, i3);
+                    }
+                }
+            }
+        }
     }
 
     public void testSimpleRoundWithEntriesAndExtentsTrip(int baseOffsetSize, int indexSize, int lengthSize, int offsetSize) throws IOException {

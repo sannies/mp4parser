@@ -18,7 +18,9 @@ package com.coremedia.iso.boxes;
 
 
 import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeReaderVariable;
 import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.IsoTypeWriterVariable;
 import com.googlecode.mp4parser.ParseDetail;
 
 import java.io.IOException;
@@ -177,7 +179,7 @@ public class ItemLocationBox extends AbstractFullBox {
             }
 
             dataReferenceIndex = IsoTypeReader.readUInt16(in);
-            baseOffset = read(in, baseOffsetSize);
+            baseOffset = IsoTypeReaderVariable.read(in, baseOffsetSize);
             int extentCount = IsoTypeReader.readUInt16(in);
 
 
@@ -230,7 +232,7 @@ public class ItemLocationBox extends AbstractFullBox {
 
 
             IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
-            write(baseOffset, bb, baseOffsetSize);
+            IsoTypeWriterVariable.write(baseOffset, bb, baseOffsetSize);
             IsoTypeWriter.writeUInt16(bb, extents.size());
 
             for (Extent extent : extents) {
@@ -300,18 +302,18 @@ public class ItemLocationBox extends AbstractFullBox {
 
         public Extent(ByteBuffer in) {
             if ((getVersion() == 1) && indexSize > 0) {
-                extentIndex = read(in, indexSize);
+                extentIndex = IsoTypeReaderVariable.read(in, indexSize);
             }
-            extentOffset = read(in, offsetSize);
-            extentLength = read(in, lengthSize);
+            extentOffset = IsoTypeReaderVariable.read(in, offsetSize);
+            extentLength = IsoTypeReaderVariable.read(in, lengthSize);
         }
 
         public void getContent(ByteBuffer os) throws IOException {
             if ((getVersion() == 1) && indexSize > 0) {
-                write(extentIndex, os, indexSize);
+                IsoTypeWriterVariable.write(extentIndex, os, indexSize);
             }
-            write(extentOffset, os, offsetSize);
-            write(extentLength, os, lengthSize);
+            IsoTypeWriterVariable.write(extentOffset, os, offsetSize);
+            IsoTypeWriterVariable.write(extentLength, os, lengthSize);
         }
 
         public int getSize() {
@@ -350,41 +352,6 @@ public class ItemLocationBox extends AbstractFullBox {
             sb.append(", extentIndex=").append(extentIndex);
             sb.append('}');
             return sb.toString();
-        }
-    }
-
-
-    long read(ByteBuffer in, int size) {
-        switch (size) {
-            case 1:
-                return IsoTypeReader.readUInt8(in);
-            case 2:
-                return IsoTypeReader.readUInt16(in);
-            case 4:
-                return IsoTypeReader.readUInt32(in);
-            case 8:
-                return IsoTypeReader.readUInt64(in);
-            default:
-                throw new RuntimeException("field size of " + size + " is not permissable");
-        }
-    }
-
-    void write(long v, ByteBuffer in, int size) {
-        switch (size) {
-            case 1:
-                IsoTypeWriter.writeUInt8(in, (int) (v & 0xff));
-                break;
-            case 2:
-                IsoTypeWriter.writeUInt16(in, (int) (v & 0xffff));
-                break;
-            case 4:
-                IsoTypeWriter.writeUInt32(in, v);
-                break;
-            case 8:
-                IsoTypeWriter.writeUInt64(in, v);
-                break;
-            default:
-                throw new RuntimeException("Index size of " + getIndexSize() + " is not permissable");
         }
     }
 
