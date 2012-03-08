@@ -103,9 +103,9 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
                 entry.time = IsoTypeReader.readUInt32(content);
                 entry.moofOffset = IsoTypeReader.readUInt32(content);
             }
-            entry.trafNumber = IsoTypeReaderVariable.write(content, lengthSizeOfTrafNum);
-            entry.trunNumber = IsoTypeReaderVariable.write(content, lengthSizeOfTrunNum);
-            entry.sampleNumber = IsoTypeReaderVariable.write(content, lengthSizeOfSampleNum);
+            entry.trafNumber = IsoTypeReaderVariable.read(content, lengthSizeOfTrafNum);
+            entry.trunNumber = IsoTypeReaderVariable.read(content, lengthSizeOfTrunNum);
+            entry.sampleNumber = IsoTypeReaderVariable.read(content, lengthSizeOfSampleNum);
 
             entries.add(entry);
         }

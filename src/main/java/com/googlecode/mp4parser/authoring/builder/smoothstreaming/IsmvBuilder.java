@@ -1,6 +1,7 @@
 package com.googlecode.mp4parser.authoring.builder.smoothstreaming;
 
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
@@ -28,4 +29,6 @@ public class IsmvBuilder extends FragmentedMp4Builder {
         }
         return super.build(nuMovie);
     }
+
+
 }
