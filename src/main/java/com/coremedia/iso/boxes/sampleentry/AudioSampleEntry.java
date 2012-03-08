@@ -39,6 +39,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     public static final String TYPE7 = "owma";
     public static final String TYPE8 = "ac-3"; /* ETSI TS 102 366 1.2.1 Annex F */
     public static final String TYPE9 = "ec-3"; /* ETSI TS 102 366 1.2.1 Annex F */
+    public static final String TYPE10 = "mlpa";
 
     /**
      * Identifier for an encrypted audio track.
@@ -126,7 +127,10 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         //reserved bits - used by qt
         packetSize = IsoTypeReader.readUInt16(content);
         //sampleRate = in.readFixedPoint1616();
-        sampleRate = IsoTypeReader.readUInt32(content) >>> 16;
+        sampleRate = IsoTypeReader.readUInt32(content);
+        if (sampleRate >= 524288000) {  // 8kHz in the top 16 bits
+            sampleRate = sampleRate >>> 16;
+        }
 
         //more qt stuff - see http://mp4v2.googlecode.com/svn-history/r388/trunk/src/atom_sound.cpp
         if (soundVersion > 0) {
@@ -172,7 +176,12 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         IsoTypeWriter.writeUInt16(bb, compressionId);
         IsoTypeWriter.writeUInt16(bb, packetSize);
         //isos.writeFixedPont1616(getSampleRate());
-        IsoTypeWriter.writeUInt32(bb, getSampleRate() << 16);
+        if (getSampleRate() < 65536) {
+            IsoTypeWriter.writeUInt32(bb, getSampleRate() << 16);
+        } else {
+            IsoTypeWriter.writeUInt32(bb, getSampleRate());
+
+        }
         if (soundVersion > 0) {
             IsoTypeWriter.writeUInt32(bb, samplesPerPacket);
             IsoTypeWriter.writeUInt32(bb, bytesPerPacket);
