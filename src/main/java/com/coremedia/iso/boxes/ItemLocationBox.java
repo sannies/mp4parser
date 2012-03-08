@@ -19,9 +19,12 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.ParseDetail;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * aligned(8) class ItemLocationBox extends FullBox(‘iloc’, version, 0) {
@@ -53,12 +56,11 @@ import java.nio.ByteBuffer;
  * }
  */
 public class ItemLocationBox extends AbstractFullBox {
-    public int offsetSize;
-    public int lengthSize;
-    public int baseOffsetSize;
-    public int indexSize;
-    public int itemCount;
-    public Item[] items = new Item[0];
+    public int offsetSize = 8;
+    public int lengthSize = 8;
+    public int baseOffsetSize = 8;
+    public int indexSize = 0;
+    public List<Item> items = new LinkedList<Item>();
 
     public static final String TYPE = "iloc";
 
@@ -68,11 +70,27 @@ public class ItemLocationBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        long size = 6 + (getVersion() != 1 ? 2 : 0);
+        long size = 8;
         for (Item item : items) {
-            size += item.getContentSize();
+            size += item.getSize();
         }
         return size;
+    }
+
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt8(bb, ((offsetSize << 4) | lengthSize));
+        if (getVersion() == 1) {
+            IsoTypeWriter.writeUInt8(bb, (baseOffsetSize << 4 | indexSize));
+        } else {
+            IsoTypeWriter.writeUInt8(bb, (baseOffsetSize << 4));
+        }
+        IsoTypeWriter.writeUInt16(bb, items.size());
+        for (Item item : items) {
+            item.getContent(bb);
+        }
     }
 
     @Override
@@ -86,111 +104,13 @@ public class ItemLocationBox extends AbstractFullBox {
 
         if (getVersion() == 1) {
             indexSize = tmp & 0xf;
-        } else {
-            itemCount = IsoTypeReader.readUInt16(content);
         }
-
-        items = new Item[itemCount];
-        for (int i = 0; i < items.length; i++) {
-            items[i] = new Item(content);
+        int itemCount = IsoTypeReader.readUInt16(content);
+        for (int i = 0; i < itemCount; i++) {
+            items.add(new Item(content));
         }
     }
 
-
-    @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        IsoTypeWriter.writeUInt8(bb, ((offsetSize << 4) | lengthSize));
-        if (getVersion() == 1) {
-            IsoTypeWriter.writeUInt8(bb, (baseOffsetSize << 4 | indexSize));
-        } else {
-            IsoTypeWriter.writeUInt8(bb, (baseOffsetSize << 4));
-            IsoTypeWriter.writeUInt16(bb, itemCount);
-        }
-
-        for (Item item : items) {
-            item.getContent(bb);
-        }
-    }
-
-    public class Item {
-        public int itemId;
-        public int constructionMethod;
-        public int dataReferenceIndex;
-        public byte[] baseOffset = new byte[(baseOffsetSize)];
-        public int extentCount;
-        public Extent[] extents;
-
-        public Item(ByteBuffer in) {
-            itemId = IsoTypeReader.readUInt16(in);
-
-            if (getVersion() == 1) {
-                int tmp = IsoTypeReader.readUInt16(in);
-                constructionMethod = tmp & 0xf;
-            }
-
-            dataReferenceIndex = IsoTypeReader.readUInt16(in);
-            in.get(baseOffset);
-            extentCount = IsoTypeReader.readUInt16(in);
-            extents = new Extent[extentCount];
-
-            for (int i = 0; i < extents.length; i++) {
-                extents[i] = new Extent(in);
-            }
-        }
-
-        public long getContentSize() {
-            long size = 2 + (getVersion() == 1 ? 2 : 0) + 2 + baseOffsetSize + 2;
-
-            //add extent sizes
-            if ((getVersion() == 1) && getIndexSize() > 0) {
-                size += extentCount * getIndexSize();
-            }
-            size += extentCount * (offsetSize + lengthSize);
-
-            return size;
-        }
-
-        public void getContent(ByteBuffer bb) throws IOException {
-            IsoTypeWriter.writeUInt16(bb, itemId);
-
-            if (getVersion() == 1) {
-                IsoTypeWriter.writeUInt16(bb, constructionMethod);
-            }
-
-            IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
-            IsoTypeWriter.writeUInt16(bb, extentCount);
-
-            for (Extent extent : extents) {
-                extent.getContent(bb);
-            }
-        }
-
-        public class Extent {
-            public byte[] extentOffset;
-            public byte[] extentLength;
-            public byte[] extentIndex;
-
-
-            public Extent(ByteBuffer in) {
-                if ((getVersion() == 1) && getIndexSize() > 0) {
-                    extentIndex = new byte[getIndexSize()];
-                    in.get(extentIndex);
-                }
-                extentOffset = new byte[offsetSize];
-                extentLength = new byte[lengthSize];
-                in.get(extentOffset);
-                in.get(extentLength);
-            }
-
-            public void getContent(ByteBuffer os) throws IOException {
-                if ((getVersion() == 1) && getIndexSize() > 0) {
-                    os.put(extentIndex);
-                }
-                os.put(extentOffset);
-                os.put(extentLength);
-            }
-        }
-    }
 
     public int getOffsetSize() {
         return offsetSize;
@@ -224,19 +144,249 @@ public class ItemLocationBox extends AbstractFullBox {
         this.indexSize = indexSize;
     }
 
-    public int getItemCount() {
-        return itemCount;
-    }
-
-    public void setItemCount(int itemCount) {
-        this.itemCount = itemCount;
-    }
-
-    public Item[] getItems() {
+    public List<Item> getItems() {
         return items;
     }
 
-    public void setItems(Item[] items) {
+    public void setItems(List<Item> items) {
         this.items = items;
     }
+
+
+    public Item createItem(int itemId, int constructionMethod, int dataReferenceIndex, long baseOffset, List<Extent> extents) {
+        return new Item(itemId, constructionMethod, dataReferenceIndex, baseOffset, extents);
+    }
+
+    Item createItem(ByteBuffer bb) {
+        return new Item(bb);
+    }
+
+    public class Item {
+        public int itemId;
+        public int constructionMethod;
+        public int dataReferenceIndex;
+        public long baseOffset;
+        public List<Extent> extents = new LinkedList<Extent>();
+
+        public Item(ByteBuffer in) {
+            itemId = IsoTypeReader.readUInt16(in);
+
+            if (getVersion() == 1) {
+                int tmp = IsoTypeReader.readUInt16(in);
+                constructionMethod = tmp & 0xf;
+            }
+
+            dataReferenceIndex = IsoTypeReader.readUInt16(in);
+            baseOffset = read(in, baseOffsetSize);
+            int extentCount = IsoTypeReader.readUInt16(in);
+
+
+            for (int i = 0; i < extentCount; i++) {
+                extents.add(new Extent(in));
+            }
+        }
+
+        public Item(int itemId, int constructionMethod, int dataReferenceIndex, long baseOffset, List<Extent> extents) {
+            this.itemId = itemId;
+            this.constructionMethod = constructionMethod;
+            this.dataReferenceIndex = dataReferenceIndex;
+            this.baseOffset = baseOffset;
+            this.extents = extents;
+        }
+
+        public int getSize() {
+            int size = 2;
+
+            if (getVersion() == 1) {
+                size += 2;
+            }
+
+            size += 2;
+            size += baseOffsetSize;
+            size += 2;
+
+
+            for (Extent extent : extents) {
+                size += extent.getSize();
+            }
+            return size;
+        }
+
+        public void setBaseOffsetAdjustingExtents(long offsetToData) {
+            this.baseOffset = offsetToData;
+            int base = 0;
+            for (Extent extent : extents) {
+                extent.extentOffset = base + offsetToData;
+                base += extent.extentLength;
+            }
+        }
+
+        public void getContent(ByteBuffer bb) throws IOException {
+            IsoTypeWriter.writeUInt16(bb, itemId);
+
+            if (getVersion() == 1) {
+                IsoTypeWriter.writeUInt16(bb, constructionMethod);
+            }
+
+
+            IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
+            write(baseOffset, bb, baseOffsetSize);
+            IsoTypeWriter.writeUInt16(bb, extents.size());
+
+            for (Extent extent : extents) {
+                extent.getContent(bb);
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Item item = (Item) o;
+
+            if (baseOffset != item.baseOffset) return false;
+            if (constructionMethod != item.constructionMethod) return false;
+            if (dataReferenceIndex != item.dataReferenceIndex) return false;
+            if (itemId != item.itemId) return false;
+            if (extents != null ? !extents.equals(item.extents) : item.extents != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = itemId;
+            result = 31 * result + constructionMethod;
+            result = 31 * result + dataReferenceIndex;
+            result = 31 * result + (int) (baseOffset ^ (baseOffset >>> 32));
+            result = 31 * result + (extents != null ? extents.hashCode() : 0);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Item{" +
+                    "baseOffset=" + baseOffset +
+                    ", itemId=" + itemId +
+                    ", constructionMethod=" + constructionMethod +
+                    ", dataReferenceIndex=" + dataReferenceIndex +
+                    ", extents=" + extents +
+                    '}';
+        }
+    }
+
+
+    public Extent createExtent(long extentOffset, long extentLength, long extentIndex) {
+        return new Extent(extentOffset, extentLength, extentIndex);
+    }
+
+    Extent createExtent(ByteBuffer bb) {
+        return new Extent(bb);
+    }
+
+
+    public class Extent {
+        public long extentOffset;
+        public long extentLength;
+        public long extentIndex;
+
+        public Extent(long extentOffset, long extentLength, long extentIndex) {
+            this.extentOffset = extentOffset;
+            this.extentLength = extentLength;
+            this.extentIndex = extentIndex;
+        }
+
+
+        public Extent(ByteBuffer in) {
+            if ((getVersion() == 1) && indexSize > 0) {
+                extentIndex = read(in, indexSize);
+            }
+            extentOffset = read(in, offsetSize);
+            extentLength = read(in, lengthSize);
+        }
+
+        public void getContent(ByteBuffer os) throws IOException {
+            if ((getVersion() == 1) && indexSize > 0) {
+                write(extentIndex, os, indexSize);
+            }
+            write(extentOffset, os, offsetSize);
+            write(extentLength, os, lengthSize);
+        }
+
+        public int getSize() {
+            return (indexSize > 0 ? indexSize : 0) + offsetSize + lengthSize;
+        }
+
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Extent extent = (Extent) o;
+
+            if (extentIndex != extent.extentIndex) return false;
+            if (extentLength != extent.extentLength) return false;
+            if (extentOffset != extent.extentOffset) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (int) (extentOffset ^ (extentOffset >>> 32));
+            result = 31 * result + (int) (extentLength ^ (extentLength >>> 32));
+            result = 31 * result + (int) (extentIndex ^ (extentIndex >>> 32));
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Extent");
+            sb.append("{extentOffset=").append(extentOffset);
+            sb.append(", extentLength=").append(extentLength);
+            sb.append(", extentIndex=").append(extentIndex);
+            sb.append('}');
+            return sb.toString();
+        }
+    }
+
+
+    long read(ByteBuffer in, int size) {
+        switch (size) {
+            case 1:
+                return IsoTypeReader.readUInt8(in);
+            case 2:
+                return IsoTypeReader.readUInt16(in);
+            case 4:
+                return IsoTypeReader.readUInt32(in);
+            case 8:
+                return IsoTypeReader.readUInt64(in);
+            default:
+                throw new RuntimeException("field size of " + size + " is not permissable");
+        }
+    }
+
+    void write(long v, ByteBuffer in, int size) {
+        switch (size) {
+            case 1:
+                IsoTypeWriter.writeUInt8(in, (int) (v & 0xff));
+                break;
+            case 2:
+                IsoTypeWriter.writeUInt16(in, (int) (v & 0xffff));
+                break;
+            case 4:
+                IsoTypeWriter.writeUInt32(in, v);
+                break;
+            case 8:
+                IsoTypeWriter.writeUInt64(in, v);
+                break;
+            default:
+                throw new RuntimeException("Index size of " + getIndexSize() + " is not permissable");
+        }
+    }
+
+
 }
