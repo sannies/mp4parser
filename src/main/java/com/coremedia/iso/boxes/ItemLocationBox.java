@@ -58,7 +58,7 @@ public class ItemLocationBox extends AbstractFullBox {
     public int baseOffsetSize;
     public int indexSize;
     public int itemCount;
-    public Item[] items;
+    public Item[] items = new Item[0];
 
     public static final String TYPE = "iloc";
 

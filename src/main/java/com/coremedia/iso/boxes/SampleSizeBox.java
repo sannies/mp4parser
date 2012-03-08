@@ -31,7 +31,7 @@ import static com.coremedia.iso.boxes.CastUtils.l2i;
  */
 public class SampleSizeBox extends AbstractFullBox {
     private long sampleSize;
-    private long[] sampleSizes;
+    private long[] sampleSizes = new long[0];
     public static final String TYPE = "stsz";
     int sampleCount;
 

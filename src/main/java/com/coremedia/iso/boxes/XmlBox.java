@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
  *
  */
 public class XmlBox extends AbstractFullBox {
-    String xml;
+    String xml = "";
     public static final String TYPE = "xml ";
 
     public XmlBox() {

@@ -27,8 +27,8 @@ import java.nio.ByteBuffer;
  *
  */
 public class BaseLocationBox extends AbstractFullBox {
-    String baseLocation;
-    String purchaseLocation;
+    String baseLocation = "";
+    String purchaseLocation = "";
 
     public BaseLocationBox() {
         super("bloc");

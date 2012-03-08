@@ -26,8 +26,8 @@ import java.nio.ByteBuffer;
  * AssetInformationBox as defined Common File Format Spec.
  */
 public class AssetInformationBox extends AbstractFullBox {
-    String apid;
-    String profileVersion;
+    String apid = "";
+    String profileVersion = "0000";
 
     public AssetInformationBox() {
         super("ainf");
@@ -35,12 +35,13 @@ public class AssetInformationBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return Utf8.utf8StringLengthInBytes(apid) + 1 + 4;
+        return Utf8.utf8StringLengthInBytes(apid) + 9;
     }
 
 
     @Override
     protected void getContent(ByteBuffer bb) {
+        writeVersionAndFlags(bb);
         bb.put(Utf8.convert(profileVersion), 0, 4);
         bb.put(Utf8.convert(apid));
         bb.put((byte) 0);
@@ -49,6 +50,7 @@ public class AssetInformationBox extends AbstractFullBox {
 
     @Override
     public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         profileVersion = IsoTypeReader.readString(content, 4);
         apid = IsoTypeReader.readString(content);
         content = null;

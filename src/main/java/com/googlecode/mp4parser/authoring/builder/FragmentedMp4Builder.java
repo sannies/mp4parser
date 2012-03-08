@@ -63,7 +63,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return Arrays.asList("soun", "vide");
     }
 
-    public FileTypeBox createFtyp(Movie movie) {
+    public Box createFtyp(Movie movie) {
         List<String> minorBrands = new LinkedList<String>();
         minorBrands.add("isom");
         minorBrands.add("iso2");

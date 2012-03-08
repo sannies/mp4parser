@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
  *
  */
 public class ItemDataBox extends AbstractBox {
-    ByteBuffer data;
+    ByteBuffer data = ByteBuffer.allocate(0);
     public static final String TYPE = "idat";
 
 
