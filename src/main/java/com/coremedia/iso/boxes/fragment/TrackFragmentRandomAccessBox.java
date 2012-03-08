@@ -17,7 +17,9 @@
 package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeReaderVariable;
 import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.IsoTypeWriterVariable;
 import com.coremedia.iso.boxes.AbstractFullBox;
 
 import java.io.IOException;
@@ -65,16 +67,16 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
 
 
     protected long getContentSize() {
-        long contentSize = 0;
+        long contentSize = 4;
         contentSize += 4 + 4 /*26 + 2 + 2 + 2 */ + 4;
         if (getVersion() == 1) {
             contentSize += (8 + 8) * entries.size();
         } else {
             contentSize += (4 + 4) * entries.size();
         }
-        contentSize += (lengthSizeOfTrafNum + 1) * entries.size();
-        contentSize += (lengthSizeOfTrunNum + 1) * entries.size();
-        contentSize += (lengthSizeOfSampleNum + 1) * entries.size();
+        contentSize += lengthSizeOfTrafNum * entries.size();
+        contentSize += lengthSizeOfTrunNum * entries.size();
+        contentSize += lengthSizeOfSampleNum * entries.size();
         return contentSize;
     }
 
@@ -85,9 +87,9 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         trackId = IsoTypeReader.readUInt32(content);
         long temp = IsoTypeReader.readUInt32(content);
         reserved = (int) (temp >> 6);
-        lengthSizeOfTrafNum = (int) (temp & 0x3F) >> 4;
-        lengthSizeOfTrunNum = (int) (temp & 0xC) >> 2;
-        lengthSizeOfSampleNum = (int) (temp & 0x3);
+        lengthSizeOfTrafNum = ((int) (temp & 0x3F) >> 4) + 1;
+        lengthSizeOfTrunNum = ((int) (temp & 0xC) >> 2) + 1;
+        lengthSizeOfSampleNum = ((int) (temp & 0x3)) + 1;
         long numberOfEntries = IsoTypeReader.readUInt32(content);
 
         entries = new ArrayList<Entry>();
@@ -101,32 +103,15 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
                 entry.time = IsoTypeReader.readUInt32(content);
                 entry.moofOffset = IsoTypeReader.readUInt32(content);
             }
-            entry.trafNumber = getVariable(lengthSizeOfTrafNum, content);
-            entry.trunNumber = getVariable(lengthSizeOfTrunNum, content);
-            entry.sampleNumber = getVariable(lengthSizeOfSampleNum, content);
+            entry.trafNumber = IsoTypeReaderVariable.write(content, lengthSizeOfTrafNum);
+            entry.trunNumber = IsoTypeReaderVariable.write(content, lengthSizeOfTrunNum);
+            entry.sampleNumber = IsoTypeReaderVariable.write(content, lengthSizeOfSampleNum);
 
             entries.add(entry);
         }
 
     }
 
-    private long getVariable(long length, ByteBuffer bb) {
-        long ret;
-        if (((length + 1) * 8) == 8) {
-            ret = IsoTypeReader.readUInt8(bb);
-        } else if (((length + 1) * 8) == 16) {
-            ret = IsoTypeReader.readUInt16(bb);
-        } else if (((length + 1) * 8) == 24) {
-            ret = IsoTypeReader.readUInt24(bb);
-        } else if (((length + 1) * 8) == 32) {
-            ret = IsoTypeReader.readUInt32(bb);
-        } else if (((length + 1) * 8) == 64) {
-            ret = IsoTypeReader.readUInt64(bb);
-        } else {
-            throw new RuntimeException("lengthSize not power of two");
-        }
-        return ret;
-    }
 
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
@@ -134,9 +119,9 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         IsoTypeWriter.writeUInt32(bb, trackId);
         long temp;
         temp = reserved << 6;
-        temp = temp | ((lengthSizeOfTrafNum & 0x3) << 4);
-        temp = temp | ((lengthSizeOfTrunNum & 0x3) << 2);
-        temp = temp | (lengthSizeOfSampleNum & 0x3);
+        temp = temp | (((lengthSizeOfTrafNum - 1) & 0x3) << 4);
+        temp = temp | (((lengthSizeOfTrunNum - 1) & 0x3) << 2);
+        temp = temp | ((lengthSizeOfSampleNum - 1) & 0x3);
         IsoTypeWriter.writeUInt32(bb, temp);
         IsoTypeWriter.writeUInt32(bb, entries.size());
 
@@ -148,22 +133,13 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
                 IsoTypeWriter.writeUInt32(bb, entry.time);
                 IsoTypeWriter.writeUInt32(bb, entry.moofOffset);
             }
-            bb.put(toByteArray(lengthSizeOfTrafNum + 1, entry.trafNumber));
-            bb.put(toByteArray(lengthSizeOfTrunNum + 1, entry.trunNumber));
-            bb.put(toByteArray(lengthSizeOfSampleNum + 1, entry.sampleNumber));
+            IsoTypeWriterVariable.write(entry.trafNumber, bb, lengthSizeOfTrafNum);
+            IsoTypeWriterVariable.write(entry.trunNumber, bb, lengthSizeOfTrunNum);
+            IsoTypeWriterVariable.write(entry.sampleNumber, bb, lengthSizeOfSampleNum);
+
         }
     }
 
-    private byte[] toByteArray(int length, long value) {
-        byte[] b = new byte[length];
-        int j = b.length;
-        while (j > 0) {
-            b[j - 1] = (byte) (value & 0xff);
-            value = value >> 8;
-            j--;
-        }
-        return b;
-    }
 
     public void setTrackId(long trackId) {
         this.trackId = trackId;
@@ -220,6 +196,17 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         private long trunNumber;
         private long sampleNumber;
 
+        public Entry() {
+        }
+
+        public Entry(long time, long moofOffset, long trafNumber, long trunNumber, long sampleNumber) {
+            this.moofOffset = moofOffset;
+            this.sampleNumber = sampleNumber;
+            this.time = time;
+            this.trafNumber = trafNumber;
+            this.trunNumber = trunNumber;
+        }
+
         public long getTime() {
             return time;
         }
@@ -269,6 +256,32 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
                     ", trunNumber=" + trunNumber +
                     ", sampleNumber=" + sampleNumber +
                     '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Entry entry = (Entry) o;
+
+            if (moofOffset != entry.moofOffset) return false;
+            if (sampleNumber != entry.sampleNumber) return false;
+            if (time != entry.time) return false;
+            if (trafNumber != entry.trafNumber) return false;
+            if (trunNumber != entry.trunNumber) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (int) (time ^ (time >>> 32));
+            result = 31 * result + (int) (moofOffset ^ (moofOffset >>> 32));
+            result = 31 * result + (int) (trafNumber ^ (trafNumber >>> 32));
+            result = 31 * result + (int) (trunNumber ^ (trunNumber >>> 32));
+            result = 31 * result + (int) (sampleNumber ^ (sampleNumber >>> 32));
+            return result;
         }
     }
 
