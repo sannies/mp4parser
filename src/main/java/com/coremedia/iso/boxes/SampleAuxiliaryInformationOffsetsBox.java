@@ -24,6 +24,8 @@ import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.coremedia.iso.boxes.CastUtils.l2i;
+
 /*
 aligned(8) class SampleAuxiliaryInformationOffsetsBox
             extends FullBox(‘saio’, version, flags)
@@ -46,7 +48,6 @@ aligned(8) class SampleAuxiliaryInformationOffsetsBox
 public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
     public static final String TYPE = "saio";
 
-    private long entryCount;
     private List<Long> offsets = new LinkedList<Long>();
     private long auxInfoType;
     private long auxInfoTypeParameter;
@@ -57,7 +58,7 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 8 + (getVersion() == 0 ? 4 * entryCount : 8 * entryCount) + ((getFlags() & 1) == 1 ? 8 : 0);
+        return 8 + (getVersion() == 0 ? 4 * offsets.size() : 8 * offsets.size()) + ((getFlags() & 1) == 1 ? 8 : 0);
     }
 
     @Override
@@ -68,7 +69,7 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
             IsoTypeWriter.writeUInt32(bb, auxInfoTypeParameter);
         }
 
-        IsoTypeWriter.writeUInt32(bb, entryCount);
+        IsoTypeWriter.writeUInt32(bb, offsets.size());
         for (Long offset : offsets) {
             if (getVersion() == 0) {
                 IsoTypeWriter.writeUInt32(bb, offset);
@@ -87,7 +88,7 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
             auxInfoTypeParameter = IsoTypeReader.readUInt32(content);
         }
 
-        entryCount = IsoTypeReader.readUInt32(content);
+        int entryCount = l2i(IsoTypeReader.readUInt32(content));
         offsets.clear();
 
         for (int i = 0; i < entryCount; i++) {
@@ -114,14 +115,6 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
 
     public void setAuxInfoTypeParameter(long auxInfoTypeParameter) {
         this.auxInfoTypeParameter = auxInfoTypeParameter;
-    }
-
-    public long getEntryCount() {
-        return entryCount;
-    }
-
-    public void setEntryCount(long entryCount) {
-        this.entryCount = entryCount;
     }
 
     public List<Long> getOffsets() {

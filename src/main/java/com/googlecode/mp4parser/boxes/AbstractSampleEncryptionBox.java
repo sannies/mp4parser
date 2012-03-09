@@ -47,8 +47,9 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
             content.get(e.iv);
             if ((getFlags() & 0x2) > 0) {
                 int numOfPairs = IsoTypeReader.readUInt16(content);
+                e.pairs = new LinkedList<Entry.Pair>();
                 while (numOfPairs-- > 0) {
-                    e.pairs.add(new Entry.Pair(IsoTypeReader.readUInt16(content), IsoTypeReader.readUInt32(content)));
+                    e.pairs.add(e.createPair(IsoTypeReader.readUInt16(content), IsoTypeReader.readUInt32(content)));
                 }
             }
             entries.add(e);
@@ -56,26 +57,6 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         }
     }
 
-    @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        if (isOverrideTrackEncryptionBoxParameters()) {
-            IsoTypeWriter.writeUInt24(bb, algorithmId);
-            IsoTypeWriter.writeUInt8(bb, ivSize);
-            bb.put(kid);
-        }
-        IsoTypeWriter.writeUInt32(bb, entries.size());
-        for (Entry entry : entries) {
-            bb.put(entry.iv);
-            if (isSubSampleEncryption()) {
-                IsoTypeWriter.writeUInt16(bb, entry.pairs.size());
-                for (Entry.Pair pair : entry.pairs) {
-                    IsoTypeWriter.writeUInt16(bb, pair.clear);
-                    IsoTypeWriter.writeUInt32(bb, pair.encrypted);
-                }
-            }
-        }
-    }
 
     public int getSampleCount() {
         return entries.size();
@@ -115,11 +96,49 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
 
     public boolean isSubSampleEncryption() {
-        return (entries.get(0).pairs.size() > 0);
+        return (getFlags() & 0x2) > 0;
     }
 
     public boolean isOverrideTrackEncryptionBoxParameters() {
-        return kid != null && algorithmId > 0 && ivSize > 0;
+        return (getFlags() & 0x1) > 0;
+    }
+
+    public void setSubSampleEncryption(boolean b) {
+        if (b) {
+           setFlags(getFlags() | 0x2);
+        } else {
+            setFlags(getFlags() & (0xffffff ^ 0x2));
+        }
+    }
+
+    public void setOverrideTrackEncryptionBoxParameters(boolean b) {
+        if (b) {
+            setFlags(getFlags() | 0x1);
+        } else {
+            setFlags(getFlags() & (0xffffff ^ 0x1));
+        }
+    }
+
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        if (isOverrideTrackEncryptionBoxParameters()) {
+            IsoTypeWriter.writeUInt24(bb, algorithmId);
+            IsoTypeWriter.writeUInt8(bb, ivSize);
+            bb.put(kid);
+        }
+        IsoTypeWriter.writeUInt32(bb, entries.size());
+        for (Entry entry : entries) {
+            bb.put(entry.iv);
+            if (isSubSampleEncryption()) {
+                IsoTypeWriter.writeUInt16(bb, entry.pairs.size());
+                for (Entry.Pair pair : entry.pairs) {
+                    IsoTypeWriter.writeUInt16(bb, pair.clear);
+                    IsoTypeWriter.writeUInt32(bb, pair.encrypted);
+                }
+            }
+        }
     }
 
     @Override
@@ -131,36 +150,42 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         }
         contentSize += 4;
         for (Entry entry : entries) {
-            contentSize += entry.iv.length;
-
-            if (isSubSampleEncryption()) {
-                contentSize += 2;
-                for (Entry.Pair pair : entry.pairs) {
-                    contentSize += 6;
-                }
-            }
+            contentSize  += entry.getSize();
         }
         return contentSize;
     }
 
     @Override
     public void getBox(WritableByteChannel os) throws IOException {
-        setFlags(0x0);
-        if (isOverrideTrackEncryptionBoxParameters()) {
-            setFlags(getFlags() | 0x1);
-        }
-        if (isSubSampleEncryption()) {
-            setFlags(getFlags() | 0x2);
-        }
-
         super.getBox(os);
     }
 
-    public static class Entry {
+    public Entry createEntry() {
+        return new Entry();
+    }
+
+    public class Entry {
         public byte[] iv;
         public List<Pair> pairs = new LinkedList<Pair>();
 
-        public static class Pair {
+        public short getSize() {
+            short size = (short) iv.length;
+
+            if (isSubSampleEncryption()) {
+                size += 2;
+                for (Entry.Pair pair : pairs) {
+                    size += 6;
+                }
+            }
+            return size;
+        }
+
+        public Pair createPair(int clear, long encrypted) {
+            return new Pair(clear, encrypted);
+        }
+
+
+        public class Pair {
             public int clear;
             public long encrypted;
 
@@ -194,6 +219,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
                 return "clr:" + clear + " enc:" + encrypted;
             }
         }
+
 
         @Override
         public boolean equals(Object o) {

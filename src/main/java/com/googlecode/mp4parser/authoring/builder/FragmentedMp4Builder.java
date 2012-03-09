@@ -81,7 +81,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
             int currentLength = intersectionFinder.sampleNumbers(track, movie).length;
             maxNumberOfFragments = currentLength > maxNumberOfFragments ? currentLength : maxNumberOfFragments;
         }
-
+        int sequence = 1;
         for (int i = 0; i < maxNumberOfFragments; i++) {
             for (Track track : movie.getTracks()) {
                 if (getAllowedHandlers().isEmpty() || getAllowedHandlers().contains(track.getHandler())) {
@@ -96,8 +96,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
                             // empty fragment
                             // just don't add any boxes.
                         } else {
-                            boxes.add(createMoof(startSample, endSample, track, i + 1));
-                            boxes.add(createMdat(startSample, endSample, track, i + 1));
+                            boxes.add(createMoof(startSample, endSample, track, sequence));
+                            boxes.add(createMdat(startSample, endSample, track, sequence++));
                         }
 
                     } else {
@@ -126,7 +126,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     protected Box createMdat(int startSample, int endSample, Track track, int i) {
-        final List<ByteBuffer> samples = ByteBufferHelper.mergeAdjacentBuffers(track.getSamples().subList(startSample, endSample));
+        final List<ByteBuffer> samples = ByteBufferHelper.mergeAdjacentBuffers(getSamples(startSample, endSample, track, i));
         return new Box() {
             ContainerBox parent;
 
@@ -220,8 +220,13 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
 
+    protected List<ByteBuffer> getSamples(int startSample, int endSample, Track track, int sequenceNumber) {
+        return track.getSamples().subList(startSample, endSample);
+    }
+
+
     protected List<? extends Box> createTruns(int startSample, int endSample, Track track, int sequenceNumber) {
-        List<ByteBuffer> samples = track.getSamples().subList(startSample, endSample);
+        List<ByteBuffer> samples = getSamples(startSample, endSample, track, sequenceNumber);
 
         long[] sampleSizes = new long[samples.size()];
         for (int i = 0; i < sampleSizes.length; i++) {

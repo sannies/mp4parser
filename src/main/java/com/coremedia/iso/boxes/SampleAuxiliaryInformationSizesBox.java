@@ -24,11 +24,12 @@ import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.coremedia.iso.boxes.CastUtils.l2i;
+
 public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
     public static final String TYPE = "saiz";
 
     private short defaultSampleInfoSize;
-    private long sampleCount;
     private List<Short> sampleInfoSizes = new LinkedList<Short>();
     private long auxInfoType;
     private long auxInfoTypeParameter;
@@ -39,7 +40,7 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 9 + ((getFlags() & 1) == 1 ? 8 : 0) + (defaultSampleInfoSize == 0 ? sampleCount : 0);
+        return 9 + ((getFlags() & 1) == 1 ? 8 : 0) + (defaultSampleInfoSize == 0 ? sampleInfoSizes.size() : 0);
     }
 
     @Override
@@ -50,7 +51,7 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         }
 
         IsoTypeWriter.writeUInt8(os, defaultSampleInfoSize);
-        IsoTypeWriter.writeUInt32(os, sampleCount);
+        IsoTypeWriter.writeUInt32(os, sampleInfoSizes.size());
 
         for (short sampleInfoSize : sampleInfoSizes) {
             IsoTypeWriter.writeUInt8(os, sampleInfoSize);
@@ -66,7 +67,7 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         }
 
         defaultSampleInfoSize = (short) IsoTypeReader.readUInt8(content);
-        sampleCount = IsoTypeReader.readUInt32(content);
+        int sampleCount = l2i(IsoTypeReader.readUInt32(content));
 
         sampleInfoSizes.clear();
 
@@ -101,13 +102,6 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         this.defaultSampleInfoSize = defaultSampleInfoSize;
     }
 
-    public long getSampleCount() {
-        return sampleCount;
-    }
-
-    public void setSampleCount(long sampleCount) {
-        this.sampleCount = sampleCount;
-    }
 
     public List<Short> getSampleInfoSizes() {
         return sampleInfoSizes;

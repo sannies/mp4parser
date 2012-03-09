@@ -31,7 +31,8 @@ public abstract class AbstractSampleEncryptionBoxTest {
     @Test
     public void testRoundTripFlagsZero() throws IOException {
         List<AbstractSampleEncryptionBox.Entry> entries = new LinkedList<AbstractSampleEncryptionBox.Entry>();
-        AbstractSampleEncryptionBox.Entry entry = new AbstractSampleEncryptionBox.Entry();
+
+        AbstractSampleEncryptionBox.Entry entry = senc.createEntry();
         entry.iv = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
         entries.add(entry);
 
@@ -55,12 +56,13 @@ public abstract class AbstractSampleEncryptionBoxTest {
 
     @Test
     public void testRoundTripFlagsOne() throws IOException {
+        senc.setOverrideTrackEncryptionBoxParameters(true);
         senc.setAlgorithmId(0x333333);
         senc.setIvSize(8);
         senc.setKid(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,});
 
         List<AbstractSampleEncryptionBox.Entry> entries = new LinkedList<AbstractSampleEncryptionBox.Entry>();
-        AbstractSampleEncryptionBox.Entry entry = new AbstractSampleEncryptionBox.Entry();
+        AbstractSampleEncryptionBox.Entry entry = senc.createEntry();
         entry.iv = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
         entries.add(entry);
 
@@ -81,14 +83,16 @@ public abstract class AbstractSampleEncryptionBoxTest {
 
     @Test
     public void testRoundTripFlagsTwo() throws IOException {
+        senc.setSubSampleEncryption(true);
         List<AbstractSampleEncryptionBox.Entry> entries = new LinkedList<AbstractSampleEncryptionBox.Entry>();
-        AbstractSampleEncryptionBox.Entry entry = new AbstractSampleEncryptionBox.Entry();
+        AbstractSampleEncryptionBox.Entry entry = senc.createEntry();
         entry.iv = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
-        entry.pairs.add(new AbstractSampleEncryptionBox.Entry.Pair(5, 15));
-        entry.pairs.add(new AbstractSampleEncryptionBox.Entry.Pair(5, 16));
-        entry.pairs.add(new AbstractSampleEncryptionBox.Entry.Pair(5, 17));
-        entry.pairs.add(new AbstractSampleEncryptionBox.Entry.Pair(5, 18));
-        entry.pairs.add(new AbstractSampleEncryptionBox.Entry.Pair(5, 19));
+        entry.pairs = new LinkedList<AbstractSampleEncryptionBox.Entry.Pair>();
+        entry.pairs.add(entry.createPair(5, 15));
+        entry.pairs.add(entry.createPair(5, 16));
+        entry.pairs.add(entry.createPair(5, 17));
+        entry.pairs.add(entry.createPair(5, 18));
+        entry.pairs.add(entry.createPair(5, 19));
         entries.add(entry);
 
 
@@ -109,17 +113,20 @@ public abstract class AbstractSampleEncryptionBoxTest {
 
     @Test
     public void testRoundTripFlagsThree() throws IOException {
+        senc.setSubSampleEncryption(true);
+        senc.setOverrideTrackEncryptionBoxParameters(true);
         senc.setAlgorithmId(0x333333);
         senc.setIvSize(8);
         senc.setKid(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,});
         List<AbstractSampleEncryptionBox.Entry> entries = new LinkedList<AbstractSampleEncryptionBox.Entry>();
-        AbstractSampleEncryptionBox.Entry entry = new AbstractSampleEncryptionBox.Entry();
+        AbstractSampleEncryptionBox.Entry entry = senc.createEntry();
         entry.iv = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
-        entry.pairs.add(new AbstractSampleEncryptionBox.Entry.Pair(5, 15));
-        entry.pairs.add(new AbstractSampleEncryptionBox.Entry.Pair(5, 16));
-        entry.pairs.add(new AbstractSampleEncryptionBox.Entry.Pair(5, 17));
-        entry.pairs.add(new AbstractSampleEncryptionBox.Entry.Pair(5, 18));
-        entry.pairs.add(new AbstractSampleEncryptionBox.Entry.Pair(5, 19));
+        entry.pairs = new LinkedList<AbstractSampleEncryptionBox.Entry.Pair>();
+        entry.pairs.add(entry.createPair(5, 15));
+        entry.pairs.add(entry.createPair(5, 16));
+        entry.pairs.add(entry.createPair(5, 17));
+        entry.pairs.add(entry.createPair(5, 18));
+        entry.pairs.add(entry.createPair(5, 19));
         entries.add(entry);
         entries.add(entry);
         entries.add(entry);
