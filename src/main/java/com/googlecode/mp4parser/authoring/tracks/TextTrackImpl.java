@@ -130,6 +130,18 @@ public class TextTrackImpl extends AbstractTrack {
             this.to = to;
             this.text = text;
         }
+
+        public long getFrom() {
+            return from;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public long getTo() {
+            return to;
+        }
     }
 
     public AbstractMediaHeaderBox getMediaHeaderBox() {
