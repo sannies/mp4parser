@@ -79,8 +79,8 @@ public class TrackRunBox extends AbstractFullBox {
             return sampleSize;
         }
 
-        public String getSampleFlags() {
-            return sampleFlags.toString();
+        public SampleFlags getSampleFlags() {
+            return sampleFlags;
         }
 
         public int getSampleCompositionTimeOffset() {

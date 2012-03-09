@@ -85,7 +85,11 @@ public class TrackExtendsBox extends AbstractFullBox {
         return defaultSampleSize;
     }
 
-    public String getDefaultSampleFlags() {
+    public SampleFlags getDefaultSampleFlags() {
+        return defaultSampleFlags;
+    }
+
+    public String getDefaultSampleFlagsStr() {
         return defaultSampleFlags.toString();
     }
 

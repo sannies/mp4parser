@@ -28,6 +28,10 @@ public class TrickPlayBox extends AbstractFullBox {
         super(TYPE);
     }
 
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
+    }
+
     public static class Entry {
 
         public Entry() {

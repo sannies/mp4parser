@@ -56,9 +56,9 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
 
     private long trackId;
     private int reserved;
-    private int lengthSizeOfTrafNum;
-    private int lengthSizeOfTrunNum;
-    private int lengthSizeOfSampleNum;
+    private int lengthSizeOfTrafNum = 2;
+    private int lengthSizeOfTrunNum = 2;
+    private int lengthSizeOfSampleNum = 2;
     private List<Entry> entries = Collections.emptyList();
 
     public TrackFragmentRandomAccessBox() {

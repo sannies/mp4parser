@@ -26,10 +26,13 @@ import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentHeaderBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentRandomAccessBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentRandomAccessOffsetBox;
 import com.coremedia.iso.boxes.fragment.SampleFlags;
 import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentRandomAccessBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
@@ -117,7 +120,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         for (Box box : createMoofMdat(movie)) {
             isoFile.addBox(box);
         }
-
+        isoFile.addBox(createMfra(movie, isoFile));
 
         return isoFile;
     }
@@ -241,6 +244,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
                         new LinkedList<CompositionTimeToSample.Entry>(track.getCompositionTimeEntries()) : null;
         long compositionTimeEntriesLeft = compositionTimeQueue != null ? compositionTimeQueue.peek().getCount() : -1;
 
+        trun.setSampleCompositionTimeOffsetPresent(compositionTimeEntriesLeft > 0);
 
         boolean sampleFlagsRequired = (track.getSampleDependencies() != null && !track.getSampleDependencies().isEmpty() ||
                 track.getSyncSamples() != null && track.getSyncSamples().length != 0);
@@ -262,7 +266,13 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 }
                 if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
                     // we have to mark non-sync samples!
-                    sflags.setSampleIsDifferenceSample(Arrays.binarySearch(track.getSyncSamples(), startSample + i + 1) < 0);
+                    if (Arrays.binarySearch(track.getSyncSamples(), startSample + i + 1) >= 0) {
+                        sflags.setSampleIsDifferenceSample(false);
+                        sflags.setSampleDependsOn(2);
+                    } else {
+                        sflags.setSampleIsDifferenceSample(true);
+                        sflags.setSampleDependsOn(1);
+                    }
                 }
                 // i don't have sample degradation
                 entry.setSampleFlags(sflags);
@@ -346,13 +356,101 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     }
 
+    protected Box createTfra(Track track, IsoFile isoFile) {
+        TrackFragmentRandomAccessBox tfra = new TrackFragmentRandomAccessBox();
+        tfra.setVersion(1); // use long offsets and times
+        List<TrackFragmentRandomAccessBox.Entry> offset2timeEntries = new LinkedList<TrackFragmentRandomAccessBox.Entry>();
+        List<Box> boxes = isoFile.getBoxes();
+        long offset = 0;
+        long duration = 0;
+        for (Box box : boxes) {
+            if (box instanceof MovieFragmentBox) {
+                List<TrackFragmentBox> trafs = ((MovieFragmentBox) box).getBoxes(TrackFragmentBox.class);
+                for (int i = 0; i < trafs.size(); i++) {
+                    TrackFragmentBox traf = trafs.get(i);
+                    if (traf.getTrackFragmentHeaderBox().getTrackId() == track.getTrackMetaData().getTrackId()) {
+                        // here we are at the offset required for the current entry.
+                        List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
+                        for (int j = 0; j < truns.size(); j++) {
+                            List<TrackFragmentRandomAccessBox.Entry> offset2timeEntriesThisTrun = new LinkedList<TrackFragmentRandomAccessBox.Entry>();
+                            TrackRunBox trun = truns.get(j);
+                            for (int k = 0; k < trun.getEntries().size(); k++) {
+                                TrackRunBox.Entry trunEntry = trun.getEntries().get(k);
+                                SampleFlags sf = null;
+                                if (k == 0 && trun.isFirstSampleFlagsPresent()) {
+                                    sf = trun.getFirstSampleFlags();
+                                } else if (trun.isSampleFlagsPresent()) {
+                                    sf = trunEntry.getSampleFlags();
+                                } else {
+                                    List<MovieExtendsBox> mvexs = isoFile.getMovieBox().getBoxes(MovieExtendsBox.class);
+                                    for (MovieExtendsBox mvex : mvexs) {
+                                        List<TrackExtendsBox> trexs = mvex.getBoxes(TrackExtendsBox.class);
+                                        for (TrackExtendsBox trex : trexs) {
+                                            if (trex.getTrackId() == track.getTrackMetaData().getTrackId()) {
+                                                sf = trex.getDefaultSampleFlags();
+                                            }
+                                        }
+                                    }
+
+                                }
+                                if (sf == null) {
+                                    throw new RuntimeException("Could not find any SampleFlags to indicate random access or not");
+                                }
+                                if (sf.getSampleDependsOn() == 2) {
+                                    offset2timeEntriesThisTrun.add(new TrackFragmentRandomAccessBox.Entry(
+                                            duration,
+                                            offset,
+                                            i + 1, j + 1, k + 1));
+                                    duration += trunEntry.getSampleDuration();
+                                }
+                            }
+                            if (offset2timeEntriesThisTrun.size() == trun.getEntries().size() && trun.getEntries().size() > 0) {
+                                // Oooops every sample seems to be random access sample
+                                // is this an audio track? I don't care.
+                                // I just use the first for trun sample for tfra random access
+                                offset2timeEntries.add(offset2timeEntriesThisTrun.get(0));
+                            } else {
+                                offset2timeEntries.addAll(offset2timeEntriesThisTrun);
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            offset += box.getSize();
+        }
+        tfra.setEntries(offset2timeEntries);
+        tfra.setTrackId(track.getTrackMetaData().getTrackId());
+        return tfra;
+    }
+
+    protected Box createMfra(Movie movie, IsoFile isoFile) {
+        MovieFragmentRandomAccessBox mfra = new MovieFragmentRandomAccessBox();
+        for (Track track : movie.getTracks()) {
+            mfra.addBox(createTfra(track, isoFile));
+        }
+
+        MovieFragmentRandomAccessOffsetBox mfro = new MovieFragmentRandomAccessOffsetBox();
+        mfra.addBox(mfro);
+        mfro.setMfraSize(mfra.getSize());
+        return mfra;
+    }
+
     protected Box createTrex(Movie movie, Track track) {
         TrackExtendsBox trex = new TrackExtendsBox();
         trex.setTrackId(track.getTrackMetaData().getTrackId());
         trex.setDefaultSampleDescriptionIndex(1);
         trex.setDefaultSampleDuration(0);
         trex.setDefaultSampleSize(0);
-        trex.setDefaultSampleFlags(new SampleFlags());
+        SampleFlags sf = new SampleFlags();
+        if ("soun".equals(track.getHandler())) {
+            // as far as I know there is no audio encoding
+            // where the sample are not self contained.
+            sf.setSampleDependsOn(2);
+            sf.setSampleIsDependedOn(2);
+        }
+        trex.setDefaultSampleFlags(sf);
         return trex;
     }
 
@@ -420,7 +518,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return stbl;
     }
 
-    Box createMinf(Track track, Movie movie) {
+    protected Box createMinf(Track track, Movie movie) {
         MediaInformationBox minf = new MediaInformationBox();
         minf.addBox(track.getMediaHeaderBox());
         minf.addBox(createDinf(movie, track));
@@ -428,13 +526,19 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return minf;
     }
 
-    Box createMdia(Track track, Movie movie) {
+    protected Box createMdiaHdlr(Track track, Movie movie) {
+        HandlerBox hdlr = new HandlerBox();
+        hdlr.setHandlerType(track.getHandler());
+        return hdlr;
+    }
+
+    protected Box createMdia(Track track, Movie movie) {
         MediaBox mdia = new MediaBox();
         mdia.addBox(createMdhd(movie, track));
 
-        HandlerBox hdlr = new HandlerBox();
-        mdia.addBox(hdlr);
-        hdlr.setHandlerType(track.getHandler());
+
+        mdia.addBox(createMdiaHdlr(track, movie));
+
 
         mdia.addBox(createMinf(track, movie));
         return mdia;
