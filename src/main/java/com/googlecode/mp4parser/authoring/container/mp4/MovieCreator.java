@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012 Sebastian Annies, Hamburg
+ *
+ * Licensed under the Apache License, Version 2.0 (the License);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an AS IS BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.googlecode.mp4parser.authoring.container.mp4;
 
 import com.coremedia.iso.IsoFile;
@@ -10,14 +25,10 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: sannies
- * Date: 8/15/11
- * Time: 8:44 AM
- * To change this template use File | Settings | File Templates.
+ * Shortcut to build a movie from an MP4 file.
  */
 public class MovieCreator {
-    public Movie build(ReadableByteChannel channel) throws IOException {
+    public static Movie build(ReadableByteChannel channel) throws IOException {
         IsoFile isoFile = new IsoFile(channel);
         Movie m = new Movie();
         List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
