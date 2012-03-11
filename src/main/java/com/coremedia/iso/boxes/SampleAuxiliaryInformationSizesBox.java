@@ -16,6 +16,7 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
@@ -29,10 +30,11 @@ import static com.coremedia.iso.boxes.CastUtils.l2i;
 public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
     public static final String TYPE = "saiz";
 
-    private short defaultSampleInfoSize;
+    private int defaultSampleInfoSize;
     private List<Short> sampleInfoSizes = new LinkedList<Short>();
-    private long auxInfoType;
-    private long auxInfoTypeParameter;
+    private int sampleCount;
+    private String auxInfoType;
+    private String auxInfoTypeParameter;
 
     public SampleAuxiliaryInformationSizesBox() {
         super(TYPE);
@@ -40,21 +42,32 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 9 + ((getFlags() & 1) == 1 ? 8 : 0) + (defaultSampleInfoSize == 0 ? sampleInfoSizes.size() : 0);
+        int size = 4;
+        if ((getFlags() & 1) == 1) {
+            size += 8;
+        }
+
+        size += 5;
+        size += sampleInfoSizes.size();
+        return size;
     }
 
     @Override
     protected void getContent(ByteBuffer os) throws IOException {
+        writeVersionAndFlags(os);
         if ((getFlags() & 1) == 1) {
-            IsoTypeWriter.writeUInt32(os, auxInfoType);
-            IsoTypeWriter.writeUInt32(os, auxInfoTypeParameter);
+            os.put(IsoFile.fourCCtoBytes(auxInfoType));
+            os.put(IsoFile.fourCCtoBytes(auxInfoTypeParameter));
         }
 
         IsoTypeWriter.writeUInt8(os, defaultSampleInfoSize);
-        IsoTypeWriter.writeUInt32(os, sampleInfoSizes.size());
-
-        for (short sampleInfoSize : sampleInfoSizes) {
-            IsoTypeWriter.writeUInt8(os, sampleInfoSize);
+        if (defaultSampleInfoSize == 0) {
+            IsoTypeWriter.writeUInt32(os, sampleInfoSizes.size());
+            for (short sampleInfoSize : sampleInfoSizes) {
+                IsoTypeWriter.writeUInt8(os, sampleInfoSize);
+            }
+        } else {
+            IsoTypeWriter.writeUInt32(os, sampleCount);
         }
     }
 
@@ -62,8 +75,8 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
     public void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
         if ((getFlags() & 1) == 1) {
-            auxInfoType = IsoTypeReader.readUInt32(content);
-            auxInfoTypeParameter = IsoTypeReader.readUInt32(content);
+            auxInfoType = IsoTypeReader.read4cc(content);
+            auxInfoTypeParameter = IsoTypeReader.read4cc(content);
         }
 
         defaultSampleInfoSize = (short) IsoTypeReader.readUInt8(content);
@@ -71,34 +84,34 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
 
         sampleInfoSizes.clear();
 
-        if (defaultSampleInfoSize == 0) {
-            for (int i = 0; i < sampleCount; i++) {
-                sampleInfoSizes.add((short) IsoTypeReader.readUInt8(content));
-            }
+        for (int i = 0; i < sampleCount; i++) {
+            sampleInfoSizes.add((short) IsoTypeReader.readUInt8(content));
         }
     }
 
-    public long getAuxInfoType() {
+    public String getAuxInfoType() {
         return auxInfoType;
     }
 
-    public void setAuxInfoType(long auxInfoType) {
+    public void setAuxInfoType(String auxInfoType) {
         this.auxInfoType = auxInfoType;
     }
 
-    public long getAuxInfoTypeParameter() {
+    public String getAuxInfoTypeParameter() {
         return auxInfoTypeParameter;
     }
 
-    public void setAuxInfoTypeParameter(long auxInfoTypeParameter) {
+    public void setAuxInfoTypeParameter(String auxInfoTypeParameter) {
         this.auxInfoTypeParameter = auxInfoTypeParameter;
     }
 
-    public short getDefaultSampleInfoSize() {
+    public int getDefaultSampleInfoSize() {
         return defaultSampleInfoSize;
     }
 
-    public void setDefaultSampleInfoSize(short defaultSampleInfoSize) {
+    public void setDefaultSampleInfoSize(int defaultSampleInfoSize) {
+        assert defaultSampleInfoSize <= 255;
+        assert defaultSampleInfoSize > 0;
         this.defaultSampleInfoSize = defaultSampleInfoSize;
     }
 
@@ -109,5 +122,13 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
 
     public void setSampleInfoSizes(List<Short> sampleInfoSizes) {
         this.sampleInfoSizes = sampleInfoSizes;
+    }
+
+    public int getSampleCount() {
+        return sampleCount;
+    }
+
+    public void setSampleCount(int sampleCount) {
+        this.sampleCount = sampleCount;
     }
 }
