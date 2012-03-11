@@ -46,9 +46,12 @@ import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.logging.Logger;
 
@@ -74,7 +77,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return new FileTypeBox("isom", 0, minorBrands);
     }
 
-    protected List<Box> createMoofMdat(Movie movie) {
+    protected List<Box> createMoofMdat(final Movie movie) {
         List<Box> boxes = new LinkedList<Box>();
         int maxNumberOfFragments = 0;
         for (Track track : movie.getTracks()) {
@@ -83,7 +86,32 @@ public class FragmentedMp4Builder implements Mp4Builder {
         }
         int sequence = 1;
         for (int i = 0; i < maxNumberOfFragments; i++) {
-            for (Track track : movie.getTracks()) {
+
+            final List<Track> sizeSortedTracks = new LinkedList<Track>(movie.getTracks());
+            final int j = i;
+            Collections.sort(sizeSortedTracks, new Comparator<Track>() {
+                public int compare(Track o1, Track o2) {
+                    int[] startSamples1 = intersectionFinder.sampleNumbers(o1, movie);
+                    int startSample1 = startSamples1[j];
+                    int endSample1 = j + 1 < startSamples1.length ? startSamples1[j + 1] : o1.getSamples().size();
+                    int[] startSamples2 = intersectionFinder.sampleNumbers(o2, movie);
+                    int startSample2 = startSamples2[j];
+                    int endSample2 = j + 1 < startSamples2.length ? startSamples2[j + 1] : o2.getSamples().size();
+                    List<ByteBuffer> samples1 = o1.getSamples().subList(startSample1, endSample1);
+                    List<ByteBuffer> samples2 = o2.getSamples().subList(startSample2, endSample2);
+                    int size1 = 0;
+                    for (ByteBuffer byteBuffer : samples1) {
+                        size1 += byteBuffer.limit();
+                    }
+                    int size2 = 0;
+                    for (ByteBuffer byteBuffer : samples2) {
+                        size2 += byteBuffer.limit();
+                    }
+                    return size1 - size2;
+                }
+            });
+
+            for (Track track : sizeSortedTracks) {
                 if (getAllowedHandlers().isEmpty() || getAllowedHandlers().contains(track.getHandler())) {
                     int[] startSamples = intersectionFinder.sampleNumbers(track, movie);
 
@@ -105,6 +133,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
                     }
                 }
             }
+
+
+
         }
         return boxes;
     }
