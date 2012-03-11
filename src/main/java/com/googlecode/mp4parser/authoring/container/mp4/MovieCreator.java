@@ -22,7 +22,7 @@ public class MovieCreator {
         Movie m = new Movie();
         List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
         for (TrackBox trackBox : trackBoxes) {
-            m.addTrack(new Mp4TrackImpl(trackBox, channel));
+            m.addTrack(new Mp4TrackImpl(trackBox));
         }
         return m;
     }

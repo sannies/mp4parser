@@ -36,7 +36,7 @@ public class Mp4TrackImpl extends AbstractTrack {
     private String handler;
     private AbstractMediaHeaderBox mihd;
 
-    public Mp4TrackImpl(TrackBox trackBox, ReadableByteChannel source) {
+    public Mp4TrackImpl(TrackBox trackBox) {
         samples = new SampleList(trackBox);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
         handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
