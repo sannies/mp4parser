@@ -32,6 +32,10 @@ public class TrickPlayBox extends AbstractFullBox {
         this.entries = entries;
     }
 
+    public List<Entry> getEntries() {
+        return entries;
+    }
+
     public static class Entry {
 
         public Entry() {
@@ -41,6 +45,7 @@ public class TrickPlayBox extends AbstractFullBox {
             this.value = value;
         }
 
+
         private int value;
 
         public int getPicType() {
@@ -48,6 +53,7 @@ public class TrickPlayBox extends AbstractFullBox {
         }
 
         public void setPicType(int picType) {
+            value = value & (0xff >> 3);
             value = (picType & 0x03) << 6 | value;
         }
 
