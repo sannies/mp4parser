@@ -2,6 +2,7 @@ package com.googlecode.mp4parser.boxes;
 
 import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.ByteBufferByteChannel;
+import com.googlecode.mp4parser.util.UUIDConverter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,6 +27,41 @@ public abstract class AbstractSampleEncryptionBoxTest {
 
     @Before
     public void setUp() throws Exception {
+
+    }
+
+    @Test
+    public void testRoundTripSmallIV() throws IOException {
+        List<AbstractSampleEncryptionBox.Entry> entries = new LinkedList<AbstractSampleEncryptionBox.Entry>();
+        senc.setOverrideTrackEncryptionBoxParameters(true);
+        senc.setAlgorithmId(1);
+        senc.setIvSize(8);
+        senc.setKid(UUIDConverter.convert(UUID.randomUUID()));
+        AbstractSampleEncryptionBox.Entry entry = senc.createEntry();
+        entry.iv = new byte[]{1, 2, 3, 5, 6, 7, 8};
+        entries.add(entry);
+        entry = senc.createEntry();
+        entry.iv = new byte[]{1, 2, 3, 5, 6, 7, 9};
+        entries.add(entry);
+        entry = senc.createEntry();
+        entry.iv = new byte[]{1, 2, 3, 5, 6, 7, 10};
+        entries.add(entry);
+
+        senc.setEntries(entries);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        long sizeBeforeWrite = senc.getSize();
+        senc.getBox(Channels.newChannel(baos));
+        Assert.assertEquals(baos.size(), senc.getSize());
+        Assert.assertEquals(baos.size(), sizeBeforeWrite);
+        IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
+
+
+        Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
+        AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);
+        Assert.assertEquals(senc.getFlags(), senc2.getFlags());
+        Assert.assertTrue(senc.equals(senc2));
+        Assert.assertTrue(senc2.equals(senc));
 
     }
 
@@ -59,7 +96,7 @@ public abstract class AbstractSampleEncryptionBoxTest {
         senc.setOverrideTrackEncryptionBoxParameters(true);
         senc.setAlgorithmId(0x333333);
         senc.setIvSize(8);
-        senc.setKid(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,});
+        senc.setKid(UUIDConverter.convert(UUID.randomUUID()));
 
         List<AbstractSampleEncryptionBox.Entry> entries = new LinkedList<AbstractSampleEncryptionBox.Entry>();
         AbstractSampleEncryptionBox.Entry entry = senc.createEntry();
@@ -117,7 +154,7 @@ public abstract class AbstractSampleEncryptionBoxTest {
         senc.setOverrideTrackEncryptionBoxParameters(true);
         senc.setAlgorithmId(0x333333);
         senc.setIvSize(8);
-        senc.setKid(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,});
+        senc.setKid(UUIDConverter.convert(UUID.randomUUID()));
         List<AbstractSampleEncryptionBox.Entry> entries = new LinkedList<AbstractSampleEncryptionBox.Entry>();
         AbstractSampleEncryptionBox.Entry entry = senc.createEntry();
         entry.iv = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};

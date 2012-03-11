@@ -6,6 +6,7 @@ import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
@@ -105,7 +106,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
     public void setSubSampleEncryption(boolean b) {
         if (b) {
-           setFlags(getFlags() | 0x2);
+            setFlags(getFlags() | 0x2);
         } else {
             setFlags(getFlags() & (0xffffff ^ 0x2));
         }
@@ -130,7 +131,14 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         }
         IsoTypeWriter.writeUInt32(bb, entries.size());
         for (Entry entry : entries) {
-            bb.put(entry.iv);
+            if (isOverrideTrackEncryptionBoxParameters()) {
+                byte[] ivFull = new byte[ivSize];
+                System.arraycopy(entry.iv, 0, ivFull, 8 - entry.iv.length, entry.iv.length);
+                bb.put(ivFull);
+            } else {
+                // just put the iv - i don't know any better
+                bb.put(entry.iv);
+            }
             if (isSubSampleEncryption()) {
                 IsoTypeWriter.writeUInt16(bb, entry.pairs.size());
                 for (Entry.Pair pair : entry.pairs) {
@@ -150,7 +158,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         }
         contentSize += 4;
         for (Entry entry : entries) {
-            contentSize  += entry.getSize();
+            contentSize += entry.getSize();
         }
         return contentSize;
     }
@@ -168,8 +176,14 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         public byte[] iv;
         public List<Pair> pairs = new LinkedList<Pair>();
 
-        public short getSize() {
-            short size = (short) iv.length;
+        public int getSize() {
+            int size = 0;
+            if (isOverrideTrackEncryptionBoxParameters()) {
+                size = ivSize;
+            } else {
+                size = iv.length;
+            }
+
 
             if (isSubSampleEncryption()) {
                 size += 2;
@@ -228,7 +242,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
             Entry entry = (Entry) o;
 
-            if (!Arrays.equals(iv, entry.iv)) return false;
+            if (!new BigInteger(iv).equals(new BigInteger(entry.iv))) return false;
             if (pairs != null ? !pairs.equals(entry.pairs) : entry.pairs != null) return false;
 
             return true;
