@@ -133,7 +133,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         for (Entry entry : entries) {
             if (isOverrideTrackEncryptionBoxParameters()) {
                 byte[] ivFull = new byte[ivSize];
-                System.arraycopy(entry.iv, 0, ivFull, 8 - entry.iv.length, entry.iv.length);
+                System.arraycopy(entry.iv, 0, ivFull, ivSize - entry.iv.length, entry.iv.length);
                 bb.put(ivFull);
             } else {
                 // just put the iv - i don't know any better
