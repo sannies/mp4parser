@@ -128,7 +128,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         packetSize = IsoTypeReader.readUInt16(content);
         //sampleRate = in.readFixedPoint1616();
         sampleRate = IsoTypeReader.readUInt32(content);
-        if (sampleRate >= 524288000) {  // 8kHz in the top 16 bits
+        if (!type.equals("mlpa")) {
             sampleRate = sampleRate >>> 16;
         }
 
@@ -176,12 +176,12 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         IsoTypeWriter.writeUInt16(bb, compressionId);
         IsoTypeWriter.writeUInt16(bb, packetSize);
         //isos.writeFixedPont1616(getSampleRate());
-        if (getSampleRate() < 65536) {
-            IsoTypeWriter.writeUInt32(bb, getSampleRate() << 16);
-        } else {
+        if (type.equals("mlpa")) {
             IsoTypeWriter.writeUInt32(bb, getSampleRate());
-
+        } else {
+            IsoTypeWriter.writeUInt32(bb, getSampleRate() << 16);
         }
+
         if (soundVersion > 0) {
             IsoTypeWriter.writeUInt32(bb, samplesPerPacket);
             IsoTypeWriter.writeUInt32(bb, bytesPerPacket);
