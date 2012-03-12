@@ -40,17 +40,25 @@ public class SubSampleInformationBox extends AbstractFullBox {
     public static final String TYPE = "subs";
 
     private long entryCount;
-    private List<SampleEntry> sampleEntries = new ArrayList<SampleEntry>();
+    private List<SampleEntry> entries = new ArrayList<SampleEntry>();
 
     public SubSampleInformationBox() {
         super(TYPE);
+    }
+
+    public List<SampleEntry> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(List<SampleEntry> entries) {
+        this.entries = entries;
     }
 
     @Override
     protected long getContentSize() {
         long entries = 8 + ((4 + 2) * entryCount);
         int subsampleEntries = 0;
-        for (SampleEntry sampleEntry : sampleEntries) {
+        for (SampleEntry sampleEntry : this.entries) {
             subsampleEntries += sampleEntry.getSubsampleCount() * (((getVersion() == 1) ? 4 : 2) + 1 + 1 + 4);
         }
         return entries + subsampleEntries;
@@ -75,7 +83,7 @@ public class SubSampleInformationBox extends AbstractFullBox {
                 subsampleEntry.setReserved(IsoTypeReader.readUInt32(content));
                 sampleEntry.addSubsampleEntry(subsampleEntry);
             }
-            sampleEntries.add(sampleEntry);
+            entries.add(sampleEntry);
         }
 
     }
@@ -84,8 +92,9 @@ public class SubSampleInformationBox extends AbstractFullBox {
     protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, entryCount);
-        for (SampleEntry sampleEntry : sampleEntries) {
+        for (SampleEntry sampleEntry : entries) {
             IsoTypeWriter.writeUInt32(bb, sampleEntry.getSampleDelta());
+            IsoTypeWriter.writeUInt16(bb, sampleEntry.getSubsampleCount());
             List<SampleEntry.SubsampleEntry> subsampleEntries = sampleEntry.getSubsampleEntries();
             for (SampleEntry.SubsampleEntry subsampleEntry : subsampleEntries) {
                 if (getVersion() == 1) {
@@ -98,6 +107,14 @@ public class SubSampleInformationBox extends AbstractFullBox {
                 IsoTypeWriter.writeUInt32(bb, subsampleEntry.getReserved());
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "SubSampleInformationBox{" +
+                "entryCount=" + entryCount +
+                ", entries=" + entries +
+                '}';
     }
 
     public static class SampleEntry {
@@ -166,6 +183,25 @@ public class SubSampleInformationBox extends AbstractFullBox {
             public void setReserved(long reserved) {
                 this.reserved = reserved;
             }
+
+            @Override
+            public String toString() {
+                return "SubsampleEntry{" +
+                        "subsampleSize=" + subsampleSize +
+                        ", subsamplePriority=" + subsamplePriority +
+                        ", discardable=" + discardable +
+                        ", reserved=" + reserved +
+                        '}';
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "SampleEntry{" +
+                    "sampleDelta=" + sampleDelta +
+                    ", subsampleCount=" + subsampleCount +
+                    ", subsampleEntries=" + subsampleEntries +
+                    '}';
         }
     }
 }

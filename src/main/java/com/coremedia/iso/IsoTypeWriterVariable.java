@@ -15,6 +15,7 @@
  */
 package com.coremedia.iso;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public final class IsoTypeWriterVariable {
@@ -40,5 +41,11 @@ public final class IsoTypeWriterVariable {
                 throw new RuntimeException("I don't know how to read " + bytes + " bytes");
         }
 
+    }
+
+    public static void writeUtf8String(ByteBuffer bb, String string) {
+
+        bb.put(Utf8.convert(string));
+        writeUInt8(bb, 0);
     }
 }

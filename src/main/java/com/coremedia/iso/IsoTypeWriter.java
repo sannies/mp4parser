@@ -15,6 +15,7 @@
  */
 package com.coremedia.iso;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -79,5 +80,11 @@ public final class IsoTypeWriter {
             bits += (language.getBytes()[i] - 0x60) << (2 - i) * 5;
         }
         writeUInt16(bb, bits);
+    }
+
+    public static void writeUtf8String(ByteBuffer bb, String string) {
+
+        bb.put(Utf8.convert(string));
+        writeUInt8(bb, 0);
     }
 }
