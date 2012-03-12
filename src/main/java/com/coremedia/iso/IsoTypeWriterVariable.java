@@ -42,10 +42,4 @@ public final class IsoTypeWriterVariable {
         }
 
     }
-
-    public static void writeUtf8String(ByteBuffer bb, String string) {
-
-        bb.put(Utf8.convert(string));
-        writeUInt8(bb, 0);
-    }
 }
