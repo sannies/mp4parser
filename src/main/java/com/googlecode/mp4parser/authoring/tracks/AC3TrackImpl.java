@@ -6,14 +6,9 @@ import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.AC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
-import com.googlecode.mp4parser.boxes.threegpp26245.FontTableBox;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,12 +30,12 @@ public class AC3TrackImpl extends AbstractTrack {
     int frameSize;
     int[][][][] bitRateAndFrameSizeTable;
 
-    private FileInputStream fileInputStream;
+    private InputStream inputStream;
     private List<ByteBuffer> samples;
     List<TimeToSampleBox.Entry> stts;
 
-    public AC3TrackImpl(FileInputStream fin) throws IOException {
-        fileInputStream = fin;
+    public AC3TrackImpl(InputStream fin) throws IOException {
+        inputStream = fin;
         bitRateAndFrameSizeTable = new int[19][2][3][2];
         stts = new LinkedList<TimeToSampleBox.Entry>();
         initBitRateAndFrameSizeTable();
@@ -118,10 +113,10 @@ public class AC3TrackImpl extends AbstractTrack {
 
     private boolean readVariables() throws IOException {
         byte[] data = new byte[100];
-        if (100 != fileInputStream.read(data, 0, 100)) {
+        if (100 != inputStream.read(data, 0, 100)) {
             return false;
         }
-        fileInputStream.skip(-100); // Rewind
+        inputStream.skip(-100); // Rewind
         ByteBuffer bb = ByteBuffer.wrap(data);
         BitReaderBuffer brb = new BitReaderBuffer(bb);
         int syncword = brb.readBits(16);
@@ -200,7 +195,7 @@ public class AC3TrackImpl extends AbstractTrack {
         while (frameSize == read) {
             ret = true;
             byte[] data = new byte[frameSize];
-            read = fileInputStream.read(data);
+            read = inputStream.read(data);
             if (read == frameSize) {
                 samples.add(ByteBuffer.wrap(data));
                 stts.add(new TimeToSampleBox.Entry(1, 1536));
