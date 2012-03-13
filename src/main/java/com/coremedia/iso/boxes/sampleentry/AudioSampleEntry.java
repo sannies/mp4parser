@@ -108,6 +108,61 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         return bytesPerSample;
     }
 
+    public void setChannelCount(int channelCount) {
+        this.channelCount = channelCount;
+    }
+
+    public void setSampleSize(int sampleSize) {
+        this.sampleSize = sampleSize;
+    }
+
+    public void setSampleRate(long sampleRate) {
+        this.sampleRate = sampleRate;
+    }
+
+    public void setSoundVersion(int soundVersion) {
+        this.soundVersion = soundVersion;
+    }
+
+    public void setCompressionId(int compressionId) {
+        this.compressionId = compressionId;
+    }
+
+    public void setPacketSize(int packetSize) {
+        this.packetSize = packetSize;
+    }
+
+    public void setSamplesPerPacket(long samplesPerPacket) {
+        this.samplesPerPacket = samplesPerPacket;
+    }
+
+    public void setBytesPerPacket(long bytesPerPacket) {
+        this.bytesPerPacket = bytesPerPacket;
+    }
+
+    public void setBytesPerFrame(long bytesPerFrame) {
+        this.bytesPerFrame = bytesPerFrame;
+    }
+
+    public void setBytesPerSample(long bytesPerSample) {
+        this.bytesPerSample = bytesPerSample;
+    }
+
+    public void setReserved1(int reserved1) {
+        this.reserved1 = reserved1;
+    }
+
+    public void setReserved2(long reserved2) {
+        this.reserved2 = reserved2;
+    }
+
+    public void setSoundVersion2Data(byte[] soundVersion2Data) {
+        this.soundVersion2Data = soundVersion2Data;
+    }
+
+    public void setBoxParser(BoxParser boxParser) {
+        this.boxParser = boxParser;
+    }
 
     @Override
     public void _parseDetails(ByteBuffer content) {
