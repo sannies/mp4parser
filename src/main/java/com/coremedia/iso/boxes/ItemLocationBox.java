@@ -179,7 +179,11 @@ public class ItemLocationBox extends AbstractFullBox {
             }
 
             dataReferenceIndex = IsoTypeReader.readUInt16(in);
-            baseOffset = IsoTypeReaderVariable.read(in, baseOffsetSize);
+            if (baseOffsetSize > 0) {
+                baseOffset = IsoTypeReaderVariable.read(in, baseOffsetSize);
+            } else {
+                baseOffset = 0;
+            }
             int extentCount = IsoTypeReader.readUInt16(in);
 
 
@@ -214,13 +218,8 @@ public class ItemLocationBox extends AbstractFullBox {
             return size;
         }
 
-        public void setBaseOffsetAdjustingExtents(long offsetToData) {
-            this.baseOffset = offsetToData;
-            int base = 0;
-            for (Extent extent : extents) {
-                extent.extentOffset = base + offsetToData;
-                base += extent.extentLength;
-            }
+        public void setBaseOffset(long baseOffset) {
+            this.baseOffset = baseOffset;
         }
 
         public void getContent(ByteBuffer bb) throws IOException {
@@ -232,7 +231,9 @@ public class ItemLocationBox extends AbstractFullBox {
 
 
             IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
-            IsoTypeWriterVariable.write(baseOffset, bb, baseOffsetSize);
+            if (baseOffsetSize > 0) {
+                IsoTypeWriterVariable.write(baseOffset, bb, baseOffsetSize);
+            }
             IsoTypeWriter.writeUInt16(bb, extents.size());
 
             for (Extent extent : extents) {
