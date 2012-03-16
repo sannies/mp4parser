@@ -14,8 +14,8 @@ import java.util.List;
  */
 public class EC3SpecificBox extends AbstractBox {
     List<Entry> entries = new LinkedList<Entry>();
-    int data_rate;
-
+    int dataRate;
+    int numIndSub;
     public EC3SpecificBox() {
         super("dec3");
     }
@@ -36,8 +36,8 @@ public class EC3SpecificBox extends AbstractBox {
     @Override
     public void _parseDetails(ByteBuffer content) {
         BitReaderBuffer brb = new BitReaderBuffer(content);
-        data_rate = brb.readBits(13);
-        int numIndSub = brb.readBits(3) + 1;
+        dataRate = brb.readBits(13);
+        numIndSub = brb.readBits(3) + 1;
         // This field indicates the number of independent substreams that are present in the Enhanced AC-3 bitstream. The value
         // of this field is one less than the number of independent substreams present.
 
@@ -63,7 +63,7 @@ public class EC3SpecificBox extends AbstractBox {
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
         BitWriterBuffer bwb = new BitWriterBuffer(bb);
-        bwb.writeBits(data_rate, 13);
+        bwb.writeBits(dataRate, 13);
         bwb.writeBits(entries.size() - 1, 3);
         for (Entry e : entries) {
             bwb.writeBits(e.fscod, 2);
@@ -90,14 +90,25 @@ public class EC3SpecificBox extends AbstractBox {
         this.entries = entries;
     }
 
-    public int getData_rate() {
-        return data_rate;
+    public void addEntry(Entry entry) {
+        this.entries.add(entry);
     }
 
-    public void setData_rate(int data_rate) {
-        this.data_rate = data_rate;
+    public int getDataRate() {
+        return dataRate;
     }
 
+    public void setDataRate(int dataRate) {
+        this.dataRate = dataRate;
+    }
+
+    public int getNumIndSub() {
+        return numIndSub;
+    }
+
+    public void setNumIndSub(int numIndSub) {
+        this.numIndSub = numIndSub;
+    }
 
     public static class Entry {
         public int fscod;
