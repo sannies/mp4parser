@@ -452,8 +452,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
                                             duration,
                                             offset,
                                             i + 1, j + 1, k + 1));
-                                    duration += trunEntry.getSampleDuration();
                                 }
+                                duration += trunEntry.getSampleDuration();
                             }
                             if (offset2timeEntriesThisTrun.size() == trun.getEntries().size() && trun.getEntries().size() > 0) {
                                 // Oooops every sample seems to be random access sample
