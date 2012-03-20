@@ -207,4 +207,12 @@ public class DTSSpecificBox extends AbstractBox {
     public void setReserved(int reserved) {
         this.reserved = reserved;
     }
+
+    public int getReservedBoxPresent() {
+        return reservedBoxPresent;
+    }
+
+    public void setReservedBoxPresent(int reservedBoxPresent) {
+        this.reservedBoxPresent = reservedBoxPresent;
+    }
 }
