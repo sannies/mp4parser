@@ -150,7 +150,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
             }
 
 
-
         }
         return boxes;
     }
@@ -171,9 +170,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return isoFile;
     }
 
-    protected Box createMdat(int startSample, int endSample, Track track, int i) {
-        final List<ByteBuffer> samples = ByteBufferHelper.mergeAdjacentBuffers(getSamples(startSample, endSample, track, i));
-        return new Box() {
+    protected Box createMdat(final int startSample, final int endSample, final Track track, final int i) {
+
+        class Mdat implements Box {
             ContainerBox parent;
 
             public ContainerBox getParent() {
@@ -186,7 +185,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
             public long getSize() {
                 long size = 8; // I don't expect 2gig fragments
-                for (ByteBuffer sample : samples) {
+                for (ByteBuffer sample : getSamples(startSample, endSample, track, i)) {
                     size += sample.limit();
                 }
                 return size;
@@ -197,6 +196,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
             }
 
             public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+                final List<ByteBuffer> samples = ByteBufferHelper.mergeAdjacentBuffers(getSamples(startSample, endSample, track, i));
                 ByteBuffer header = ByteBuffer.allocate(8);
                 IsoTypeWriter.writeUInt32(header, l2i(getSize()));
                 header.put(IsoFile.fourCCtoBytes(getType()));
@@ -227,16 +227,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
             public void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
 
             }
-        };
+        }
 
-    }
-
-    public static void dumpHex(ByteBuffer bb) {
-        byte[] b = new byte[bb.limit()];
-        bb.get(b);
-        System.err.println(Hex.encodeHex(b));
-        bb.rewind();
-
+        return new Mdat();
     }
 
     protected Box createTfhd(int startSample, int endSample, Track track, int sequenceNumber) {
