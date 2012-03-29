@@ -52,6 +52,7 @@ public class SubSampleInformationBox extends AbstractFullBox {
 
     public void setEntries(List<SampleEntry> entries) {
         this.entries = entries;
+        entryCount = entries.size();
     }
 
     @Override
@@ -74,7 +75,6 @@ public class SubSampleInformationBox extends AbstractFullBox {
             SampleEntry sampleEntry = new SampleEntry();
             sampleEntry.setSampleDelta(IsoTypeReader.readUInt32(content));
             int subsampleCount = IsoTypeReader.readUInt16(content);
-            sampleEntry.setSubsampleCount(subsampleCount);
             for (int j = 0; j < subsampleCount; j++) {
                 SampleEntry.SubsampleEntry subsampleEntry = new SampleEntry.SubsampleEntry();
                 subsampleEntry.setSubsampleSize(getVersion() == 1 ? IsoTypeReader.readUInt32(content) : IsoTypeReader.readUInt16(content));
@@ -91,7 +91,7 @@ public class SubSampleInformationBox extends AbstractFullBox {
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, entryCount);
+        IsoTypeWriter.writeUInt32(bb, entries.size());
         for (SampleEntry sampleEntry : entries) {
             IsoTypeWriter.writeUInt32(bb, sampleEntry.getSampleDelta());
             IsoTypeWriter.writeUInt16(bb, sampleEntry.getSubsampleCount());
@@ -144,6 +144,7 @@ public class SubSampleInformationBox extends AbstractFullBox {
 
         public void addSubsampleEntry(SubsampleEntry subsampleEntry) {
             subsampleEntries.add(subsampleEntry);
+            subsampleCount++;
         }
 
         public static class SubsampleEntry {

@@ -151,6 +151,10 @@ public class EC3TrackImpl extends AbstractTrack {
         return new SoundMediaHeaderBox();
     }
 
+    public SubSampleInformationBox getSubsampleInformationBox() {
+        return null;
+    }
+
     private BitStreamInfo readVariables() throws IOException {
         byte[] data = new byte[200];
         if (200 != inputStream.read(data, 0, 200)) {

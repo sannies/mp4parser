@@ -111,6 +111,10 @@ public class AC3TrackImpl extends AbstractTrack {
         return new SoundMediaHeaderBox();
     }
 
+    public SubSampleInformationBox getSubsampleInformationBox() {
+        return null;
+    }
+
     private boolean readVariables() throws IOException {
         byte[] data = new byte[100];
         if (100 != inputStream.read(data, 0, 100)) {
