@@ -6,6 +6,7 @@ import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.AC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
+
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,6 +33,7 @@ public class AC3TrackImpl extends AbstractTrack {
 
     private InputStream inputStream;
     private List<ByteBuffer> samples;
+    boolean readSamples = false;
     List<TimeToSampleBox.Entry> stts;
 
     public AC3TrackImpl(InputStream fin) throws IOException {
@@ -165,6 +167,12 @@ public class AC3TrackImpl extends AbstractTrack {
         bsmod = brb.readBits(3);
         acmod = brb.readBits(3);
 
+        if (bsid == 9) {
+            samplerate /= 2;
+        } else if (bsid != 8) {
+            return false;
+        }
+
         if ((acmod != 1) && ((acmod & 1) == 1)) {
             brb.readBits(2);
         }
@@ -194,16 +202,22 @@ public class AC3TrackImpl extends AbstractTrack {
     }
 
     private boolean readSamples() throws IOException {
-        int read = frameSize;
+        if (readSamples) {
+            return true;
+        }
+        readSamples = true;
+        byte[] header = new byte[5];
         boolean ret = false;
-        while (frameSize == read) {
+        while (-1 != inputStream.read(header)) {
             ret = true;
+            int frmsizecode = header[4] & 63;
+            calcBitrateAndFrameSize(frmsizecode);
+            inputStream.skip(-5);
             byte[] data = new byte[frameSize];
-            read = inputStream.read(data);
-            if (read == frameSize) {
-                samples.add(ByteBuffer.wrap(data));
-                stts.add(new TimeToSampleBox.Entry(1, 1536));
-            }
+            inputStream.read(data);
+            samples.add(ByteBuffer.wrap(data));
+            stts.add(new TimeToSampleBox.Entry(1, 1536));
+
         }
         return ret;
     }
