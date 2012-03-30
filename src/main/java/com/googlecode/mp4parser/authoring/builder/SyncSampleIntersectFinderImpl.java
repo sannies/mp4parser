@@ -47,19 +47,15 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         }
 
         int[] chunkSizes = new int[syncSamples.length];
-        if (track.getSamples().size() == 1) {
-            chunkSizes[0] = 0;
-            for (int i = 1; i < chunkSizes.length; i++) {
-                chunkSizes[i] = 1;
-            }
-        } else {
-            long sc = track.getSamples().size();
-            double stretch = (double) sc / syncSampleContainingTrackSampleCount;
-            for (int i = 0; i < chunkSizes.length; i++) {
-                int start = (int) Math.round(stretch * (syncSamples[i] - 1));
-                chunkSizes[i] = start;
-                // The Stretch makes sure that there are as much audio and video chunks!
-            }
+        long sc = track.getSamples().size();
+        double stretch = (double) sc / syncSampleContainingTrackSampleCount;
+        chunkSizes[0] = 0;
+        for (int i = 1; i < chunkSizes.length; i++) {
+            int start = (int) Math.ceil(stretch * (syncSamples[i] - 1));
+//            int round = (int) Math.round(stretch * (syncSamples[i] - 1));
+            chunkSizes[i] = start;
+//            chunkSizes[i] = round;
+            // The Stretch makes sure that there are as much audio and video chunks!
         }
         return chunkSizes;
 
