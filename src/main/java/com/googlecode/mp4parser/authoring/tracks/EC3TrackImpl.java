@@ -203,6 +203,8 @@ public class EC3TrackImpl extends AbstractTrack {
                 break;
 
         }
+        entry.frameSize *= (6 / numberOfBlocksPerSyncFrame); // Not sure if this is the correct algorithm?
+
         entry.acmod = brb.readBits(3);
         entry.lfeon = brb.readBits(1);
         entry.bsid = brb.readBits(5);

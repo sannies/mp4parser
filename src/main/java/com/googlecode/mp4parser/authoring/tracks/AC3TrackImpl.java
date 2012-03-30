@@ -169,7 +169,7 @@ public class AC3TrackImpl extends AbstractTrack {
 
         if (bsid == 9) {
             samplerate /= 2;
-        } else if (bsid != 8) {
+        } else if (bsid != 8 && bsid != 6) {
             return false;
         }
 
