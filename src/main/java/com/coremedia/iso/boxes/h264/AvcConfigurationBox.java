@@ -42,7 +42,12 @@ public final class AvcConfigurationBox extends AbstractBox {
     private int lengthSizeMinusOne;
     List<byte[]> sequenceParameterSets = new ArrayList<byte[]>();
     List<byte[]> pictureParameterSets = new ArrayList<byte[]>();
-
+    
+    boolean hasExts = true;
+    private int chromaFormat = 1;
+    private int bitDepthLumaMinus8  = 0;
+    private int bitDepthChromaMinus8 = 0;
+    List<byte[]> sequenceParameterSetExts = new ArrayList<byte[]>();
 
     public AvcConfigurationBox() {
         super(TYPE);
@@ -104,6 +109,46 @@ public final class AvcConfigurationBox extends AbstractBox {
         this.pictureParameterSets = pictureParameterSets;
     }
 
+    public int getChromaFormat() {
+        return chromaFormat;
+    }
+
+    public void setChromaFormat(int chromaFormat) {
+        this.chromaFormat = chromaFormat;
+    }
+
+    public int getBitDepthLumaMinus8() {
+        return bitDepthLumaMinus8;
+    }
+
+    public void setBitDepthLumaMinus8(int bitDepthLumaMinus8) {
+        this.bitDepthLumaMinus8 = bitDepthLumaMinus8;
+    }
+
+    public int getBitDepthChromaMinus8() {
+        return bitDepthChromaMinus8;
+    }
+
+    public void setBitDepthChromaMinus8(int bitDepthChromaMinus8) {
+        this.bitDepthChromaMinus8 = bitDepthChromaMinus8;
+    }
+
+    public List<byte[]> getSequenceParameterSetExts() {
+        return sequenceParameterSetExts;
+    }
+
+    public void setSequenceParameterSetExts(List<byte[]> sequenceParameterSetExts) {
+        this.sequenceParameterSetExts = sequenceParameterSetExts;
+    }
+
+    public boolean hasExts() {
+        return hasExts;
+    }
+
+    public void setHasExts(boolean hasExts) {
+        this.hasExts = hasExts;
+    }
+
     @Override
     public void _parseDetails(ByteBuffer content) {
         configurationVersion = IsoTypeReader.readUInt8(content);
@@ -127,7 +172,25 @@ public final class AvcConfigurationBox extends AbstractBox {
             content.get(pictureParameterSetNALUnit);
             pictureParameterSets.add(pictureParameterSetNALUnit);
         }
-
+        if (content.remaining() < 4) {
+            hasExts = false;
+        }
+        if (hasExts && (avcProfileIndicaation == 100 || avcProfileIndicaation == 110 || avcProfileIndicaation == 122 || avcProfileIndicaation == 144)) {
+            chromaFormat = IsoTypeReader.readUInt8(content) & 3;
+            bitDepthLumaMinus8 = IsoTypeReader.readUInt8(content) & 7;
+            bitDepthChromaMinus8 = IsoTypeReader.readUInt8(content) & 7;
+            long numOfSequenceParameterSetExt = IsoTypeReader.readUInt8(content);
+            for (int i = 0; i < numOfSequenceParameterSetExt; i++) {
+                int sequenceParameterSetExtLength = IsoTypeReader.readUInt16(content);
+                byte[] sequenceParameterSetExtNALUnit = new byte[sequenceParameterSetExtLength];
+                content.get(sequenceParameterSetExtNALUnit);
+                sequenceParameterSetExts.add(sequenceParameterSetExtNALUnit);
+            }
+        } else {
+            chromaFormat = -1;
+            bitDepthLumaMinus8 = -1;
+            bitDepthChromaMinus8 = -1;
+        }
 
     }
 
@@ -143,6 +206,13 @@ public final class AvcConfigurationBox extends AbstractBox {
         for (byte[] pictureParameterSetNALUnit : pictureParameterSets) {
             size += 2; //lengthSizeMinusOne field
             size += pictureParameterSetNALUnit.length;
+        }
+        if (hasExts && (avcProfileIndicaation == 100 || avcProfileIndicaation == 110 || avcProfileIndicaation == 122 || avcProfileIndicaation == 144)) {
+            size += 4;
+            for (byte[] sequenceParameterSetExtNALUnit : sequenceParameterSetExts) {
+                size += 2;
+                size += sequenceParameterSetExtNALUnit.length;
+            }
         }
 
         return size;
@@ -165,6 +235,16 @@ public final class AvcConfigurationBox extends AbstractBox {
         for (byte[] pictureParameterSetNALUnit : pictureParameterSets) {
             IsoTypeWriter.writeUInt16(bb, pictureParameterSetNALUnit.length);
             bb.put(pictureParameterSetNALUnit);
+        }
+        if (hasExts && (avcProfileIndicaation == 100 || avcProfileIndicaation == 110 || avcProfileIndicaation == 122 || avcProfileIndicaation == 144)) {
+            IsoTypeWriter.writeUInt8(bb, chromaFormat | (63 << 2));
+            IsoTypeWriter.writeUInt8(bb, bitDepthLumaMinus8 | (31 << 3));
+            IsoTypeWriter.writeUInt8(bb, bitDepthChromaMinus8 | (31 << 3));
+            IsoTypeWriter.writeUInt8(bb, sequenceParameterSetExts.size());
+            for (byte[] sequenceParameterSetExtNALUnit : sequenceParameterSetExts) {
+                IsoTypeWriter.writeUInt16(bb, sequenceParameterSetExtNALUnit.length);
+                bb.put(sequenceParameterSetExtNALUnit);
+            }
         }
     }
 
