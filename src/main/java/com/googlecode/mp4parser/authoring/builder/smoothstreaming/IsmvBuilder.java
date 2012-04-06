@@ -40,7 +40,7 @@ public class IsmvBuilder extends FragmentedMp4Builder {
         Movie nuMovie = new Movie();
         movie.setMovieMetaData(movie.getMovieMetaData());
         for (Track track : movie.getTracks()) {
-            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale));
+            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, ChangeTimeScaleTrack.getGoodScaleFactor(track, movie, timeScale)));
         }
         return super.build(nuMovie);
     }

@@ -15,10 +15,16 @@
  */
 package com.googlecode.mp4parser.authoring.builder;
 
+import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
+import static com.googlecode.mp4parser.util.Math.lcm;
 
 /**
  * This <code>FragmentIntersectionFinder</code> cuts the input movie exactly before
@@ -26,25 +32,23 @@ import java.util.Arrays;
  */
 public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder {
     public int[] sampleNumbers(Track track, Movie movie) {
-        Track syncSampleContainingTrack = null;
-        int syncSampleContainingTrackSampleCount = 0;
-        long[] syncSamples = null;
-        for (Track currentTrack : movie.getTracks()) {
-            long[] currentTrackSyncSamples = currentTrack.getSyncSamples();
 
-            if (currentTrackSyncSamples != null && currentTrackSyncSamples.length > 0) {
-                if (syncSampleContainingTrack == null || Arrays.equals(syncSamples, currentTrackSyncSamples)) {
-                    syncSampleContainingTrack = currentTrack;
-                    syncSampleContainingTrackSampleCount = currentTrack.getSamples().size();
-                    syncSamples = currentTrackSyncSamples;
-                } else {
-                    throw new RuntimeException("There is more than one track containing a Sync Sample Box but the algorithm cannot deal with it. What is the most important track?");
-                }
-            }
+        int syncSampleContainingTrackSampleCount = 0;
+        List<long[]> times = new LinkedList<long[]>();
+        for (Track currentTrack : movie.getTracks()) {
+            times.add(getTimes(movie, currentTrack));
         }
-        if (syncSampleContainingTrack == null) {
-            throw new RuntimeException("There was no track containing a Sync Sample Box but the Sync Sample Box is required to determine the fragment size.");
+
+
+        long[] syncSamples = getCommonIndices(track.getSyncSamples(), getTimes(movie, track), times.toArray(new long[times.size()][]));
+        if (syncSamples.length < (track.getSyncSamples().length * 0.3)) {
+            throw new RuntimeException("There are less than 30% of common sync samples in the given files.");
+        } else if (syncSamples.length < (track.getSyncSamples().length * 0.6)) {
+            System.err.println("There are less than 60% of common sync samples in the given files. This is implausible but I'm ok to continue");
+        } else if (syncSamples.length < track.getSyncSamples().length) {
+            System.err.println("Common SyncSample positions vs. this tracks SyncSample positions: " + syncSamples.length + " vs. " + track.getSyncSamples().length);
         }
+
 
         int[] chunkSizes = new int[syncSamples.length];
         long sc = track.getSamples().size();
@@ -58,6 +62,59 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             // The Stretch makes sure that there are as much audio and video chunks!
         }
         return chunkSizes;
+
+    }
+
+    public static long[] getCommonIndices(long[] syncSamples, long[] syncSampleTimes, long[]... otherTracksTimes) {
+        List<Long> nuSyncSamples = new LinkedList<Long>();
+        for (int i = 0; i < syncSampleTimes.length; i++) {
+            boolean foundInEveryRef = true;
+            for (long[] times : otherTracksTimes) {
+                foundInEveryRef &= (Arrays.binarySearch(times, syncSampleTimes[i]) >= 0);
+            }
+            if (foundInEveryRef) {
+                nuSyncSamples.add(syncSamples[i]);
+            }
+        }
+        long[] nuSyncSampleArray = new long[nuSyncSamples.size()];
+        for (int i = 0; i < nuSyncSampleArray.length; i++) {
+            nuSyncSampleArray[i] = nuSyncSamples.get(i);
+        }
+        return nuSyncSampleArray;
+    }
+
+
+    private static long[] getTimes(Movie m, Track track) {
+        long[] syncSamples = track.getSyncSamples();
+        long[] syncSampleTimes = new long[syncSamples.length];
+        Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
+
+        int currentSample = 1;  // first syncsample is 1
+        long currentDuration = 0;
+        long currentDelta = 0;
+        int currentSyncSampleIndex = 0;
+        long left = 0;
+
+        long timeScale = 1;
+        for (Track track1 : m.getTracks()) {
+            if (track1.getTrackMetaData().getTimescale() != track.getTrackMetaData().getTimescale()) {
+                timeScale = lcm(timeScale, track1.getTrackMetaData().getTimescale());
+            }
+        }
+
+
+        while (currentSample <= syncSamples[syncSamples.length - 1]) {
+            if (currentSample++ == syncSamples[currentSyncSampleIndex]) {
+                syncSampleTimes[currentSyncSampleIndex++] = currentDuration * timeScale;
+            }
+            if (left-- == 0) {
+                TimeToSampleBox.Entry entry = timeQueue.poll();
+                left = entry.getCount();
+                currentDelta = entry.getDelta();
+            }
+            currentDuration += currentDelta;
+        }
+        return syncSampleTimes;
 
     }
 }

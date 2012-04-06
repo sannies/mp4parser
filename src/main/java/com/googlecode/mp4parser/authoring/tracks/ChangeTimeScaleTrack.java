@@ -16,12 +16,16 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
+import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.googlecode.mp4parser.util.Math.lcm;
+import static java.lang.Math.round;
 
 /**
  * Changes the timescale of a track by wrapping the track.
@@ -32,10 +36,30 @@ public class ChangeTimeScaleTrack implements Track {
     List<TimeToSampleBox.Entry> tts;
     long timeScale;
 
-    public ChangeTimeScaleTrack(Track source, long timeScale) {
+    /**
+     * Gets a scale factor for a track so that all tracks are exactly stretched or
+     * compressed by the same factor. This will ensure that frames that are shown
+     * in the same instant are still shown at the same instant even after the change
+     * of the timescale.
+     * This is especially important if you are using two tracks with different FPS
+     * and relying on I-frames being alligned - which is the case with Smooth Streaming.
+     *
+     * @param track
+     * @param movie
+     * @param targetTimeScale
+     * @return
+     */
+    public static long getGoodScaleFactor(Track track, Movie movie, long targetTimeScale) {
+        long lcm = 1;
+        for (Track t : movie.getTracks()) {
+            lcm = lcm(lcm, t.getTrackMetaData().getTimescale());
+        }
+        return targetTimeScale / track.getTrackMetaData().getTimescale() / (lcm / track.getTrackMetaData().getTimescale()) * (lcm / track.getTrackMetaData().getTimescale());
+    }
+
+    public ChangeTimeScaleTrack(Track source, long targetTimeScale, long timeScaleFactor) {
         this.source = source;
-        this.timeScale = timeScale;
-        double timeScaleFactor = (double) timeScale / source.getTrackMetaData().getTimescale();
+        this.timeScale = targetTimeScale;
         ctts = adjustCtts(source.getCompositionTimeEntries(), timeScaleFactor);
         tts = adjustTts(source.getDecodingTimeEntries(), timeScaleFactor);
     }
@@ -91,14 +115,14 @@ public class ChangeTimeScaleTrack implements Track {
     }
 
 
-    static List<CompositionTimeToSample.Entry> adjustCtts(List<CompositionTimeToSample.Entry> source, double timeScaleFactor) {
+    static List<CompositionTimeToSample.Entry> adjustCtts(List<CompositionTimeToSample.Entry> source, long timeScaleFactor) {
         if (source != null) {
             List<CompositionTimeToSample.Entry> entries2 = new ArrayList<CompositionTimeToSample.Entry>(source.size());
             double deviation = 0;
 
             for (CompositionTimeToSample.Entry entry : source) {
                 double d = timeScaleFactor * entry.getOffset() + deviation;
-                int x = (int) Math.round(d);
+                int x = (int) round(d);
                 deviation = d - x;
                 entries2.add(new CompositionTimeToSample.Entry(entry.getCount(), x));
             }
@@ -108,14 +132,14 @@ public class ChangeTimeScaleTrack implements Track {
         }
     }
 
-    static List<TimeToSampleBox.Entry> adjustTts(List<TimeToSampleBox.Entry> source, double timeScaleFactor) {
+    static List<TimeToSampleBox.Entry> adjustTts(List<TimeToSampleBox.Entry> source, long timeScaleFactor) {
         double deviation = 0;
 
         List<TimeToSampleBox.Entry> entries2 = new ArrayList<TimeToSampleBox.Entry>(source.size());
 
         for (TimeToSampleBox.Entry entry : source) {
             double d = timeScaleFactor * entry.getDelta() + deviation;
-            long x = Math.round(d);
+            long x = round(d);
             deviation = d - x;
             entries2.add(new TimeToSampleBox.Entry(entry.getCount(), x));
         }
@@ -125,6 +149,7 @@ public class ChangeTimeScaleTrack implements Track {
     public AbstractMediaHeaderBox getMediaHeaderBox() {
         return source.getMediaHeaderBox();
     }
+
     public SubSampleInformationBox getSubsampleInformationBox() {
         return source.getSubsampleInformationBox();
     }
