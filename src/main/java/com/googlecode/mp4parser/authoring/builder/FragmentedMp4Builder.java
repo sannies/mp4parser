@@ -106,14 +106,14 @@ public class FragmentedMp4Builder implements Mp4Builder {
             final int j = i;
             Collections.sort(sizeSortedTracks, new Comparator<Track>() {
                 public int compare(Track o1, Track o2) {
-                    int[] startSamples1 = intersectionFinder.sampleNumbers(o1, movie);
-                    int startSample1 = startSamples1[j];
-                    int endSample1 = j + 1 < startSamples1.length ? startSamples1[j + 1] : o1.getSamples().size();
-                    int[] startSamples2 = intersectionFinder.sampleNumbers(o2, movie);
-                    int startSample2 = startSamples2[j];
-                    int endSample2 = j + 1 < startSamples2.length ? startSamples2[j + 1] : o2.getSamples().size();
-                    List<ByteBuffer> samples1 = o1.getSamples().subList(startSample1, endSample1);
-                    List<ByteBuffer> samples2 = o2.getSamples().subList(startSample2, endSample2);
+                    long[] startSamples1 = intersectionFinder.sampleNumbers(o1, movie);
+                    long startSample1 = startSamples1[j];
+                    long endSample1 = j + 1 < startSamples1.length ? startSamples1[j + 1] : o1.getSamples().size();
+                    long[] startSamples2 = intersectionFinder.sampleNumbers(o2, movie);
+                    long startSample2 = startSamples2[j];
+                    long endSample2 = j + 1 < startSamples2.length ? startSamples2[j + 1] : o2.getSamples().size();
+                    List<ByteBuffer> samples1 = o1.getSamples().subList(l2i(startSample1), l2i(endSample1));
+                    List<ByteBuffer> samples2 = o2.getSamples().subList(l2i(startSample2), l2i(endSample2));
                     int size1 = 0;
                     for (ByteBuffer byteBuffer : samples1) {
                         size1 += byteBuffer.limit();
@@ -128,12 +128,12 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
             for (Track track : sizeSortedTracks) {
                 if (getAllowedHandlers().isEmpty() || getAllowedHandlers().contains(track.getHandler())) {
-                    int[] startSamples = intersectionFinder.sampleNumbers(track, movie);
+                    long[] startSamples = intersectionFinder.sampleNumbers(track, movie);
 
                     if (i < startSamples.length) {
-                        int startSample = startSamples[i];
+                        long startSample = startSamples[i];
 
-                        int endSample = i + 1 < startSamples.length ? startSamples[i + 1] : track.getSamples().size();
+                        long endSample = i + 1 < startSamples.length ? startSamples[i + 1] : track.getSamples().size();
 
                         if (startSample == endSample) {
                             // empty fragment
@@ -170,7 +170,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return isoFile;
     }
 
-    protected Box createMdat(final int startSample, final int endSample, final Track track, final int i) {
+    protected Box createMdat(final long startSample, final long endSample, final Track track, final int i) {
 
         class Mdat implements Box {
             ContainerBox parent;
@@ -232,7 +232,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return new Mdat();
     }
 
-    protected Box createTfhd(int startSample, int endSample, Track track, int sequenceNumber) {
+    protected Box createTfhd(long startSample, long endSample, Track track, int sequenceNumber) {
         TrackFragmentHeaderBox tfhd = new TrackFragmentHeaderBox();
         SampleFlags sf = new SampleFlags();
 
@@ -242,13 +242,13 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return tfhd;
     }
 
-    protected Box createMfhd(int startSample, int endSample, Track track, int sequenceNumber) {
+    protected Box createMfhd(long startSample, long endSample, Track track, int sequenceNumber) {
         MovieFragmentHeaderBox mfhd = new MovieFragmentHeaderBox();
         mfhd.setSequenceNumber(sequenceNumber);
         return mfhd;
     }
 
-    protected Box createTraf(int startSample, int endSample, Track track, int sequenceNumber) {
+    protected Box createTraf(long startSample, long endSample, Track track, int sequenceNumber) {
         TrackFragmentBox traf = new TrackFragmentBox();
         traf.addBox(createTfhd(startSample, endSample, track, sequenceNumber));
         for (Box trun : createTruns(startSample, endSample, track, sequenceNumber)) {
@@ -259,12 +259,12 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
 
-    protected List<ByteBuffer> getSamples(int startSample, int endSample, Track track, int sequenceNumber) {
-        return track.getSamples().subList(startSample, endSample);
+    protected List<ByteBuffer> getSamples(long startSample, long endSample, Track track, int sequenceNumber) {
+        return track.getSamples().subList(l2i(startSample), l2i(endSample));
     }
 
 
-    protected List<? extends Box> createTruns(int startSample, int endSample, Track track, int sequenceNumber) {
+    protected List<? extends Box> createTruns(long startSample, long endSample, Track track, int sequenceNumber) {
         List<ByteBuffer> samples = getSamples(startSample, endSample, track, sequenceNumber);
 
         long[] sampleSizes = new long[samples.size()];
@@ -276,11 +276,11 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         trun.setSampleDurationPresent(true);
         trun.setSampleSizePresent(true);
-        List<TrackRunBox.Entry> entries = new ArrayList<TrackRunBox.Entry>(endSample - startSample);
+        List<TrackRunBox.Entry> entries = new ArrayList<TrackRunBox.Entry>(l2i(endSample - startSample));
 
 
         Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
-        int left = startSample;
+        long left = startSample;
         long curEntryLeft = timeQueue.peek().getCount();
         long durationEntriesLeft = 0;
         while (left > 0 && timeQueue.size() > 0) {
@@ -358,7 +358,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return Collections.singletonList(trun);
     }
 
-    protected Box createMoof(int startSample, int endSample, Track track, int sequenceNumber) {
+    protected Box createMoof(long startSample, long endSample, Track track, int sequenceNumber) {
 
 
         MovieFragmentBox moof = new MovieFragmentBox();

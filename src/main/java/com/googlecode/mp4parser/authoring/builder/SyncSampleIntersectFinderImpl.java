@@ -31,9 +31,9 @@ import static com.googlecode.mp4parser.util.Math.lcm;
  * the sync samples. Each fragment starts with a sync sample.
  */
 public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder {
-    public int[] sampleNumbers(Track track, Movie movie) {
+    public long[] sampleNumbers(Track track, Movie movie) {
 
-        int syncSampleContainingTrackSampleCount = 0;
+
         List<long[]> times = new LinkedList<long[]>();
         for (Track currentTrack : movie.getTracks()) {
             times.add(getTimes(movie, currentTrack));
@@ -50,18 +50,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         }
 
 
-        int[] chunkSizes = new int[syncSamples.length];
-        long sc = track.getSamples().size();
-        double stretch = (double) sc / syncSampleContainingTrackSampleCount;
-        chunkSizes[0] = 0;
-        for (int i = 1; i < chunkSizes.length; i++) {
-            int start = (int) Math.ceil(stretch * (syncSamples[i] - 1));
-//            int round = (int) Math.round(stretch * (syncSamples[i] - 1));
-            chunkSizes[i] = start;
-//            chunkSizes[i] = round;
-            // The Stretch makes sure that there are as much audio and video chunks!
-        }
-        return chunkSizes;
+        return syncSamples;
 
     }
 

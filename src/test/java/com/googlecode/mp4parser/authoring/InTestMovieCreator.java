@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.nio.channels.Channels;
 
 
-public class TestMovieCreator {
+public class InTestMovieCreator {
     public static Movie createMovieOnlyVideo(String... names) throws IOException {
         Movie m = new Movie();
         for (String name : names) {

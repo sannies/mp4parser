@@ -1,8 +1,8 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.googlecode.mp4parser.authoring.InTestMovieCreator;
 import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.TestMovieCreator;
 import com.googlecode.mp4parser.authoring.Track;
 import junit.framework.Assert;
 import org.junit.Test;
@@ -16,7 +16,7 @@ import static com.googlecode.mp4parser.util.Math.lcm;
 public class ChangeTimeScaleTrackTest {
     @Test
     public void testThirdFrameRateAndSampleDurations() throws IOException {
-        Movie m = TestMovieCreator.createMovieOnlyVideo(
+        Movie m = InTestMovieCreator.createMovieOnlyVideo(
                 "/scene_cut_on/FBW_fixedres_B_640x360_200.mp4",
                 "/scene_cut_on/FBW_fixedres_B_640x360_400.mp4",
                 "/scene_cut_on/FBW_fixedres_B_640x360_800.mp4",

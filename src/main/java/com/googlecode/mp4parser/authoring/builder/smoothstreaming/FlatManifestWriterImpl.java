@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */package com.googlecode.mp4parser.authoring.builder.smoothstreaming;
+ */
+package com.googlecode.mp4parser.authoring.builder.smoothstreaming;
 
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoFileConvenienceHelper;
@@ -43,6 +44,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.Math.lcm;
 
 public class FlatManifestWriterImpl implements ManifestWriter {
 
@@ -119,32 +121,34 @@ public class FlatManifestWriterImpl implements ManifestWriter {
             videoStreamIndex.appendChild(c);
         }
 
-        Element audioStreamIndex = new Element("StreamIndex");
-        audioStreamIndex.addAttribute(new Attribute("Type", "audio"));
-        audioStreamIndex.addAttribute(new Attribute("Chunks", Integer.toString(audioFragmentsDurations.length)));
-        audioStreamIndex.addAttribute(new Attribute("Url", "audio/{bitrate}/{start time}"));
-        audioStreamIndex.addAttribute(new Attribute("QualityLevels", Integer.toString(audioQualities.size())));
+        if (audioFragmentsDurations != null) {
+            Element audioStreamIndex = new Element("StreamIndex");
+            audioStreamIndex.addAttribute(new Attribute("Type", "audio"));
+            audioStreamIndex.addAttribute(new Attribute("Chunks", Integer.toString(audioFragmentsDurations.length)));
+            audioStreamIndex.addAttribute(new Attribute("Url", "audio/{bitrate}/{start time}"));
+            audioStreamIndex.addAttribute(new Attribute("QualityLevels", Integer.toString(audioQualities.size())));
+            smoothStreamingMedia.appendChild(audioStreamIndex);
 
-        for (int i = 0; i < audioQualities.size(); i++) {
-            AudioQuality aq = audioQualities.get(i);
-            Element qualityLevel = new Element("QualityLevel");
-            qualityLevel.addAttribute(new Attribute("Index", Integer.toString(i)));
-            qualityLevel.addAttribute(new Attribute("Bitrate", Long.toString(aq.bitrate)));
-            qualityLevel.addAttribute(new Attribute("AudioTag", Integer.toString(aq.audioTag)));
-            qualityLevel.addAttribute(new Attribute("SamplingRate", Long.toString(aq.samplingRate)));
-            qualityLevel.addAttribute(new Attribute("Channels", Integer.toString(aq.channels)));
-            qualityLevel.addAttribute(new Attribute("BitsPerSample", Integer.toString(aq.bitPerSample)));
-            qualityLevel.addAttribute(new Attribute("PacketSize", Integer.toString(aq.packetSize)));
-            qualityLevel.addAttribute(new Attribute("CodecPrivateData", aq.codecPrivateData));
-            audioStreamIndex.appendChild(qualityLevel);
+            for (int i = 0; i < audioQualities.size(); i++) {
+                AudioQuality aq = audioQualities.get(i);
+                Element qualityLevel = new Element("QualityLevel");
+                qualityLevel.addAttribute(new Attribute("Index", Integer.toString(i)));
+                qualityLevel.addAttribute(new Attribute("Bitrate", Long.toString(aq.bitrate)));
+                qualityLevel.addAttribute(new Attribute("AudioTag", Integer.toString(aq.audioTag)));
+                qualityLevel.addAttribute(new Attribute("SamplingRate", Long.toString(aq.samplingRate)));
+                qualityLevel.addAttribute(new Attribute("Channels", Integer.toString(aq.channels)));
+                qualityLevel.addAttribute(new Attribute("BitsPerSample", Integer.toString(aq.bitPerSample)));
+                qualityLevel.addAttribute(new Attribute("PacketSize", Integer.toString(aq.packetSize)));
+                qualityLevel.addAttribute(new Attribute("CodecPrivateData", aq.codecPrivateData));
+                audioStreamIndex.appendChild(qualityLevel);
+            }
+            for (int i = 0; i < audioFragmentsDurations.length; i++) {
+                Element c = new Element("c");
+                c.addAttribute(new Attribute("n", Integer.toString(i)));
+                c.addAttribute(new Attribute("d", Long.toString(audioFragmentsDurations[i])));
+                audioStreamIndex.appendChild(c);
+            }
         }
-        for (int i = 0; i < audioFragmentsDurations.length; i++) {
-            Element c = new Element("c");
-            c.addAttribute(new Attribute("n", Integer.toString(i)));
-            c.addAttribute(new Attribute("d", Long.toString(audioFragmentsDurations[i])));
-            audioStreamIndex.appendChild(c);
-        }
-
         return new Document(smoothStreamingMedia).toXML();
 
     }
@@ -206,12 +210,19 @@ public class FlatManifestWriterImpl implements ManifestWriter {
         return l;
     }
 
-    private long[] checkFragmentsAlign(long[] referenceTimes, long[] checkTime) throws IOException {
+    private long[] checkFragmentsAlign(long[] referenceTimes, long[] checkTimes) throws IOException {
+
         if (referenceTimes == null || referenceTimes.length == 0) {
-            return checkTime;
-        } else if (!Arrays.equals(checkTime, referenceTimes)) {
+            return checkTimes;
+        }
+        long[] referenceTimesMinusLast = new long[referenceTimes.length - 1];
+        System.arraycopy(referenceTimes, 0, referenceTimesMinusLast, 0, referenceTimes.length - 1);
+        long[] checkTimesMinusLast = new long[checkTimes.length - 1];
+        System.arraycopy(checkTimes, 0, checkTimesMinusLast, 0, checkTimes.length - 1);
+
+        if (!Arrays.equals(checkTimesMinusLast, referenceTimesMinusLast)) {
             System.err.print("Reference     :  [");
-            for (long l : checkTime) {
+            for (long l : checkTimes) {
                 System.err.print(l + ",");
             }
             System.err.println("]");
@@ -226,7 +237,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
 
 
         } else {
-            return checkTime;
+            return checkTimes;
         }
     }
 
@@ -267,20 +278,28 @@ public class FlatManifestWriterImpl implements ManifestWriter {
      * @return the duration of each fragment in track timescale
      */
     public long[] calculateFragmentDurations(Track track, Movie movie) {
-        int[] startSamples = intersectionFinder.sampleNumbers(track, movie);
+        long[] startSamples = intersectionFinder.sampleNumbers(track, movie);
         long[] durations = new long[startSamples.length];
         int currentFragment = -1;
-        int currentSample = 0;
+        int currentSample = 1; // sync samples start with 1 !
+
+        long timeScale = 1;
+        for (Track track1 : movie.getTracks()) {
+            if (track1.getTrackMetaData().getTimescale() != track.getTrackMetaData().getTimescale()) {
+                timeScale = lcm(timeScale, track1.getTrackMetaData().getTimescale());
+            }
+        }
+
 
         for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
-            for (int max = currentSample + l2i(entry.getCount()); currentSample < max; currentSample++) {
+            for (int max = currentSample + l2i(entry.getCount()); currentSample <= max; currentSample++) {
                 // in this loop we go through the entry.getCount() samples starting from current sample.
                 // the next entry.getCount() samples have the same decoding time.
                 if (currentFragment != startSamples.length - 1 && currentSample == startSamples[currentFragment + 1]) {
                     // we are not in the last fragment && the current sample is the start sample of the next fragment
                     currentFragment++;
                 }
-                durations[currentFragment] += entry.getDelta();
+                durations[currentFragment] += entry.getDelta() * timeScale;
             }
         }
         return durations;
