@@ -16,8 +16,8 @@ public class SyncSampleIntersectFinderImplTest {
     @Test
     public void testFindSameFrameRate() throws IOException {
         Movie m = InTestMovieCreator.createMovieOnlyVideo(
-                "/scene_cut_on/FBW_fixedres_B_640x360_1200.mp4",
-                "/scene_cut_on/FBW_fixedres_B_640x360_2400.mp4"
+                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_150.mp4",
+                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_200.mp4"
         );
 
         SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl();
@@ -56,11 +56,11 @@ public class SyncSampleIntersectFinderImplTest {
                 "/working_now/FBW_fixedres_B_640x360_2400.mp4"
         );    */
         Movie m = InTestMovieCreator.createMovieOnlyVideo(
-                "/scene_cut_on/FBW_fixedres_B_640x360_200.mp4",
-                "/scene_cut_on/FBW_fixedres_B_640x360_400.mp4",
-                "/scene_cut_on/FBW_fixedres_B_640x360_800.mp4",
-                "/scene_cut_on/FBW_fixedres_B_640x360_1200.mp4",
-                "/scene_cut_on/FBW_fixedres_B_640x360_2400.mp4"
+                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4",
+                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_100.mp4",
+                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_120.mp4",
+                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_150.mp4",
+                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_200.mp4"
         );
         SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl();
         long[] fragmentStartSamplesRef = null;
