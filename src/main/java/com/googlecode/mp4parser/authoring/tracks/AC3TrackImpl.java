@@ -20,6 +20,7 @@ public class AC3TrackImpl extends AbstractTrack {
 
     int samplerate;
     int bitrate;
+    int channelCount;
 
     int fscod;
     int bsid;
@@ -47,7 +48,7 @@ public class AC3TrackImpl extends AbstractTrack {
 
         sampleDescriptionBox = new SampleDescriptionBox();
         AudioSampleEntry audioSampleEntry = new AudioSampleEntry("ac-3");
-        audioSampleEntry.setChannelCount(2);
+        audioSampleEntry.setChannelCount(channelCount);
         audioSampleEntry.setSampleRate(samplerate);
         audioSampleEntry.setDataReferenceIndex(1);
         audioSampleEntry.setSampleSize(16);
@@ -185,8 +186,46 @@ public class AC3TrackImpl extends AbstractTrack {
             brb.readBits(2);
         }
 
+        switch (acmod) {
+            case 0:
+                channelCount = 2;
+                break;
+
+            case 1:
+                channelCount = 1;
+                break;
+
+            case 2:
+                channelCount = 2;
+                break;
+
+            case 3:
+                channelCount = 3;
+                break;
+
+            case 4:
+                channelCount = 3;
+                break;
+
+            case 5:
+                channelCount = 4;
+                break;
+
+            case 6:
+                channelCount = 4;
+                break;
+
+            case 7:
+                channelCount = 5;
+                break;
+
+        }
+
         lfeon = brb.readBits(1);
 
+        if (lfeon == 1) {
+            channelCount++;
+        }
         return true;
     }
 
