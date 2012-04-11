@@ -35,15 +35,15 @@ public class IsmvBuilder extends FragmentedMp4Builder {
 
     }
 
-    @Override
-    public IsoFile build(Movie movie) throws IOException {
+    public Movie correctTimescale(Movie movie) {
         Movie nuMovie = new Movie();
         movie.setMovieMetaData(movie.getMovieMetaData());
         for (Track track : movie.getTracks()) {
             nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, ChangeTimeScaleTrack.getGoodScaleFactor(track, movie, timeScale)));
         }
-        return super.build(nuMovie);
+        return nuMovie;
     }
+
 
 
 }

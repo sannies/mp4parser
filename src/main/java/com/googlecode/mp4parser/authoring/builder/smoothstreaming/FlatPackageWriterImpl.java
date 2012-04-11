@@ -46,11 +46,16 @@ public class FlatPackageWriterImpl implements PackageWriter {
     public void write(Movie qualities) throws IOException {
         IsmvBuilder ismvBuilder = new IsmvBuilder();
         ManifestWriter manifestWriter = new FlatManifestWriterImpl();
-
         ismvBuilder.setIntersectionFinder(intersectionFinder);
+
+        qualities = ismvBuilder.correctTimescale(qualities);
 
 
         IsoFile isoFile = ismvBuilder.build(qualities);
+        FileOutputStream allQualis = new FileOutputStream("all-qualities.mp4");
+        isoFile.getBox(allQualis.getChannel());
+        allQualis.close();
+
         for (Track track : qualities.getTracks()) {
             String bitrate = Long.toString(manifestWriter.getBitrate(track));
             long trackId = track.getTrackMetaData().getTrackId();
@@ -67,6 +72,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
             }
             File bitrateOutputDir = new File(mediaOutDir, bitrate);
             bitrateOutputDir.mkdirs();
+            System.out.println("Created : " + bitrateOutputDir.getAbsolutePath());
 
             long[] fragmentTimes = manifestWriter.calculateFragmentDurations(track, qualities);
             long startTime = 0;
