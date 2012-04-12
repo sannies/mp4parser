@@ -196,7 +196,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
             }
 
             public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-                final List<ByteBuffer> samples = ByteBufferHelper.mergeAdjacentBuffers(getSamples(startSample, endSample, track, i));
+                List<ByteBuffer> bbs = getSamples(startSample, endSample, track, i);
+                final List<ByteBuffer> samples = ByteBufferHelper.mergeAdjacentBuffers(bbs);
                 ByteBuffer header = ByteBuffer.allocate(8);
                 IsoTypeWriter.writeUInt32(header, l2i(getSize()));
                 header.put(IsoFile.fourCCtoBytes(getType()));
@@ -259,8 +260,17 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
 
+    /**
+     *
+     * @param startSample first sample in list starting with 1. 1 is the first sample.
+     * @param endSample
+     * @param track
+     * @param sequenceNumber
+     * @return
+     */
     protected List<ByteBuffer> getSamples(long startSample, long endSample, Track track, int sequenceNumber) {
-        return track.getSamples().subList(l2i(startSample), l2i(endSample));
+        // since startSample and endSample are one-based substract 1 before addressing list elements
+        return track.getSamples().subList(l2i(startSample) - 1, l2i(endSample) - 1);
     }
 
 
