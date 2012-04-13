@@ -108,12 +108,14 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 public int compare(Track o1, Track o2) {
                     long[] startSamples1 = intersectionFinder.sampleNumbers(o1, movie);
                     long startSample1 = startSamples1[j];
-                    long endSample1 = j + 1 < startSamples1.length ? startSamples1[j + 1] : o1.getSamples().size();
+                    // one based sample numbers - the first sample is 1
+                    long endSample1 = j + 1 < startSamples1.length ? startSamples1[j + 1] : o1.getSamples().size() + 1;
                     long[] startSamples2 = intersectionFinder.sampleNumbers(o2, movie);
                     long startSample2 = startSamples2[j];
-                    long endSample2 = j + 1 < startSamples2.length ? startSamples2[j + 1] : o2.getSamples().size();
-                    List<ByteBuffer> samples1 = o1.getSamples().subList(l2i(startSample1), l2i(endSample1));
-                    List<ByteBuffer> samples2 = o2.getSamples().subList(l2i(startSample2), l2i(endSample2));
+                    // one based sample numbers - the first sample is 1
+                    long endSample2 = j + 1 < startSamples2.length ? startSamples2[j + 1] : o2.getSamples().size() + 1;
+                    List<ByteBuffer> samples1 = o1.getSamples().subList(l2i(startSample1) - 1, l2i(endSample1) - 1);
+                    List<ByteBuffer> samples2 = o2.getSamples().subList(l2i(startSample2) - 1, l2i(endSample2) - 1);
                     int size1 = 0;
                     for (ByteBuffer byteBuffer : samples1) {
                         size1 += byteBuffer.limit();
@@ -132,8 +134,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
                     if (i < startSamples.length) {
                         long startSample = startSamples[i];
-
-                        long endSample = i + 1 < startSamples.length ? startSamples[i + 1] : track.getSamples().size();
+                        // one based sample numbers - the first sample is 1
+                        long endSample = i + 1 < startSamples.length ? startSamples[i + 1] : track.getSamples().size() + 1;
 
                         if (startSample == endSample) {
                             // empty fragment
@@ -261,8 +263,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
 
     /**
-     *
-     * @param startSample first sample in list starting with 1. 1 is the first sample.
+     * @param startSample    first sample in list starting with 1. 1 is the first sample.
      * @param endSample
      * @param track
      * @param sequenceNumber
@@ -294,7 +295,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         long curEntryLeft = timeQueue.peek().getCount();
         long durationEntriesLeft = 0;
         while (left > 0 && timeQueue.size() > 0) {
-            if (curEntryLeft > left) {
+            if (curEntryLeft >= left) {
                 curEntryLeft -= left;
                 left = 0;
                 durationEntriesLeft = curEntryLeft;
@@ -304,7 +305,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 curEntryLeft = timeQueue.peek().getCount();
             }
         }
-        
+
 
         Queue<CompositionTimeToSample.Entry> compositionTimeQueue =
                 track.getCompositionTimeEntries() != null && track.getCompositionTimeEntries().size() > 0 ?
