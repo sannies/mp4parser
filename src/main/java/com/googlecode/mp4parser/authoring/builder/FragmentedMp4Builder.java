@@ -334,7 +334,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 }
                 if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
                     // we have to mark non-sync samples!
-                    if (Arrays.binarySearch(track.getSyncSamples(), startSample + i + 1) >= 0) {
+                    if (Arrays.binarySearch(track.getSyncSamples(), startSample + i) >= 0) {
                         sflags.setSampleIsDifferenceSample(false);
                         sflags.setSampleDependsOn(2);
                     } else {
