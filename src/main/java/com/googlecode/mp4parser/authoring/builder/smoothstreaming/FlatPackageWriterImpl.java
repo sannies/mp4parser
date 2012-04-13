@@ -34,6 +34,7 @@ import java.util.Iterator;
 
 public class FlatPackageWriterImpl implements PackageWriter {
     private File outputDirectory;
+    private boolean writeSingleFile;
 
     public void setOutputDirectory(File outputDirectory) {
         assert outputDirectory.isDirectory();
@@ -41,8 +42,19 @@ public class FlatPackageWriterImpl implements PackageWriter {
 
     }
 
+    public void setWriteSingleFile(boolean writeSingleFile) {
+        this.writeSingleFile = writeSingleFile;
+    }
+
     FragmentIntersectionFinder intersectionFinder = new SyncSampleIntersectFinderImpl();
 
+    /**
+     * Writes the movie given as <code>qualities</code> flattened into the
+     * <code>outputDirectory</code>.
+     *
+     * @param qualities
+     * @throws IOException
+     */
     public void write(Movie qualities) throws IOException {
         IsmvBuilder ismvBuilder = new IsmvBuilder();
         ManifestWriter manifestWriter = new FlatManifestWriterImpl();
@@ -52,9 +64,13 @@ public class FlatPackageWriterImpl implements PackageWriter {
 
 
         IsoFile isoFile = ismvBuilder.build(qualities);
-        FileOutputStream allQualis = new FileOutputStream("all-qualities.mp4");
-        isoFile.getBox(allQualis.getChannel());
-        allQualis.close();
+        if (writeSingleFile) {
+            File allQualities = new File(outputDirectory, "all-qualities.mp4");
+            //allQualities.createNewFile();
+            FileOutputStream allQualis = new FileOutputStream(allQualities);
+            isoFile.getBox(allQualis.getChannel());
+            allQualis.close();
+        }
 
         for (Track track : qualities.getTracks()) {
             String bitrate = Long.toString(manifestWriter.getBitrate(track));

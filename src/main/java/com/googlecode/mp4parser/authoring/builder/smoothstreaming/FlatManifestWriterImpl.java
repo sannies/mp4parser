@@ -177,7 +177,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
             bitrate += sample.limit();
         }
         bitrate *= 8; // from bytes to bits
-        bitrate /= getDuration(track) / track.getTrackMetaData().getTimescale(); // per second
+        bitrate /= ((double)getDuration(track)) / track.getTrackMetaData().getTimescale(); // per second
         return bitrate;
     }
 
