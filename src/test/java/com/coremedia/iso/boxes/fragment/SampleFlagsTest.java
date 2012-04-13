@@ -35,7 +35,7 @@ public class SampleFlagsTest {
         ByteBuffer bb = ByteBuffer.allocate(4);
         sf.getContent(bb);
         bb.rewind();
-        System.err.println(BitWriterBufferTest.toString(bb));
+        //System.err.println(BitWriterBufferTest.toString(bb));
         SampleFlags sf2 = new SampleFlags(bb);
 
 
