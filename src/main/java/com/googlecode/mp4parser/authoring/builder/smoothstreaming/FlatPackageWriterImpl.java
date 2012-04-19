@@ -22,8 +22,10 @@ import com.coremedia.iso.boxes.VideoMediaHeaderBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
+import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
+import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
 import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
+import com.googlecode.mp4parser.authoring.tracks.ChangeTimeScaleTrack;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,8 +35,20 @@ import java.nio.channels.FileChannel;
 import java.util.Iterator;
 
 public class FlatPackageWriterImpl implements PackageWriter {
+
     private File outputDirectory;
     private boolean writeSingleFile;
+    private Mp4Builder ismvBuilder;
+
+    long timeScale = 10000000;
+
+
+    {
+        ismvBuilder = new FragmentedMp4Builder();
+        ((FragmentedMp4Builder) ismvBuilder).setIntersectionFinder(new SyncSampleIntersectFinderImpl());
+
+    }
+
 
     public void setOutputDirectory(File outputDirectory) {
         assert outputDirectory.isDirectory();
@@ -46,7 +60,9 @@ public class FlatPackageWriterImpl implements PackageWriter {
         this.writeSingleFile = writeSingleFile;
     }
 
-    FragmentIntersectionFinder intersectionFinder = new SyncSampleIntersectFinderImpl();
+    public void setIsmvBuilder(Mp4Builder ismvBuilder) {
+        this.ismvBuilder = ismvBuilder;
+    }
 
     /**
      * Writes the movie given as <code>qualities</code> flattened into the
@@ -56,12 +72,8 @@ public class FlatPackageWriterImpl implements PackageWriter {
      * @throws IOException
      */
     public void write(Movie qualities) throws IOException {
-        IsmvBuilder ismvBuilder = new IsmvBuilder();
         ManifestWriter manifestWriter = new FlatManifestWriterImpl();
-        ismvBuilder.setIntersectionFinder(intersectionFinder);
-
-        qualities = ismvBuilder.correctTimescale(qualities);
-
+        qualities = correctTimescale(qualities);
 
         IsoFile isoFile = ismvBuilder.build(qualities);
         if (writeSingleFile) {
@@ -71,6 +83,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
             isoFile.getBox(allQualis.getChannel());
             allQualis.close();
         }
+
 
         for (Track track : qualities.getTracks()) {
             String bitrate = Long.toString(manifestWriter.getBitrate(track));
@@ -117,4 +130,15 @@ public class FlatPackageWriterImpl implements PackageWriter {
         fw.close();
 
     }
+
+
+    public Movie correctTimescale(Movie movie) {
+        Movie nuMovie = new Movie();
+        movie.setMovieMetaData(movie.getMovieMetaData());
+        for (Track track : movie.getTracks()) {
+            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, ChangeTimeScaleTrack.getGoodScaleFactor(track, movie, timeScale)));
+        }
+        return nuMovie;
+    }
+
 }
