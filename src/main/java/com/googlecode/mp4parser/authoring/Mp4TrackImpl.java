@@ -170,4 +170,10 @@ public class Mp4TrackImpl extends AbstractTrack {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return "Mp4TrackImpl{" +
+                "handler='" + handler + '\'' +
+                '}';
+    }
 }

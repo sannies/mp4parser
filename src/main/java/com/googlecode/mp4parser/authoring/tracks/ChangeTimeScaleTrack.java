@@ -52,7 +52,10 @@ public class ChangeTimeScaleTrack implements Track {
     public static long getGoodScaleFactor(Track track, Movie movie, long targetTimeScale) {
         long lcm = 1;
         for (Track t : movie.getTracks()) {
-            lcm = lcm(lcm, t.getTrackMetaData().getTimescale());
+            // only adjust to tracks of the same type.
+            if (track.getHandler().equals(t.getHandler())) {
+                lcm = lcm(lcm, t.getTrackMetaData().getTimescale());
+            }
         }
         return targetTimeScale / track.getTrackMetaData().getTimescale() / (lcm / track.getTrackMetaData().getTimescale()) * (lcm / track.getTrackMetaData().getTimescale());
     }
@@ -154,4 +157,10 @@ public class ChangeTimeScaleTrack implements Track {
         return source.getSubsampleInformationBox();
     }
 
+    @Override
+    public String toString() {
+        return "ChangeTimeScaleTrack{" +
+                "source=" + source +
+                '}';
+    }
 }
