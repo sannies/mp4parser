@@ -39,6 +39,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
     private File outputDirectory;
     private boolean writeSingleFile;
     private Mp4Builder ismvBuilder;
+    ManifestWriter manifestWriter;
 
     long timeScale = 10000000;
 
@@ -46,7 +47,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
     {
         ismvBuilder = new FragmentedMp4Builder();
         ((FragmentedMp4Builder) ismvBuilder).setIntersectionFinder(new SyncSampleIntersectFinderImpl());
-
+        manifestWriter = new FlatManifestWriterImpl();
     }
 
 
@@ -64,6 +65,10 @@ public class FlatPackageWriterImpl implements PackageWriter {
         this.ismvBuilder = ismvBuilder;
     }
 
+    public void setManifestWriter(ManifestWriter manifestWriter) {
+        this.manifestWriter = manifestWriter;
+    }
+
     /**
      * Writes the movie given as <code>qualities</code> flattened into the
      * <code>outputDirectory</code>.
@@ -72,7 +77,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
      * @throws IOException
      */
     public void write(Movie qualities) throws IOException {
-        ManifestWriter manifestWriter = new FlatManifestWriterImpl();
+
         qualities = correctTimescale(qualities);
 
         IsoFile isoFile = ismvBuilder.build(qualities);

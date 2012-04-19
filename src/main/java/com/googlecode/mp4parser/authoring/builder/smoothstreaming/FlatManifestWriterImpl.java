@@ -58,6 +58,15 @@ public class FlatManifestWriterImpl implements ManifestWriter {
         this.intersectionFinder = intersectionFinder;
     }
 
+    /**
+     * Overwrite this method in subclasses to add your specialities.
+     * @param manifest the original manifest
+     * @return your customized version of the manifest
+     */
+    protected Document customizeManifest(Document manifest) {
+        return manifest;
+    }
+
     public String getManifest(Movie movie) throws IOException {
 
         long duration = 0;
@@ -149,7 +158,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
                 audioStreamIndex.appendChild(c);
             }
         }
-        return new Document(smoothStreamingMedia).toXML();
+        return customizeManifest(new Document(smoothStreamingMedia)).toXML();
 
     }
 
