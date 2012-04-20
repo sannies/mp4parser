@@ -242,7 +242,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
                 System.err.print(l + ",");
             }
             System.err.println("]");
-            throw new IOException("Track does not have the same video fragment borders as its predecessor.");
+            throw new IOException("Track does not have the same fragment borders as its predecessor.");
 
 
         } else {

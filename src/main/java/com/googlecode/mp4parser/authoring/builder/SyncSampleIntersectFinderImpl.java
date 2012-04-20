@@ -16,6 +16,7 @@
 package com.googlecode.mp4parser.authoring.builder;
 
 import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
@@ -57,6 +58,39 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             return syncSamples;
         } else if ("vide".equals(track.getHandler())) {
             throw new RuntimeException("Video Tracks need sync samples. Only tracks other than video may have no sync samples.");
+        } else if ("soun".equals(track.getHandler())) {
+            for (Track candidate : movie.getTracks()) {
+                if (candidate.getSyncSamples() != null && candidate.getSyncSamples().length > 0) {
+                    long[] refSyncSamples = sampleNumbers(candidate, movie);
+                    int refSampleCount = candidate.getSamples().size();
+
+                    long[] syncSamples = new long[refSyncSamples.length];
+                    long minSampleRate = 192000;
+                    for (Track testTrack : movie.getTracks()) {
+                        if ("soun".equals(testTrack.getHandler())) {
+                            AudioSampleEntry ase = (AudioSampleEntry)testTrack.getSampleDescriptionBox().getSampleEntry();
+                            if (ase.getSampleRate() < minSampleRate) {
+                                minSampleRate = ase.getSampleRate();
+                                long sc = testTrack.getSamples().size();
+                                double stretch = (double) sc / refSampleCount;
+
+                                for (int i = 0; i < syncSamples.length; i++) {
+                                    int start = (int) Math.ceil(stretch * (refSyncSamples[i] - 1)) + 1;
+                                    syncSamples[i] = start;
+                                    // The Stretch makes sure that there are as much audio and video chunks!
+                                }
+                            }
+                        }
+                    }
+                    AudioSampleEntry ase = (AudioSampleEntry)track.getSampleDescriptionBox().getSampleEntry();
+                    double factor = (double)ase.getSampleRate() / (double)minSampleRate;
+                    for (int i = 1; i < syncSamples.length; i++) {
+                        syncSamples[i] = (int)(1 + (syncSamples[i] - 1) * factor);
+                    }
+                    return syncSamples;
+                }
+                throw new RuntimeException("There was absolutely no Track with sync samples. I can't work with that!");
+            }
         } else {
             // Ok, my track has no sync samples - let's find one with sync samples.
             for (Track candidate : movie.getTracks()) {
@@ -79,6 +113,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             throw new RuntimeException("There was absolutely no Track with sync samples. I can't work with that!");
         }
 
+        throw new RuntimeException("There was absolutely no Track with sync samples. I can't work with that!");
 
     }
 
