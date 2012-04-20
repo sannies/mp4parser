@@ -20,6 +20,8 @@ Extracted from commons-codec
  */
 package com.coremedia.iso;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * Converts hexadecimal Strings.
  */
@@ -35,5 +37,14 @@ public class Hex {
             out[j++] = DIGITS[0x0F & data[i]];
         }
         return new String(out);
+    }
+
+    public static byte[] decodeHex(String hexString) {
+        ByteArrayOutputStream bas = new ByteArrayOutputStream();
+        for (int i = 0; i < hexString.length(); i += 2) {
+            int b = Integer.parseInt(hexString.substring(i, i + 2), 16);
+            bas.write(b);
+        }
+        return bas.toByteArray();
     }
 }
