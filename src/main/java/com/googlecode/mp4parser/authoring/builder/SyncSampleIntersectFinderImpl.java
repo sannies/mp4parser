@@ -24,76 +24,78 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.Math.lcm;
 
 /**
- * This <code>FragmentIntersectionFinder</code> cuts the input movie exactly before
- * the sync samples. Each fragment starts with a sync sample.
+ * This <code>FragmentIntersectionFinder</code> cuts the input movie video tracks in
+ * fragments of the same length exactly before the sync samples. Audio tracks are cut
+ * into pieces of similar length.
  */
 public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder {
+
+    private static Logger LOG = Logger.getLogger(SyncSampleIntersectFinderImpl.class.getName());
+
+    /**
+     * Gets an array of sample numbers that are meant to be the first sample of each
+     * chunk or fragment.
+     *
+     * @param track concerned track
+     * @param movie the context of the track
+     * @return an array containing the ordinal of each fragment's first sample
+     */
     public long[] sampleNumbers(Track track, Movie movie) {
-
-
-        if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
-            List<long[]> times = new LinkedList<long[]>();
-            for (Track currentTrack : movie.getTracks()) {
-                if (currentTrack.getHandler().equals(track.getHandler())) {
-                    long[] currentTrackSyncSamples = currentTrack.getSyncSamples();
-                    if (currentTrackSyncSamples != null && currentTrackSyncSamples.length > 0) {
-                        final long[] currentTrackTimes = getTimes(movie, currentTrack);
-                        times.add(currentTrackTimes);
-                    }
-                }
+        if ("vide".equals(track.getHandler())) {
+            if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
+                List<long[]> times = getSyncSamplesTimestamps(movie, track);
+                return getCommonIndices(track.getSyncSamples(), getTimes(movie, track), times.toArray(new long[times.size()][]));
+            } else {
+                throw new RuntimeException("Video Tracks need sync samples. Only tracks other than video may have no sync samples.");
             }
-
-            long[] syncSamples = getCommonIndices(track.getSyncSamples(), getTimes(movie, track), times.toArray(new long[times.size()][]));
-            if (syncSamples.length < (track.getSyncSamples().length * 0.3)) {
-                throw new RuntimeException("There are less than 25% of common sync samples in the given track." + track);
-            } else if (syncSamples.length < (track.getSyncSamples().length * 0.5)) {
-                System.err.println("There are less than 50% of common sync samples in the given track. This is implausible but I'm ok to continue." + track);
-            } else if (syncSamples.length < track.getSyncSamples().length) {
-                System.err.println("Common SyncSample positions vs. this tracks SyncSample positions: " + syncSamples.length + " vs. " + track.getSyncSamples().length + " Track " + track);
-            }
-            return syncSamples;
-        } else if ("vide".equals(track.getHandler())) {
-            throw new RuntimeException("Video Tracks need sync samples. Only tracks other than video may have no sync samples.");
         } else if ("soun".equals(track.getHandler())) {
+            Track referenceTrack = null;
             for (Track candidate : movie.getTracks()) {
                 if (candidate.getSyncSamples() != null && candidate.getSyncSamples().length > 0) {
-                    long[] refSyncSamples = sampleNumbers(candidate, movie);
-                    int refSampleCount = candidate.getSamples().size();
+                    referenceTrack = candidate;
+                }
+            }
+            if (referenceTrack != null) {
 
-                    long[] syncSamples = new long[refSyncSamples.length];
-                    long minSampleRate = 192000;
-                    for (Track testTrack : movie.getTracks()) {
-                        if ("soun".equals(testTrack.getHandler())) {
-                            AudioSampleEntry ase = (AudioSampleEntry)testTrack.getSampleDescriptionBox().getSampleEntry();
-                            if (ase.getSampleRate() < minSampleRate) {
-                                minSampleRate = ase.getSampleRate();
-                                long sc = testTrack.getSamples().size();
-                                double stretch = (double) sc / refSampleCount;
+                // Gets the reference track's fra
+                long[] refSyncSamples = sampleNumbers(referenceTrack, movie);
 
-                                for (int i = 0; i < syncSamples.length; i++) {
-                                    int start = (int) Math.ceil(stretch * (refSyncSamples[i] - 1)) + 1;
-                                    syncSamples[i] = start;
-                                    // The Stretch makes sure that there are as much audio and video chunks!
-                                }
+                int refSampleCount = referenceTrack.getSamples().size();
+
+                long[] syncSamples = new long[refSyncSamples.length];
+                long minSampleRate = 192000;
+                for (Track testTrack : movie.getTracks()) {
+                    if ("soun".equals(testTrack.getHandler())) {
+                        AudioSampleEntry ase = (AudioSampleEntry) testTrack.getSampleDescriptionBox().getSampleEntry();
+                        if (ase.getSampleRate() < minSampleRate) {
+                            minSampleRate = ase.getSampleRate();
+                            long sc = testTrack.getSamples().size();
+                            double stretch = (double) sc / refSampleCount;
+
+                            for (int i = 0; i < syncSamples.length; i++) {
+                                int start = (int) Math.ceil(stretch * (refSyncSamples[i] - 1)) + 1;
+                                syncSamples[i] = start;
+                                // The Stretch makes sure that there are as much audio and video chunks!
                             }
                         }
                     }
-                    AudioSampleEntry ase = (AudioSampleEntry)track.getSampleDescriptionBox().getSampleEntry();
-                    double factor = (double)ase.getSampleRate() / (double)minSampleRate;
-                    if (factor != Math.rint(factor)) { // Not an integer
-                        throw new RuntimeException("Sample rates must be a multiple of the lowest sample rate to create a correct file!");
-                    }
-                    for (int i = 1; i < syncSamples.length; i++) {
-                        syncSamples[i] = (int)(1 + (syncSamples[i] - 1) * factor);
-                    }
-                    return syncSamples;
                 }
-                throw new RuntimeException("There was absolutely no Track with sync samples. I can't work with that!");
+                AudioSampleEntry ase = (AudioSampleEntry) track.getSampleDescriptionBox().getSampleEntry();
+                double factor = (double) ase.getSampleRate() / (double) minSampleRate;
+                if (factor != Math.rint(factor)) { // Not an integer
+                    throw new RuntimeException("Sample rates must be a multiple of the lowest sample rate to create a correct file!");
+                }
+                for (int i = 1; i < syncSamples.length; i++) {
+                    syncSamples[i] = (int) (1 + (syncSamples[i] - 1) * factor);
+                }
+                return syncSamples;
             }
+            throw new RuntimeException("There was absolutely no Track with sync samples. I can't work with that!");
         } else {
             // Ok, my track has no sync samples - let's find one with sync samples.
             for (Track candidate : movie.getTracks()) {
@@ -116,8 +118,28 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             throw new RuntimeException("There was absolutely no Track with sync samples. I can't work with that!");
         }
 
-        throw new RuntimeException("There was absolutely no Track with sync samples. I can't work with that!");
 
+    }
+
+    /**
+     * Calculates the timestamp of all tracks' sync samples.
+     *
+     * @param movie
+     * @param track
+     * @return
+     */
+    public static List<long[]> getSyncSamplesTimestamps(Movie movie, Track track) {
+        List<long[]> times = new LinkedList<long[]>();
+        for (Track currentTrack : movie.getTracks()) {
+            if (currentTrack.getHandler().equals(track.getHandler())) {
+                long[] currentTrackSyncSamples = currentTrack.getSyncSamples();
+                if (currentTrackSyncSamples != null && currentTrackSyncSamples.length > 0) {
+                    final long[] currentTrackTimes = getTimes(movie, currentTrack);
+                    times.add(currentTrackTimes);
+                }
+            }
+        }
+        return times;
     }
 
     public static long[] getCommonIndices(long[] syncSamples, long[] syncSampleTimes, long[]... otherTracksTimes) {
@@ -134,6 +156,14 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         long[] nuSyncSampleArray = new long[nuSyncSamples.size()];
         for (int i = 0; i < nuSyncSampleArray.length; i++) {
             nuSyncSampleArray[i] = nuSyncSamples.get(i);
+        }
+        if (nuSyncSampleArray.length < (syncSamples.length * 0.3)) {
+            LOG.warning("There are less than 25% of common sync samples in the given track.");
+            throw new RuntimeException("There are less than 25% of common sync samples in the given track.");
+        } else if (nuSyncSampleArray.length < (syncSamples.length * 0.5)) {
+            LOG.fine("There are less than 50% of common sync samples in the given track. This is implausible but I'm ok to continue.");
+        } else if (nuSyncSampleArray.length < syncSamples.length) {
+            LOG.finest("Common SyncSample positions vs. this tracks SyncSample positions: " + nuSyncSampleArray.length + " vs. " + syncSamples.length);
         }
         return nuSyncSampleArray;
     }
