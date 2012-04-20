@@ -40,6 +40,16 @@ public class DecoderSpecificInfo extends BaseDescriptor {
         }
     }
 
+    public int serializedSize() {
+        return bytes.length;
+    }
+
+    public ByteBuffer serialize() {
+        ByteBuffer out = ByteBuffer.wrap(bytes);
+
+        return out;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();

@@ -59,6 +59,9 @@ public class AbstractDescriptorBox extends AbstractFullBox {
         return descriptor.toString();
     }
 
+    public void setData(ByteBuffer data) {
+        this.data = data;
+    }
 
     @Override
     public void _parseDetails(ByteBuffer content) {
@@ -77,4 +80,5 @@ public class AbstractDescriptorBox extends AbstractFullBox {
         }
 
     }
+
 }

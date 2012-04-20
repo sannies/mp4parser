@@ -15,6 +15,8 @@
  */
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
+import com.coremedia.iso.IsoTypeWriter;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -497,6 +499,36 @@ public class AudioSpecificConfig extends BaseDescriptor {
         }
     }
 
+    private int gaSpecificConfigSize() {
+        return 0;
+    }
+
+    public int serializedSize() {
+        int out = 4;
+        if (audioObjectType == 2) {
+            out += gaSpecificConfigSize();
+        } else {
+            throw new UnsupportedOperationException("can't serialize that yet");
+        }
+        return out;
+    }
+
+    public ByteBuffer serialize() {
+        ByteBuffer out = ByteBuffer.allocate(serializedSize());
+        IsoTypeWriter.writeUInt8(out, 5);
+        IsoTypeWriter.writeUInt8(out, serializedSize() - 2);
+        BitWriterBuffer bwb = new BitWriterBuffer(out);
+        bwb.writeBits(audioObjectType, 5);
+        bwb.writeBits(samplingFrequencyIndex, 4);
+        if (samplingFrequencyIndex == 0xf) {
+            throw new UnsupportedOperationException("can't serialize that yet");
+        }
+        bwb.writeBits(channelConfiguration, 4);
+
+        // Don't support any extensions, unusual GASpecificConfig other than the default or anything...
+
+        return out;
+    }
 
     private int getAudioObjectType(BitReaderBuffer in) throws IOException {
         int audioObjectType = in.readBits(5);
@@ -666,6 +698,22 @@ public class AudioSpecificConfig extends BaseDescriptor {
 
     public int getPsPresentFlag() {
         return psPresentFlag;
+    }
+
+    public void setAudioObjectType(int audioObjectType) {
+        this.audioObjectType = audioObjectType;
+    }
+
+    public void setSamplingFrequencyIndex(int samplingFrequencyIndex) {
+        this.samplingFrequencyIndex = samplingFrequencyIndex;
+    }
+
+    public void setSamplingFrequency(int samplingFrequency) {
+        this.samplingFrequency = samplingFrequency;
+    }
+
+    public void setChannelConfiguration(int channelConfiguration) {
+        this.channelConfiguration = channelConfiguration;
     }
 
     @Override

@@ -18,6 +18,7 @@ package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -104,6 +105,23 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
             }
         }
     }
+    public int serializedSize() {
+        return 15 + audioSpecificInfo.serializedSize();
+    }
+
+    public ByteBuffer serialize() {
+        ByteBuffer out = ByteBuffer.allocate(serializedSize());
+        IsoTypeWriter.writeUInt8(out, 4);
+        IsoTypeWriter.writeUInt8(out, serializedSize() - 2);
+        IsoTypeWriter.writeUInt8(out, objectTypeIndication);
+        int flags = (streamType << 2) | (upStream << 1) | 1;
+        IsoTypeWriter.writeUInt8(out, flags);
+        IsoTypeWriter.writeUInt24(out, bufferSizeDB);
+        IsoTypeWriter.writeUInt32(out, maxBitRate);
+        IsoTypeWriter.writeUInt32(out, avgBitRate);
+        out.put(audioSpecificInfo.serialize().array());
+        return out;
+    }
 
     public DecoderSpecificInfo getDecoderSpecificInfo() {
         return decoderSpecificInfo;
@@ -113,8 +131,60 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
         return audioSpecificInfo;
     }
 
+    public void setAudioSpecificInfo(AudioSpecificConfig audioSpecificInfo) {
+        this.audioSpecificInfo = audioSpecificInfo;
+    }
+
     public List<ProfileLevelIndicationDescriptor> getProfileLevelIndicationDescriptors() {
         return profileLevelIndicationDescriptors;
+    }
+
+    public int getObjectTypeIndication() {
+        return objectTypeIndication;
+    }
+
+    public void setObjectTypeIndication(int objectTypeIndication) {
+        this.objectTypeIndication = objectTypeIndication;
+    }
+
+    public int getStreamType() {
+        return streamType;
+    }
+
+    public void setStreamType(int streamType) {
+        this.streamType = streamType;
+    }
+
+    public int getUpStream() {
+        return upStream;
+    }
+
+    public void setUpStream(int upStream) {
+        this.upStream = upStream;
+    }
+
+    public int getBufferSizeDB() {
+        return bufferSizeDB;
+    }
+
+    public void setBufferSizeDB(int bufferSizeDB) {
+        this.bufferSizeDB = bufferSizeDB;
+    }
+
+    public long getMaxBitRate() {
+        return maxBitRate;
+    }
+
+    public void setMaxBitRate(long maxBitRate) {
+        this.maxBitRate = maxBitRate;
+    }
+
+    public long getAvgBitRate() {
+        return avgBitRate;
+    }
+
+    public void setAvgBitRate(long avgBitRate) {
+        this.avgBitRate = avgBitRate;
     }
 
     @Override

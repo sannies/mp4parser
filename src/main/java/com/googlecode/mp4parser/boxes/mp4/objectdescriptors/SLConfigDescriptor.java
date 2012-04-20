@@ -17,6 +17,7 @@
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
 import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -59,9 +60,29 @@ import java.nio.ByteBuffer;
 public class SLConfigDescriptor extends BaseDescriptor {
     int predefined;
 
+    public int getPredefined() {
+        return predefined;
+    }
+
+    public void setPredefined(int predefined) {
+        this.predefined = predefined;
+    }
+
     @Override
     public void parseDetail(ByteBuffer bb) throws IOException {
         predefined =  IsoTypeReader.readUInt8(bb);
+    }
+
+    public int serializedSize() {
+        return 3;
+    }
+
+    public ByteBuffer serialize() {
+        ByteBuffer out = ByteBuffer.allocate(3);
+        IsoTypeWriter.writeUInt8(out, 6);
+        IsoTypeWriter.writeUInt8(out, 1);
+        IsoTypeWriter.writeUInt8(out, predefined);
+        return out;
     }
 
     @Override

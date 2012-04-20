@@ -7,15 +7,13 @@ public class BitReaderBuffer {
     private ByteBuffer buffer;
     int initialPos;
     int position;
-    int readCount;
-    
+
     public BitReaderBuffer(ByteBuffer buffer) {
         this.buffer = buffer;
         initialPos = buffer.position();
     }
 
     public int readBits(int i) {
-        readCount += i;
         byte b = buffer.get(initialPos + position / 8);
         int v = b < 0 ? b + 256 : b;
         int left = 8 - position % 8;
@@ -34,8 +32,12 @@ public class BitReaderBuffer {
         return rc;
     }
 
+    public int getPosition() {
+        return position;
+    }
+
     public int byteSync() {
-        int left = 8 - readCount % 8;
+        int left = 8 - position % 8;
         if (left == 8) {
             left = 0;
         }

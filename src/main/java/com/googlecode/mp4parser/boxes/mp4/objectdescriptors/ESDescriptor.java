@@ -17,6 +17,7 @@
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
 import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -153,6 +154,53 @@ public class ESDescriptor extends BaseDescriptor {
             otherDescriptors.add(descriptor);
         }
     }
+    public int serializedSize() {
+        int out = 5;
+        if (streamDependenceFlag > 0) {
+            out += 2;
+        }
+        if (URLFlag > 0) {
+            out += 1 + URLLength;
+        }
+        if (oCRstreamFlag > 0) {
+            out += 2;
+        }
+
+        out += decoderConfigDescriptor.serializedSize();
+        out += slConfigDescriptor.serializedSize();
+
+        // Doesn't handle other descriptors yet
+
+        return out;
+    }
+
+    public ByteBuffer serialize() {
+        ByteBuffer out = ByteBuffer.allocate(serializedSize()); // Usually is around 30 bytes, so 200 should be enough...
+        IsoTypeWriter.writeUInt8(out, 3);
+        IsoTypeWriter.writeUInt8(out, serializedSize() - 2); // Not OK for longer sizes!
+        IsoTypeWriter.writeUInt16(out, esId);
+        int flags = (streamDependenceFlag << 7) | (URLFlag << 6) | (oCRstreamFlag << 5) | (streamPriority & 0x1f);
+        IsoTypeWriter.writeUInt8(out, flags);
+        if (streamDependenceFlag > 0) {
+            IsoTypeWriter.writeUInt16(out, dependsOnEsId);
+        }
+        if (URLFlag > 0) {
+            IsoTypeWriter.writeUInt8(out, URLLength);
+            IsoTypeWriter.writeUtf8String(out, URLString);
+        }
+        if (oCRstreamFlag > 0) {
+            IsoTypeWriter.writeUInt16(out, oCREsId);
+        }
+
+        ByteBuffer dec = decoderConfigDescriptor.serialize();
+        ByteBuffer sl = slConfigDescriptor.serialize();
+        out.put(dec.array());
+        out.put(sl.array());
+
+        // Doesn't handle other descriptors yet
+
+        return out;
+    }
 
 //  @Override
 //  public int getSize() {
@@ -169,8 +217,96 @@ public class ESDescriptor extends BaseDescriptor {
         return slConfigDescriptor;
     }
 
+    public void setDecoderConfigDescriptor(DecoderConfigDescriptor decoderConfigDescriptor) {
+        this.decoderConfigDescriptor = decoderConfigDescriptor;
+    }
+
+    public void setSlConfigDescriptor(SLConfigDescriptor slConfigDescriptor) {
+        this.slConfigDescriptor = slConfigDescriptor;
+    }
+
     public List<BaseDescriptor> getOtherDescriptors() {
         return otherDescriptors;
+    }
+
+    public int getoCREsId() {
+        return oCREsId;
+    }
+
+    public void setoCREsId(int oCREsId) {
+        this.oCREsId = oCREsId;
+    }
+
+    public int getEsId() {
+        return esId;
+    }
+
+    public void setEsId(int esId) {
+        this.esId = esId;
+    }
+
+    public int getStreamDependenceFlag() {
+        return streamDependenceFlag;
+    }
+
+    public void setStreamDependenceFlag(int streamDependenceFlag) {
+        this.streamDependenceFlag = streamDependenceFlag;
+    }
+
+    public int getURLFlag() {
+        return URLFlag;
+    }
+
+    public void setURLFlag(int URLFlag) {
+        this.URLFlag = URLFlag;
+    }
+
+    public int getoCRstreamFlag() {
+        return oCRstreamFlag;
+    }
+
+    public void setoCRstreamFlag(int oCRstreamFlag) {
+        this.oCRstreamFlag = oCRstreamFlag;
+    }
+
+    public int getStreamPriority() {
+        return streamPriority;
+    }
+
+    public void setStreamPriority(int streamPriority) {
+        this.streamPriority = streamPriority;
+    }
+
+    public int getURLLength() {
+        return URLLength;
+    }
+
+    public void setURLLength(int URLLength) {
+        this.URLLength = URLLength;
+    }
+
+    public String getURLString() {
+        return URLString;
+    }
+
+    public void setURLString(String URLString) {
+        this.URLString = URLString;
+    }
+
+    public int getRemoteODFlag() {
+        return remoteODFlag;
+    }
+
+    public void setRemoteODFlag(int remoteODFlag) {
+        this.remoteODFlag = remoteODFlag;
+    }
+
+    public int getDependsOnEsId() {
+        return dependsOnEsId;
+    }
+
+    public void setDependsOnEsId(int dependsOnEsId) {
+        this.dependsOnEsId = dependsOnEsId;
     }
 
     @Override
@@ -192,4 +328,6 @@ public class ESDescriptor extends BaseDescriptor {
         sb.append('}');
         return sb.toString();
     }
+
+
 }
