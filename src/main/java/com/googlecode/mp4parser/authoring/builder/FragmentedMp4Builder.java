@@ -157,7 +157,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     public IsoFile build(Movie movie) throws IOException {
-        LOG.info("Creating movie " + movie);
+        LOG.fine("Creating movie " + movie);
         IsoFile isoFile = new IsoFile();
 
 
@@ -613,7 +613,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     protected Box createTrak(Track track, Movie movie) {
-        LOG.info("Creating Track " + track);
+        LOG.fine("Creating Track " + track);
         TrackBox trackBox = new TrackBox();
         trackBox.addBox(createTkhd(movie, track));
         trackBox.addBox(createMdia(track, movie));

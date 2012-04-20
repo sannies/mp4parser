@@ -33,8 +33,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 public class FlatPackageWriterImpl implements PackageWriter {
+    private static Logger LOG  = Logger.getLogger(FlatPackageWriterImpl.class.getName());
+
 
     private File outputDirectory;
     private boolean writeSingleFile;
@@ -106,7 +109,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
             }
             File bitrateOutputDir = new File(mediaOutDir, bitrate);
             bitrateOutputDir.mkdirs();
-            System.out.println("Created : " + bitrateOutputDir.getAbsolutePath());
+            LOG.finer("Created : " + bitrateOutputDir.getCanonicalPath());
 
             long[] fragmentTimes = manifestWriter.calculateFragmentDurations(track, qualities);
             long startTime = 0;
