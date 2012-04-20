@@ -48,7 +48,7 @@ public class AC3TrackImpl extends AbstractTrack {
 
         sampleDescriptionBox = new SampleDescriptionBox();
         AudioSampleEntry audioSampleEntry = new AudioSampleEntry("ac-3");
-        audioSampleEntry.setChannelCount(channelCount);
+        audioSampleEntry.setChannelCount(2);
         audioSampleEntry.setSampleRate(samplerate);
         audioSampleEntry.setDataReferenceIndex(1);
         audioSampleEntry.setSampleSize(16);
