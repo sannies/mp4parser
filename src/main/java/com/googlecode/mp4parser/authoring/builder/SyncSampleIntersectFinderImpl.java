@@ -84,6 +84,9 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                     }
                     AudioSampleEntry ase = (AudioSampleEntry)track.getSampleDescriptionBox().getSampleEntry();
                     double factor = (double)ase.getSampleRate() / (double)minSampleRate;
+                    if (factor != Math.rint(factor)) { // Not an integer
+                        throw new RuntimeException("Sample rates must be a multiple of the lowest sample rate to create a correct file!");
+                    }
                     for (int i = 1; i < syncSamples.length; i++) {
                         syncSamples[i] = (int)(1 + (syncSamples[i] - 1) * factor);
                     }
