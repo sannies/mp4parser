@@ -45,7 +45,6 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 public abstract class AbstractBox implements Box {
     private static Logger LOG = Logger.getLogger(AbstractBox.class.getName());
 
-
     protected String type;
     private byte[] userType;
     private ContainerBox parent;
@@ -82,15 +81,78 @@ public abstract class AbstractBox implements Box {
      */
     protected abstract void getContent(ByteBuffer byteBuffer) throws IOException;
 
-
     /**
-     * Implement the actual parsing of the box's fields here. External classes will always call
-     * {@link #parseDetails()} which encapsulates the call to this method with some safeguards.
+     * Parse the box' fields and child boxes if any.
      *
      * @param content the box' raw content beginning after the 4-cc field.
      */
     protected abstract void _parseDetails(ByteBuffer content);
 
+    /**
+     * Reads the box' content without parsing it. Parsing is done on-demand in case
+     *
+     * @param readableByteChannel the (part of the) iso file to parse
+     * @param contentSize         expected contentSize of the box
+     * @param boxParser           creates inner boxes
+     * @throws IOException in case of an I/O error.
+     */
+    @DoNotParseDetail
+    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        if (readableByteChannel instanceof FileChannel && contentSize > 1024 * 1024) {
+            // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
+            content = ((FileChannel) readableByteChannel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) readableByteChannel).position(), contentSize);
+            ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
+        } else {
+            assert contentSize < Integer.MAX_VALUE;
+            content = ChannelHelper.readFully(readableByteChannel, contentSize);
+        }
+    }
+
+    public void getBox(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getSize()));
+        getHeader(bb);
+        if (content == null) {
+            getContent(bb);
+            if (deadBytes != null) {
+                deadBytes.rewind();
+                while (deadBytes.remaining() > 0) {
+                    bb.put(deadBytes);
+                }
+            }
+        } else {
+            content.rewind();
+            bb.put(content);
+        }
+        bb.rewind();
+        os.write(bb);
+    }
+
+
+    /**
+     * Parses the box' content.
+     */
+    synchronized final void parseDetails() {
+        if (content != null) {
+            ByteBuffer content = this.content;
+            this.content = null;
+            content.rewind();
+            _parseDetails(content);
+            if (content.remaining() > 0) {
+                deadBytes = content.slice();
+            }
+            assert verify(content);
+        }
+    }
+
+    /**
+     * Sets the 'dead' bytes. These bytes are left if the content of the box
+     * has been parsed but not all bytes have been used up.
+     *
+     * @param newDeadBytes the unused bytes with no meaning but required for bytewise reconstruction
+     */
+    protected void setDeadBytes(ByteBuffer newDeadBytes) {
+        deadBytes = newDeadBytes;
+    }
 
 
     /**
@@ -133,87 +195,7 @@ public abstract class AbstractBox implements Box {
     }
 
     /**
-     * Reads the box' content without parsing it. Parsing is done on-demand in case
-     *
-     * @param readableByteChannel the (part of the) iso file to parse
-     * @param contentSize         expected contentSize of the box
-     * @param boxParser           creates inner boxes
-     * @throws IOException in case of an I/O error.
-     */
-    @DoNotParseDetail
-    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        if (readableByteChannel instanceof FileChannel && contentSize > 1024 * 1024) {
-            // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
-            content = ((FileChannel) readableByteChannel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) readableByteChannel).position(), contentSize);
-            ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
-        } else {
-            assert contentSize < Integer.MAX_VALUE;
-            content = ChannelHelper.readFully(readableByteChannel, contentSize);
-        }
-    }
-
-    /**
-     * Parses the box' content.
-     */
-    protected synchronized final void parseDetails() {
-        if (content != null) {
-            ByteBuffer content = this.content;
-            this.content = null;
-            content.rewind();
-            _parseDetails(content);
-            if (content.remaining() > 0) {
-                deadBytes = content.slice();
-            }
-            assert verify(content);
-        }
-    }
-
-    /**
-     * Sets the 'dead' bytes. These bytes are left if the content of the box
-     * has been parsed but not all bytes have been used up.
-     *
-     * @param newDeadBytes the unused bytes with no meaning but required for bytewise reconstruction
-     */
-    protected void setDeadBytes(ByteBuffer newDeadBytes) {
-        deadBytes = newDeadBytes;
-    }
-
-    public void getHeader(ByteBuffer byteBuffer) {
-        if (isSmallBox()) {
-            IsoTypeWriter.writeUInt32(byteBuffer, this.getSize());
-            byteBuffer.put(IsoFile.fourCCtoBytes(getType()));
-        } else {
-            IsoTypeWriter.writeUInt32(byteBuffer, 1);
-            byteBuffer.put(IsoFile.fourCCtoBytes(getType()));
-            IsoTypeWriter.writeUInt64(byteBuffer, getSize());
-        }
-        if (UserBox.TYPE.equals(getType())) {
-            byteBuffer.put(getUserType());
-        }
-
-
-    }
-
-    public void getBox(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getSize()));
-        getHeader(bb);
-        if (content == null) {
-            getContent(bb);
-            if (deadBytes != null) {
-                deadBytes.rewind();
-                while (deadBytes.remaining() > 0) {
-                    bb.put(deadBytes);
-                }
-            }
-        } else {
-            content.rewind();
-            bb.put(content);
-        }
-        bb.rewind();
-        os.write(bb);
-    }
-
-    /**
+     * Check if details are parsed.
      * @return <code>true</code> whenever the content <code>ByteBuffer</code> is not <code>null</code>
      */
     public boolean isParsed() {
@@ -254,9 +236,6 @@ public abstract class AbstractBox implements Box {
             byte v1 = content.get(i);
             byte v2 = bb.get(j);
             if (v1 != v2) {
-                if ((v1 != v1) && (v2 != v2))    // For float and double
-                    continue;
-
                 LOG.severe("buffers differ at " + i + "/" + j);
                 return false;
             }
@@ -269,4 +248,19 @@ public abstract class AbstractBox implements Box {
         return (content == null ? (getContentSize() + (deadBytes != null ? deadBytes.limit() : 0) + 8) : content.limit()) < 1L << 32;
     }
 
+    private void getHeader(ByteBuffer byteBuffer) {
+        if (isSmallBox()) {
+            IsoTypeWriter.writeUInt32(byteBuffer, this.getSize());
+            byteBuffer.put(IsoFile.fourCCtoBytes(getType()));
+        } else {
+            IsoTypeWriter.writeUInt32(byteBuffer, 1);
+            byteBuffer.put(IsoFile.fourCCtoBytes(getType()));
+            IsoTypeWriter.writeUInt64(byteBuffer, getSize());
+        }
+        if (UserBox.TYPE.equals(getType())) {
+            byteBuffer.put(getUserType());
+        }
+
+
+    }
 }
