@@ -3,7 +3,6 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -40,7 +39,7 @@ public class ChunkOffset64BitBox extends ChunkOffsetBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         IsoTypeWriter.writeUInt32(byteBuffer, chunkOffsets.length);
         for (long chunkOffset : chunkOffsets) {

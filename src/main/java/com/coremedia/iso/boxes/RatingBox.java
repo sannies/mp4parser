@@ -22,7 +22,6 @@ import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
 import com.googlecode.mp4parser.AbstractFullBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
@@ -103,7 +102,7 @@ public class RatingBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         byteBuffer.put(IsoFile.fourCCtoBytes(ratingEntity));
         byteBuffer.put(IsoFile.fourCCtoBytes(ratingCriteria));

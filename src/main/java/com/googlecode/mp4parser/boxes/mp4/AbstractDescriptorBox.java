@@ -40,7 +40,7 @@ public class AbstractDescriptorBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         data.rewind(); // has been fforwarded by parsing
         byteBuffer.put(data);

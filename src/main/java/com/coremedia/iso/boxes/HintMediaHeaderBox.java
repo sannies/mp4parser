@@ -19,7 +19,6 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -71,7 +70,7 @@ public class HintMediaHeaderBox extends AbstractMediaHeaderBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         IsoTypeWriter.writeUInt16(byteBuffer, maxPduSize);
         IsoTypeWriter.writeUInt16(byteBuffer, avgPduSize);

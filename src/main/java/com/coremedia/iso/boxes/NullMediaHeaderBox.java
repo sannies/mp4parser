@@ -15,7 +15,6 @@
  */
 package com.coremedia.iso.boxes;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -38,7 +37,7 @@ public class NullMediaHeaderBox extends AbstractMediaHeaderBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
     }
 }

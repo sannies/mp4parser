@@ -4,7 +4,6 @@ import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,7 +60,7 @@ public class EC3SpecificBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         BitWriterBuffer bwb = new BitWriterBuffer(byteBuffer);
         bwb.writeBits(dataRate, 13);
         bwb.writeBits(entries.size() - 1, 3);

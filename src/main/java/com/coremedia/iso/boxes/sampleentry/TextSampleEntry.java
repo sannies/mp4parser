@@ -89,7 +89,7 @@ public class TextSampleEntry extends SampleEntry {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         _writeReservedAndDataReferenceIndex(byteBuffer);
         IsoTypeWriter.writeUInt32(byteBuffer, displayFlags);
         IsoTypeWriter.writeUInt8(byteBuffer, horizontalJustification);
@@ -231,7 +231,7 @@ public class TextSampleEntry extends SampleEntry {
             right = IsoTypeReader.readUInt16(in);
         }
 
-        public void getContent(ByteBuffer bb) throws IOException {
+        public void getContent(ByteBuffer bb)  {
             IsoTypeWriter.writeUInt16(bb, top);
             IsoTypeWriter.writeUInt16(bb, left);
             IsoTypeWriter.writeUInt16(bb, bottom);
@@ -284,7 +284,7 @@ public class TextSampleEntry extends SampleEntry {
         }
 
 
-        public void getContent(ByteBuffer bb) throws IOException {
+        public void getContent(ByteBuffer bb) {
             IsoTypeWriter.writeUInt16(bb, startChar);
             IsoTypeWriter.writeUInt16(bb, endChar);
             IsoTypeWriter.writeUInt16(bb, fontId);

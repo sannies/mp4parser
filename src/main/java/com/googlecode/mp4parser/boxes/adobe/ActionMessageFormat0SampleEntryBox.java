@@ -3,7 +3,6 @@ package com.googlecode.mp4parser.boxes.adobe;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -32,7 +31,7 @@ public class ActionMessageFormat0SampleEntryBox extends SampleEntry {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         _writeReservedAndDataReferenceIndex(byteBuffer);
         _writeChildBoxes(byteBuffer);
     }

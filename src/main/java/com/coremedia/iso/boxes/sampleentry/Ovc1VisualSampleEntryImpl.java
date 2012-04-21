@@ -3,7 +3,6 @@ package com.coremedia.iso.boxes.sampleentry;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
@@ -32,7 +31,7 @@ public class Ovc1VisualSampleEntryImpl extends SampleEntry {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         byteBuffer.put(new byte[6]);
         IsoTypeWriter.writeUInt16(byteBuffer, getDataReferenceIndex());
         byteBuffer.put(vc1Content);

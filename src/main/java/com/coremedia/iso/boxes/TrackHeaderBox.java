@@ -21,7 +21,6 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -135,7 +134,7 @@ public class TrackHeaderBox extends AbstractFullBox {
         height = IsoTypeReader.readFixedPoint1616(content);
     }
 
-    public void getContent(ByteBuffer byteBuffer) throws IOException {
+    public void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         if (getVersion() == 1) {
             IsoTypeWriter.writeUInt64(byteBuffer, creationTime);

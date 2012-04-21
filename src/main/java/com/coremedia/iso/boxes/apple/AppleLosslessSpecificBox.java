@@ -4,7 +4,6 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -138,7 +137,7 @@ public final class AppleLosslessSpecificBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         IsoTypeWriter.writeUInt32(byteBuffer, maxSamplePerFrame);
         IsoTypeWriter.writeUInt8(byteBuffer, unknown1);

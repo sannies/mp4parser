@@ -20,7 +20,6 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -51,7 +50,7 @@ public class TrackReferenceTypeBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         for (long trackId : trackIds) {
             IsoTypeWriter.writeUInt32(byteBuffer, trackId);
         }

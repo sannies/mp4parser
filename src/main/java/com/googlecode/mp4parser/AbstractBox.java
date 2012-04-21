@@ -66,8 +66,8 @@ public abstract class AbstractBox implements Box {
      * Get the box' content size without its header. This must be the exact number of bytes
      * that <code>getContent(ByteBuffer)</code> writes.
      *
-     * @see #getContent(java.nio.ByteBuffer)
      * @return Gets the box's content size in bytes
+     * @see #getContent(java.nio.ByteBuffer)
      */
     protected abstract long getContentSize();
 
@@ -77,9 +77,8 @@ public abstract class AbstractBox implements Box {
      * <code>getSize()</code> bytes.
      *
      * @param byteBuffer the sink for the box' content
-     * @throws IOException in case of an exception in the underlying <code>OutputStream</code>.
      */
-    protected abstract void getContent(ByteBuffer byteBuffer) throws IOException;
+    protected abstract void getContent(ByteBuffer byteBuffer);
 
     /**
      * Parse the box' fields and child boxes if any.
@@ -196,12 +195,12 @@ public abstract class AbstractBox implements Box {
 
     /**
      * Check if details are parsed.
+     *
      * @return <code>true</code> whenever the content <code>ByteBuffer</code> is not <code>null</code>
      */
     public boolean isParsed() {
         return content == null;
     }
-
 
 
     /**
@@ -212,16 +211,12 @@ public abstract class AbstractBox implements Box {
      */
     private boolean verify(ByteBuffer content) {
         ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize() + (deadBytes != null ? deadBytes.limit() : 0)));
-        try {
-            getContent(bb);
-            if (deadBytes != null) {
-                deadBytes.rewind();
-                while (deadBytes.remaining() > 0) {
-                    bb.put(deadBytes);
-                }
+        getContent(bb);
+        if (deadBytes != null) {
+            deadBytes.rewind();
+            while (deadBytes.remaining() > 0) {
+                bb.put(deadBytes);
             }
-        } catch (IOException e) {
-            assert false : e.getMessage();
         }
         content.rewind();
         bb.rewind();

@@ -132,14 +132,17 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
         IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
     }
 
-    public void _writeChildBoxes(ByteBuffer bb) throws IOException {
+    public void _writeChildBoxes(ByteBuffer bb) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         WritableByteChannel wbc = Channels.newChannel(baos);
-        for (Box box : boxes) {
-
-            box.getBox(wbc);
+        try {
+            for (Box box : boxes) {
+                box.getBox(wbc);
+            }
+            wbc.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot happen. Everything should be in memory and therefore no exceptions.");
         }
-        wbc.close();
         bb.put(baos.toByteArray());
     }
 

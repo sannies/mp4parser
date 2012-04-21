@@ -48,7 +48,7 @@ public class UserDataBox extends AbstractContainerBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         super.getContent(byteBuffer);    //To change body of overridden methods use File | Settings | File Templates.
     }
 

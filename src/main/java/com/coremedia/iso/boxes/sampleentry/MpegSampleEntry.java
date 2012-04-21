@@ -4,7 +4,6 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -37,7 +36,7 @@ public class MpegSampleEntry extends SampleEntry implements ContainerBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         _writeReservedAndDataReferenceIndex(byteBuffer);
         _writeChildBoxes(byteBuffer);
     }

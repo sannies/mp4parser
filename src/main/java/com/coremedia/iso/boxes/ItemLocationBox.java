@@ -81,7 +81,7 @@ public class ItemLocationBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         IsoTypeWriter.writeUInt8(byteBuffer, ((offsetSize << 4) | lengthSize));
         if (getVersion() == 1) {
@@ -222,7 +222,7 @@ public class ItemLocationBox extends AbstractFullBox {
             this.baseOffset = baseOffset;
         }
 
-        public void getContent(ByteBuffer bb) throws IOException {
+        public void getContent(ByteBuffer bb)  {
             IsoTypeWriter.writeUInt16(bb, itemId);
 
             if (getVersion() == 1) {
@@ -309,7 +309,7 @@ public class ItemLocationBox extends AbstractFullBox {
             extentLength = IsoTypeReaderVariable.read(in, lengthSize);
         }
 
-        public void getContent(ByteBuffer os) throws IOException {
+        public void getContent(ByteBuffer os)  {
             if ((getVersion() == 1) && indexSize > 0) {
                 IsoTypeWriterVariable.write(extentIndex, os, indexSize);
             }

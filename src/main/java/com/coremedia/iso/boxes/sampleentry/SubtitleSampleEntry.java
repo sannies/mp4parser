@@ -3,7 +3,6 @@ package com.coremedia.iso.boxes.sampleentry;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -43,7 +42,7 @@ public class SubtitleSampleEntry extends SampleEntry {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         _writeReservedAndDataReferenceIndex(byteBuffer);
         IsoTypeWriter.writeUtf8String(byteBuffer, namespace);
         IsoTypeWriter.writeUtf8String(byteBuffer, schemaLocation);

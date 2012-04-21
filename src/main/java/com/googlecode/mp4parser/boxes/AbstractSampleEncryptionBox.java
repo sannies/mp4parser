@@ -122,7 +122,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         if (isOverrideTrackEncryptionBoxParameters()) {
             IsoTypeWriter.writeUInt24(byteBuffer, algorithmId);

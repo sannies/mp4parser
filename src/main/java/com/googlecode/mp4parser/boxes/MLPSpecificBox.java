@@ -4,7 +4,6 @@ import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
@@ -34,7 +33,7 @@ public class MLPSpecificBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         BitWriterBuffer bwb = new BitWriterBuffer(byteBuffer);
         bwb.writeBits(format_info, 32);
         bwb.writeBits(peak_data_rate, 15);

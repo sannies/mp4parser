@@ -20,7 +20,6 @@ import com.googlecode.mp4parser.AbstractBox;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -43,11 +42,7 @@ public class AvcNalUnitStorageBox extends AbstractBox {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         ByteBuffer content = ByteBuffer.allocate(l2i(avcConfigurationBox.getContentSize()));
-        try {
-            avcConfigurationBox.getContent(content);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        avcConfigurationBox.getContent(content);
         data = content.array();
     }
 
@@ -67,7 +62,7 @@ public class AvcNalUnitStorageBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         byteBuffer.put(data);
     }
 

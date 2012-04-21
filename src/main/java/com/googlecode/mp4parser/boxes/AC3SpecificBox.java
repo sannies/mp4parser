@@ -4,7 +4,6 @@ import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class AC3SpecificBox extends AbstractBox {
@@ -38,7 +37,7 @@ public class AC3SpecificBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         BitWriterBuffer bwb = new BitWriterBuffer(byteBuffer);
         bwb.writeBits(fscod, 2);
         bwb.writeBits(bsid, 5);

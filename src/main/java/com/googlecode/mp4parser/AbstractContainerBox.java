@@ -136,7 +136,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeChildBoxes(byteBuffer);
     }
 
@@ -155,10 +155,15 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         }
     }
 
-    protected final void writeChildBoxes(ByteBuffer bb) throws IOException {
+    protected final void writeChildBoxes(ByteBuffer bb) {
         WritableByteChannel wbc = new ByteBufferByteChannel(bb);
         for (Box box : boxes) {
-            box.getBox(wbc);
+            try {
+                box.getBox(wbc);
+            } catch (IOException e) {
+                // My WritableByteChannel won't throw any excpetion
+                throw new RuntimeException("Cannot happen to me", e);
+            }
         }
     }
 

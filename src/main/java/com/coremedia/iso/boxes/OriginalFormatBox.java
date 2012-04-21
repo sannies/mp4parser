@@ -20,7 +20,6 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.googlecode.mp4parser.AbstractBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -59,7 +58,7 @@ public class OriginalFormatBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         byteBuffer.put(IsoFile.fourCCtoBytes(dataFormat));
     }
 

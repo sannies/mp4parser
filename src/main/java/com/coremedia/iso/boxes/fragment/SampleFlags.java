@@ -57,7 +57,7 @@ public class SampleFlags {
     }
 
 
-    public void getContent(ByteBuffer os) throws IOException {
+    public void getContent(ByteBuffer os) {
         BitWriterBuffer bitWriterBuffer = new BitWriterBuffer(os);
         bitWriterBuffer.writeBits(reserved, 6);
         bitWriterBuffer.writeBits(sampleDependsOn, 2);

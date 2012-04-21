@@ -21,7 +21,6 @@ import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
 import com.googlecode.mp4parser.AbstractFullBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -70,7 +69,7 @@ public class TitleBox extends AbstractFullBox {
     }
 
 
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         IsoTypeWriter.writeIso639(byteBuffer, language);
         byteBuffer.put(Utf8.convert(title));

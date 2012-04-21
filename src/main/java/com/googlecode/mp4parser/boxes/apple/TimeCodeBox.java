@@ -3,7 +3,6 @@ package com.googlecode.mp4parser.boxes.apple;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class TimeCodeBox extends SampleEntry {
@@ -32,7 +31,7 @@ public class TimeCodeBox extends SampleEntry {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         _writeReservedAndDataReferenceIndex(byteBuffer);
         byteBuffer.put(data);
         _writeChildBoxes(byteBuffer);

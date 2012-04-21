@@ -1,6 +1,5 @@
 package com.coremedia.iso.boxes;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class GenericMediaHeaderBoxImpl extends AbstractMediaHeaderBox {
@@ -21,7 +20,7 @@ public class GenericMediaHeaderBoxImpl extends AbstractMediaHeaderBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         byteBuffer.put((ByteBuffer) data.rewind());
     }

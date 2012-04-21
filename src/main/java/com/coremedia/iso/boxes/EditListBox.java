@@ -93,7 +93,7 @@ public class EditListBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         IsoTypeWriter.writeUInt32(byteBuffer, entries.size());
         for (Entry entry : entries) {
@@ -225,7 +225,7 @@ public class EditListBox extends AbstractFullBox {
             return result;
         }
 
-        public void getContent(ByteBuffer bb) throws IOException {
+        public void getContent(ByteBuffer bb)  {
             if (editListBox.getVersion() == 1) {
                 IsoTypeWriter.writeUInt64(bb, segmentDuration);
                 IsoTypeWriter.writeUInt64(bb, mediaTime);

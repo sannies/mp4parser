@@ -41,7 +41,7 @@ public class FontTableBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         IsoTypeWriter.writeUInt16(byteBuffer, entries.size());
         for (FontRecord record : entries) {
             record.getContent(byteBuffer);
@@ -74,7 +74,7 @@ public class FontTableBox extends AbstractBox {
             fontname = IsoTypeReader.readString(bb, length);
         }
 
-        public void getContent(ByteBuffer bb) throws IOException {
+        public void getContent(ByteBuffer bb) {
             IsoTypeWriter.writeUInt16(bb, fontId);
             IsoTypeWriter.writeUInt8(bb, fontname.length());
             bb.put(Utf8.convert(fontname));

@@ -22,7 +22,6 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -81,7 +80,7 @@ public class AmrSpecificBox extends AbstractBox {
     }
 
 
-    public void getContent(ByteBuffer byteBuffer) throws IOException {
+    public void getContent(ByteBuffer byteBuffer) {
         byteBuffer.put(IsoFile.fourCCtoBytes(vendor));
         IsoTypeWriter.writeUInt8(byteBuffer, decoderVersion);
         IsoTypeWriter.writeUInt16(byteBuffer, modeSet);

@@ -69,8 +69,12 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
         return appleDataBox.getSize();
     }
 
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
-        appleDataBox.getBox(new ByteBufferByteChannel(byteBuffer));
+    protected void getContent(ByteBuffer byteBuffer) {
+        try {
+            appleDataBox.getBox(new ByteBufferByteChannel(byteBuffer));
+        } catch (IOException e) {
+            throw new RuntimeException("The Channel is based on a ByteBuffer and therefore it shouldn't throw any exception");
+        }
     }
 
     public long getNumOfBytesToFirstChild() {

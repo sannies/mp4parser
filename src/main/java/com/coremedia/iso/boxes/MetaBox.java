@@ -88,7 +88,7 @@ public class MetaBox extends AbstractContainerBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         if (isMp4Box()) {
             IsoTypeWriter.writeUInt8(byteBuffer, version);
             IsoTypeWriter.writeUInt24(byteBuffer, flags);

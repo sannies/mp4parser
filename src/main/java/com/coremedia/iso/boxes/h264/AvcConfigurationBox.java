@@ -220,7 +220,7 @@ public final class AvcConfigurationBox extends AbstractBox {
 
 
     @Override
-    public void getContent(ByteBuffer byteBuffer) throws IOException {
+    public void getContent(ByteBuffer byteBuffer) {
         IsoTypeWriter.writeUInt8(byteBuffer, configurationVersion);
         IsoTypeWriter.writeUInt8(byteBuffer, avcProfileIndicaation);
         IsoTypeWriter.writeUInt8(byteBuffer, profileCompatibility);

@@ -22,7 +22,6 @@ import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,7 +66,7 @@ public class FileTypeBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         byteBuffer.put(IsoFile.fourCCtoBytes(majorBrand));
         IsoTypeWriter.writeUInt32(byteBuffer, minorVersion);
         for (String compatibleBrand : compatibleBrands) {

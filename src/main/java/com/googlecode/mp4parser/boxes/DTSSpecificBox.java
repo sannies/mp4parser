@@ -6,7 +6,6 @@ import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -67,7 +66,7 @@ public class DTSSpecificBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+    protected void getContent(ByteBuffer byteBuffer) {
         IsoTypeWriter.writeUInt32(byteBuffer, DTSSamplingFrequency);
         IsoTypeWriter.writeUInt32(byteBuffer, maxBitRate);
         IsoTypeWriter.writeUInt32(byteBuffer, avgBitRate);
