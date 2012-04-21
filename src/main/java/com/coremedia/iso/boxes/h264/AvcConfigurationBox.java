@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.h264;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.AbstractBox;
+import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.h264.model.PictureParameterSet;
 import com.googlecode.mp4parser.h264.model.SeqParameterSet;
 
@@ -220,30 +220,30 @@ public final class AvcConfigurationBox extends AbstractBox {
 
 
     @Override
-    public void getContent(ByteBuffer bb) throws IOException {
-        IsoTypeWriter.writeUInt8(bb, configurationVersion);
-        IsoTypeWriter.writeUInt8(bb, avcProfileIndicaation);
-        IsoTypeWriter.writeUInt8(bb, profileCompatibility);
-        IsoTypeWriter.writeUInt8(bb, avcLevelIndication);
-        IsoTypeWriter.writeUInt8(bb, lengthSizeMinusOne | (63 << 2));
-        IsoTypeWriter.writeUInt8(bb, (pictureParameterSets.size() & 31) | (7 << 5));
+    public void getContent(ByteBuffer byteBuffer) throws IOException {
+        IsoTypeWriter.writeUInt8(byteBuffer, configurationVersion);
+        IsoTypeWriter.writeUInt8(byteBuffer, avcProfileIndicaation);
+        IsoTypeWriter.writeUInt8(byteBuffer, profileCompatibility);
+        IsoTypeWriter.writeUInt8(byteBuffer, avcLevelIndication);
+        IsoTypeWriter.writeUInt8(byteBuffer, lengthSizeMinusOne | (63 << 2));
+        IsoTypeWriter.writeUInt8(byteBuffer, (pictureParameterSets.size() & 31) | (7 << 5));
         for (byte[] sequenceParameterSetNALUnit : sequenceParameterSets) {
-            IsoTypeWriter.writeUInt16(bb, sequenceParameterSetNALUnit.length);
-            bb.put(sequenceParameterSetNALUnit);
+            IsoTypeWriter.writeUInt16(byteBuffer, sequenceParameterSetNALUnit.length);
+            byteBuffer.put(sequenceParameterSetNALUnit);
         }
-        IsoTypeWriter.writeUInt8(bb, pictureParameterSets.size());
+        IsoTypeWriter.writeUInt8(byteBuffer, pictureParameterSets.size());
         for (byte[] pictureParameterSetNALUnit : pictureParameterSets) {
-            IsoTypeWriter.writeUInt16(bb, pictureParameterSetNALUnit.length);
-            bb.put(pictureParameterSetNALUnit);
+            IsoTypeWriter.writeUInt16(byteBuffer, pictureParameterSetNALUnit.length);
+            byteBuffer.put(pictureParameterSetNALUnit);
         }
         if (hasExts && (avcProfileIndicaation == 100 || avcProfileIndicaation == 110 || avcProfileIndicaation == 122 || avcProfileIndicaation == 144)) {
-            IsoTypeWriter.writeUInt8(bb, chromaFormat | (63 << 2));
-            IsoTypeWriter.writeUInt8(bb, bitDepthLumaMinus8 | (31 << 3));
-            IsoTypeWriter.writeUInt8(bb, bitDepthChromaMinus8 | (31 << 3));
-            IsoTypeWriter.writeUInt8(bb, sequenceParameterSetExts.size());
+            IsoTypeWriter.writeUInt8(byteBuffer, chromaFormat | (63 << 2));
+            IsoTypeWriter.writeUInt8(byteBuffer, bitDepthLumaMinus8 | (31 << 3));
+            IsoTypeWriter.writeUInt8(byteBuffer, bitDepthChromaMinus8 | (31 << 3));
+            IsoTypeWriter.writeUInt8(byteBuffer, sequenceParameterSetExts.size());
             for (byte[] sequenceParameterSetExtNALUnit : sequenceParameterSetExts) {
-                IsoTypeWriter.writeUInt16(bb, sequenceParameterSetExtNALUnit.length);
-                bb.put(sequenceParameterSetExtNALUnit);
+                IsoTypeWriter.writeUInt16(byteBuffer, sequenceParameterSetExtNALUnit.length);
+                byteBuffer.put(sequenceParameterSetExtNALUnit);
             }
         }
     }

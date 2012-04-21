@@ -2,7 +2,7 @@ package com.googlecode.mp4parser.boxes;
 
 
 import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.ByteBufferByteChannel;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
 

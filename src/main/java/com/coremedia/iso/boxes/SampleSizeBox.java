@@ -19,11 +19,12 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * This box containes the sample count and a table giving the size in bytes of each sample.
@@ -100,17 +101,17 @@ public class SampleSizeBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, sampleSize);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt32(byteBuffer, sampleSize);
 
         if (sampleSize == 0) {
-            IsoTypeWriter.writeUInt32(bb, sampleSizes.length);
+            IsoTypeWriter.writeUInt32(byteBuffer, sampleSizes.length);
             for (long sampleSize1 : sampleSizes) {
-                IsoTypeWriter.writeUInt32(bb, sampleSize1);
+                IsoTypeWriter.writeUInt32(byteBuffer, sampleSize1);
             }
         } else {
-            IsoTypeWriter.writeUInt32(bb, sampleCount);
+            IsoTypeWriter.writeUInt32(byteBuffer, sampleCount);
         }
 
     }

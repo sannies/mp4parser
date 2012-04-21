@@ -15,7 +15,6 @@
  */
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.AbstractBox;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -24,7 +23,7 @@ import org.aspectj.lang.annotation.Before;
 public class RequiresParseDetailAspect {
 
 
-    @Before("this(com.coremedia.iso.boxes.AbstractBox) && ((execution(public * * (..)) && !( " +
+    @Before("this(com.googlecode.mp4parser.AbstractBox) && ((execution(public * * (..)) && !( " +
             "execution(* parseDetails()) || " +
             "execution(* getNumOfBytesToFirstChild()) || " +
             "execution(* getType()) || " +
@@ -41,7 +40,7 @@ public class RequiresParseDetailAspect {
             "execution(* setParent(*)) || " +
             "execution(* getUserType()) || " +
             "execution(* setUserType(*))) && " +
-            "!@annotation(DoNotParseDetail)) || @annotation(ParseDetail))")
+            "!@annotation(com.googlecode.mp4parser.annotations.DoNotParseDetail)) || @annotation(com.googlecode.mp4parser.annotations.ParseDetail))")
     public void before(JoinPoint joinPoint) {
         if (joinPoint.getTarget() instanceof AbstractBox) {
             if (!((AbstractBox) joinPoint.getTarget()).isParsed()) {

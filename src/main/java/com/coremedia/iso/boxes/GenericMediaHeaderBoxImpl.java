@@ -21,12 +21,20 @@ public class GenericMediaHeaderBoxImpl extends AbstractMediaHeaderBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        bb.put((ByteBuffer) data.rewind());
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        byteBuffer.put((ByteBuffer) data.rewind());
     }
 
     public GenericMediaHeaderBoxImpl() {
         super("gmhd");
+    }
+
+    public ByteBuffer getData() {
+        return data;
+    }
+
+    public void setData(ByteBuffer data) {
+        this.data = data;
     }
 }

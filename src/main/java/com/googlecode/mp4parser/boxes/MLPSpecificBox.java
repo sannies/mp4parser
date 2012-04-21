@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser.boxes;
 
-import com.coremedia.iso.boxes.AbstractBox;
+import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
@@ -34,8 +34,8 @@ public class MLPSpecificBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        BitWriterBuffer bwb = new BitWriterBuffer(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        BitWriterBuffer bwb = new BitWriterBuffer(byteBuffer);
         bwb.writeBits(format_info, 32);
         bwb.writeBits(peak_data_rate, 15);
         bwb.writeBits(reserved, 1);

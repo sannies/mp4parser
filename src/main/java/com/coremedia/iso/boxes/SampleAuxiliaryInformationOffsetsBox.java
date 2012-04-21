@@ -18,13 +18,14 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /*
 aligned(8) class SampleAuxiliaryInformationOffsetsBox
@@ -62,19 +63,19 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
         if ((getFlags() & 1) == 1) {
-            IsoTypeWriter.writeUInt32(bb, auxInfoType);
-            IsoTypeWriter.writeUInt32(bb, auxInfoTypeParameter);
+            IsoTypeWriter.writeUInt32(byteBuffer, auxInfoType);
+            IsoTypeWriter.writeUInt32(byteBuffer, auxInfoTypeParameter);
         }
 
-        IsoTypeWriter.writeUInt32(bb, offsets.size());
+        IsoTypeWriter.writeUInt32(byteBuffer, offsets.size());
         for (Long offset : offsets) {
             if (getVersion() == 0) {
-                IsoTypeWriter.writeUInt32(bb, offset);
+                IsoTypeWriter.writeUInt32(byteBuffer, offset);
             } else {
-                IsoTypeWriter.writeUInt64(bb, offset);
+                IsoTypeWriter.writeUInt64(byteBuffer, offset);
             }
         }
     }

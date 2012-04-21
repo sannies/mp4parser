@@ -19,7 +19,8 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.googlecode.mp4parser.DoNotParseDetail;
+import com.googlecode.mp4parser.AbstractBox;
+import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -66,11 +67,11 @@ public class FileTypeBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        bb.put(IsoFile.fourCCtoBytes(majorBrand));
-        IsoTypeWriter.writeUInt32(bb, minorVersion);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        byteBuffer.put(IsoFile.fourCCtoBytes(majorBrand));
+        IsoTypeWriter.writeUInt32(byteBuffer, minorVersion);
         for (String compatibleBrand : compatibleBrands) {
-            bb.put(IsoFile.fourCCtoBytes(compatibleBrand));
+            byteBuffer.put(IsoFile.fourCCtoBytes(compatibleBrand));
         }
 
     }

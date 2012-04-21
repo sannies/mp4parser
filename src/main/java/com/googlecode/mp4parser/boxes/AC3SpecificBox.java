@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser.boxes;
 
-import com.coremedia.iso.boxes.AbstractBox;
+import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
@@ -38,8 +38,8 @@ public class AC3SpecificBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        BitWriterBuffer bwb = new BitWriterBuffer(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        BitWriterBuffer bwb = new BitWriterBuffer(byteBuffer);
         bwb.writeBits(fscod, 2);
         bwb.writeBits(bsid, 5);
         bwb.writeBits(bsmod, 3);

@@ -3,7 +3,7 @@ package com.googlecode.mp4parser.boxes;
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -122,28 +122,28 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
         if (isOverrideTrackEncryptionBoxParameters()) {
-            IsoTypeWriter.writeUInt24(bb, algorithmId);
-            IsoTypeWriter.writeUInt8(bb, ivSize);
-            bb.put(kid);
+            IsoTypeWriter.writeUInt24(byteBuffer, algorithmId);
+            IsoTypeWriter.writeUInt8(byteBuffer, ivSize);
+            byteBuffer.put(kid);
         }
-        IsoTypeWriter.writeUInt32(bb, entries.size());
+        IsoTypeWriter.writeUInt32(byteBuffer, entries.size());
         for (Entry entry : entries) {
             if (isOverrideTrackEncryptionBoxParameters()) {
                 byte[] ivFull = new byte[ivSize];
                 System.arraycopy(entry.iv, 0, ivFull, ivSize - entry.iv.length, entry.iv.length);
-                bb.put(ivFull);
+                byteBuffer.put(ivFull);
             } else {
                 // just put the iv - i don't know any better
-                bb.put(entry.iv);
+                byteBuffer.put(entry.iv);
             }
             if (isSubSampleEncryption()) {
-                IsoTypeWriter.writeUInt16(bb, entry.pairs.size());
+                IsoTypeWriter.writeUInt16(byteBuffer, entry.pairs.size());
                 for (Entry.Pair pair : entry.pairs) {
-                    IsoTypeWriter.writeUInt16(bb, pair.clear);
-                    IsoTypeWriter.writeUInt32(bb, pair.encrypted);
+                    IsoTypeWriter.writeUInt16(byteBuffer, pair.clear);
+                    IsoTypeWriter.writeUInt32(byteBuffer, pair.encrypted);
                 }
             }
         }

@@ -16,6 +16,8 @@
 
 package com.coremedia.iso.boxes;
 
+import com.googlecode.mp4parser.AbstractContainerBox;
+
 /**
  * Tracks are used for two purposes: (a) to contain media data (media tracks) and (b) to contain packetization
  * information for streaming protocols (hint tracks).  <br>

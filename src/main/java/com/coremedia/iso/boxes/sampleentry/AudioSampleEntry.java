@@ -221,32 +221,32 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        _writeReservedAndDataReferenceIndex(bb);
-        IsoTypeWriter.writeUInt16(bb, soundVersion);
-        IsoTypeWriter.writeUInt16(bb, reserved1);
-        IsoTypeWriter.writeUInt32(bb, reserved2);
-        IsoTypeWriter.writeUInt16(bb, channelCount);
-        IsoTypeWriter.writeUInt16(bb, sampleSize);
-        IsoTypeWriter.writeUInt16(bb, compressionId);
-        IsoTypeWriter.writeUInt16(bb, packetSize);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        _writeReservedAndDataReferenceIndex(byteBuffer);
+        IsoTypeWriter.writeUInt16(byteBuffer, soundVersion);
+        IsoTypeWriter.writeUInt16(byteBuffer, reserved1);
+        IsoTypeWriter.writeUInt32(byteBuffer, reserved2);
+        IsoTypeWriter.writeUInt16(byteBuffer, channelCount);
+        IsoTypeWriter.writeUInt16(byteBuffer, sampleSize);
+        IsoTypeWriter.writeUInt16(byteBuffer, compressionId);
+        IsoTypeWriter.writeUInt16(byteBuffer, packetSize);
         //isos.writeFixedPont1616(getSampleRate());
         if (type.equals("mlpa")) {
-            IsoTypeWriter.writeUInt32(bb, getSampleRate());
+            IsoTypeWriter.writeUInt32(byteBuffer, getSampleRate());
         } else {
-            IsoTypeWriter.writeUInt32(bb, getSampleRate() << 16);
+            IsoTypeWriter.writeUInt32(byteBuffer, getSampleRate() << 16);
         }
 
         if (soundVersion > 0) {
-            IsoTypeWriter.writeUInt32(bb, samplesPerPacket);
-            IsoTypeWriter.writeUInt32(bb, bytesPerPacket);
-            IsoTypeWriter.writeUInt32(bb, bytesPerFrame);
-            IsoTypeWriter.writeUInt32(bb, bytesPerSample);
+            IsoTypeWriter.writeUInt32(byteBuffer, samplesPerPacket);
+            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerPacket);
+            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerFrame);
+            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerSample);
         }
 
         if (soundVersion == 2) {
-            bb.put(soundVersion2Data);
+            byteBuffer.put(soundVersion2Data);
         }
-        _writeChildBoxes(bb);
+        _writeChildBoxes(byteBuffer);
     }
 }

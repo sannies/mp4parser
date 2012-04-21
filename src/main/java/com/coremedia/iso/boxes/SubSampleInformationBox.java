@@ -2,13 +2,14 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * aligned(8) class SubSampleInformationBox
@@ -89,22 +90,22 @@ public class SubSampleInformationBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, entries.size());
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt32(byteBuffer, entries.size());
         for (SampleEntry sampleEntry : entries) {
-            IsoTypeWriter.writeUInt32(bb, sampleEntry.getSampleDelta());
-            IsoTypeWriter.writeUInt16(bb, sampleEntry.getSubsampleCount());
+            IsoTypeWriter.writeUInt32(byteBuffer, sampleEntry.getSampleDelta());
+            IsoTypeWriter.writeUInt16(byteBuffer, sampleEntry.getSubsampleCount());
             List<SampleEntry.SubsampleEntry> subsampleEntries = sampleEntry.getSubsampleEntries();
             for (SampleEntry.SubsampleEntry subsampleEntry : subsampleEntries) {
                 if (getVersion() == 1) {
-                    IsoTypeWriter.writeUInt32(bb, subsampleEntry.getSubsampleSize());
+                    IsoTypeWriter.writeUInt32(byteBuffer, subsampleEntry.getSubsampleSize());
                 } else {
-                    IsoTypeWriter.writeUInt16(bb, l2i(subsampleEntry.getSubsampleSize()));
+                    IsoTypeWriter.writeUInt16(byteBuffer, l2i(subsampleEntry.getSubsampleSize()));
                 }
-                IsoTypeWriter.writeUInt8(bb, subsampleEntry.getSubsamplePriority());
-                IsoTypeWriter.writeUInt8(bb, subsampleEntry.getDiscardable());
-                IsoTypeWriter.writeUInt32(bb, subsampleEntry.getReserved());
+                IsoTypeWriter.writeUInt8(byteBuffer, subsampleEntry.getSubsamplePriority());
+                IsoTypeWriter.writeUInt8(byteBuffer, subsampleEntry.getDiscardable());
+                IsoTypeWriter.writeUInt32(byteBuffer, subsampleEntry.getReserved());
             }
         }
     }

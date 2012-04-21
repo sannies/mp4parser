@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -50,13 +50,13 @@ public class TrackExtendsBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, trackId);
-        IsoTypeWriter.writeUInt32(bb, defaultSampleDescriptionIndex);
-        IsoTypeWriter.writeUInt32(bb, defaultSampleDuration);
-        IsoTypeWriter.writeUInt32(bb, defaultSampleSize);
-        defaultSampleFlags.getContent(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt32(byteBuffer, trackId);
+        IsoTypeWriter.writeUInt32(byteBuffer, defaultSampleDescriptionIndex);
+        IsoTypeWriter.writeUInt32(byteBuffer, defaultSampleDuration);
+        IsoTypeWriter.writeUInt32(byteBuffer, defaultSampleSize);
+        defaultSampleFlags.getContent(byteBuffer);
     }
 
     @Override

@@ -18,14 +18,14 @@ package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * aligned(8) class TrackRunBox
@@ -211,30 +211,30 @@ public class TrackRunBox extends AbstractFullBox {
         return size;
     }
 
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, entries.size());
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt32(byteBuffer, entries.size());
         int flags = getFlags();
 
         if ((flags & 0x1) == 1) { //dataOffsetPresent
-            IsoTypeWriter.writeUInt32(bb, dataOffset);
+            IsoTypeWriter.writeUInt32(byteBuffer, dataOffset);
         }
         if ((flags & 0x4) == 0x4) { //firstSampleFlagsPresent
-            firstSampleFlags.getContent(bb);
+            firstSampleFlags.getContent(byteBuffer);
         }
 
         for (Entry entry : entries) {
             if ((flags & 0x100) == 0x100) { //sampleDurationPresent
-                IsoTypeWriter.writeUInt32(bb, entry.sampleDuration);
+                IsoTypeWriter.writeUInt32(byteBuffer, entry.sampleDuration);
             }
             if ((flags & 0x200) == 0x200) { //sampleSizePresent
-                IsoTypeWriter.writeUInt32(bb, entry.sampleSize);
+                IsoTypeWriter.writeUInt32(byteBuffer, entry.sampleSize);
             }
             if ((flags & 0x400) == 0x400) { //sampleFlagsPresent
-                entry.sampleFlags.getContent(bb);
+                entry.sampleFlags.getContent(byteBuffer);
             }
             if ((flags & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
-                bb.putInt(entry.sampleCompositionTimeOffset);
+                byteBuffer.putInt(entry.sampleCompositionTimeOffset);
             }
         }
     }

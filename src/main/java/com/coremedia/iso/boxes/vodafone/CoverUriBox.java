@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.vodafone;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.Utf8;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -54,10 +54,10 @@ public class CoverUriBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        bb.put(Utf8.convert(coverUri));
-        bb.put((byte) 0);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        byteBuffer.put(Utf8.convert(coverUri));
+        byteBuffer.put((byte) 0);
     }
 
 

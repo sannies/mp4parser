@@ -2,7 +2,7 @@ package com.coremedia.iso.boxes.apple;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -138,19 +138,19 @@ public final class AppleLosslessSpecificBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, maxSamplePerFrame);
-        IsoTypeWriter.writeUInt8(bb, unknown1);
-        IsoTypeWriter.writeUInt8(bb, sampleSize);
-        IsoTypeWriter.writeUInt8(bb, historyMult);
-        IsoTypeWriter.writeUInt8(bb, initialHistory);
-        IsoTypeWriter.writeUInt8(bb, kModifier);
-        IsoTypeWriter.writeUInt8(bb, channels);
-        IsoTypeWriter.writeUInt16(bb, unknown2);
-        IsoTypeWriter.writeUInt32(bb, maxCodedFrameSize);
-        IsoTypeWriter.writeUInt32(bb, bitRate);
-        IsoTypeWriter.writeUInt32(bb, sampleRate);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt32(byteBuffer, maxSamplePerFrame);
+        IsoTypeWriter.writeUInt8(byteBuffer, unknown1);
+        IsoTypeWriter.writeUInt8(byteBuffer, sampleSize);
+        IsoTypeWriter.writeUInt8(byteBuffer, historyMult);
+        IsoTypeWriter.writeUInt8(byteBuffer, initialHistory);
+        IsoTypeWriter.writeUInt8(byteBuffer, kModifier);
+        IsoTypeWriter.writeUInt8(byteBuffer, channels);
+        IsoTypeWriter.writeUInt16(byteBuffer, unknown2);
+        IsoTypeWriter.writeUInt32(byteBuffer, maxCodedFrameSize);
+        IsoTypeWriter.writeUInt32(byteBuffer, bitRate);
+        IsoTypeWriter.writeUInt32(byteBuffer, sampleRate);
     }
 
     public AppleLosslessSpecificBox() {

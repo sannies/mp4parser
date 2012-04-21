@@ -23,7 +23,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.WritableByteChannel;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 
 public class ChannelHelper {

@@ -25,7 +25,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Logger;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * This BoxParser handles the basic stuff like reading size and extracting box type.
@@ -58,15 +58,6 @@ public abstract class AbstractBoxParser implements BoxParser {
 
 
         String type = IsoTypeReader.read4cc(header);
-        String prefix = "";
-        boolean iWant = false;
-        if (iWant) {
-            ContainerBox t = parent.getParent();
-            while (t != null) {
-                prefix = t.getType() + "/" + prefix;
-                t = t.getParent();
-            }
-        }
         byte[] usertype = null;
         long contentSize;
 

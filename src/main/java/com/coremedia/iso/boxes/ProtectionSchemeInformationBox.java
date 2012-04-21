@@ -16,6 +16,8 @@
 
 package com.coremedia.iso.boxes;
 
+import com.googlecode.mp4parser.AbstractContainerBox;
+
 /**
  * The <code>ProtectionSchemeInformationBox</code> contains all the information required both
  * to understand the encryption transform applied and its parameters, and also to find other

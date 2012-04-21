@@ -2,7 +2,7 @@ package com.coremedia.iso.boxes.apple;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.Utf8;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -39,8 +39,8 @@ public final class AppleNameBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        bb.put(Utf8.convert(name));
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        byteBuffer.put(Utf8.convert(name));
     }
 }

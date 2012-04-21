@@ -19,13 +19,14 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
     public static final String TYPE = "saiz";
@@ -53,21 +54,21 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer os) throws IOException {
-        writeVersionAndFlags(os);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
         if ((getFlags() & 1) == 1) {
-            os.put(IsoFile.fourCCtoBytes(auxInfoType));
-            os.put(IsoFile.fourCCtoBytes(auxInfoTypeParameter));
+            byteBuffer.put(IsoFile.fourCCtoBytes(auxInfoType));
+            byteBuffer.put(IsoFile.fourCCtoBytes(auxInfoTypeParameter));
         }
 
-        IsoTypeWriter.writeUInt8(os, defaultSampleInfoSize);
+        IsoTypeWriter.writeUInt8(byteBuffer, defaultSampleInfoSize);
         if (defaultSampleInfoSize == 0) {
-            IsoTypeWriter.writeUInt32(os, sampleInfoSizes.size());
+            IsoTypeWriter.writeUInt32(byteBuffer, sampleInfoSizes.size());
             for (short sampleInfoSize : sampleInfoSizes) {
-                IsoTypeWriter.writeUInt8(os, sampleInfoSize);
+                IsoTypeWriter.writeUInt8(byteBuffer, sampleInfoSize);
             }
         } else {
-            IsoTypeWriter.writeUInt32(os, sampleCount);
+            IsoTypeWriter.writeUInt32(byteBuffer, sampleCount);
         }
     }
 

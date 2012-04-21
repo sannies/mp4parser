@@ -16,7 +16,6 @@
 package com.googlecode.mp4parser.authoring.builder;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
@@ -63,14 +62,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.logging.Logger;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * Creates a fragmented MP4 file.
@@ -227,7 +224,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
             }
 
-            public void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+            public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
 
             }
         }

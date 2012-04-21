@@ -21,7 +21,7 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeReaderVariable;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.IsoTypeWriterVariable;
-import com.googlecode.mp4parser.ParseDetail;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -81,17 +81,17 @@ public class ItemLocationBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt8(bb, ((offsetSize << 4) | lengthSize));
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt8(byteBuffer, ((offsetSize << 4) | lengthSize));
         if (getVersion() == 1) {
-            IsoTypeWriter.writeUInt8(bb, (baseOffsetSize << 4 | indexSize));
+            IsoTypeWriter.writeUInt8(byteBuffer, (baseOffsetSize << 4 | indexSize));
         } else {
-            IsoTypeWriter.writeUInt8(bb, (baseOffsetSize << 4));
+            IsoTypeWriter.writeUInt8(byteBuffer, (baseOffsetSize << 4));
         }
-        IsoTypeWriter.writeUInt16(bb, items.size());
+        IsoTypeWriter.writeUInt16(byteBuffer, items.size());
         for (Item item : items) {
-            item.getContent(bb);
+            item.getContent(byteBuffer);
         }
     }
 

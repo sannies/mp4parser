@@ -2,6 +2,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -85,17 +86,17 @@ public class SampleToGroupBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
 
-        IsoTypeWriter.writeUInt32(bb, groupingType);
+        IsoTypeWriter.writeUInt32(byteBuffer, groupingType);
         if (getVersion() == 1) {
-            IsoTypeWriter.writeUInt32(bb, groupingTypeParameter);
+            IsoTypeWriter.writeUInt32(byteBuffer, groupingTypeParameter);
         }
-        IsoTypeWriter.writeUInt32(bb, entryCount);
+        IsoTypeWriter.writeUInt32(byteBuffer, entryCount);
         for (Entry entry : entries) {
-            IsoTypeWriter.writeUInt32(bb, entry.getSampleCount());
-            IsoTypeWriter.writeUInt32(bb, entry.getGroupDescriptionIndex());
+            IsoTypeWriter.writeUInt32(byteBuffer, entry.getSampleCount());
+            IsoTypeWriter.writeUInt32(byteBuffer, entry.getGroupDescriptionIndex());
         }
     }
 

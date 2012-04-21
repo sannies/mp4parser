@@ -19,10 +19,10 @@ package com.coremedia.iso.boxes.sampleentry;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.AbstractBox;
+import com.googlecode.mp4parser.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
-import com.googlecode.mp4parser.ByteBufferByteChannel;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -104,8 +104,8 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     }
 
     @Override
-    public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        super.parse(in, header, contentSize, boxParser);
+    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        super.parse(readableByteChannel, header, contentSize, boxParser);
         this.boxParser = boxParser;
     }
 
@@ -124,7 +124,7 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
             }
 
         }
-        deadBytes = content.slice();
+        setDeadBytes(content.slice());
     }
 
     public void _writeReservedAndDataReferenceIndex(ByteBuffer bb) {

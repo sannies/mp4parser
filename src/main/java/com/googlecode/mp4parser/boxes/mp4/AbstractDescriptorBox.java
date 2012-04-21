@@ -16,7 +16,7 @@
 
 package com.googlecode.mp4parser.boxes.mp4;
 
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BaseDescriptor;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ObjectDescriptorFactory;
 
@@ -40,10 +40,10 @@ public class AbstractDescriptorBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
         data.rewind(); // has been fforwarded by parsing
-        bb.put(data);
+        byteBuffer.put(data);
     }
 
     @Override

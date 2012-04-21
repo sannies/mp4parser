@@ -18,6 +18,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.FullContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -52,10 +53,10 @@ public class ItemProtectionBox extends FullContainerBox {
 
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt16(bb, getBoxes().size());
-        writeChildBoxes(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt16(byteBuffer, getBoxes().size());
+        writeChildBoxes(byteBuffer);
     }
 
 }

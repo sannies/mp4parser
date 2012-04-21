@@ -18,6 +18,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -77,11 +78,11 @@ public final class OmaDrmAccessUnitFormatBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt8(bb, allBits);
-        IsoTypeWriter.writeUInt8(bb, keyIndicatorLength);
-        IsoTypeWriter.writeUInt8(bb, initVectorLength);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt8(byteBuffer, allBits);
+        IsoTypeWriter.writeUInt8(byteBuffer, keyIndicatorLength);
+        IsoTypeWriter.writeUInt8(byteBuffer, initVectorLength);
     }
 
 }

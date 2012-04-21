@@ -21,8 +21,8 @@ public class SubtitleMediaHeaderBox extends AbstractMediaHeaderBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
     }
 
     public String toString() {

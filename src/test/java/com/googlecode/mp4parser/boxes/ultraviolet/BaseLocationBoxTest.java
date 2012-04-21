@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
 import com.coremedia.iso.IsoTypeReader;
-import com.googlecode.mp4parser.ByteBufferByteChannel;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
 

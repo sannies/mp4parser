@@ -18,6 +18,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -128,20 +129,20 @@ public class MediaHeaderBox extends AbstractFullBox {
         return result.toString();
     }
 
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
         if (getVersion() == 1) {
-            IsoTypeWriter.writeUInt64(bb, creationTime);
-            IsoTypeWriter.writeUInt64(bb, modificationTime);
-            IsoTypeWriter.writeUInt32(bb, timescale);
-            IsoTypeWriter.writeUInt64(bb, duration);
+            IsoTypeWriter.writeUInt64(byteBuffer, creationTime);
+            IsoTypeWriter.writeUInt64(byteBuffer, modificationTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, timescale);
+            IsoTypeWriter.writeUInt64(byteBuffer, duration);
         } else {
-            IsoTypeWriter.writeUInt32(bb, creationTime);
-            IsoTypeWriter.writeUInt32(bb, modificationTime);
-            IsoTypeWriter.writeUInt32(bb, timescale);
-            IsoTypeWriter.writeUInt32(bb, duration);
+            IsoTypeWriter.writeUInt32(byteBuffer, creationTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, modificationTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, timescale);
+            IsoTypeWriter.writeUInt32(byteBuffer, duration);
         }
-        IsoTypeWriter.writeIso639(bb, language);
-        IsoTypeWriter.writeUInt16(bb, 0);
+        IsoTypeWriter.writeIso639(byteBuffer, language);
+        IsoTypeWriter.writeUInt16(byteBuffer, 0);
     }
 }

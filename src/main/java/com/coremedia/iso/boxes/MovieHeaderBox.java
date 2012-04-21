@@ -18,6 +18,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -146,33 +147,33 @@ public class MovieHeaderBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
         if (getVersion() == 1) {
-            IsoTypeWriter.writeUInt64(bb, creationTime);
-            IsoTypeWriter.writeUInt64(bb, modificationTime);
-            IsoTypeWriter.writeUInt32(bb, timescale);
-            IsoTypeWriter.writeUInt64(bb, duration);
+            IsoTypeWriter.writeUInt64(byteBuffer, creationTime);
+            IsoTypeWriter.writeUInt64(byteBuffer, modificationTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, timescale);
+            IsoTypeWriter.writeUInt64(byteBuffer, duration);
         } else {
-            IsoTypeWriter.writeUInt32(bb, creationTime);
-            IsoTypeWriter.writeUInt32(bb, modificationTime);
-            IsoTypeWriter.writeUInt32(bb, timescale);
-            IsoTypeWriter.writeUInt32(bb, duration);
+            IsoTypeWriter.writeUInt32(byteBuffer, creationTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, modificationTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, timescale);
+            IsoTypeWriter.writeUInt32(byteBuffer, duration);
         }
-        IsoTypeWriter.writeFixedPont1616(bb, rate);
-        IsoTypeWriter.writeFixedPont88(bb, volume);
-        IsoTypeWriter.writeUInt16(bb, 0);
-        IsoTypeWriter.writeUInt32(bb, 0);
-        IsoTypeWriter.writeUInt32(bb, 0);
+        IsoTypeWriter.writeFixedPont1616(byteBuffer, rate);
+        IsoTypeWriter.writeFixedPont88(byteBuffer, volume);
+        IsoTypeWriter.writeUInt16(byteBuffer, 0);
+        IsoTypeWriter.writeUInt32(byteBuffer, 0);
+        IsoTypeWriter.writeUInt32(byteBuffer, 0);
 
 
         for (int i = 0; i < 9; i++) {
-            IsoTypeWriter.writeUInt32(bb, matrix[i]);
+            IsoTypeWriter.writeUInt32(byteBuffer, matrix[i]);
         }
         for (int i = 0; i < 6; i++) {
-            IsoTypeWriter.writeUInt32(bb, 0);
+            IsoTypeWriter.writeUInt32(byteBuffer, 0);
         }
-        IsoTypeWriter.writeUInt32(bb, nextTrackId);
+        IsoTypeWriter.writeUInt32(byteBuffer, nextTrackId);
     }
 
 

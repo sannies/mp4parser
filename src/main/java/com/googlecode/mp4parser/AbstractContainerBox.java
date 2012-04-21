@@ -14,10 +14,12 @@
  * limitations under the License. 
  */
 
-package com.coremedia.iso.boxes;
+package com.googlecode.mp4parser;
 
 import com.coremedia.iso.BoxParser;
-import com.googlecode.mp4parser.ByteBufferByteChannel;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.ContainerBox;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -98,8 +100,8 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     @Override
-    public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        super.parse(in, header, contentSize, boxParser);
+    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        super.parse(readableByteChannel, header, contentSize, boxParser);
         this.boxParser = boxParser;
     }
 
@@ -134,8 +136,8 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeChildBoxes(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeChildBoxes(byteBuffer);
     }
 
     protected final void parseChildBoxes(ByteBuffer content) {
@@ -145,8 +147,8 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
             }
 
             if (content.remaining() != 0) {
-                deadBytes = content.slice();
-                LOG.warning("Some sizes are wrong");
+                setDeadBytes(content.slice());
+                LOG.warning("Something's wrong with the sizes. There are dead bytes in a container box.");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

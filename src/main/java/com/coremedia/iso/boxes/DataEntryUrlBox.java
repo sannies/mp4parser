@@ -16,6 +16,8 @@
 
 package com.coremedia.iso.boxes;
 
+import com.googlecode.mp4parser.AbstractFullBox;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -38,8 +40,8 @@ public class DataEntryUrlBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
     }
 
     protected long getContentSize() {

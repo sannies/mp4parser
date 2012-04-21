@@ -27,7 +27,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * This box contains the media data. In video tracks, this box would contain video frames. A presentation may
@@ -71,14 +71,14 @@ public final class MediaDataBox implements Box {
         return header.limit() + content.limit();
     }
 
-    public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         this.header = header;
-        if (in instanceof FileChannel && contentSize > 1024 * 1024) {
+        if (readableByteChannel instanceof FileChannel && contentSize > 1024 * 1024) {
             // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
-            content = ((FileChannel) in).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) in).position(), contentSize);
-            ((FileChannel) in).position(((FileChannel) in).position() + contentSize);
+            content = ((FileChannel) readableByteChannel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) readableByteChannel).position(), contentSize);
+            ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
         } else {
-            content = ChannelHelper.readFully(in, l2i(contentSize));
+            content = ChannelHelper.readFully(readableByteChannel, l2i(contentSize));
         }
 
 

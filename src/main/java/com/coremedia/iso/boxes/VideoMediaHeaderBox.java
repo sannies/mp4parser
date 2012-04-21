@@ -60,11 +60,11 @@ public class VideoMediaHeaderBox extends AbstractMediaHeaderBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt16(bb, graphicsmode);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt16(byteBuffer, graphicsmode);
         for (int anOpcolor : opcolor) {
-            IsoTypeWriter.writeUInt16(bb, anOpcolor);
+            IsoTypeWriter.writeUInt16(byteBuffer, anOpcolor);
         }
     }
 

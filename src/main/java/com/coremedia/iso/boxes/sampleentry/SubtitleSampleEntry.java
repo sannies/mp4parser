@@ -43,11 +43,11 @@ public class SubtitleSampleEntry extends SampleEntry {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        _writeReservedAndDataReferenceIndex(bb);
-        IsoTypeWriter.writeUtf8String(bb, namespace);
-        IsoTypeWriter.writeUtf8String(bb, schemaLocation);
-        IsoTypeWriter.writeUtf8String(bb, imageMimeType);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        _writeReservedAndDataReferenceIndex(byteBuffer);
+        IsoTypeWriter.writeUtf8String(byteBuffer, namespace);
+        IsoTypeWriter.writeUtf8String(byteBuffer, schemaLocation);
+        IsoTypeWriter.writeUtf8String(byteBuffer, imageMimeType);
     }
 
     public String getNamespace() {

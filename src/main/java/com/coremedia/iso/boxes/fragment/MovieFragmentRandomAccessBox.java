@@ -16,7 +16,7 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.boxes.AbstractContainerBox;
+import com.googlecode.mp4parser.AbstractContainerBox;
 
 /**
  * aligned(8) class MovieFragmentRandomAccessBox

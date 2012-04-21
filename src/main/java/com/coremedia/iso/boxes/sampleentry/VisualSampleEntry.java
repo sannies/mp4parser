@@ -156,34 +156,34 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        _writeReservedAndDataReferenceIndex(bb);
-        IsoTypeWriter.writeUInt16(bb, 0);
-        IsoTypeWriter.writeUInt16(bb, 0);
-        IsoTypeWriter.writeUInt32(bb, predefined[0]);
-        IsoTypeWriter.writeUInt32(bb, predefined[1]);
-        IsoTypeWriter.writeUInt32(bb, predefined[2]);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        _writeReservedAndDataReferenceIndex(byteBuffer);
+        IsoTypeWriter.writeUInt16(byteBuffer, 0);
+        IsoTypeWriter.writeUInt16(byteBuffer, 0);
+        IsoTypeWriter.writeUInt32(byteBuffer, predefined[0]);
+        IsoTypeWriter.writeUInt32(byteBuffer, predefined[1]);
+        IsoTypeWriter.writeUInt32(byteBuffer, predefined[2]);
 
-        IsoTypeWriter.writeUInt16(bb, getWidth());
-        IsoTypeWriter.writeUInt16(bb, getHeight());
+        IsoTypeWriter.writeUInt16(byteBuffer, getWidth());
+        IsoTypeWriter.writeUInt16(byteBuffer, getHeight());
 
-        IsoTypeWriter.writeFixedPont1616(bb, getHorizresolution());
-        IsoTypeWriter.writeFixedPont1616(bb, getVertresolution());
+        IsoTypeWriter.writeFixedPont1616(byteBuffer, getHorizresolution());
+        IsoTypeWriter.writeFixedPont1616(byteBuffer, getVertresolution());
 
 
-        IsoTypeWriter.writeUInt32(bb, 0);
-        IsoTypeWriter.writeUInt16(bb, getFrameCount());
-        IsoTypeWriter.writeUInt8(bb, Utf8.utf8StringLengthInBytes(getCompressorname()));
-        bb.put(Utf8.convert(getCompressorname()));
+        IsoTypeWriter.writeUInt32(byteBuffer, 0);
+        IsoTypeWriter.writeUInt16(byteBuffer, getFrameCount());
+        IsoTypeWriter.writeUInt8(byteBuffer, Utf8.utf8StringLengthInBytes(getCompressorname()));
+        byteBuffer.put(Utf8.convert(getCompressorname()));
         int a = Utf8.utf8StringLengthInBytes(getCompressorname());
         while (a < 31) {
             a++;
-            bb.put((byte) 0);
+            byteBuffer.put((byte) 0);
         }
-        IsoTypeWriter.writeUInt16(bb, getDepth());
-        IsoTypeWriter.writeUInt16(bb, 0xFFFF);
+        IsoTypeWriter.writeUInt16(byteBuffer, getDepth());
+        IsoTypeWriter.writeUInt16(byteBuffer, 0xFFFF);
 
-        _writeChildBoxes(bb);
+        _writeChildBoxes(byteBuffer);
 
     }
 

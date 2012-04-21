@@ -3,10 +3,10 @@ package com.coremedia.iso.boxes.apple;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
-import com.coremedia.iso.boxes.AbstractBox;
+import com.googlecode.mp4parser.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
-import com.googlecode.mp4parser.ByteBufferByteChannel;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -69,8 +69,8 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
         return appleDataBox.getSize();
     }
 
-    protected void getContent(ByteBuffer os) throws IOException {
-        appleDataBox.getBox(new ByteBufferByteChannel(os));
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        appleDataBox.getBox(new ByteBufferByteChannel(byteBuffer));
     }
 
     public long getNumOfBytesToFirstChild() {

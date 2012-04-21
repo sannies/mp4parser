@@ -1,5 +1,7 @@
 package com.coremedia.iso.boxes;
 
+import com.googlecode.mp4parser.AbstractFullBox;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -48,13 +50,13 @@ public class CompositionShiftLeastGreatestAtom extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        bb.putInt(compositionOffsetToDisplayOffsetShift);
-        bb.putInt(leastDisplayOffset);
-        bb.putInt(greatestDisplayOffset);
-        bb.putInt(displayStartTime);
-        bb.putInt(displayEndTime);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        byteBuffer.putInt(compositionOffsetToDisplayOffsetShift);
+        byteBuffer.putInt(leastDisplayOffset);
+        byteBuffer.putInt(greatestDisplayOffset);
+        byteBuffer.putInt(displayStartTime);
+        byteBuffer.putInt(displayEndTime);
     }
 
 

@@ -20,6 +20,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -80,12 +81,12 @@ public class SchemeTypeBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        bb.put(IsoFile.fourCCtoBytes(schemeType));
-        IsoTypeWriter.writeUInt32(bb, schemeVersion);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        byteBuffer.put(IsoFile.fourCCtoBytes(schemeType));
+        IsoTypeWriter.writeUInt32(byteBuffer, schemeVersion);
         if ((getFlags() & 1) == 1) {
-            bb.put(Utf8.convert(schemeUri));
+            byteBuffer.put(Utf8.convert(schemeUri));
         }
     }
 

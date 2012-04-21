@@ -17,6 +17,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
+import com.googlecode.mp4parser.AbstractContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -37,8 +38,8 @@ public class UserDataBox extends AbstractContainerBox {
     }
 
     @Override
-    public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        super.parse(in, header, contentSize, boxParser);    //To change body of overridden methods use File | Settings | File Templates.
+    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        super.parse(readableByteChannel, header, contentSize, boxParser);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     @Override
@@ -47,8 +48,8 @@ public class UserDataBox extends AbstractContainerBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        super.getContent(bb);    //To change body of overridden methods use File | Settings | File Templates.
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        super.getContent(byteBuffer);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     public UserDataBox() {

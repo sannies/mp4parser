@@ -47,10 +47,10 @@ public class SoundMediaHeaderBox extends AbstractMediaHeaderBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeFixedPont88(bb, balance);
-        IsoTypeWriter.writeUInt16(bb, 0);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeFixedPont88(byteBuffer, balance);
+        IsoTypeWriter.writeUInt16(byteBuffer, 0);
     }
 
     public String toString() {

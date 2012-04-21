@@ -21,6 +21,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -130,18 +131,18 @@ public class HandlerBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, shouldBeZeroButAppleWritesHereSomeValue);
-        bb.put(IsoFile.fourCCtoBytes(handlerType));
-        IsoTypeWriter.writeUInt32(bb, a);
-        IsoTypeWriter.writeUInt32(bb, b);
-        IsoTypeWriter.writeUInt32(bb, c);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt32(byteBuffer, shouldBeZeroButAppleWritesHereSomeValue);
+        byteBuffer.put(IsoFile.fourCCtoBytes(handlerType));
+        IsoTypeWriter.writeUInt32(byteBuffer, a);
+        IsoTypeWriter.writeUInt32(byteBuffer, b);
+        IsoTypeWriter.writeUInt32(byteBuffer, c);
         if (name != null) {
-            bb.put(Utf8.convert(name));
+            byteBuffer.put(Utf8.convert(name));
         }
         if (zeroTerm) {
-            bb.put((byte) 0);
+            byteBuffer.put((byte) 0);
         }
     }
 

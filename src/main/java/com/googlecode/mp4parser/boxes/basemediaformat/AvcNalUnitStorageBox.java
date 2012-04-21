@@ -16,7 +16,7 @@
 
 package com.googlecode.mp4parser.boxes.basemediaformat;
 
-import com.coremedia.iso.boxes.AbstractBox;
+import com.googlecode.mp4parser.AbstractBox;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 
 import java.io.ByteArrayOutputStream;
@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * The AVC NAL Unit Storage Box SHALL contain an AVCDecoderConfigurationRecord,
@@ -67,8 +67,8 @@ public class AvcNalUnitStorageBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        bb.put(data);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        byteBuffer.put(data);
     }
 
     @Override

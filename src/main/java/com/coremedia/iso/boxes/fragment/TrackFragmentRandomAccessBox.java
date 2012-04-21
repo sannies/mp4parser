@@ -20,7 +20,7 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeReaderVariable;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.IsoTypeWriterVariable;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -114,28 +114,28 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, trackId);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt32(byteBuffer, trackId);
         long temp;
         temp = reserved << 6;
         temp = temp | (((lengthSizeOfTrafNum - 1) & 0x3) << 4);
         temp = temp | (((lengthSizeOfTrunNum - 1) & 0x3) << 2);
         temp = temp | ((lengthSizeOfSampleNum - 1) & 0x3);
-        IsoTypeWriter.writeUInt32(bb, temp);
-        IsoTypeWriter.writeUInt32(bb, entries.size());
+        IsoTypeWriter.writeUInt32(byteBuffer, temp);
+        IsoTypeWriter.writeUInt32(byteBuffer, entries.size());
 
         for (Entry entry : entries) {
             if (getVersion() == 1) {
-                IsoTypeWriter.writeUInt64(bb, entry.time);
-                IsoTypeWriter.writeUInt64(bb, entry.moofOffset);
+                IsoTypeWriter.writeUInt64(byteBuffer, entry.time);
+                IsoTypeWriter.writeUInt64(byteBuffer, entry.moofOffset);
             } else {
-                IsoTypeWriter.writeUInt32(bb, entry.time);
-                IsoTypeWriter.writeUInt32(bb, entry.moofOffset);
+                IsoTypeWriter.writeUInt32(byteBuffer, entry.time);
+                IsoTypeWriter.writeUInt32(byteBuffer, entry.moofOffset);
             }
-            IsoTypeWriterVariable.write(entry.trafNumber, bb, lengthSizeOfTrafNum);
-            IsoTypeWriterVariable.write(entry.trunNumber, bb, lengthSizeOfTrunNum);
-            IsoTypeWriterVariable.write(entry.sampleNumber, bb, lengthSizeOfSampleNum);
+            IsoTypeWriterVariable.write(entry.trafNumber, byteBuffer, lengthSizeOfTrafNum);
+            IsoTypeWriterVariable.write(entry.trunNumber, byteBuffer, lengthSizeOfTrunNum);
+            IsoTypeWriterVariable.write(entry.sampleNumber, byteBuffer, lengthSizeOfSampleNum);
 
         }
     }

@@ -3,7 +3,7 @@ package com.googlecode.mp4parser.boxes.threegpp26245;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
-import com.coremedia.iso.boxes.AbstractBox;
+import com.googlecode.mp4parser.AbstractBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -41,10 +41,10 @@ public class FontTableBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        IsoTypeWriter.writeUInt16(bb, entries.size());
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        IsoTypeWriter.writeUInt16(byteBuffer, entries.size());
         for (FontRecord record : entries) {
-            record.getContent(bb);
+            record.getContent(byteBuffer);
         }
     }
 

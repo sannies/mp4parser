@@ -2,7 +2,7 @@ package com.googlecode.mp4parser.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -58,11 +58,11 @@ public abstract class AbstractTrackEncryptionBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt24(bb, defaultAlgorithmId);
-        IsoTypeWriter.writeUInt8(bb, defaultIvSize);
-        bb.put(default_KID);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt24(byteBuffer, defaultAlgorithmId);
+        IsoTypeWriter.writeUInt8(byteBuffer, defaultIvSize);
+        byteBuffer.put(default_KID);
     }
 
     @Override

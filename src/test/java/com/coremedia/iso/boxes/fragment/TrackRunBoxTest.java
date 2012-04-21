@@ -1,7 +1,7 @@
 package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.ByteBufferByteChannel;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 public class TrackRunBoxTest {
 

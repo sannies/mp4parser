@@ -16,6 +16,8 @@
 
 package com.coremedia.iso.boxes;
 
+import com.googlecode.mp4parser.AbstractContainerBox;
+
 /**
  * <code>
  * Box Type: 'tref'<br>

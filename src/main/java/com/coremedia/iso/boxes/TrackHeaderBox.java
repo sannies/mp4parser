@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -134,32 +135,32 @@ public class TrackHeaderBox extends AbstractFullBox {
         height = IsoTypeReader.readFixedPoint1616(content);
     }
 
-    public void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
+    public void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
         if (getVersion() == 1) {
-            IsoTypeWriter.writeUInt64(bb, creationTime);
-            IsoTypeWriter.writeUInt64(bb, modificationTime);
-            IsoTypeWriter.writeUInt32(bb, trackId);
-            IsoTypeWriter.writeUInt32(bb, 0);
-            IsoTypeWriter.writeUInt64(bb, duration);
+            IsoTypeWriter.writeUInt64(byteBuffer, creationTime);
+            IsoTypeWriter.writeUInt64(byteBuffer, modificationTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, trackId);
+            IsoTypeWriter.writeUInt32(byteBuffer, 0);
+            IsoTypeWriter.writeUInt64(byteBuffer, duration);
         } else {
-            IsoTypeWriter.writeUInt32(bb, creationTime);
-            IsoTypeWriter.writeUInt32(bb, modificationTime);
-            IsoTypeWriter.writeUInt32(bb, trackId);
-            IsoTypeWriter.writeUInt32(bb, 0);
-            IsoTypeWriter.writeUInt32(bb, duration);
+            IsoTypeWriter.writeUInt32(byteBuffer, creationTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, modificationTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, trackId);
+            IsoTypeWriter.writeUInt32(byteBuffer, 0);
+            IsoTypeWriter.writeUInt32(byteBuffer, duration);
         } // 196
-        IsoTypeWriter.writeUInt32(bb, 0);
-        IsoTypeWriter.writeUInt32(bb, 0);
-        IsoTypeWriter.writeUInt16(bb, layer);
-        IsoTypeWriter.writeUInt16(bb, alternateGroup);
-        IsoTypeWriter.writeFixedPont88(bb, volume);
-        IsoTypeWriter.writeUInt16(bb, 0);
+        IsoTypeWriter.writeUInt32(byteBuffer, 0);
+        IsoTypeWriter.writeUInt32(byteBuffer, 0);
+        IsoTypeWriter.writeUInt16(byteBuffer, layer);
+        IsoTypeWriter.writeUInt16(byteBuffer, alternateGroup);
+        IsoTypeWriter.writeFixedPont88(byteBuffer, volume);
+        IsoTypeWriter.writeUInt16(byteBuffer, 0);
         for (int i = 0; i < 9; i++) {
-            IsoTypeWriter.writeUInt32(bb, matrix[i]);
+            IsoTypeWriter.writeUInt32(byteBuffer, matrix[i]);
         }
-        IsoTypeWriter.writeFixedPont1616(bb, width);
-        IsoTypeWriter.writeFixedPont1616(bb, height);
+        IsoTypeWriter.writeFixedPont1616(byteBuffer, width);
+        IsoTypeWriter.writeFixedPont1616(byteBuffer, height);
     }
 
     public String toString() {

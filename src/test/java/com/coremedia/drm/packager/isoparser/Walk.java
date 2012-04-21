@@ -16,7 +16,7 @@
 
 package com.coremedia.drm.packager.isoparser;
 
-import com.coremedia.iso.boxes.AbstractBox;
+import com.googlecode.mp4parser.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
@@ -45,7 +45,6 @@ public final class Walk {
             "flags",
             "isoFile",
             "parent",
-            "data",
             "omaDrmData",
             "content",
             "tracks",

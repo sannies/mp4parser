@@ -43,7 +43,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 import static com.googlecode.mp4parser.util.Math.lcm;
 
 public class FlatManifestWriterImpl implements ManifestWriter {

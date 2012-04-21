@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -89,13 +90,13 @@ public class AlbumBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeIso639(bb, language);
-        bb.put(Utf8.convert(albumTitle));
-        bb.put((byte) 0);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeIso639(byteBuffer, language);
+        byteBuffer.put(Utf8.convert(albumTitle));
+        byteBuffer.put((byte) 0);
         if (trackNumber != -1) {
-            IsoTypeWriter.writeUInt8(bb, trackNumber);
+            IsoTypeWriter.writeUInt8(byteBuffer, trackNumber);
         }
     }
 

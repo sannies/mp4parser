@@ -71,13 +71,13 @@ public class HintMediaHeaderBox extends AbstractMediaHeaderBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt16(bb, maxPduSize);
-        IsoTypeWriter.writeUInt16(bb, avgPduSize);
-        IsoTypeWriter.writeUInt32(bb, maxBitrate);
-        IsoTypeWriter.writeUInt32(bb, avgBitrate);
-        IsoTypeWriter.writeUInt32(bb, 0);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt16(byteBuffer, maxPduSize);
+        IsoTypeWriter.writeUInt16(byteBuffer, avgPduSize);
+        IsoTypeWriter.writeUInt32(byteBuffer, maxBitrate);
+        IsoTypeWriter.writeUInt32(byteBuffer, avgBitrate);
+        IsoTypeWriter.writeUInt32(byteBuffer, 0);
     }
 
     @Override

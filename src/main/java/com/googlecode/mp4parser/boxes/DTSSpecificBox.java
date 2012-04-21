@@ -2,7 +2,7 @@ package com.googlecode.mp4parser.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.AbstractBox;
+import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
@@ -67,12 +67,12 @@ public class DTSSpecificBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        IsoTypeWriter.writeUInt32(bb, DTSSamplingFrequency);
-        IsoTypeWriter.writeUInt32(bb, maxBitRate);
-        IsoTypeWriter.writeUInt32(bb, avgBitRate);
-        IsoTypeWriter.writeUInt8(bb, pcmSampleDepth);
-        BitWriterBuffer bwb = new BitWriterBuffer(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        IsoTypeWriter.writeUInt32(byteBuffer, DTSSamplingFrequency);
+        IsoTypeWriter.writeUInt32(byteBuffer, maxBitRate);
+        IsoTypeWriter.writeUInt32(byteBuffer, avgBitRate);
+        IsoTypeWriter.writeUInt8(byteBuffer, pcmSampleDepth);
+        BitWriterBuffer bwb = new BitWriterBuffer(byteBuffer);
         bwb.writeBits(frameDuration, 2);
         bwb.writeBits(streamConstruction, 5);
         bwb.writeBits(coreLFEPresent, 1);

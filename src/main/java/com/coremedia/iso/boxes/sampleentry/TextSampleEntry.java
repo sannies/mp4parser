@@ -89,19 +89,19 @@ public class TextSampleEntry extends SampleEntry {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        _writeReservedAndDataReferenceIndex(bb);
-        IsoTypeWriter.writeUInt32(bb, displayFlags);
-        IsoTypeWriter.writeUInt8(bb, horizontalJustification);
-        IsoTypeWriter.writeUInt8(bb, verticalJustification);
-        IsoTypeWriter.writeUInt8(bb, backgroundColorRgba[0]);
-        IsoTypeWriter.writeUInt8(bb, backgroundColorRgba[1]);
-        IsoTypeWriter.writeUInt8(bb, backgroundColorRgba[2]);
-        IsoTypeWriter.writeUInt8(bb, backgroundColorRgba[3]);
-        boxRecord.getContent(bb);
-        styleRecord.getContent(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        _writeReservedAndDataReferenceIndex(byteBuffer);
+        IsoTypeWriter.writeUInt32(byteBuffer, displayFlags);
+        IsoTypeWriter.writeUInt8(byteBuffer, horizontalJustification);
+        IsoTypeWriter.writeUInt8(byteBuffer, verticalJustification);
+        IsoTypeWriter.writeUInt8(byteBuffer, backgroundColorRgba[0]);
+        IsoTypeWriter.writeUInt8(byteBuffer, backgroundColorRgba[1]);
+        IsoTypeWriter.writeUInt8(byteBuffer, backgroundColorRgba[2]);
+        IsoTypeWriter.writeUInt8(byteBuffer, backgroundColorRgba[3]);
+        boxRecord.getContent(byteBuffer);
+        styleRecord.getContent(byteBuffer);
 
-        _writeChildBoxes(bb);
+        _writeChildBoxes(byteBuffer);
     }
 
     public BoxRecord getBoxRecord() {

@@ -32,8 +32,8 @@ public class ActionMessageFormat0SampleEntryBox extends SampleEntry {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        _writeReservedAndDataReferenceIndex(bb);
-        _writeChildBoxes(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        _writeReservedAndDataReferenceIndex(byteBuffer);
+        _writeChildBoxes(byteBuffer);
     }
 }

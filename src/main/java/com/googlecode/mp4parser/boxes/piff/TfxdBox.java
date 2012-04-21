@@ -2,7 +2,7 @@ package com.googlecode.mp4parser.boxes.piff;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -65,14 +65,14 @@ public class TfxdBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
         if (getVersion() == 0x01) {
-            IsoTypeWriter.writeUInt64(bb, fragmentAbsoluteTime);
-            IsoTypeWriter.writeUInt64(bb, fragmentAbsoluteDuration);
+            IsoTypeWriter.writeUInt64(byteBuffer, fragmentAbsoluteTime);
+            IsoTypeWriter.writeUInt64(byteBuffer, fragmentAbsoluteDuration);
         } else {
-            IsoTypeWriter.writeUInt32(bb, fragmentAbsoluteTime);
-            IsoTypeWriter.writeUInt32(bb, fragmentAbsoluteDuration);
+            IsoTypeWriter.writeUInt32(byteBuffer, fragmentAbsoluteTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, fragmentAbsoluteDuration);
         }
     }
 

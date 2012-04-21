@@ -3,7 +3,7 @@ package com.coremedia.iso.boxes.threegpp26244;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -110,18 +110,18 @@ public class LocationInformationBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeIso639(bb, language);
-        bb.put(Utf8.convert(name));
-        bb.put((byte) 0);
-        IsoTypeWriter.writeUInt8(bb, role);
-        IsoTypeWriter.writeFixedPont1616(bb, longitude);
-        IsoTypeWriter.writeFixedPont1616(bb, latitude);
-        IsoTypeWriter.writeFixedPont1616(bb, altitude);
-        bb.put(Utf8.convert(astronomicalBody));
-        bb.put((byte) 0);
-        bb.put(Utf8.convert(additionalNotes));
-        bb.put((byte) 0);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeIso639(byteBuffer, language);
+        byteBuffer.put(Utf8.convert(name));
+        byteBuffer.put((byte) 0);
+        IsoTypeWriter.writeUInt8(byteBuffer, role);
+        IsoTypeWriter.writeFixedPont1616(byteBuffer, longitude);
+        IsoTypeWriter.writeFixedPont1616(byteBuffer, latitude);
+        IsoTypeWriter.writeFixedPont1616(byteBuffer, altitude);
+        byteBuffer.put(Utf8.convert(astronomicalBody));
+        byteBuffer.put((byte) 0);
+        byteBuffer.put(Utf8.convert(additionalNotes));
+        byteBuffer.put((byte) 0);
     }
 }

@@ -23,11 +23,10 @@ import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
 
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * Represents a single track of an MP4 file.

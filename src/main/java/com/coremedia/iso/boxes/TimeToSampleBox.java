@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -26,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * This box contains a compact version of a table that allows indexing from decoding time to sample number.
@@ -68,12 +69,12 @@ public class TimeToSampleBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, entries.size());
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt32(byteBuffer, entries.size());
         for (Entry entry : entries) {
-            IsoTypeWriter.writeUInt32(bb, entry.getCount());
-            IsoTypeWriter.writeUInt32(bb, entry.getDelta());
+            IsoTypeWriter.writeUInt32(byteBuffer, entry.getCount());
+            IsoTypeWriter.writeUInt32(byteBuffer, entry.getDelta());
         }
     }
 

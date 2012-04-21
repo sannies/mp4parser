@@ -17,6 +17,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -37,5 +38,5 @@ public interface Box {
 
     void getBox(WritableByteChannel writableByteChannel) throws IOException;
 
-    void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
+    void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
 }

@@ -63,7 +63,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * Creates a plain MP4 file from a video. Plain as plain can be.
@@ -338,7 +338,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             this.parent = parent;
         }
 
-        public void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         }
 
         private InterleaveChunkMdat(Movie movie) {

@@ -1,7 +1,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.ByteBufferByteChannel;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 

@@ -20,7 +20,7 @@ package com.coremedia.iso.boxes.sampleentry;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.AbstractBox;
+import com.googlecode.mp4parser.AbstractBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -81,12 +81,12 @@ public class AmrSpecificBox extends AbstractBox {
     }
 
 
-    public void getContent(ByteBuffer bb) throws IOException {
-        bb.put(IsoFile.fourCCtoBytes(vendor));
-        IsoTypeWriter.writeUInt8(bb, decoderVersion);
-        IsoTypeWriter.writeUInt16(bb, modeSet);
-        IsoTypeWriter.writeUInt8(bb, modeChangePeriod);
-        IsoTypeWriter.writeUInt8(bb, framesPerSample);
+    public void getContent(ByteBuffer byteBuffer) throws IOException {
+        byteBuffer.put(IsoFile.fourCCtoBytes(vendor));
+        IsoTypeWriter.writeUInt8(byteBuffer, decoderVersion);
+        IsoTypeWriter.writeUInt16(byteBuffer, modeSet);
+        IsoTypeWriter.writeUInt8(byteBuffer, modeChangePeriod);
+        IsoTypeWriter.writeUInt8(byteBuffer, framesPerSample);
     }
 
     public String toString() {

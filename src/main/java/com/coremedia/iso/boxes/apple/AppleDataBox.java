@@ -1,6 +1,6 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -77,10 +77,10 @@ public final class AppleDataBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        bb.put(fourBytes, 0, 4);
-        bb.put(data);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        byteBuffer.put(fourBytes, 0, 4);
+        byteBuffer.put(data);
     }
 
     public byte[] getFourBytes() {

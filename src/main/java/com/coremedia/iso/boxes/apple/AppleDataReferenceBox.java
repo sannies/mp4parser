@@ -20,12 +20,12 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 public class AppleDataReferenceBox extends AbstractFullBox {
     public static final String TYPE = "rdrf";
@@ -51,11 +51,11 @@ public class AppleDataReferenceBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        bb.put(IsoFile.fourCCtoBytes(dataReferenceType));
-        IsoTypeWriter.writeUInt32(bb, dataReferenceSize);
-        bb.put(Utf8.convert(dataReference));
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        byteBuffer.put(IsoFile.fourCCtoBytes(dataReferenceType));
+        IsoTypeWriter.writeUInt32(byteBuffer, dataReferenceSize);
+        byteBuffer.put(Utf8.convert(dataReference));
     }
 
     public long getDataReferenceSize() {

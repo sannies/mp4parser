@@ -22,7 +22,7 @@ import com.coremedia.iso.IsoTypeWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * The chunk offset table gives the index of each chunk into the containing file. Defined in ISO/IEC 14496-12.
@@ -60,11 +60,11 @@ public class StaticChunkOffsetBox extends ChunkOffsetBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, chunkOffsets.length);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt32(byteBuffer, chunkOffsets.length);
         for (long chunkOffset : chunkOffsets) {
-            IsoTypeWriter.writeUInt32(bb, chunkOffset);
+            IsoTypeWriter.writeUInt32(byteBuffer, chunkOffset);
         }
     }
 

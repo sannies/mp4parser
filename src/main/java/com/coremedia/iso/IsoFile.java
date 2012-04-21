@@ -16,10 +16,10 @@
 
 package com.coremedia.iso;
 
-import com.coremedia.iso.boxes.AbstractContainerBox;
+import com.googlecode.mp4parser.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.MovieBox;
-import com.googlecode.mp4parser.DoNotParseDetail;
+import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 
 import java.io.EOFException;
 import java.io.IOException;

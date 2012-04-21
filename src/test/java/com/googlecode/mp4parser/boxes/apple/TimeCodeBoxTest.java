@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.boxes.apple;
 
 import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.ByteBufferByteChannel;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Assert;
@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * Created with IntelliJ IDEA.
@@ -35,7 +35,8 @@ public class TimeCodeBoxTest {
         IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(box)));
         TimeCodeBox tmcd = (TimeCodeBox) isoFile.getBoxes().get(0);
         ByteBuffer byteBuffer = ByteBuffer.allocate(l2i(tmcd.getSize()));
-        tmcd.parseDetails();
+        tmcd.getDataReferenceIndex();
+        Assert.assertTrue(tmcd.isParsed());
         tmcd.getBox(new ByteBufferByteChannel(byteBuffer));
         Assert.assertArrayEquals(box, byteBuffer.array());
     }

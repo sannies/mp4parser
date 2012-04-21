@@ -14,11 +14,12 @@
  * limitations under the License. 
  */
 
-package com.coremedia.iso.boxes;
+package com.googlecode.mp4parser;
 
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.boxes.FullBox;
 
 import java.nio.ByteBuffer;
 

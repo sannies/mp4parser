@@ -18,7 +18,7 @@ package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -72,24 +72,24 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
     }
 
 
-    protected void getContent(ByteBuffer bb) throws IOException {
-        writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, trackId);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeUInt32(byteBuffer, trackId);
 
         if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
-            IsoTypeWriter.writeUInt64(bb, getBaseDataOffset());
+            IsoTypeWriter.writeUInt64(byteBuffer, getBaseDataOffset());
         }
         if ((getFlags() & 0x2) == 0x2) { //sampleDescriptionIndexPresent
-            IsoTypeWriter.writeUInt32(bb, getSampleDescriptionIndex());
+            IsoTypeWriter.writeUInt32(byteBuffer, getSampleDescriptionIndex());
         }
         if ((getFlags() & 0x8) == 0x8) { //defaultSampleDurationPresent
-            IsoTypeWriter.writeUInt32(bb, getDefaultSampleDuration());
+            IsoTypeWriter.writeUInt32(byteBuffer, getDefaultSampleDuration());
         }
         if ((getFlags() & 0x10) == 0x10) { //defaultSampleSizePresent
-            IsoTypeWriter.writeUInt32(bb, getDefaultSampleSize());
+            IsoTypeWriter.writeUInt32(byteBuffer, getDefaultSampleSize());
         }
         if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
-            defaultSampleFlags.getContent(bb);
+            defaultSampleFlags.getContent(byteBuffer);
         }
     }
 

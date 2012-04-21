@@ -16,6 +16,8 @@
 
 package com.coremedia.iso.boxes;
 
+import com.googlecode.mp4parser.AbstractBox;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -27,8 +29,7 @@ public class UserBox extends AbstractBox {
     public static final String TYPE = "uuid";
 
     public UserBox(byte[] userType) {
-        super(TYPE);
-        setUserType(userType);
+        super(TYPE, userType);
     }
 
 
@@ -58,7 +59,7 @@ public class UserBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        bb.put(data);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        byteBuffer.put(data);
     }
 }

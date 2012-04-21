@@ -4,7 +4,7 @@ package com.coremedia.iso.boxes.mdat;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.MovieBox;
 import com.coremedia.iso.boxes.TrackBox;
-import com.googlecode.mp4parser.ByteBufferByteChannel;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;

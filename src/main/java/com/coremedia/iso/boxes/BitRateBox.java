@@ -18,6 +18,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.AbstractBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -59,10 +60,10 @@ public final class BitRateBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        IsoTypeWriter.writeUInt32(bb, bufferSizeDb);
-        IsoTypeWriter.writeUInt32(bb, maxBitrate);
-        IsoTypeWriter.writeUInt32(bb, avgBitrate);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        IsoTypeWriter.writeUInt32(byteBuffer, bufferSizeDb);
+        IsoTypeWriter.writeUInt32(byteBuffer, maxBitrate);
+        IsoTypeWriter.writeUInt32(byteBuffer, avgBitrate);
     }
 
     public long getBufferSizeDb() {

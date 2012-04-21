@@ -32,9 +32,9 @@ public class TimeCodeBox extends SampleEntry {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        _writeReservedAndDataReferenceIndex(bb);
-        bb.put(data);
-        _writeChildBoxes(bb);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        _writeReservedAndDataReferenceIndex(byteBuffer);
+        byteBuffer.put(data);
+        _writeChildBoxes(byteBuffer);
     }
 }

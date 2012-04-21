@@ -32,10 +32,10 @@ public class Ovc1VisualSampleEntryImpl extends SampleEntry {
     }
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
-        bb.put(new byte[6]);
-        IsoTypeWriter.writeUInt16(bb, getDataReferenceIndex());
-        bb.put(vc1Content);
+    protected void getContent(ByteBuffer byteBuffer) throws IOException {
+        byteBuffer.put(new byte[6]);
+        IsoTypeWriter.writeUInt16(byteBuffer, getDataReferenceIndex());
+        byteBuffer.put(vc1Content);
     }
 
 
