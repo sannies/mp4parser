@@ -142,7 +142,6 @@ public class FlatPackageWriterImpl implements PackageWriter {
 
     public Movie correctTimescale(Movie movie) {
         Movie nuMovie = new Movie();
-        movie.setMovieMetaData(movie.getMovieMetaData());
         for (Track track : movie.getTracks()) {
             nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, ChangeTimeScaleTrack.getGoodScaleFactor(track, movie, timeScale)));
         }

@@ -23,8 +23,6 @@ import java.util.List;
  */
 public class Movie {
     List<Track> tracks = new LinkedList<Track>();
-    MovieMetaData movieMetaData = new MovieMetaData();
-
 
     public List<Track> getTracks() {
         return tracks;
@@ -44,22 +42,15 @@ public class Movie {
         tracks.add(nuTrack);
     }
 
-    public MovieMetaData getMovieMetaData() {
-        return movieMetaData;
-    }
-
-    public void setMovieMetaData(MovieMetaData movieMetaData) {
-        this.movieMetaData = movieMetaData;
-    }
 
     @Override
     public String toString() {
         String s = "Movie{ ";
         for (Track track : tracks) {
-            s += "track_" + track.getTrackMetaData().getTrackId() + " (" + track.getHandler() + "), ";
+            s += "track_" + track.getTrackMetaData().getTrackId() + " (" + track.getHandler() + ") ";
         }
 
-        s += ", movieMetaData=" + movieMetaData + '}';
+        s += '}';
         return s;
     }
 
