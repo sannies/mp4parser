@@ -65,7 +65,7 @@ public abstract class AbstractBox implements Box {
     }
 
     /**
-     * Get the box' content size without its header. This must be the exact number of bytes
+     * Get the box's content size without its header. This must be the exact number of bytes
      * that <code>getContent(ByteBuffer)</code> writes.
      *
      * @return Gets the box's content size in bytes
@@ -74,23 +74,23 @@ public abstract class AbstractBox implements Box {
     protected abstract long getContentSize();
 
     /**
-     * Write the box' content into the given <code>ByteBuffer</code>. This must include flags
+     * Write the box's content into the given <code>ByteBuffer</code>. This must include flags
      * and version in case of a full box. <code>byteBuffer</code> has been initialized with
      * <code>getSize()</code> bytes.
      *
-     * @param byteBuffer the sink for the box' content
+     * @param byteBuffer the sink for the box's content
      */
     protected abstract void getContent(ByteBuffer byteBuffer);
 
     /**
-     * Parse the box' fields and child boxes if any.
+     * Parse the box's fields and child boxes if any.
      *
-     * @param content the box' raw content beginning after the 4-cc field.
+     * @param content the box's raw content beginning after the 4-cc field.
      */
     protected abstract void _parseDetails(ByteBuffer content);
 
     /**
-     * Reads the box' content without parsing it. Parsing is done on-demand in case
+     * Read the box's content from a byte channel without parsing it. Parsing is done on-demand.
      *
      * @param readableByteChannel the (part of the) iso file to parse
      * @param contentSize         expected contentSize of the box
@@ -160,7 +160,7 @@ public abstract class AbstractBox implements Box {
     /**
      * Gets the full size of the box including header and content.
      *
-     * @return the box' size
+     * @return the box's size
      */
     public long getSize() {
         long size = (content == null ? getContentSize() : content.limit());

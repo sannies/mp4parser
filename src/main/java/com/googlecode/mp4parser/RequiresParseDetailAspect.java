@@ -20,6 +20,11 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 
 @Aspect
+/**
+ * An aspect to trigger the actual parsing of boxes' content when it is actually needed. This aspect
+ * calls {@link com.googlecode.mp4parser.AbstractBox#parseDetails()} before actually executing
+ * the method.
+ */
 public class RequiresParseDetailAspect {
 
 
