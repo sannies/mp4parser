@@ -41,6 +41,8 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * <li>{@link #getContent(java.nio.ByteBuffer)}</li>
  * <li>{@link #getContentSize()}</li>
  * </ol>
+ * additionally this new box has to be put into the <code>isoparser-default.properties</code> file so that
+ * it is accessible by the <code>PropertyBoxParserImpl</code>
  */
 public abstract class AbstractBox implements Box {
     private static Logger LOG = Logger.getLogger(AbstractBox.class.getName());
@@ -128,7 +130,8 @@ public abstract class AbstractBox implements Box {
 
 
     /**
-     * Parses the box' content.
+     * Parses the raw content of the box. It surrounds the actual parsing
+     * which is done
      */
     synchronized final void parseDetails() {
         if (content != null) {
@@ -204,7 +207,7 @@ public abstract class AbstractBox implements Box {
 
 
     /**
-     * Verifies that a box can be reconstructed byte exact after parsing.
+     * Verifies that a box can be reconstructed byte-exact after parsing.
      *
      * @param content the raw content of the box
      * @return <code>true</code> if raw content exactly matches the reconstructed content
