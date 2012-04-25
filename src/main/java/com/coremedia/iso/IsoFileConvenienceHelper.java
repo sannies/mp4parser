@@ -27,6 +27,7 @@ import java.util.List;
  *
  * @author Andre John Mas
  * @author Sebastian Annies
+ * @deprecated please use {@link com.googlecode.mp4parser.util.Path}. I will remove that class before 1.0.
  */
 public class IsoFileConvenienceHelper {
 
