@@ -273,7 +273,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
     private String getFormat(SampleEntry se) {
         String type = se.getType();
         if (type.equals("encv") || type.equals("enca") || type.equals("encv")) {
-            OriginalFormatBox frma = (OriginalFormatBox) IsoFileConvenienceHelper.get(se, "sinf/frma");
+            OriginalFormatBox frma = se.getBoxes(OriginalFormatBox.class, true).get(0);
             type = frma.getDataFormat();
         }
         return type;

@@ -30,9 +30,12 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
     private int version;
     private int flags;
 
-
     protected AbstractFullBox(String type) {
         super(type);
+    }
+
+    protected AbstractFullBox(String type, byte[] userType) {
+        super(type, userType);
     }
 
     public int getVersion() {

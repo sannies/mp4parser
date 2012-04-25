@@ -20,6 +20,17 @@ import java.nio.ByteBuffer;
 
 public final class IsoTypeReader {
 
+
+    public static long readUInt32BE(ByteBuffer bb) {
+        long ch1 = readUInt8(bb);
+        long ch2 = readUInt8(bb);
+        long ch3 = readUInt8(bb);
+        long ch4 = readUInt8(bb);
+        return ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0));
+
+    }
+
+
     public static long readUInt32(ByteBuffer bb) {
         long ch1 = readUInt8(bb);
         long ch2 = readUInt8(bb);
@@ -41,6 +52,13 @@ public final class IsoTypeReader {
         int result = 0;
         result += byte2int(bb.get()) << 8;
         result += byte2int(bb.get());
+        return result;
+    }
+
+    public static int readUInt16BE(ByteBuffer bb) {
+        int result = 0;
+        result += byte2int(bb.get());
+        result += byte2int(bb.get()) << 8;
         return result;
     }
 

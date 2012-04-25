@@ -35,6 +35,13 @@ public final class IsoTypeWriter {
 
     }
 
+    public static void writeUInt32BE(ByteBuffer bb, long u) {
+        assert u >= 0 && u <= 1L << 32 : "The given long is not in the range of uint32 (" + u + ")";
+        writeUInt16BE(bb, (int) u & 0xFFFF);
+        writeUInt16BE(bb, (int) ((u >> 16) & 0xFFFF));
+
+    }
+
 
     public static void writeUInt24(ByteBuffer bb, int i) {
         i = i & 0xFFFFFF;
@@ -48,6 +55,12 @@ public final class IsoTypeWriter {
         i = i & 0xFFFF;
         writeUInt8(bb, i >> 8);
         writeUInt8(bb, i & 0xFF);
+    }
+
+    public static void writeUInt16BE(ByteBuffer bb, int i) {
+        i = i & 0xFFFF;
+        writeUInt8(bb, i & 0xFF);
+        writeUInt8(bb, i >> 8);
     }
 
     public static void writeUInt8(ByteBuffer bb, int i) {
