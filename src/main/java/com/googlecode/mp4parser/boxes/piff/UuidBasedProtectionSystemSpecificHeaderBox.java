@@ -71,6 +71,10 @@ public class UuidBasedProtectionSystemSpecificHeaderBox extends AbstractFullBox 
         return systemId;
     }
 
+    public void setSystemId(UUID systemId) {
+        this.systemId = systemId;
+    }
+
     public String getSystemIdString() {
         return systemId.toString();
     }
@@ -84,7 +88,6 @@ public class UuidBasedProtectionSystemSpecificHeaderBox extends AbstractFullBox 
     }
 
     public void setProtectionSpecificHeader(ProtectionSpecificHeader protectionSpecificHeader) {
-        this.systemId = protectionSpecificHeader.uuid();
         this.protectionSpecificHeader = protectionSpecificHeader;
     }
 

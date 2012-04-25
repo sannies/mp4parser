@@ -25,12 +25,6 @@ public class ProtectionSpecificHeader {
         uuidRegistry.put(UUID.fromString("9A04F079-9840-4286-AB92-E65BE0885F95"), PlayReadyHeader.class);
     }
 
-    UUID uuid;
-
-    UUID uuid() {
-        return uuid;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ProtectionSpecificHeader) {
@@ -55,7 +49,6 @@ public class ProtectionSpecificHeader {
                 throw new RuntimeException(e);
             }
         }
-        protectionSpecificHeader.uuid = systemId;
         protectionSpecificHeader.parse(bufferWrapper);
         return protectionSpecificHeader;
 
