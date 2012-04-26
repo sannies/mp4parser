@@ -107,6 +107,30 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         this.compressorname = compressorname;
     }
 
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public void setHorizresolution(double horizresolution) {
+        this.horizresolution = horizresolution;
+    }
+
+    public void setVertresolution(double vertresolution) {
+        this.vertresolution = vertresolution;
+    }
+
+    public void setFrameCount(int frameCount) {
+        this.frameCount = frameCount;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
     @Override
     public void _parseDetails(ByteBuffer content) {
         _parseReservedAndDataReferenceIndex(content);

@@ -25,6 +25,7 @@ import com.googlecode.mp4parser.h264.write.CAVLCWriter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
@@ -79,7 +80,11 @@ public class PictureParameterSet extends BitstreamElement {
     public PPSExt extended;
 
     public static PictureParameterSet read(byte[] b) throws IOException {
-        CAVLCReader reader = new CAVLCReader(new ByteArrayInputStream(b));
+        return read(new ByteArrayInputStream(b));
+    }
+
+    public static PictureParameterSet read(InputStream is) throws IOException {
+        CAVLCReader reader = new CAVLCReader(is);
         PictureParameterSet pps = new PictureParameterSet();
 
         pps.pic_parameter_set_id = reader.readUE("PPS: pic_parameter_set_id");
