@@ -201,12 +201,14 @@ public class DefaultMp4Builder implements Mp4Builder {
         tkhd.setVolume(track.getTrackMetaData().getVolume());
         trackBox.addBox(tkhd);
 
+/*
         EditBox edit = new EditBox();
         EditListBox editListBox = new EditListBox();
         editListBox.setEntries(Collections.singletonList(
                 new EditListBox.Entry(editListBox, (long) (track.getTrackMetaData().getStartTime() * getTimescale(movie)), -1, 1)));
         edit.addBox(editListBox);
         trackBox.addBox(edit);
+*/
 
         MediaBox mdia = new MediaBox();
         trackBox.addBox(mdia);
