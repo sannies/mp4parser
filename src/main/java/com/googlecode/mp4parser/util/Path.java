@@ -20,6 +20,8 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,25 +47,31 @@ public class Path {
         } else {
             List<?> boxesOfBoxType = box.getParent().getBoxes(box.getClass());
             int index = boxesOfBoxType.indexOf(box);
-            if (index != 0) {
-                path = String.format("/%s[%d]", box.getType(), index) + path;
-            } else {
-                path = String.format("/%s", box.getType()) + path;
-            }
+            path = String.format("/%s[%d]", box.getType(), index) + path;
+
             return createPath(box.getParent(), path);
         }
     }
 
     public Box getPath(String path) {
+        List<Box> all = getPath(isoFile, path);
+        return all.isEmpty() ?null:all.get(0);
+    }
+
+    public List<Box> getPaths(String path) {
         return getPath(isoFile, path);
     }
 
-    private Box getPath(Box box, String path) {
+    public boolean isContained(Box box, String path) {
+        return getPath(isoFile, path).contains(box);
+    }
+
+    private List<Box> getPath(Box box, String path) {
         if (path.startsWith("/")) {
             path = path.substring(1);
         }
         if (path.isEmpty()) {
-            return box;
+            return Collections.singletonList(box);
         } else {
             String later;
             String now;
@@ -78,21 +86,23 @@ public class Path {
             Matcher m = component.matcher(now);
             if (m.matches()) {
                 String type = m.group(1);
-                int index = 0;
+                int index = -1;
                 if (m.group(2) != null) {
+                    // we have a specific index
                     String indexString = m.group(3);
                     index = Integer.parseInt(indexString);
                 }
+                List<Box> children = new LinkedList<Box>();
+                int currentIndex = 0;
                 for (Box box1 : ((ContainerBox) box).getBoxes()) {
                     if (box1.getType().equals(type)) {
-                        if (index == 0) {
-                            return getPath(box1, later);
+                        if (index == -1 || index == currentIndex) {
+                            children.addAll(getPath(box1, later));
                         }
-                        index--;
+                        currentIndex++;
                     }
                 }
-                // could not find path
-                return null;
+                return children;
 
             } else {
                 throw new RuntimeException("invalid path.");
