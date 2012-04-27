@@ -278,6 +278,7 @@ public class H264TrackImpl extends AbstractTrack {
             bb.putInt(buffers.get(i).length);
             bb.put(buffers.get(i));
         }
+        bb.rewind();
         return bb;
     }
 
