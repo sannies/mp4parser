@@ -309,7 +309,20 @@ public class FragmentedMp4Builder implements Mp4Builder {
                         new LinkedList<CompositionTimeToSample.Entry>(track.getCompositionTimeEntries()) : null;
         long compositionTimeEntriesLeft = compositionTimeQueue != null ? compositionTimeQueue.peek().getCount() : -1;
 
+
+
         trun.setSampleCompositionTimeOffsetPresent(compositionTimeEntriesLeft > 0);
+
+        // fast forward composition stuff
+        for (long i = 1; i < startSample; i++) {
+            if (compositionTimeQueue != null) {
+                trun.setSampleCompositionTimeOffsetPresent(true);
+                if (--compositionTimeEntriesLeft == 0 && compositionTimeQueue.size() > 1) {
+                    compositionTimeQueue.remove();
+                    compositionTimeEntriesLeft = compositionTimeQueue.element().getCount();
+                }
+            }
+        }
 
         boolean sampleFlagsRequired = (track.getSampleDependencies() != null && !track.getSampleDependencies().isEmpty() ||
                 track.getSyncSamples() != null && track.getSyncSamples().length != 0);
