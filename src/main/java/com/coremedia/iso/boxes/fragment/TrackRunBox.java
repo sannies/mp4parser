@@ -350,10 +350,6 @@ public class TrackRunBox extends AbstractFullBox {
         return firstSampleFlags;
     }
 
-    public String getFirstSampleFlags4View() {
-        return firstSampleFlags != null ? firstSampleFlags.toString() : "";
-    }
-
     public void setFirstSampleFlags(SampleFlags firstSampleFlags) {
         if (firstSampleFlags == null) {
             setFlags(getFlags() & (0xFFFFFF ^ 0x4));
