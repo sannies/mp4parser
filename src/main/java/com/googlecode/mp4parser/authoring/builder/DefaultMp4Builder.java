@@ -86,6 +86,9 @@ public class DefaultMp4Builder implements Mp4Builder {
         this.intersectionFinder = intersectionFinder;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public IsoFile build(Movie movie) throws IOException {
         LOG.fine("Creating movie " + movie);
         for (Track track : movie.getTracks()) {

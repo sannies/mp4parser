@@ -36,7 +36,9 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
         return duration;
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     public long[] sampleNumbers(Track track, Movie movie) {
         List<TimeToSampleBox.Entry> entries = track.getDecodingTimeEntries();
 

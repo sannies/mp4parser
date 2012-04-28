@@ -153,6 +153,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return boxes;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public IsoFile build(Movie movie) throws IOException {
         LOG.fine("Creating movie " + movie);
         IsoFile isoFile = new IsoFile();
