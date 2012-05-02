@@ -163,8 +163,16 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
         // metadata here
         movieBox.setBoxes(movieBoxChildren);
+        Box udta = createUdta();
+        if (udta != null) {
+            movieBox.addBox(udta);
+        }
         return movieBox;
 
+    }
+
+    protected Box createUdta() {
+        return null;
     }
 
     private TrackBox createTrackBox(Track track, Movie movie) {
