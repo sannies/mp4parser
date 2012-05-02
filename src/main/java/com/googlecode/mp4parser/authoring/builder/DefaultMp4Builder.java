@@ -171,6 +171,10 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     }
 
+    /**
+     * Override to create a user data box that may contain metadata.
+     * @return a 'udta' box or <code>null</code> if none provided
+     */
     protected Box createUdta() {
         return null;
     }
