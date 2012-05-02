@@ -1,10 +1,13 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.IsoTypeReader;
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SubSampleInformationBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.VideoMediaHeaderBox;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
-import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
-import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
@@ -16,14 +19,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: magnus
- * Date: 2012-04-23
- * Time: 12:23
- * To change this template use File | Settings | File Templates.
+ * The <code>H264TrackImpl</code> creates a <code>Track</code> from an H.264
+ * Annex B file.
  */
 public class H264TrackImpl extends AbstractTrack {
     TrackMetaData trackMetaData = new TrackMetaData();
