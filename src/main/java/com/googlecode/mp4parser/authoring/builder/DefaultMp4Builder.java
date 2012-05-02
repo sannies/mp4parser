@@ -163,7 +163,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
         // metadata here
         movieBox.setBoxes(movieBoxChildren);
-        Box udta = createUdta();
+        Box udta = createUdta(movie);
         if (udta != null) {
             movieBox.addBox(udta);
         }
@@ -175,7 +175,7 @@ public class DefaultMp4Builder implements Mp4Builder {
      * Override to create a user data box that may contain metadata.
      * @return a 'udta' box or <code>null</code> if none provided
      */
-    protected Box createUdta() {
+    protected Box createUdta(Movie movie) {
         return null;
     }
 
