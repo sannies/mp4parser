@@ -398,6 +398,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     protected Box createMvhd(Movie movie) {
         MovieHeaderBox mvhd = new MovieHeaderBox();
+        mvhd.setVersion(1);
         mvhd.setCreationTime(DateHelper.convert(new Date()));
         mvhd.setModificationTime(DateHelper.convert(new Date()));
         long movieTimeScale = movie.getTimescale();
@@ -547,6 +548,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     protected Box createTkhd(Movie movie, Track track) {
         TrackHeaderBox tkhd = new TrackHeaderBox();
+        tkhd.setVersion(1);
         int flags = 0;
         if (track.isEnabled()) {
             flags += 1;

@@ -4,6 +4,7 @@ import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.googlecode.mp4parser.authoring.InTestMovieCreator;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.builder.smoothstreaming.FlatPackageWriterImpl;
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -30,7 +31,7 @@ public class ChangeTimeScaleTrackTest {
             } else {
                 showTimes.retainAll(calcSampleShowTimes(track, m));
             }
-            long scale = ChangeTimeScaleTrack.getGoodScaleFactor(track, m, 10000000);
+            long scale = FlatPackageWriterImpl.getGoodScaleFactor(track, m, 10000000);
             timeScaledTrack.addTrack(new ChangeTimeScaleTrack(track, 10000000, scale));
         }
         int numCommonSamples = showTimes.size();

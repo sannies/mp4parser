@@ -15,15 +15,23 @@
  */
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SubSampleInformationBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.Math.gcd;
 import static com.googlecode.mp4parser.util.Math.lcm;
 import static java.lang.Math.round;
 
@@ -36,29 +44,7 @@ public class ChangeTimeScaleTrack implements Track {
     List<TimeToSampleBox.Entry> tts;
     long timeScale;
 
-    /**
-     * Gets a scale factor for a track so that all tracks are exactly stretched or
-     * compressed by the same factor. This will ensure that frames that are shown
-     * in the same instant are still shown at the same instant even after the change
-     * of the timescale.
-     * This is especially important if you are using two tracks with different FPS
-     * and relying on I-frames being alligned - which is the case with Smooth Streaming.
-     *
-     * @param track
-     * @param movie
-     * @param targetTimeScale
-     * @return
-     */
-    public static long getGoodScaleFactor(Track track, Movie movie, long targetTimeScale) {
-        long lcm = 1;
-        for (Track t : movie.getTracks()) {
-            // only adjust to tracks of the same type.
-            if (track.getHandler().equals(t.getHandler())) {
-                lcm = lcm(lcm, t.getTrackMetaData().getTimescale());
-            }
-        }
-        return targetTimeScale / track.getTrackMetaData().getTimescale() / (lcm / track.getTrackMetaData().getTimescale()) * (lcm / track.getTrackMetaData().getTimescale());
-    }
+
 
     public ChangeTimeScaleTrack(Track source, long targetTimeScale, long timeScaleFactor) {
         this.source = source;
@@ -137,14 +123,22 @@ public class ChangeTimeScaleTrack implements Track {
 
     static List<TimeToSampleBox.Entry> adjustTts(List<TimeToSampleBox.Entry> source, long timeScaleFactor) {
         double deviation = 0;
+        long[] sourceArray = TimeToSampleBox.blowupTimeToSamples(source);
+        LinkedList<TimeToSampleBox.Entry> entries2 = new LinkedList<TimeToSampleBox.Entry>();
 
-        List<TimeToSampleBox.Entry> entries2 = new ArrayList<TimeToSampleBox.Entry>(source.size());
-
-        for (TimeToSampleBox.Entry entry : source) {
-            double d = timeScaleFactor * entry.getDelta() + deviation;
+        for (long duration : sourceArray) {
+            double d = timeScaleFactor * duration + deviation;
             long x = round(d);
             deviation = d - x;
-            entries2.add(new TimeToSampleBox.Entry(entry.getCount(), x));
+            TimeToSampleBox.Entry last = entries2.peek();
+            if (last == null) {
+                entries2.add(new TimeToSampleBox.Entry(1, x));
+            } else if (last.getDelta() != x) {
+                entries2.add(new TimeToSampleBox.Entry(1, x));
+            } else {
+                last.setCount(last.getCount() + 1);
+            }
+
         }
         return entries2;
     }

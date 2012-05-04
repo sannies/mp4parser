@@ -134,6 +134,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         MovieBox movieBox = new MovieBox();
         List<Box> movieBoxChildren = new LinkedList<Box>();
         MovieHeaderBox mvhd = new MovieHeaderBox();
+        mvhd.setVersion(1);
         mvhd.setCreationTime(DateHelper.convert(new Date()));
         mvhd.setModificationTime(DateHelper.convert(new Date()));
 
@@ -184,6 +185,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         LOG.info("Creating Mp4TrackImpl " + track);
         TrackBox trackBox = new TrackBox();
         TrackHeaderBox tkhd = new TrackHeaderBox();
+        tkhd.setVersion(1);
         int flags = 0;
         if (track.isEnabled()) {
             flags += 1;

@@ -16,9 +16,7 @@
 package com.googlecode.mp4parser.authoring.builder.smoothstreaming;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.SoundMediaHeaderBox;
-import com.coremedia.iso.boxes.VideoMediaHeaderBox;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
@@ -32,11 +30,16 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.Math.gcd;
+import static com.googlecode.mp4parser.util.Math.lcm;
+
 public class FlatPackageWriterImpl implements PackageWriter {
-    private static Logger LOG  = Logger.getLogger(FlatPackageWriterImpl.class.getName());
+    private static Logger LOG = Logger.getLogger(FlatPackageWriterImpl.class.getName());
 
 
     private File outputDirectory;
@@ -139,13 +142,108 @@ public class FlatPackageWriterImpl implements PackageWriter {
 
     }
 
-
-    public Movie correctTimescale(Movie movie) {
-        Movie nuMovie = new Movie();
-        for (Track track : movie.getTracks()) {
-            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, ChangeTimeScaleTrack.getGoodScaleFactor(track, movie, timeScale)));
+    public static long pimpTimeScale(Movie movie, long targetTimeScale) {
+        HashMap<String, Long> lcmPerType = new HashMap<String, Long>();
+        for (Track t : movie.getTracks()) {
+            // only adjust to tracks of the same type.
+            long lcm;
+            if (lcmPerType.containsKey(t.getHandler())) {
+                lcm = lcmPerType.get(t.getHandler());
+            } else {
+                lcm = 1;
+            }
+            lcm = lcm(lcm, t.getTrackMetaData().getTimescale());
+            lcmPerType.put(t.getHandler(), lcm);
         }
-        return nuMovie;
+
+        long nuTimeScale = targetTimeScale;
+        for (Long aLong : lcmPerType.values()) {
+            long lcm = aLong;
+            long nu = Math.abs(targetTimeScale - (targetTimeScale / lcm) * lcm);
+            long old = Math.abs(targetTimeScale - nuTimeScale);
+            if (nu > old) {
+                nuTimeScale = (targetTimeScale / lcm) * lcm;
+            }
+          //  ((Math.round(((double) targetTimeScale / lcm)) * (lcm / trackTimeScale)) - ((double) targetTimeScale / lcm) * (lcm / trackTimeScale)))
+        }
+        return nuTimeScale;
+    }
+
+    /**
+     * Gets a scale factor for a track so that all tracks are exactly stretched or
+     * compressed by the same factor. This will ensure that frames that are shown
+     * in the same instant are still shown at the same instant even after the change
+     * of the timescale.
+     * This is especially important if you are using two tracks with different FPS
+     * and relying on I-frames being alligned - which is the case with Smooth Streaming.
+     *
+     * @param track
+     * @param movie
+     * @param targetTimeScale
+     * @return
+     */
+    public static long getGoodScaleFactor(Track track, Movie movie, long targetTimeScale) {
+        targetTimeScale = pimpTimeScale(movie, targetTimeScale);
+        System.err.println("Nu TimeScale " + targetTimeScale) ;
+
+        long lcm = 1;
+        for (Track t : movie.getTracks()) {
+            // only adjust to tracks of the same type.
+            if (track.getHandler().equals(t.getHandler())) {
+                lcm = lcm(lcm, t.getTrackMetaData().getTimescale());
+            }
+        }
+        long trackTimeScale = track.getTrackMetaData().getTimescale();
+
+        System.err.println("Scaling error: " + ((trackTimeScale * ((Math.round(((double) targetTimeScale / lcm)) * (lcm / trackTimeScale)) - ((double) targetTimeScale / lcm) * (lcm / trackTimeScale))) / targetTimeScale * 1000) + "ms pro s lag");
+        //System.err.println("Scaling error: " + ((trackTimeScale *  (((double)(targetTimeScale / lcm) * (lcm / trackTimeScale)) - ((double)targetTimeScale / lcm) * (lcm / trackTimeScale))) / targetTimeScale * 1000) + "ms pro s lag"  );
+
+        return (Math.round((double) targetTimeScale / lcm)) * (lcm / trackTimeScale);
+    }
+
+
+    /**
+     * Modifies the <code>movie</code> param directly and return the modified <code>movie</code>.
+     *
+     * @param movie
+     * @return the modified <code>movie</code> param
+     */
+    public Movie correctTimescale(Movie movie) {
+        for (Track track : movie.getTracks()) {
+            long tsScaler = track.getTrackMetaData().getTimescale();
+            if (track.getCompositionTimeEntries() != null) {
+                for (CompositionTimeToSample.Entry e : track.getCompositionTimeEntries()) {
+                    tsScaler = gcd(tsScaler, e.getOffset());
+                    if (tsScaler == 1) {
+                        break;
+                    }
+                }
+            }
+            for (TimeToSampleBox.Entry e : track.getDecodingTimeEntries()) {
+                tsScaler = gcd(tsScaler, e.getDelta());
+                if (tsScaler == 1) {
+                    break;
+                }
+            }
+            if (track.getCompositionTimeEntries() != null) {
+                for (CompositionTimeToSample.Entry e : track.getCompositionTimeEntries()) {
+                    e.setOffset(l2i(e.getOffset() / tsScaler));
+                }
+            }
+
+            for (TimeToSampleBox.Entry e : track.getDecodingTimeEntries()) {
+                e.setDelta(l2i(e.getDelta() / tsScaler));
+            }
+            track.getTrackMetaData().setTimescale(track.getTrackMetaData().getTimescale() / tsScaler);
+        }
+
+        Movie nuMovie = new Movie();
+
+        for (Track track : movie.getTracks()) {
+            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, getGoodScaleFactor(track, movie, timeScale)));
+        }
+        movie.setTracks(nuMovie.getTracks());
+        return movie;
     }
 
 }
