@@ -20,6 +20,7 @@ import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
 import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
@@ -84,11 +85,28 @@ public class FlatPackageWriterImpl implements PackageWriter {
      */
     public void write(Movie qualities) throws IOException {
 
+        if (writeSingleFile) {
+            DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
+            IsoFile muxed = defaultMp4Builder.build(qualities);
+            File muxedFile = new File(outputDirectory, "debug_1_muxed.mp4");
+            FileOutputStream muxedFileOutputStream = new FileOutputStream(muxedFile);
+            muxed.getBox(muxedFileOutputStream.getChannel());
+            muxedFileOutputStream.close();
+        }
+
         qualities = correctTimescale(qualities);
+        if (writeSingleFile) {
+            DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
+            IsoFile muxed = defaultMp4Builder.build(qualities);
+            File muxedFile = new File(outputDirectory, "debug_2_timescale.mp4");
+            FileOutputStream muxedFileOutputStream = new FileOutputStream(muxedFile);
+            muxed.getBox(muxedFileOutputStream.getChannel());
+            muxedFileOutputStream.close();
+        }
 
         IsoFile isoFile = ismvBuilder.build(qualities);
         if (writeSingleFile) {
-            File allQualities = new File(outputDirectory, "all-qualities.mp4");
+            File allQualities = new File(outputDirectory, "debug_3_fragmented.mp4");
             //allQualities.createNewFile();
             FileOutputStream allQualis = new FileOutputStream(allQualities);
             isoFile.getBox(allQualis.getChannel());
