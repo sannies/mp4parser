@@ -16,7 +16,6 @@
 package com.googlecode.mp4parser.authoring.builder.smoothstreaming;
 
 import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoFileConvenienceHelper;
 import com.coremedia.iso.boxes.OriginalFormatBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.SoundMediaHeaderBox;
@@ -32,7 +31,6 @@ import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
 import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import nu.xom.Attribute;
-import nu.xom.Comment;
 import nu.xom.Document;
 import nu.xom.Element;
 
@@ -44,7 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
-import static com.googlecode.mp4parser.util.Math.lcm;
+import static com.googlecode.mp4parser.util.Math.gcd;
 
 public class FlatManifestWriterImpl implements ManifestWriter {
 
@@ -69,42 +67,63 @@ public class FlatManifestWriterImpl implements ManifestWriter {
 
     public String getManifest(Movie movie) throws IOException {
 
+        long movieTimeScale = 1;
         long duration = 0;
 
+
         LinkedList<VideoQuality> videoQualities = new LinkedList<VideoQuality>();
+        long videoTimescale = -1;
         LinkedList<AudioQuality> audioQualities = new LinkedList<AudioQuality>();
+        long audioTimescale = -1;
 
-
-        for (Track track : movie.getTracks()) {
-            long tracksDuration = getDuration(track) * movie.getTimescale() / track.getTrackMetaData().getTimescale();
-            if (tracksDuration > duration) {
-                duration = tracksDuration;
-            }
-        }
 
         for (Track track : movie.getTracks()) {
             if (track.getMediaHeaderBox() instanceof VideoMediaHeaderBox) {
                 videoFragmentsDurations = checkFragmentsAlign(videoFragmentsDurations, calculateFragmentDurations(track, movie));
                 SampleDescriptionBox stsd = track.getSampleDescriptionBox();
                 videoQualities.add(getVideoQuality(track, (VisualSampleEntry) stsd.getSampleEntry()));
+                if (videoTimescale == -1) {
+                    videoTimescale = track.getTrackMetaData().getTimescale();
+                } else {
+                    assert videoTimescale == track.getTrackMetaData().getTimescale();
+                }
             }
             if (track.getMediaHeaderBox() instanceof SoundMediaHeaderBox) {
                 audioFragmentsDurations = checkFragmentsAlign(audioFragmentsDurations, calculateFragmentDurations(track, movie));
                 SampleDescriptionBox stsd = track.getSampleDescriptionBox();
                 audioQualities.add(getAudioQuality(track, (AudioSampleEntry) stsd.getSampleEntry()));
+                if (audioTimescale == -1) {
+                    audioTimescale = track.getTrackMetaData().getTimescale();
+                } else {
+                    assert audioTimescale == track.getTrackMetaData().getTimescale();
+                }
 
             }
         }
+        movieTimeScale *= videoTimescale;
+        movieTimeScale *= audioTimescale;
+
+
+        for (Track track : movie.getTracks()) {
+            long tracksDuration = (getDuration(track) * movieTimeScale) / track.getTrackMetaData().getTimescale();
+            if (tracksDuration > duration) {
+                duration = tracksDuration;
+            }
+        }
+        long gcd = gcd(movieTimeScale, duration);
+        movieTimeScale /= gcd;
+        duration /= gcd;
 
 
         Element smoothStreamingMedia = new Element("SmoothStreamingMedia");
         smoothStreamingMedia.addAttribute(new Attribute("MajorVersion", "2"));
         smoothStreamingMedia.addAttribute(new Attribute("MinorVersion", "1"));
+        smoothStreamingMedia.addAttribute(new Attribute("TimeScale", Long.toString(movieTimeScale)));
         smoothStreamingMedia.addAttribute(new Attribute("Duration", Long.toString(duration)));
-        smoothStreamingMedia.appendChild(new Comment("Smooth Streaming develop by castLabs software"));
 
         Element videoStreamIndex = new Element("StreamIndex");
         videoStreamIndex.addAttribute(new Attribute("Type", "video"));
+        videoStreamIndex.addAttribute(new Attribute("TimeScale", Long.toString(videoTimescale)));
         videoStreamIndex.addAttribute(new Attribute("Chunks", Integer.toString(videoFragmentsDurations.length)));
         videoStreamIndex.addAttribute(new Attribute("Url", "video/{bitrate}/{start time}"));
         videoStreamIndex.addAttribute(new Attribute("QualityLevels", Integer.toString(videoQualities.size())));
@@ -133,6 +152,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
         if (audioFragmentsDurations != null) {
             Element audioStreamIndex = new Element("StreamIndex");
             audioStreamIndex.addAttribute(new Attribute("Type", "audio"));
+            audioStreamIndex.addAttribute(new Attribute("TimeScale", Long.toString(audioTimescale)));
             audioStreamIndex.addAttribute(new Attribute("Chunks", Integer.toString(audioFragmentsDurations.length)));
             audioStreamIndex.addAttribute(new Attribute("Url", "audio/{bitrate}/{start time}"));
             audioStreamIndex.addAttribute(new Attribute("QualityLevels", Integer.toString(audioQualities.size())));
@@ -292,14 +312,6 @@ public class FlatManifestWriterImpl implements ManifestWriter {
         int currentFragment = -1;
         int currentSample = 1; // sync samples start with 1 !
 
-        long timeScale = 1;
-        for (Track track1 : movie.getTracks()) {
-            if (track1.getTrackMetaData().getTimescale() != track.getTrackMetaData().getTimescale()) {
-                timeScale = lcm(timeScale, track1.getTrackMetaData().getTimescale());
-            }
-        }
-
-
         for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
             for (int max = currentSample + l2i(entry.getCount()); currentSample <= max; currentSample++) {
                 // in this loop we go through the entry.getCount() samples starting from current sample.
@@ -308,7 +320,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
                     // we are not in the last fragment && the current sample is the start sample of the next fragment
                     currentFragment++;
                 }
-                durations[currentFragment] += entry.getDelta() * timeScale;
+                durations[currentFragment] += entry.getDelta();
             }
         }
         return durations;

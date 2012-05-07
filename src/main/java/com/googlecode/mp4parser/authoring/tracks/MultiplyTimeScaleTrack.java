@@ -38,19 +38,13 @@ import static java.lang.Math.round;
 /**
  * Changes the timescale of a track by wrapping the track.
  */
-public class ChangeTimeScaleTrack implements Track {
+public class MultiplyTimeScaleTrack implements Track {
     Track source;
-    List<CompositionTimeToSample.Entry> ctts;
-    List<TimeToSampleBox.Entry> tts;
-    long timeScale;
+    private int timeScaleFactor;
 
-
-
-    public ChangeTimeScaleTrack(Track source, long targetTimeScale, long timeScaleFactor) {
+    public MultiplyTimeScaleTrack(Track source, int timeScaleFactor) {
         this.source = source;
-        this.timeScale = targetTimeScale;
-        ctts = adjustCtts(source.getCompositionTimeEntries(), timeScaleFactor);
-        tts = adjustTts(source.getDecodingTimeEntries(), timeScaleFactor);
+        this.timeScaleFactor = timeScaleFactor;
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
@@ -58,11 +52,11 @@ public class ChangeTimeScaleTrack implements Track {
     }
 
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return tts;
+        return adjustTts(source.getDecodingTimeEntries(), timeScaleFactor);
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
-        return ctts;
+        return adjustCtts(source.getCompositionTimeEntries(), timeScaleFactor);
     }
 
     public long[] getSyncSamples() {
@@ -75,7 +69,7 @@ public class ChangeTimeScaleTrack implements Track {
 
     public TrackMetaData getTrackMetaData() {
         TrackMetaData trackMetaData = (TrackMetaData) source.getTrackMetaData().clone();
-        trackMetaData.setTimescale(timeScale);
+        trackMetaData.setTimescale(trackMetaData.getTimescale() * this.timeScaleFactor);
         return trackMetaData;
     }
 
@@ -104,16 +98,11 @@ public class ChangeTimeScaleTrack implements Track {
     }
 
 
-    static List<CompositionTimeToSample.Entry> adjustCtts(List<CompositionTimeToSample.Entry> source, long timeScaleFactor) {
+    static List<CompositionTimeToSample.Entry> adjustCtts(List<CompositionTimeToSample.Entry> source, int timeScaleFactor) {
         if (source != null) {
             List<CompositionTimeToSample.Entry> entries2 = new ArrayList<CompositionTimeToSample.Entry>(source.size());
-            double deviation = 0;
-
             for (CompositionTimeToSample.Entry entry : source) {
-                double d = timeScaleFactor * entry.getOffset() + deviation;
-                int x = (int) round(d);
-                deviation = d - x;
-                entries2.add(new CompositionTimeToSample.Entry(entry.getCount(), x));
+                entries2.add(new CompositionTimeToSample.Entry(entry.getCount(), timeScaleFactor * entry.getOffset()));
             }
             return entries2;
         } else {
@@ -121,24 +110,10 @@ public class ChangeTimeScaleTrack implements Track {
         }
     }
 
-    static List<TimeToSampleBox.Entry> adjustTts(List<TimeToSampleBox.Entry> source, long timeScaleFactor) {
-        double deviation = 0;
-        long[] sourceArray = TimeToSampleBox.blowupTimeToSamples(source);
+    static List<TimeToSampleBox.Entry> adjustTts(List<TimeToSampleBox.Entry> source, int timeScaleFactor) {
         LinkedList<TimeToSampleBox.Entry> entries2 = new LinkedList<TimeToSampleBox.Entry>();
-
-        for (long duration : sourceArray) {
-            double d = timeScaleFactor * duration + deviation;
-            long x = round(d);
-            deviation = d - x;
-            TimeToSampleBox.Entry last = entries2.peek();
-            if (last == null) {
-                entries2.add(new TimeToSampleBox.Entry(1, x));
-            } else if (last.getDelta() != x) {
-                entries2.add(new TimeToSampleBox.Entry(1, x));
-            } else {
-                last.setCount(last.getCount() + 1);
-            }
-
+        for (TimeToSampleBox.Entry e : source) {
+            entries2.add(new TimeToSampleBox.Entry(e.getCount(), timeScaleFactor * e.getDelta()));
         }
         return entries2;
     }
@@ -153,7 +128,7 @@ public class ChangeTimeScaleTrack implements Track {
 
     @Override
     public String toString() {
-        return "ChangeTimeScaleTrack{" +
+        return "MultiplyTimeScaleTrack{" +
                 "source=" + source +
                 '}';
     }

@@ -14,7 +14,7 @@ import java.util.List;
 
 import static com.googlecode.mp4parser.util.Math.lcm;
 
-public class ChangeTimeScaleTrackTest {
+public class MultiplyTimeScaleTrackTest {
     @Test
     public void testThirdFrameRateAndSampleDurations() throws IOException {
         Movie m = InTestMovieCreator.createMovieOnlyVideo(
@@ -31,8 +31,8 @@ public class ChangeTimeScaleTrackTest {
             } else {
                 showTimes.retainAll(calcSampleShowTimes(track, m));
             }
-            long scale = FlatPackageWriterImpl.getGoodScaleFactor(track, m, 10000000);
-            timeScaledTrack.addTrack(new ChangeTimeScaleTrack(track, 10000000, scale));
+            int scale = FlatPackageWriterImpl.getFactorForCommonTimebase(track, m);
+            timeScaledTrack.addTrack(new MultiplyTimeScaleTrack(track, scale));
         }
         int numCommonSamples = showTimes.size();
         showTimes = null;
