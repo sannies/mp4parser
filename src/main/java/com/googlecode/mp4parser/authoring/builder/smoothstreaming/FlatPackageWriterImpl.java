@@ -24,7 +24,8 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
 import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
-import com.googlecode.mp4parser.authoring.tracks.ChangeTimeScaleTrack;
+import com.googlecode.mp4parser.authoring.tracks.DivideTimeScaleTrack;
+import com.googlecode.mp4parser.authoring.tracks.MultiplyTimeScaleTrack;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,6 +34,8 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -44,7 +47,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
 
 
     private File outputDirectory;
-    private boolean writeSingleFile;
+    private boolean debugOutput;
     private Mp4Builder ismvBuilder;
     ManifestWriter manifestWriter;
 
@@ -64,8 +67,8 @@ public class FlatPackageWriterImpl implements PackageWriter {
 
     }
 
-    public void setWriteSingleFile(boolean writeSingleFile) {
-        this.writeSingleFile = writeSingleFile;
+    public void setDebugOutput(boolean debugOutput) {
+        this.debugOutput = debugOutput;
     }
 
     public void setIsmvBuilder(Mp4Builder ismvBuilder) {
@@ -85,7 +88,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
      */
     public void write(Movie qualities) throws IOException {
 
-        if (writeSingleFile) {
+        if (debugOutput) {
             DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
             IsoFile muxed = defaultMp4Builder.build(qualities);
             File muxedFile = new File(outputDirectory, "debug_1_muxed.mp4");
@@ -95,7 +98,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
         }
 
         qualities = correctTimescale(qualities);
-        if (writeSingleFile) {
+        if (debugOutput) {
             DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
             IsoFile muxed = defaultMp4Builder.build(qualities);
             File muxedFile = new File(outputDirectory, "debug_2_timescale.mp4");
@@ -105,7 +108,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
         }
 
         IsoFile isoFile = ismvBuilder.build(qualities);
-        if (writeSingleFile) {
+        if (debugOutput) {
             File allQualities = new File(outputDirectory, "debug_3_fragmented.mp4");
             //allQualities.createNewFile();
             FileOutputStream allQualis = new FileOutputStream(allQualities);
@@ -182,28 +185,16 @@ public class FlatPackageWriterImpl implements PackageWriter {
             if (nu > old) {
                 nuTimeScale = (targetTimeScale / lcm) * lcm;
             }
-          //  ((Math.round(((double) targetTimeScale / lcm)) * (lcm / trackTimeScale)) - ((double) targetTimeScale / lcm) * (lcm / trackTimeScale)))
+            //  ((Math.round(((double) targetTimeScale / lcm)) * (lcm / trackTimeScale)) - ((double) targetTimeScale / lcm) * (lcm / trackTimeScale)))
         }
         return nuTimeScale;
     }
 
     /**
-     * Gets a scale factor for a track so that all tracks are exactly stretched or
-     * compressed by the same factor. This will ensure that frames that are shown
-     * in the same instant are still shown at the same instant even after the change
-     * of the timescale.
-     * This is especially important if you are using two tracks with different FPS
-     * and relying on I-frames being alligned - which is the case with Smooth Streaming.
-     *
-     * @param track
-     * @param movie
-     * @param targetTimeScale
-     * @return
+     * Gets a scale factor for the track that leads to the same timebase for every
+     * track with the same handler.
      */
-    public static long getGoodScaleFactor(Track track, Movie movie, long targetTimeScale) {
-        targetTimeScale = pimpTimeScale(movie, targetTimeScale);
-        System.err.println("Nu TimeScale " + targetTimeScale) ;
-
+    public static int getFactorForCommonTimebase(Track track, Movie movie) {
         long lcm = 1;
         for (Track t : movie.getTracks()) {
             // only adjust to tracks of the same type.
@@ -212,56 +203,64 @@ public class FlatPackageWriterImpl implements PackageWriter {
             }
         }
         long trackTimeScale = track.getTrackMetaData().getTimescale();
-
-        System.err.println("Scaling error: " + ((trackTimeScale * ((Math.round(((double) targetTimeScale / lcm)) * (lcm / trackTimeScale)) - ((double) targetTimeScale / lcm) * (lcm / trackTimeScale))) / targetTimeScale * 1000) + "ms pro s lag");
-        //System.err.println("Scaling error: " + ((trackTimeScale *  (((double)(targetTimeScale / lcm) * (lcm / trackTimeScale)) - ((double)targetTimeScale / lcm) * (lcm / trackTimeScale))) / targetTimeScale * 1000) + "ms pro s lag"  );
-
-        return (Math.round((double) targetTimeScale / lcm)) * (lcm / trackTimeScale);
+        return l2i(lcm / trackTimeScale);
     }
 
-
     /**
-     * Modifies the <code>movie</code> param directly and return the modified <code>movie</code>.
-     *
-     * @param movie
-     * @return the modified <code>movie</code> param
+     * Gets a divisor the results in an optimized timescale. Any duration, offset or timescale
+     * in the can be divided by this number without any rest so that the resulting track's
+     * durations, offsets and timescale cannot become any smaller without loosing precision.
+     * E.g.: a typical AAC track file has a timescale of 48000 and every AAC frame a duration
+     * of 1024. This can be optimized to 48000/128 = 375 and 1024/128 = 8 without loosing any
+     * precision.
      */
-    public Movie correctTimescale(Movie movie) {
-        for (Track track : movie.getTracks()) {
-            long tsScaler = track.getTrackMetaData().getTimescale();
-            if (track.getCompositionTimeEntries() != null) {
-                for (CompositionTimeToSample.Entry e : track.getCompositionTimeEntries()) {
-                    tsScaler = gcd(tsScaler, e.getOffset());
-                    if (tsScaler == 1) {
-                        break;
-                    }
-                }
-            }
-            for (TimeToSampleBox.Entry e : track.getDecodingTimeEntries()) {
-                tsScaler = gcd(tsScaler, e.getDelta());
+    public static int getDivisorForMinimalTimescale(Track track) {
+        long tsScaler = track.getTrackMetaData().getTimescale();
+        if (track.getCompositionTimeEntries() != null) {
+            for (CompositionTimeToSample.Entry e : track.getCompositionTimeEntries()) {
+                tsScaler = gcd(tsScaler, e.getOffset());
                 if (tsScaler == 1) {
                     break;
                 }
             }
-            if (track.getCompositionTimeEntries() != null) {
-                for (CompositionTimeToSample.Entry e : track.getCompositionTimeEntries()) {
-                    e.setOffset(l2i(e.getOffset() / tsScaler));
-                }
-            }
-
-            for (TimeToSampleBox.Entry e : track.getDecodingTimeEntries()) {
-                e.setDelta(l2i(e.getDelta() / tsScaler));
-            }
-            track.getTrackMetaData().setTimescale(track.getTrackMetaData().getTimescale() / tsScaler);
         }
+        for (TimeToSampleBox.Entry e : track.getDecodingTimeEntries()) {
+            tsScaler = gcd(tsScaler, e.getDelta());
+            if (tsScaler == 1) {
+                break;
+            }
+        }
+        return l2i(tsScaler);
+    }
 
-        Movie nuMovie = new Movie();
+    /**
+     * Returns a new <code>Movie</code> in that all tracks with the same handler type
+     * share the same minimal timescale.
+     *
+     * @param movie
+     * @return a movie with timescales suitable for smooth streaming manifests
+     */
+    public Movie correctTimescale(Movie movie) {
 
+        List<Track> optimizedTimescale = new LinkedList<Track>();
         for (Track track : movie.getTracks()) {
-            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, getGoodScaleFactor(track, movie, timeScale)));
+            long tsScaler = getDivisorForMinimalTimescale(track);
+            if (tsScaler != 1) {
+                optimizedTimescale.add(new DivideTimeScaleTrack(track, l2i(tsScaler)));
+            } else {
+                optimizedTimescale.add(track);
+            }
         }
-        movie.setTracks(nuMovie.getTracks());
-        return movie;
+        Movie nuMovie = new Movie();
+        for (Track track : optimizedTimescale) {
+            int factor = getFactorForCommonTimebase(track, movie);
+            if (factor != 1) {
+                nuMovie.addTrack(new MultiplyTimeScaleTrack(track, factor));
+            } else {
+                nuMovie.addTrack(track);
+            }
+        }
+        return nuMovie;
     }
 
 }

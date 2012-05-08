@@ -33,6 +33,7 @@ import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import nu.xom.Attribute;
 import nu.xom.Document;
 import nu.xom.Element;
+import nu.xom.Serializer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -58,6 +59,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
 
     /**
      * Overwrite this method in subclasses to add your specialities.
+     *
      * @param manifest the original manifest
      * @return your customized version of the manifest
      */
@@ -69,7 +71,6 @@ public class FlatManifestWriterImpl implements ManifestWriter {
 
         long movieTimeScale = 1;
         long duration = 0;
-
 
         LinkedList<VideoQuality> videoQualities = new LinkedList<VideoQuality>();
         long videoTimescale = -1;
@@ -178,7 +179,12 @@ public class FlatManifestWriterImpl implements ManifestWriter {
                 audioStreamIndex.appendChild(c);
             }
         }
-        return customizeManifest(new Document(smoothStreamingMedia)).toXML();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Serializer serializer = new Serializer(baos);
+        serializer.setIndent(4);
+        serializer.write(customizeManifest(new Document(smoothStreamingMedia)));
+
+        return baos.toString("UTF-8");
 
     }
 
@@ -206,7 +212,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
             bitrate += sample.limit();
         }
         bitrate *= 8; // from bytes to bits
-        bitrate /= ((double)getDuration(track)) / track.getTrackMetaData().getTimescale(); // per second
+        bitrate /= ((double) getDuration(track)) / track.getTrackMetaData().getTimescale(); // per second
         return bitrate;
     }
 

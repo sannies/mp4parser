@@ -69,7 +69,7 @@ public class MultiplyTimeScaleTrack implements Track {
 
     public TrackMetaData getTrackMetaData() {
         TrackMetaData trackMetaData = (TrackMetaData) source.getTrackMetaData().clone();
-        trackMetaData.setTimescale(trackMetaData.getTimescale() * this.timeScaleFactor);
+        trackMetaData.setTimescale(source.getTrackMetaData().getTimescale() * this.timeScaleFactor);
         return trackMetaData;
     }
 
