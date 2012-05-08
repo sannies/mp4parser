@@ -89,7 +89,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     /**
      * {@inheritDoc}
      */
-    public IsoFile build(Movie movie) throws IOException {
+    public IsoFile build(Movie movie)  {
         LOG.fine("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
             // getting the samples may be a time consuming activity

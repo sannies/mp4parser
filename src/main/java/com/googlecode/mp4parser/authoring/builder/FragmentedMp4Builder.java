@@ -156,7 +156,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     /**
      * {@inheritDoc}
      */
-    public IsoFile build(Movie movie) throws IOException {
+    public IsoFile build(Movie movie) {
         LOG.fine("Creating movie " + movie);
         IsoFile isoFile = new IsoFile();
 
@@ -293,25 +293,18 @@ public class FragmentedMp4Builder implements Mp4Builder {
         Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
         long left = startSample;
         long curEntryLeft = timeQueue.peek().getCount();
-        long durationEntriesLeft = 0;
-        while (left > 0 && timeQueue.size() > 0) {
-            if (curEntryLeft >= left) {
-                curEntryLeft -= left;
-                left = 0;
-                durationEntriesLeft = curEntryLeft;
-            } else {
-                left -= curEntryLeft;
-                timeQueue.poll();
-                curEntryLeft = timeQueue.peek().getCount();
-            }
+        while (left >= curEntryLeft) {
+            left -= curEntryLeft;
+            timeQueue.remove();
+            curEntryLeft = timeQueue.peek().getCount();
         }
+        curEntryLeft -= left;
 
 
         Queue<CompositionTimeToSample.Entry> compositionTimeQueue =
                 track.getCompositionTimeEntries() != null && track.getCompositionTimeEntries().size() > 0 ?
                         new LinkedList<CompositionTimeToSample.Entry>(track.getCompositionTimeEntries()) : null;
         long compositionTimeEntriesLeft = compositionTimeQueue != null ? compositionTimeQueue.peek().getCount() : -1;
-
 
 
         trun.setSampleCompositionTimeOffsetPresent(compositionTimeEntriesLeft > 0);
@@ -361,9 +354,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
             }
 
             entry.setSampleDuration(timeQueue.peek().getDelta());
-            if (--durationEntriesLeft == 0 && timeQueue.size() > 1) {
+            if (--curEntryLeft == 0 && timeQueue.size() > 1) {
                 timeQueue.remove();
-                durationEntriesLeft = timeQueue.peek().getCount();
+                curEntryLeft = timeQueue.peek().getCount();
             }
 
             if (compositionTimeQueue != null) {

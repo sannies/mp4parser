@@ -43,7 +43,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
-import static com.googlecode.mp4parser.util.Math.gcd;
 
 public class FlatManifestWriterImpl implements ManifestWriter {
 
@@ -69,13 +68,12 @@ public class FlatManifestWriterImpl implements ManifestWriter {
 
     public String getManifest(Movie movie) throws IOException {
 
-        long movieTimeScale = 1;
-        long duration = 0;
-
         LinkedList<VideoQuality> videoQualities = new LinkedList<VideoQuality>();
         long videoTimescale = -1;
+
         LinkedList<AudioQuality> audioQualities = new LinkedList<AudioQuality>();
         long audioTimescale = -1;
+
 
 
         for (Track track : movie.getTracks()) {
@@ -101,30 +99,16 @@ public class FlatManifestWriterImpl implements ManifestWriter {
 
             }
         }
-        movieTimeScale *= videoTimescale;
-        movieTimeScale *= audioTimescale;
-
-
-        for (Track track : movie.getTracks()) {
-            long tracksDuration = (getDuration(track) * movieTimeScale) / track.getTrackMetaData().getTimescale();
-            if (tracksDuration > duration) {
-                duration = tracksDuration;
-            }
-        }
-        long gcd = gcd(movieTimeScale, duration);
-        movieTimeScale /= gcd;
-        duration /= gcd;
-
 
         Element smoothStreamingMedia = new Element("SmoothStreamingMedia");
         smoothStreamingMedia.addAttribute(new Attribute("MajorVersion", "2"));
         smoothStreamingMedia.addAttribute(new Attribute("MinorVersion", "1"));
-        smoothStreamingMedia.addAttribute(new Attribute("TimeScale", Long.toString(movieTimeScale)));
-        smoothStreamingMedia.addAttribute(new Attribute("Duration", Long.toString(duration)));
+// silverlight ignores the timescale attr        smoothStreamingMedia.addAttribute(new Attribute("TimeScale", Long.toString(movieTimeScale)));
+        smoothStreamingMedia.addAttribute(new Attribute("Duration", "0"));
 
         Element videoStreamIndex = new Element("StreamIndex");
         videoStreamIndex.addAttribute(new Attribute("Type", "video"));
-        videoStreamIndex.addAttribute(new Attribute("TimeScale", Long.toString(videoTimescale)));
+        videoStreamIndex.addAttribute(new Attribute("TimeScale", Long.toString(videoTimescale))); // silverlight ignores the timescale attr
         videoStreamIndex.addAttribute(new Attribute("Chunks", Integer.toString(videoFragmentsDurations.length)));
         videoStreamIndex.addAttribute(new Attribute("Url", "video/{bitrate}/{start time}"));
         videoStreamIndex.addAttribute(new Attribute("QualityLevels", Integer.toString(videoQualities.size())));
@@ -146,14 +130,14 @@ public class FlatManifestWriterImpl implements ManifestWriter {
         for (int i = 0; i < videoFragmentsDurations.length; i++) {
             Element c = new Element("c");
             c.addAttribute(new Attribute("n", Integer.toString(i)));
-            c.addAttribute(new Attribute("d", Long.toString(videoFragmentsDurations[i])));
+            c.addAttribute(new Attribute("d", Long.toString((long) (videoFragmentsDurations[i] ))));
             videoStreamIndex.appendChild(c);
         }
 
         if (audioFragmentsDurations != null) {
             Element audioStreamIndex = new Element("StreamIndex");
             audioStreamIndex.addAttribute(new Attribute("Type", "audio"));
-            audioStreamIndex.addAttribute(new Attribute("TimeScale", Long.toString(audioTimescale)));
+            audioStreamIndex.addAttribute(new Attribute("TimeScale", Long.toString(audioTimescale))); // silverlight ignores the timescale attr
             audioStreamIndex.addAttribute(new Attribute("Chunks", Integer.toString(audioFragmentsDurations.length)));
             audioStreamIndex.addAttribute(new Attribute("Url", "audio/{bitrate}/{start time}"));
             audioStreamIndex.addAttribute(new Attribute("QualityLevels", Integer.toString(audioQualities.size())));
@@ -175,7 +159,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
             for (int i = 0; i < audioFragmentsDurations.length; i++) {
                 Element c = new Element("c");
                 c.addAttribute(new Attribute("n", Integer.toString(i)));
-                c.addAttribute(new Attribute("d", Long.toString(audioFragmentsDurations[i])));
+                c.addAttribute(new Attribute("d", Long.toString((long) (audioFragmentsDurations[i] ))));
                 audioStreamIndex.appendChild(c);
             }
         }

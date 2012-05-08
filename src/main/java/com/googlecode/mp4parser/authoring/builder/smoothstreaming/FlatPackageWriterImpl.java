@@ -21,42 +21,37 @@ import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
 import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
 import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
-import com.googlecode.mp4parser.authoring.tracks.DivideTimeScaleTrack;
-import com.googlecode.mp4parser.authoring.tracks.MultiplyTimeScaleTrack;
+import com.googlecode.mp4parser.authoring.tracks.ChangeTimeScaleTrack;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Logger;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
 import static com.googlecode.mp4parser.util.Math.gcd;
 import static com.googlecode.mp4parser.util.Math.lcm;
 
 public class FlatPackageWriterImpl implements PackageWriter {
     private static Logger LOG = Logger.getLogger(FlatPackageWriterImpl.class.getName());
-
+    long timeScale = 10000000;
 
     private File outputDirectory;
     private boolean debugOutput;
     private Mp4Builder ismvBuilder;
     ManifestWriter manifestWriter;
-
-    long timeScale = 10000000;
-
+    FragmentIntersectionFinder fragmentIntersectionFinder;
 
     {
         ismvBuilder = new FragmentedMp4Builder();
-        ((FragmentedMp4Builder) ismvBuilder).setIntersectionFinder(new SyncSampleIntersectFinderImpl());
+        fragmentIntersectionFinder = new SyncSampleIntersectFinderImpl();
+        ((FragmentedMp4Builder) ismvBuilder).setIntersectionFinder(fragmentIntersectionFinder);
         manifestWriter = new FlatManifestWriterImpl();
     }
 
@@ -83,41 +78,38 @@ public class FlatPackageWriterImpl implements PackageWriter {
      * Writes the movie given as <code>qualities</code> flattened into the
      * <code>outputDirectory</code>.
      *
-     * @param qualities
+     * @param source the source movie with all qualities
      * @throws IOException
      */
-    public void write(Movie qualities) throws IOException {
+    public void write(Movie source) throws IOException {
 
         if (debugOutput) {
             DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
-            IsoFile muxed = defaultMp4Builder.build(qualities);
+            IsoFile muxed = defaultMp4Builder.build(source);
             File muxedFile = new File(outputDirectory, "debug_1_muxed.mp4");
             FileOutputStream muxedFileOutputStream = new FileOutputStream(muxedFile);
             muxed.getBox(muxedFileOutputStream.getChannel());
             muxedFileOutputStream.close();
         }
-
-        qualities = correctTimescale(qualities);
+        Movie movieWithAdjustedTimescale = correctTimescale(source);
         if (debugOutput) {
             DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
-            IsoFile muxed = defaultMp4Builder.build(qualities);
+            IsoFile muxed = defaultMp4Builder.build(movieWithAdjustedTimescale);
             File muxedFile = new File(outputDirectory, "debug_2_timescale.mp4");
             FileOutputStream muxedFileOutputStream = new FileOutputStream(muxedFile);
             muxed.getBox(muxedFileOutputStream.getChannel());
             muxedFileOutputStream.close();
         }
-
-        IsoFile isoFile = ismvBuilder.build(qualities);
+        IsoFile isoFile = ismvBuilder.build(movieWithAdjustedTimescale);
         if (debugOutput) {
             File allQualities = new File(outputDirectory, "debug_3_fragmented.mp4");
-            //allQualities.createNewFile();
             FileOutputStream allQualis = new FileOutputStream(allQualities);
             isoFile.getBox(allQualis.getChannel());
             allQualis.close();
         }
 
 
-        for (Track track : qualities.getTracks()) {
+        for (Track track : movieWithAdjustedTimescale.getTracks()) {
             String bitrate = Long.toString(manifestWriter.getBitrate(track));
             long trackId = track.getTrackMetaData().getTrackId();
             Iterator<Box> boxIt = isoFile.getBoxes().iterator();
@@ -131,11 +123,11 @@ public class FlatPackageWriterImpl implements PackageWriter {
                 System.err.println("Skipping Track with handler " + track.getHandler() + " and " + track.getMediaHeaderBox().getClass().getSimpleName());
                 continue;
             }
-            File bitrateOutputDir = new File(mediaOutDir, bitrate);
-            bitrateOutputDir.mkdirs();
-            LOG.finer("Created : " + bitrateOutputDir.getCanonicalPath());
+            File bitRateOutputDir = new File(mediaOutDir, bitrate);
+            bitRateOutputDir.mkdirs();
+            LOG.finer("Created : " + bitRateOutputDir.getCanonicalPath());
 
-            long[] fragmentTimes = manifestWriter.calculateFragmentDurations(track, qualities);
+            long[] fragmentTimes = manifestWriter.calculateFragmentDurations(track, movieWithAdjustedTimescale);
             long startTime = 0;
             int currentFragment = 0;
             while (boxIt.hasNext()) {
@@ -143,7 +135,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
                 if (b instanceof MovieFragmentBox) {
                     assert ((MovieFragmentBox) b).getTrackCount() == 1;
                     if (((MovieFragmentBox) b).getTrackNumbers()[0] == trackId) {
-                        FileOutputStream fos = new FileOutputStream(new File(bitrateOutputDir, Long.toString(startTime)));
+                        FileOutputStream fos = new FileOutputStream(new File(bitRateOutputDir, Long.toString(startTime)));
                         startTime += fragmentTimes[currentFragment++];
                         FileChannel fc = fos.getChannel();
                         Box mdat = boxIt.next();
@@ -158,109 +150,28 @@ public class FlatPackageWriterImpl implements PackageWriter {
             }
         }
         FileWriter fw = new FileWriter(new File(outputDirectory, "Manifest"));
-        fw.write(manifestWriter.getManifest(qualities));
+        fw.write(manifestWriter.getManifest(movieWithAdjustedTimescale));
         fw.close();
 
     }
 
-    public static long pimpTimeScale(Movie movie, long targetTimeScale) {
-        HashMap<String, Long> lcmPerType = new HashMap<String, Long>();
-        for (Track t : movie.getTracks()) {
-            // only adjust to tracks of the same type.
-            long lcm;
-            if (lcmPerType.containsKey(t.getHandler())) {
-                lcm = lcmPerType.get(t.getHandler());
-            } else {
-                lcm = 1;
-            }
-            lcm = lcm(lcm, t.getTrackMetaData().getTimescale());
-            lcmPerType.put(t.getHandler(), lcm);
-        }
-
-        long nuTimeScale = targetTimeScale;
-        for (Long aLong : lcmPerType.values()) {
-            long lcm = aLong;
-            long nu = Math.abs(targetTimeScale - (targetTimeScale / lcm) * lcm);
-            long old = Math.abs(targetTimeScale - nuTimeScale);
-            if (nu > old) {
-                nuTimeScale = (targetTimeScale / lcm) * lcm;
-            }
-            //  ((Math.round(((double) targetTimeScale / lcm)) * (lcm / trackTimeScale)) - ((double) targetTimeScale / lcm) * (lcm / trackTimeScale)))
-        }
-        return nuTimeScale;
-    }
 
     /**
-     * Gets a scale factor for the track that leads to the same timebase for every
-     * track with the same handler.
-     */
-    public static int getFactorForCommonTimebase(Track track, Movie movie) {
-        long lcm = 1;
-        for (Track t : movie.getTracks()) {
-            // only adjust to tracks of the same type.
-            if (track.getHandler().equals(t.getHandler())) {
-                lcm = lcm(lcm, t.getTrackMetaData().getTimescale());
-            }
-        }
-        long trackTimeScale = track.getTrackMetaData().getTimescale();
-        return l2i(lcm / trackTimeScale);
-    }
-
-    /**
-     * Gets a divisor the results in an optimized timescale. Any duration, offset or timescale
-     * in the can be divided by this number without any rest so that the resulting track's
-     * durations, offsets and timescale cannot become any smaller without loosing precision.
-     * E.g.: a typical AAC track file has a timescale of 48000 and every AAC frame a duration
-     * of 1024. This can be optimized to 48000/128 = 375 and 1024/128 = 8 without loosing any
-     * precision.
-     */
-    public static int getDivisorForMinimalTimescale(Track track) {
-        long tsScaler = track.getTrackMetaData().getTimescale();
-        if (track.getCompositionTimeEntries() != null) {
-            for (CompositionTimeToSample.Entry e : track.getCompositionTimeEntries()) {
-                tsScaler = gcd(tsScaler, e.getOffset());
-                if (tsScaler == 1) {
-                    break;
-                }
-            }
-        }
-        for (TimeToSampleBox.Entry e : track.getDecodingTimeEntries()) {
-            tsScaler = gcd(tsScaler, e.getDelta());
-            if (tsScaler == 1) {
-                break;
-            }
-        }
-        return l2i(tsScaler);
-    }
-
-    /**
-     * Returns a new <code>Movie</code> in that all tracks with the same handler type
-     * share the same minimal timescale.
+     * Returns a new <code>Movie</code> in that all tracks have the timescale 10000000. CTS & DTS are modified
+     * in a way that even with more than one framerate the fragments exactly begin at the same time.
      *
      * @param movie
      * @return a movie with timescales suitable for smooth streaming manifests
      */
     public Movie correctTimescale(Movie movie) {
 
-        List<Track> optimizedTimescale = new LinkedList<Track>();
-        for (Track track : movie.getTracks()) {
-            long tsScaler = getDivisorForMinimalTimescale(track);
-            if (tsScaler != 1) {
-                optimizedTimescale.add(new DivideTimeScaleTrack(track, l2i(tsScaler)));
-            } else {
-                optimizedTimescale.add(track);
-            }
-        }
         Movie nuMovie = new Movie();
-        for (Track track : optimizedTimescale) {
-            int factor = getFactorForCommonTimebase(track, movie);
-            if (factor != 1) {
-                nuMovie.addTrack(new MultiplyTimeScaleTrack(track, factor));
-            } else {
-                nuMovie.addTrack(track);
-            }
+
+        for (Track track : movie.getTracks()) {
+            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, fragmentIntersectionFinder.sampleNumbers(track, movie)));
         }
-        return nuMovie;
+        movie.setTracks(nuMovie.getTracks());
+        return movie;
     }
 
 }
