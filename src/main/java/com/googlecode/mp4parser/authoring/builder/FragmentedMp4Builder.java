@@ -291,9 +291,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
 
         Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
-        long left = startSample;
+        long left = startSample-1;
         long curEntryLeft = timeQueue.peek().getCount();
-        while (left >= curEntryLeft) {
+        while (left > curEntryLeft) {
             left -= curEntryLeft;
             timeQueue.remove();
             curEntryLeft = timeQueue.peek().getCount();
