@@ -91,7 +91,8 @@ public class FlatPackageWriterImpl implements PackageWriter {
             muxed.getBox(muxedFileOutputStream.getChannel());
             muxedFileOutputStream.close();
         }
-        Movie movieWithAdjustedTimescale = correctTimescale(source);
+        Movie cleanedSource = removeUnknownTracks(source);
+        Movie movieWithAdjustedTimescale = correctTimescale(cleanedSource);
 
         if (debugOutput) {
             DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
@@ -154,6 +155,18 @@ public class FlatPackageWriterImpl implements PackageWriter {
         fw.write(manifestWriter.getManifest(movieWithAdjustedTimescale));
         fw.close();
 
+    }
+
+    private Movie removeUnknownTracks(Movie source) {
+        Movie nuMovie = new Movie();
+        for (Track track : source.getTracks()) {
+            if ("vide".equals(track.getHandler()) || "soun".equals(track.getHandler())) {
+                nuMovie.addTrack(track);
+            } else {
+                LOG.fine("Removed track " + track);
+            }
+        }
+        return nuMovie;
     }
 
 
