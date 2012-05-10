@@ -29,13 +29,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
-import static java.lang.Math.round;
+import java.util.Queue;
+import java.util.logging.Logger;
 
 /**
  * Changes the timescale of a track by wrapping the track.
  */
 public class ChangeTimeScaleTrack implements Track {
+    private static final Logger LOG = Logger.getLogger(ChangeTimeScaleTrack.class.getName());
+
     Track source;
     List<CompositionTimeToSample.Entry> ctts;
     List<TimeToSampleBox.Entry> tts;
@@ -54,7 +56,33 @@ public class ChangeTimeScaleTrack implements Track {
         this.timeScale = targetTimeScale;
         double timeScaleFactor = (double) targetTimeScale / source.getTrackMetaData().getTimescale();
         ctts = adjustCtts(source.getCompositionTimeEntries(), timeScaleFactor);
-        tts = adjustTts(source.getDecodingTimeEntries(), timeScaleFactor, syncSamples);
+        tts = adjustTts(source.getDecodingTimeEntries(), timeScaleFactor, syncSamples, getTimes(source, syncSamples, targetTimeScale));
+    }
+
+    private static long[] getTimes(Track track, long[] syncSamples, long targetTimeScale) {
+        long[] syncSampleTimes = new long[syncSamples.length];
+        Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
+
+        int currentSample = 1;  // first syncsample is 1
+        long currentDuration = 0;
+        long currentDelta = 0;
+        int currentSyncSampleIndex = 0;
+        long left = 0;
+
+
+        while (currentSample <= syncSamples[syncSamples.length - 1]) {
+            if (currentSample++ == syncSamples[currentSyncSampleIndex]) {
+                syncSampleTimes[currentSyncSampleIndex++] = (currentDuration * targetTimeScale) / track.getTrackMetaData().getTimescale();
+            }
+            if (left-- == 0) {
+                TimeToSampleBox.Entry entry = timeQueue.poll();
+                left = entry.getCount() - 1;
+                currentDelta = entry.getDelta();
+            }
+            currentDuration += currentDelta;
+        }
+        return syncSampleTimes;
+
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
@@ -128,25 +156,29 @@ public class ChangeTimeScaleTrack implements Track {
         }
     }
 
-    static List<TimeToSampleBox.Entry> adjustTts(List<TimeToSampleBox.Entry> source, double timeScaleFactor, long[] syncSample) {
-        double deviation = 0;
-        long[] sourceArray = TimeToSampleBox.blowupTimeToSamples(source);
-        LinkedList<TimeToSampleBox.Entry> entries2 = new LinkedList<TimeToSampleBox.Entry>();
-        for (int i = 0; i < sourceArray.length; i++) {
-            long duration = sourceArray[i];
-            double d = timeScaleFactor * duration;
-            long x = round(d);
-            deviation += d - x;
-            TimeToSampleBox.Entry last = entries2.peekLast();
-            if (Arrays.binarySearch(syncSample, i + 1) >= 0) {
-                // apply correction here!
-                if (Math.abs(deviation) >= 1) {
-                    //System.err.println("Sample " + i + " corrected by adding + " + Math.round(deviation) );
-                    x += Math.round(deviation);
-                    deviation = deviation - Math.round(deviation); // there is a rest!
+    static List<TimeToSampleBox.Entry> adjustTts(List<TimeToSampleBox.Entry> source, double timeScaleFactor, long[] syncSample, long[] syncSampleTimes) {
 
+        long[] sourceArray = TimeToSampleBox.blowupTimeToSamples(source);
+        long summedDurations = 0;
+
+        LinkedList<TimeToSampleBox.Entry> entries2 = new LinkedList<TimeToSampleBox.Entry>();
+        for (int i = 1; i <= sourceArray.length; i++) {
+            long duration = sourceArray[i - 1];
+
+            long x = Math.round(timeScaleFactor * duration);
+
+
+            TimeToSampleBox.Entry last = entries2.peekLast();
+            int ssIndex;
+            if ((ssIndex = Arrays.binarySearch(syncSample, i + 1)) >= 0) {
+                // we are at the sample before sync point
+                if (syncSampleTimes[ssIndex] != summedDurations) {
+                    long correction = syncSampleTimes[ssIndex] - (summedDurations + x);
+                    LOG.finest(String.format("Sample %d %d / %d - correct by %d", i, summedDurations, syncSampleTimes[ssIndex], correction));
+                    x += correction;
                 }
             }
+            summedDurations += x;
             if (last == null) {
                 entries2.add(new TimeToSampleBox.Entry(1, x));
             } else if (last.getDelta() != x) {

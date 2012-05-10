@@ -158,6 +158,23 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             nuSyncSampleArray[i] = nuSyncSamples.get(i);
         }
         if (nuSyncSampleArray.length < (syncSamples.length * 0.3)) {
+            String log = "";
+            log += (nuSyncSampleArray.length);
+            log += ("Common:  [");
+            for (long l : nuSyncSampleArray) {
+                log += (String.format("%10d,", l));
+            }
+            log += ("]");
+            LOG.warning(log);
+            log = "";
+
+            log += (syncSamples.length);
+            log += ("In    :  [");
+            for (long l : syncSamples) {
+                log += (String.format("%10d,", l));
+            }
+            log += ("]");
+            LOG.warning(log);
             LOG.warning("There are less than 25% of common sync samples in the given track.");
             throw new RuntimeException("There are less than 25% of common sync samples in the given track.");
         } else if (nuSyncSampleArray.length < (syncSamples.length * 0.5)) {
@@ -194,7 +211,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             }
             if (left-- == 0) {
                 TimeToSampleBox.Entry entry = timeQueue.poll();
-                left = entry.getCount();
+                left = entry.getCount() - 1;
                 currentDelta = entry.getDelta();
             }
             currentDuration += currentDelta;

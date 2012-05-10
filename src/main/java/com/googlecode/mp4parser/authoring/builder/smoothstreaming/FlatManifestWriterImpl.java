@@ -25,12 +25,14 @@ import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
+import com.googlecode.mp4parser.Version;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
 import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import nu.xom.Attribute;
+import nu.xom.Comment;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Serializer;
@@ -41,10 +43,12 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 public class FlatManifestWriterImpl implements ManifestWriter {
+    private static final Logger LOG = Logger.getLogger(FlatManifestWriterImpl.class.getName());
 
 
     private FragmentIntersectionFinder intersectionFinder = new SyncSampleIntersectFinderImpl();
@@ -105,7 +109,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
         smoothStreamingMedia.addAttribute(new Attribute("MinorVersion", "1"));
 // silverlight ignores the timescale attr        smoothStreamingMedia.addAttribute(new Attribute("TimeScale", Long.toString(movieTimeScale)));
         smoothStreamingMedia.addAttribute(new Attribute("Duration", "0"));
-
+        smoothStreamingMedia.appendChild(new Comment(Version.VERSION));
         Element videoStreamIndex = new Element("StreamIndex");
         videoStreamIndex.addAttribute(new Attribute("Type", "video"));
         videoStreamIndex.addAttribute(new Attribute("TimeScale", Long.toString(videoTimescale))); // silverlight ignores the timescale attr
@@ -240,20 +244,24 @@ public class FlatManifestWriterImpl implements ManifestWriter {
         System.arraycopy(checkTimes, 0, checkTimesMinusLast, 0, checkTimes.length - 1);
 
         if (!Arrays.equals(checkTimesMinusLast, referenceTimesMinusLast)) {
-            System.err.print("Reference     :  [");
-            for (long l : checkTimes) {
-                System.err.print(l + ",");
-            }
-            System.err.println("]");
-
-
-            System.err.print("Current       :  [");
+            String log = "";
+            log += (referenceTimes.length);
+            log += ("Reference     :  [");
             for (long l : referenceTimes) {
-                System.err.print(l + ",");
+                log += (String.format("%10d,", l));
             }
-            System.err.println("]");
-            throw new IOException("Track does not have the same fragment borders as its predecessor.");
+            log += ("]");
+            LOG.warning(log);
+            log = "";
 
+            log += (checkTimes.length);
+            log += ("Current       :  [");
+            for (long l : checkTimes) {
+                log += (String.format("%10d,", l));
+            }
+            log += ("]");
+            LOG.warning(log);
+            throw new IOException("Track does not have the same fragment borders as its predecessor.");
 
         } else {
             return checkTimes;
@@ -275,7 +283,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
                 baos.write(pp);
             }
         } catch (IOException ex) {
-            throw new InternalError("ByteArrayOutputStream do not throw IOException ?!?!?");
+            throw new RuntimeException("ByteArrayOutputStream do not throw IOException ?!?!?");
         }
         return baos.toByteArray();
     }
@@ -299,11 +307,11 @@ public class FlatManifestWriterImpl implements ManifestWriter {
     public long[] calculateFragmentDurations(Track track, Movie movie) {
         long[] startSamples = intersectionFinder.sampleNumbers(track, movie);
         long[] durations = new long[startSamples.length];
-        int currentFragment = -1;
+        int currentFragment = 0;
         int currentSample = 1; // sync samples start with 1 !
 
         for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
-            for (int max = currentSample + l2i(entry.getCount()); currentSample <= max; currentSample++) {
+            for (int max = currentSample + l2i(entry.getCount()); currentSample < max; currentSample++) {
                 // in this loop we go through the entry.getCount() samples starting from current sample.
                 // the next entry.getCount() samples have the same decoding time.
                 if (currentFragment != startSamples.length - 1 && currentSample == startSamples[currentFragment + 1]) {
@@ -311,6 +319,8 @@ public class FlatManifestWriterImpl implements ManifestWriter {
                     currentFragment++;
                 }
                 durations[currentFragment] += entry.getDelta();
+
+
             }
         }
         return durations;

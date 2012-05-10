@@ -16,7 +16,9 @@
 package com.googlecode.mp4parser.authoring.builder.smoothstreaming;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.SoundMediaHeaderBox;
+import com.coremedia.iso.boxes.VideoMediaHeaderBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
@@ -34,9 +36,6 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.Iterator;
 import java.util.logging.Logger;
-
-import static com.googlecode.mp4parser.util.Math.gcd;
-import static com.googlecode.mp4parser.util.Math.lcm;
 
 public class FlatPackageWriterImpl implements PackageWriter {
     private static Logger LOG = Logger.getLogger(FlatPackageWriterImpl.class.getName());
@@ -84,6 +83,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
     public void write(Movie source) throws IOException {
 
         if (debugOutput) {
+            outputDirectory.mkdirs();
             DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
             IsoFile muxed = defaultMp4Builder.build(source);
             File muxedFile = new File(outputDirectory, "debug_1_muxed.mp4");
@@ -92,6 +92,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
             muxedFileOutputStream.close();
         }
         Movie movieWithAdjustedTimescale = correctTimescale(source);
+
         if (debugOutput) {
             DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
             IsoFile muxed = defaultMp4Builder.build(movieWithAdjustedTimescale);
@@ -164,14 +165,12 @@ public class FlatPackageWriterImpl implements PackageWriter {
      * @return a movie with timescales suitable for smooth streaming manifests
      */
     public Movie correctTimescale(Movie movie) {
-
         Movie nuMovie = new Movie();
-
         for (Track track : movie.getTracks()) {
             nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, fragmentIntersectionFinder.sampleNumbers(track, movie)));
         }
-        movie.setTracks(nuMovie.getTracks());
-        return movie;
+        return nuMovie;
+
     }
 
 }
