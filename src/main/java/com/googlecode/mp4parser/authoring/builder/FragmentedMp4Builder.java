@@ -62,8 +62,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.logging.Logger;
 
@@ -89,66 +91,94 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return new FileTypeBox("isom", 0, minorBrands);
     }
 
+    /**
+     * Some formats require sorting of the fragments. E.g. Ultraviolet CFF files are required
+     * to contain the fragments size sort:
+     * <ul>
+     * <li>video[1].getBytes().length < audio[1].getBytes().length < subs[1].getBytes().length</li>
+     * <li> audio[2].getBytes().length < video[2].getBytes().length < subs[2].getBytes().length</li>
+     * </ul>
+     *
+     * make this fragment:
+     *
+     * <ol>
+     *     <li>video[1]</li>
+     *     <li>audio[1]</li>
+     *     <li>subs[1]</li>
+     *     <li>audio[2]</li>
+     *     <li>video[2]</li>
+     *     <li>subs[2]</li>
+     * </ol>
+     *
+     * @param tracks the list of tracks to returned sorted
+     * @param cycle current fragment (sorting may vary between the fragments)
+     * @param intersectionMap a map from tracks to their fragments' first samples.
+     * @return the list of tracks in order of appearance in the fragment
+     */
+    protected List<Track> sortTracksInSequence(List<Track> tracks, final int cycle, final Map<Track, long[]> intersectionMap) {
+        tracks = new LinkedList<Track>(tracks);
+        Collections.sort(tracks, new Comparator<Track>() {
+            public int compare(Track o1, Track o2) {
+                long[] startSamples1 = intersectionMap.get(o1);
+                long startSample1 = startSamples1[cycle];
+                // one based sample numbers - the first sample is 1
+                long endSample1 = cycle + 1 < startSamples1.length ? startSamples1[cycle + 1] : o1.getSamples().size() + 1;
+                long[] startSamples2 = intersectionMap.get(o2);
+                long startSample2 = startSamples2[cycle];
+                // one based sample numbers - the first sample is 1
+                long endSample2 = cycle + 1 < startSamples2.length ? startSamples2[cycle + 1] : o2.getSamples().size() + 1;
+                List<ByteBuffer> samples1 = o1.getSamples().subList(l2i(startSample1) - 1, l2i(endSample1) - 1);
+                List<ByteBuffer> samples2 = o2.getSamples().subList(l2i(startSample2) - 1, l2i(endSample2) - 1);
+                int size1 = 0;
+                for (ByteBuffer byteBuffer : samples1) {
+                    size1 += byteBuffer.limit();
+                }
+                int size2 = 0;
+                for (ByteBuffer byteBuffer : samples2) {
+                    size2 += byteBuffer.limit();
+                }
+                return size1 - size2;
+            }
+        });
+        return tracks;
+    }
+
     protected List<Box> createMoofMdat(final Movie movie) {
         List<Box> boxes = new LinkedList<Box>();
+        HashMap<Track, long[]> intersectionMap = new HashMap<Track, long[]>();
         int maxNumberOfFragments = 0;
         for (Track track : movie.getTracks()) {
-            int currentLength = intersectionFinder.sampleNumbers(track, movie).length;
-            maxNumberOfFragments = currentLength > maxNumberOfFragments ? currentLength : maxNumberOfFragments;
+            long[] intersects = intersectionFinder.sampleNumbers(track, movie);
+            intersectionMap.put(track, intersects);
+            maxNumberOfFragments = Math.max(maxNumberOfFragments, intersects.length);
         }
+
+
         int sequence = 1;
-        for (int i = 0; i < maxNumberOfFragments; i++) {
+        // this loop has two indices:
 
-            final List<Track> sizeSortedTracks = new LinkedList<Track>(movie.getTracks());
-            final int j = i;
-            Collections.sort(sizeSortedTracks, new Comparator<Track>() {
-                public int compare(Track o1, Track o2) {
-                    long[] startSamples1 = intersectionFinder.sampleNumbers(o1, movie);
-                    long startSample1 = startSamples1[j];
-                    // one based sample numbers - the first sample is 1
-                    long endSample1 = j + 1 < startSamples1.length ? startSamples1[j + 1] : o1.getSamples().size() + 1;
-                    long[] startSamples2 = intersectionFinder.sampleNumbers(o2, movie);
-                    long startSample2 = startSamples2[j];
-                    // one based sample numbers - the first sample is 1
-                    long endSample2 = j + 1 < startSamples2.length ? startSamples2[j + 1] : o2.getSamples().size() + 1;
-                    List<ByteBuffer> samples1 = o1.getSamples().subList(l2i(startSample1) - 1, l2i(endSample1) - 1);
-                    List<ByteBuffer> samples2 = o2.getSamples().subList(l2i(startSample2) - 1, l2i(endSample2) - 1);
-                    int size1 = 0;
-                    for (ByteBuffer byteBuffer : samples1) {
-                        size1 += byteBuffer.limit();
-                    }
-                    int size2 = 0;
-                    for (ByteBuffer byteBuffer : samples2) {
-                        size2 += byteBuffer.limit();
-                    }
-                    return size1 - size2;
-                }
-            });
+        for (int cycle = 0; cycle < maxNumberOfFragments; cycle++) {
 
-            for (Track track : sizeSortedTracks) {
+            final List<Track> sortedTracks = sortTracksInSequence(movie.getTracks(), cycle, intersectionMap);
+
+            for (Track track : sortedTracks) {
                 if (getAllowedHandlers().isEmpty() || getAllowedHandlers().contains(track.getHandler())) {
-                    long[] startSamples = intersectionFinder.sampleNumbers(track, movie);
+                    long[] startSamples = intersectionMap.get(track);
+                    //some tracks may have less fragments -> skip them
+                    if (cycle < startSamples.length) {
 
-                    if (i < startSamples.length) {
-                        long startSample = startSamples[i];
+                        long startSample = startSamples[cycle];
                         // one based sample numbers - the first sample is 1
-                        long endSample = i + 1 < startSamples.length ? startSamples[i + 1] : track.getSamples().size() + 1;
+                        long endSample = cycle + 1 < startSamples.length ? startSamples[cycle + 1] : track.getSamples().size() + 1;
 
-                        if (startSample == endSample) {
-                            // empty fragment
-                            // just don't add any boxes.
-                        } else {
+                        // if startSample == endSample the cycle is empty!
+                        if (startSample != endSample) {
                             boxes.add(createMoof(startSample, endSample, track, sequence));
                             boxes.add(createMdat(startSample, endSample, track, sequence++));
                         }
-
-                    } else {
-                        //obvious this track has not that many fragments
                     }
                 }
             }
-
-
         }
         return boxes;
     }
@@ -208,6 +238,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 if (writableByteChannel instanceof GatheringByteChannel) {
 
                     int STEPSIZE = 1024;
+                    // This is required to prevent android from crashing
+                    // it seems that {@link GatheringByteChannel#write(java.nio.ByteBuffer[])}
+                    // just handles up to 1024 buffers
                     for (int i = 0; i < Math.ceil((double) samples.size() / STEPSIZE); i++) {
                         List<ByteBuffer> sublist = samples.subList(
                                 i * STEPSIZE, // start
@@ -263,27 +296,51 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
 
     /**
-     * @param startSample    first sample in list starting with 1. 1 is the first sample.
-     * @param endSample
-     * @param track
-     * @param sequenceNumber
-     * @return
+     * Gets the all samples starting with <code>startSample</code> (one based -> one is the first) and
+     * ending with <code>endSample</code> (exclusive).
+     *
+     * @param startSample    low endpoint (inclusive) of the sample sequence
+     * @param endSample      high endpoint (exclusive) of the sample sequence
+     * @param track          source of the samples
+     * @param sequenceNumber the fragment index of the requested list of samples
+     * @return a <code>List&lt;ByteBuffer></code> of raw samples
      */
     protected List<ByteBuffer> getSamples(long startSample, long endSample, Track track, int sequenceNumber) {
         // since startSample and endSample are one-based substract 1 before addressing list elements
         return track.getSamples().subList(l2i(startSample) - 1, l2i(endSample) - 1);
     }
 
-
-    protected List<? extends Box> createTruns(long startSample, long endSample, Track track, int sequenceNumber) {
+    /**
+     * Gets the sizes of a sequence of samples-
+     *
+     * @param startSample    low endpoint (inclusive) of the sample sequence
+     * @param endSample      high endpoint (exclusive) of the sample sequence
+     * @param track          source of the samples
+     * @param sequenceNumber the fragment index of the requested list of samples
+     * @return
+     */
+    protected long[] getSampleSizes(long startSample, long endSample, Track track, int sequenceNumber) {
         List<ByteBuffer> samples = getSamples(startSample, endSample, track, sequenceNumber);
 
         long[] sampleSizes = new long[samples.size()];
         for (int i = 0; i < sampleSizes.length; i++) {
             sampleSizes[i] = samples.get(i).limit();
         }
-        TrackRunBox trun = new TrackRunBox();
+        return sampleSizes;
+    }
 
+    /**
+     * Creates one or more track run boxes for a given sequence.
+     *
+     * @param startSample    low endpoint (inclusive) of the sample sequence
+     * @param endSample      high endpoint (exclusive) of the sample sequence
+     * @param track          source of the samples
+     * @param sequenceNumber the fragment index of the requested list of samples
+     * @return the list of TrackRun boxes.
+     */
+    protected List<? extends Box> createTruns(long startSample, long endSample, Track track, int sequenceNumber) {
+        TrackRunBox trun = new TrackRunBox();
+        long[] sampleSizes = getSampleSizes(startSample, endSample, track, sequenceNumber);
 
         trun.setSampleDurationPresent(true);
         trun.setSampleSizePresent(true);
@@ -291,7 +348,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
 
         Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
-        long left = startSample-1;
+        long left = startSample - 1;
         long curEntryLeft = timeQueue.peek().getCount();
         while (left > curEntryLeft) {
             left -= curEntryLeft;
@@ -375,9 +432,16 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return Collections.singletonList(trun);
     }
 
+    /**
+     * Creates a 'moof' box for a given sequence of samples.
+     *
+     * @param startSample    low endpoint (inclusive) of the sample sequence
+     * @param endSample      high endpoint (exclusive) of the sample sequence
+     * @param track          source of the samples
+     * @param sequenceNumber the fragment index of the requested list of samples
+     * @return the list of TrackRun boxes.
+     */
     protected Box createMoof(long startSample, long endSample, Track track, int sequenceNumber) {
-
-
         MovieFragmentBox moof = new MovieFragmentBox();
         moof.addBox(createMfhd(startSample, endSample, track, sequenceNumber));
         moof.addBox(createTraf(startSample, endSample, track, sequenceNumber));
@@ -389,6 +453,12 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return moof;
     }
 
+    /**
+     * Creates a single 'mvhd' movie header box for a given movie.
+     *
+     * @param movie the concerned movie
+     * @return an 'mvhd' box
+     */
     protected Box createMvhd(Movie movie) {
         MovieHeaderBox mvhd = new MovieHeaderBox();
         mvhd.setVersion(1);
@@ -417,6 +487,17 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return mvhd;
     }
 
+    /**
+     * Creates a fully populated 'moov' box with all child boxes. Child boxes are:
+     * <ul>
+     * <li>{@link #createMvhd(com.googlecode.mp4parser.authoring.Movie) mvhd}</li>
+     * <li>{@link #createMvex(com.googlecode.mp4parser.authoring.Movie)  mvex}</li>
+     * <li>a {@link #createTrak(com.googlecode.mp4parser.authoring.Track, com.googlecode.mp4parser.authoring.Movie)  trak} for every track</li>
+     * </ul>
+     *
+     * @param movie the concerned movie
+     * @return fully populated 'moov'
+     */
     protected Box createMoov(Movie movie) {
         MovieBox movieBox = new MovieBox();
 
@@ -431,6 +512,15 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     }
 
+    /**
+     * Creates a 'tfra' - track fragment random access box for the given track with the isoFile.
+     * The tfra contains a map of random access points with time as key and offset within the isofile
+     * as value.
+     *
+     * @param track   the concerned track
+     * @param isoFile the track is contained in
+     * @return a track fragment random access box.
+     */
     protected Box createTfra(Track track, IsoFile isoFile) {
         TrackFragmentRandomAccessBox tfra = new TrackFragmentRandomAccessBox();
         tfra.setVersion(1); // use long offsets and times
@@ -500,6 +590,15 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return tfra;
     }
 
+    /**
+     * Creates a 'mfra' - movie fragment random access box for the given movie in the given
+     * isofile. Uses {@link #createTfra(com.googlecode.mp4parser.authoring.Track, com.coremedia.iso.IsoFile)}
+     * to generate the child boxes.
+     *
+     * @param movie   concerned movie
+     * @param isoFile concerned isofile
+     * @return a complete 'mfra' box
+     */
     protected Box createMfra(Movie movie, IsoFile isoFile) {
         MovieFragmentRandomAccessBox mfra = new MovieFragmentRandomAccessBox();
         for (Track track : movie.getTracks()) {
@@ -529,7 +628,14 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return trex;
     }
 
-
+    /**
+     * Creates a 'mvex' - movie extends box and populates it with 'trex' boxes
+     * by calling {@link #createTrex(com.googlecode.mp4parser.authoring.Movie, com.googlecode.mp4parser.authoring.Track)}
+     * for each track to generate them
+     *
+     * @param movie the source movie
+     * @return a complete 'mvex'
+     */
     protected Box createMvex(Movie movie) {
         MovieExtendsBox mvex = new MovieExtendsBox();
 
