@@ -28,21 +28,17 @@ import java.util.regex.Pattern;
 
 public class Path {
 
-    IsoFile isoFile;
-
-    public Path(IsoFile isoFile) {
-        this.isoFile = isoFile;
+    private Path() {
     }
 
-    private static Pattern component = Pattern.compile("(....)(\\[(.*)\\])?");
+    static Pattern component = Pattern.compile("(....|\\.\\.)(\\[(.*)\\])?");
 
-    public String createPath(Box box) {
+    public static String createPath(Box box) {
         return createPath(box, "");
     }
 
-    private String createPath(Box box, String path) {
+    private static String createPath(Box box, String path) {
         if (box instanceof IsoFile) {
-            assert box == isoFile;
             return path;
         } else {
             List<?> boxesOfBoxType = box.getParent().getBoxes(box.getClass());
@@ -53,30 +49,27 @@ public class Path {
         }
     }
 
-    public Box getPath(String path) {
-        List<Box> all = getPath(isoFile, path);
-        return all.isEmpty() ?null:all.get(0);
+    public static Box getPath(Box box, String path) {
+        List<Box> all = getPaths(box, path);
+        return all.isEmpty() ? null : all.get(0);
     }
 
-    public List<Box> getPaths(String path) {
-        return getPath(isoFile, path);
-    }
 
-    public boolean isContained(Box box, String path) {
-        return getPath(isoFile, path).contains(box);
-    }
-
-    private List<Box> getPath(Box box, String path) {
+    public static List<Box> getPaths(Box box, String path) {
         if (path.startsWith("/")) {
-            path = path.substring(1);
-        }
-        if (path.isEmpty()) {
+            Box isoFile = box;
+            while (isoFile.getParent() != null) {
+                isoFile = isoFile.getParent();
+            }
+            assert isoFile instanceof IsoFile : isoFile.getType() + " has no parent";
+            return getPaths(isoFile, path.substring(1));
+        } else if (path.isEmpty()) {
             return Collections.singletonList(box);
         } else {
             String later;
             String now;
             if (path.contains("/")) {
-                later = path.substring(path.indexOf('/'));
+                later = path.substring(path.indexOf('/') + 1);
                 now = path.substring(0, path.indexOf('/'));
             } else {
                 now = path;
@@ -86,28 +79,37 @@ public class Path {
             Matcher m = component.matcher(now);
             if (m.matches()) {
                 String type = m.group(1);
-                int index = -1;
-                if (m.group(2) != null) {
-                    // we have a specific index
-                    String indexString = m.group(3);
-                    index = Integer.parseInt(indexString);
-                }
-                List<Box> children = new LinkedList<Box>();
-                int currentIndex = 0;
-                for (Box box1 : ((ContainerBox) box).getBoxes()) {
-                    if (box1.getType().equals(type)) {
-                        if (index == -1 || index == currentIndex) {
-                            children.addAll(getPath(box1, later));
-                        }
-                        currentIndex++;
+                if ("..".equals(type)) {
+                    return Collections.<Box>singletonList(box.getParent());
+                } else {
+                    int index = -1;
+                    if (m.group(2) != null) {
+                        // we have a specific index
+                        String indexString = m.group(3);
+                        index = Integer.parseInt(indexString);
                     }
+                    List<Box> children = new LinkedList<Box>();
+                    int currentIndex = 0;
+                    for (Box box1 : ((ContainerBox) box).getBoxes()) {
+                        if (box1.getType().equals(type)) {
+                            if (index == -1 || index == currentIndex) {
+                                children.addAll(getPaths(box1, later));
+                            }
+                            currentIndex++;
+                        }
+                    }
+                    return children;
                 }
-                return children;
-
             } else {
-                throw new RuntimeException("invalid path.");
+                throw new RuntimeException(now + " is invalid path.");
             }
         }
 
+    }
+
+
+    public static boolean isContained(Box box, String path) {
+        assert path.startsWith("/") : "Absolute path required";
+        return getPaths(box, path).contains(box);
     }
 }

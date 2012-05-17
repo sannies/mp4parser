@@ -132,7 +132,6 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     private MovieBox createMovieBox(Movie movie) {
         MovieBox movieBox = new MovieBox();
-        List<Box> movieBoxChildren = new LinkedList<Box>();
         MovieHeaderBox mvhd = new MovieHeaderBox();
         mvhd.setVersion(1);
         mvhd.setCreationTime(DateHelper.convert(new Date()));
@@ -158,12 +157,11 @@ public class DefaultMp4Builder implements Mp4Builder {
             nextTrackId = nextTrackId < track.getTrackMetaData().getTrackId() ? track.getTrackMetaData().getTrackId() : nextTrackId;
         }
         mvhd.setNextTrackId(++nextTrackId);
-        movieBoxChildren.add(mvhd);
+        movieBox.addBox(mvhd);
         for (Track track : movie.getTracks()) {
-            movieBoxChildren.add(createTrackBox(track, movie));
+            movieBox.addBox(createTrackBox(track, movie));
         }
         // metadata here
-        movieBox.setBoxes(movieBoxChildren);
         Box udta = createUdta(movie);
         if (udta != null) {
             movieBox.addBox(udta);

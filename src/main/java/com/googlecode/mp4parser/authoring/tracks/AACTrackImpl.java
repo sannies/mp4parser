@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012 castLabs GmbH, Berlin
+ *
+ * Licensed under the Apache License, Version 2.0 (the License);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an AS IS BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
@@ -14,35 +29,11 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: magnus
- * Date: 2012-04-20
- * Time: 11:14
- * To change this template use File | Settings | File Templates.
  */
 public class AACTrackImpl extends AbstractTrack {
-    TrackMetaData trackMetaData = new TrackMetaData();
-    SampleDescriptionBox sampleDescriptionBox;
-
-    int samplerate;
-    int bitrate;
-    int channelCount;
-    int channelconfig;
-
-    int bufferSizeDB;
-    long maxBitRate;
-    long avgBitRate;
-
-    private InputStream inputStream;
-    private List<ByteBuffer> samples;
-    boolean readSamples = false;
-    List<TimeToSampleBox.Entry> stts;
     public static Map<Integer, Integer> samplingFrequencyIndexMap = new HashMap<Integer, Integer>();
 
-    public AACTrackImpl(InputStream inputStream) throws IOException {
-        this.inputStream = inputStream;
-        stts = new LinkedList<TimeToSampleBox.Entry>();
-
+    static {
         samplingFrequencyIndexMap.put(96000, 0);
         samplingFrequencyIndexMap.put(88200, 1);
         samplingFrequencyIndexMap.put(64000, 2);
@@ -67,6 +58,29 @@ public class AACTrackImpl extends AbstractTrack {
         samplingFrequencyIndexMap.put(0x9, 12000);
         samplingFrequencyIndexMap.put(0xa, 11025);
         samplingFrequencyIndexMap.put(0xb, 8000);
+    }
+
+    TrackMetaData trackMetaData = new TrackMetaData();
+    SampleDescriptionBox sampleDescriptionBox;
+
+    int samplerate;
+    int bitrate;
+    int channelCount;
+    int channelconfig;
+
+    int bufferSizeDB;
+    long maxBitRate;
+    long avgBitRate;
+
+    private InputStream inputStream;
+    private List<ByteBuffer> samples;
+    boolean readSamples = false;
+    List<TimeToSampleBox.Entry> stts;
+
+
+    public AACTrackImpl(InputStream inputStream) throws IOException {
+        this.inputStream = inputStream;
+        stts = new LinkedList<TimeToSampleBox.Entry>();
 
         if (!readVariables()) {
             throw new IOException();
@@ -149,35 +163,35 @@ public class AACTrackImpl extends AbstractTrack {
      }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
-        return sampleDescriptionBox;  //To change body of implemented methods use File | Settings | File Templates.
+        return sampleDescriptionBox;
     }
 
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return stts;  //To change body of implemented methods use File | Settings | File Templates.
+        return stts;
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public long[] getSyncSamples() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public List<SampleDependencyTypeBox.Entry> getSampleDependencies() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public TrackMetaData getTrackMetaData() {
-        return trackMetaData;  //To change body of implemented methods use File | Settings | File Templates.
+        return trackMetaData;
     }
 
     public String getHandler() {
-        return "soun";  //To change body of implemented methods use File | Settings | File Templates.
+        return "soun";
     }
 
     public List<ByteBuffer> getSamples() {
-        return samples;  //To change body of implemented methods use File | Settings | File Templates.
+        return samples;
     }
 
     public AbstractMediaHeaderBox getMediaHeaderBox() {
@@ -185,15 +199,16 @@ public class AACTrackImpl extends AbstractTrack {
     }
 
     public SubSampleInformationBox getSubsampleInformationBox() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     private boolean readVariables() throws IOException {
         byte[] data = new byte[100];
+        inputStream.mark(100);
         if (100 != inputStream.read(data, 0, 100)) {
             return false;
         }
-        inputStream.skip(-100); // Rewind
+        inputStream.reset(); // Rewind
         ByteBuffer bb = ByteBuffer.wrap(data);
         BitReaderBuffer brb = new BitReaderBuffer(bb);
         int syncword = brb.readBits(12);
@@ -222,10 +237,11 @@ public class AACTrackImpl extends AbstractTrack {
         readSamples = true;
         byte[] header = new byte[15];
         boolean ret = false;
+        inputStream.mark(15);
         while (-1 != inputStream.read(header)) {
             ret = true;
             ByteBuffer bb = ByteBuffer.wrap(header);
-            inputStream.skip(-15);
+            inputStream.reset();
             BitReaderBuffer brb = new BitReaderBuffer(bb);
             int syncword = brb.readBits(12);
             if (syncword != 0xfff) {
@@ -248,7 +264,7 @@ public class AACTrackImpl extends AbstractTrack {
             inputStream.read(data);
             samples.add(ByteBuffer.wrap(data));
             stts.add(new TimeToSampleBox.Entry(1, 1024));
-
+            inputStream.mark(15);
         }
         return ret;
     }

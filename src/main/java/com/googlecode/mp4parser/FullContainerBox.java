@@ -73,10 +73,12 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
     }
 
     public void addBox(Box b) {
+        b.setParent(this);
         boxes.add(b);
     }
 
     public void removeBox(Box b) {
+        b.setParent(null);
         boxes.remove(b);
     }
 

@@ -114,7 +114,7 @@ public class MediaHeaderBox extends AbstractFullBox {
 
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append("MeditHeaderBox[");
+        result.append("MediaHeaderBox[");
         result.append("creationTime=").append(getCreationTime());
         result.append(";");
         result.append("modificationTime=").append(getModificationTime());

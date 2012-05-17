@@ -70,10 +70,12 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     }
 
     public void addBox(AbstractBox b) {
+        b.setParent(this);
         boxes.add(b);
     }
 
     public boolean removeBox(Box b) {
+        b.setParent(this);
         return boxes.remove(b);
     }
 

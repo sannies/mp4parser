@@ -96,6 +96,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     public void removeBox(Box b) {
+        b.setParent(this);
         boxes.remove(b);
     }
 

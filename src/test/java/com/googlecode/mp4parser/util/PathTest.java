@@ -13,19 +13,32 @@ import java.nio.channels.Channels;
 
 public class PathTest {
     IsoFile isoFile;
-    Path path;
 
     @Before
     public void setup() throws IOException {
         isoFile = new IsoFile(Channels.newChannel(PathTest.class.getResourceAsStream("/multiTrack.3gp")));
-        path = new Path(isoFile);
     }
 
     @Test
     public void testRoundTrip() throws IOException {
         Box b1 = isoFile.getMovieBox().getBoxes(TrackBox.class).get(1).getSampleTableBox().getTimeToSampleBox();
-        String p = path.createPath(b1);
-        Box b2 = path.getPath(p);
+        String p = Path.createPath(b1);
+        Box b2 = Path.getPath(isoFile, p);
         Assert.assertSame(b1, b2);
+    }
+
+    @Test
+    public void testGetParent() throws Exception {
+        Box b1 = isoFile.getMovieBox().getBoxes(TrackBox.class).get(1).getSampleTableBox().getTimeToSampleBox();
+        Assert.assertEquals(isoFile.getMovieBox().getBoxes(TrackBox.class).get(1).getSampleTableBox(), Path.getPath(b1, ".."));
+
+    }
+
+    @Test
+    public void testComponentMatcher() {
+        Assert.assertTrue(Path.component.matcher("abcd").matches());
+        Assert.assertTrue(Path.component.matcher("xml ").matches());
+        Assert.assertTrue(Path.component.matcher("xml [1]").matches());
+        Assert.assertTrue(Path.component.matcher("..").matches());
     }
 }

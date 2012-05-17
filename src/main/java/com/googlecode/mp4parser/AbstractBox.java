@@ -235,7 +235,7 @@ public abstract class AbstractBox implements Box {
             byte v1 = content.get(i);
             byte v2 = bb.get(j);
             if (v1 != v2) {
-                LOG.severe("buffers differ at " + i + ": "  + v1 + "/" + v2);
+                LOG.severe(this.getType() + ": buffers differ at " + i + ": "  + v1 + "/" + v2);
                 byte[] b1 = new byte[content.remaining()];
                 byte[] b2 = new byte[bb.remaining()];
                 content.get(b1);
