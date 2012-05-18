@@ -100,7 +100,7 @@ public class H264TrackImpl extends AbstractTrack {
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
         trackMetaData.setLanguage("eng");
-        trackMetaData.setTimescale(timescale); // Audio tracks always use samplerate as timescale
+        trackMetaData.setTimescale(timescale);
         trackMetaData.setWidth(width);
         trackMetaData.setHeight(height);
     }
@@ -110,7 +110,7 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return stts;  //To change body of implemented methods use File | Settings | File Templates.
+        return stts;
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
@@ -175,12 +175,17 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     private boolean findNextStartcode() throws IOException {
-        byte[] test = new byte[4];
-        while (4 == reader.read(test)) {
+        byte[] test = new byte[]{-1, -1, -1, -1};
+
+        int c;
+        while ((c = reader.read()) != -1) {
+            test[0] = test[1];
+            test[1] = test[2];
+            test[2] = test[3];
+            test[3] = (byte) c;
             if (test[0] == 0 && test[1] == 0 && test[2] == 0 && test[3] == 1) {
                 return true;
             }
-            reader.rewind(3);
         }
         return false;
     }
@@ -196,23 +201,25 @@ public class H264TrackImpl extends AbstractTrack {
 
         readSamples = true;
 
-        long pos = reader.getPos();
+
         findNextStartcode();
+        reader.mark(65536);
+        long pos = reader.getPos();
 
         ArrayList<byte[]> buffered = new ArrayList<byte[]>();
 
         int frameNr = 0;
 
         while (findNextStartcode()) {
-            long newpos = reader.getPos() - 4;
-            int size = (int) (newpos - pos);
-            reader.rewind(size);
-            byte[] data = new byte[size - 4];
+            long newpos = reader.getPos();
+            int size = (int) (newpos - pos - 4);
+            reader.reset();
+            byte[] data = new byte[size ];
             reader.read(data);
             int type = data[0];
             int nal_ref_idc = (type >> 5) & 3;
             int nal_unit_type = type & 0x1f;
-            System.out.println("Found startcode at " + pos + " Type: " + nal_unit_type + " ref idc: " + nal_ref_idc + " (size " + size + ")");
+            System.out.println("Found startcode at " + (pos -4)  + " Type: " + nal_unit_type + " ref idc: " + nal_ref_idc + " (size " + size + ")");
             NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, data);
             switch (action) {
                 case IGNORE:
@@ -265,6 +272,7 @@ public class H264TrackImpl extends AbstractTrack {
             }
             pos = newpos;
             reader.seek(4);
+            reader.mark(65536);
         }
         return true;
     }
@@ -464,6 +472,9 @@ public class H264TrackImpl extends AbstractTrack {
         private InputStream inputStream;
         private long pos = 0;
 
+        private long markPos = 0;
+
+
         private ReaderWrapper(InputStream inputStream) {
             this.inputStream = inputStream;
         }
@@ -479,12 +490,6 @@ public class H264TrackImpl extends AbstractTrack {
             return read;
         }
 
-        long rewind(int dist) throws IOException {
-            long skipped = inputStream.skip(-dist);
-            pos += skipped;
-            return -skipped;
-        }
-
         long seek(int dist) throws IOException {
             long seeked = inputStream.skip(dist);
             pos += seeked;
@@ -493,6 +498,17 @@ public class H264TrackImpl extends AbstractTrack {
 
         public long getPos() {
             return pos;
+        }
+
+        public void mark(int i) {
+            inputStream.mark(i);
+            markPos = pos;
+        }
+
+
+        public void reset() throws IOException {
+            inputStream.reset();
+            pos = markPos;
         }
     }
 
