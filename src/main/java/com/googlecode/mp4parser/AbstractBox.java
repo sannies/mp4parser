@@ -235,13 +235,13 @@ public abstract class AbstractBox implements Box {
             byte v1 = content.get(i);
             byte v2 = bb.get(j);
             if (v1 != v2) {
-                LOG.severe(this.getType() + ": buffers differ at " + i + ": "  + v1 + "/" + v2);
+                LOG.severe(String.format("%s: buffers differ at %d: %2X/%2X", this.getType(), i, v1, v2));
                 byte[] b1 = new byte[content.remaining()];
                 byte[] b2 = new byte[bb.remaining()];
                 content.get(b1);
                 bb.get(b2);
-                System.err.println(Hex.encodeHex(b1));
-                System.err.println(Hex.encodeHex(b2));
+                System.err.println("original      : " + Hex.encodeHex(b1, 4));
+                System.err.println("reconstructed : " + Hex.encodeHex(b2, 4));
                 return false;
             }
         }

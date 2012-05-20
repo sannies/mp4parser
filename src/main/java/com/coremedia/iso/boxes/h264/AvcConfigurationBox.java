@@ -19,6 +19,8 @@ package com.coremedia.iso.boxes.h264;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractBox;
+import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
+import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 import com.googlecode.mp4parser.h264.model.PictureParameterSet;
 import com.googlecode.mp4parser.h264.model.SeqParameterSet;
 
@@ -40,14 +42,24 @@ public final class AvcConfigurationBox extends AbstractBox {
     private int profileCompatibility;
     private int avcLevelIndication;
     private int lengthSizeMinusOne;
+    private int lengthSizeMinusOnePaddingBits;
     List<byte[]> sequenceParameterSets = new ArrayList<byte[]>();
     List<byte[]> pictureParameterSets = new ArrayList<byte[]>();
-    
+
     boolean hasExts = true;
     private int chromaFormat = 1;
-    private int bitDepthLumaMinus8  = 0;
+    private int bitDepthLumaMinus8 = 0;
     private int bitDepthChromaMinus8 = 0;
     List<byte[]> sequenceParameterSetExts = new ArrayList<byte[]>();
+
+    /**
+     * Just for non-spec-conform encoders
+     */
+    private int numberOfSeuqenceParameterSetsPaddingBits = 31;
+    private int chromaFormatPaddingBits = 31;
+    private int bitDepthLumaMinus8PaddingBits = 63;
+    private int bitDepthChromaMinus8PaddingBits = 63;
+
 
     public AvcConfigurationBox() {
         super(TYPE);
@@ -155,9 +167,11 @@ public final class AvcConfigurationBox extends AbstractBox {
         avcProfileIndicaation = IsoTypeReader.readUInt8(content);
         profileCompatibility = IsoTypeReader.readUInt8(content);
         avcLevelIndication = IsoTypeReader.readUInt8(content);
-        int temp = IsoTypeReader.readUInt8(content);
-        lengthSizeMinusOne = temp & 3;
-        long numberOfSeuqenceParameterSets = IsoTypeReader.readUInt8(content) & 31;
+        BitReaderBuffer brb = new BitReaderBuffer(content);
+        lengthSizeMinusOnePaddingBits = brb.readBits(6);
+        lengthSizeMinusOne = brb.readBits(2);
+        numberOfSeuqenceParameterSetsPaddingBits = brb.readBits(3);
+        int numberOfSeuqenceParameterSets = brb.readBits(5);
         for (int i = 0; i < numberOfSeuqenceParameterSets; i++) {
             int sequenceParameterSetLength = IsoTypeReader.readUInt16(content);
 
@@ -176,9 +190,15 @@ public final class AvcConfigurationBox extends AbstractBox {
             hasExts = false;
         }
         if (hasExts && (avcProfileIndicaation == 100 || avcProfileIndicaation == 110 || avcProfileIndicaation == 122 || avcProfileIndicaation == 144)) {
-            chromaFormat = IsoTypeReader.readUInt8(content) & 3;
-            bitDepthLumaMinus8 = IsoTypeReader.readUInt8(content) & 7;
-            bitDepthChromaMinus8 = IsoTypeReader.readUInt8(content) & 7;
+            // actually only some bits are interesting so masking with & x would be good but not all Mp4 creating tools set the reserved bits to 1.
+            // So we need to store all bits
+            brb = new BitReaderBuffer(content);
+            chromaFormatPaddingBits = brb.readBits(6);
+            chromaFormat = brb.readBits(2);
+            bitDepthLumaMinus8PaddingBits = brb.readBits(5);
+            bitDepthLumaMinus8 = brb.readBits(3);
+            bitDepthChromaMinus8PaddingBits = brb.readBits(5);
+            bitDepthChromaMinus8 = brb.readBits(3);
             long numOfSequenceParameterSetExt = IsoTypeReader.readUInt8(content);
             for (int i = 0; i < numOfSequenceParameterSetExt; i++) {
                 int sequenceParameterSetExtLength = IsoTypeReader.readUInt16(content);
@@ -225,8 +245,11 @@ public final class AvcConfigurationBox extends AbstractBox {
         IsoTypeWriter.writeUInt8(byteBuffer, avcProfileIndicaation);
         IsoTypeWriter.writeUInt8(byteBuffer, profileCompatibility);
         IsoTypeWriter.writeUInt8(byteBuffer, avcLevelIndication);
-        IsoTypeWriter.writeUInt8(byteBuffer, lengthSizeMinusOne | (63 << 2));
-        IsoTypeWriter.writeUInt8(byteBuffer, (pictureParameterSets.size() & 31) | (7 << 5));
+        BitWriterBuffer bwb = new BitWriterBuffer(byteBuffer);
+        bwb.writeBits(lengthSizeMinusOnePaddingBits, 6);
+        bwb.writeBits(lengthSizeMinusOne, 2);
+        bwb.writeBits(numberOfSeuqenceParameterSetsPaddingBits, 3);
+        bwb.writeBits(pictureParameterSets.size(), 5);
         for (byte[] sequenceParameterSetNALUnit : sequenceParameterSets) {
             IsoTypeWriter.writeUInt16(byteBuffer, sequenceParameterSetNALUnit.length);
             byteBuffer.put(sequenceParameterSetNALUnit);
@@ -237,10 +260,14 @@ public final class AvcConfigurationBox extends AbstractBox {
             byteBuffer.put(pictureParameterSetNALUnit);
         }
         if (hasExts && (avcProfileIndicaation == 100 || avcProfileIndicaation == 110 || avcProfileIndicaation == 122 || avcProfileIndicaation == 144)) {
-            IsoTypeWriter.writeUInt8(byteBuffer, chromaFormat | (63 << 2));
-            IsoTypeWriter.writeUInt8(byteBuffer, bitDepthLumaMinus8 | (31 << 3));
-            IsoTypeWriter.writeUInt8(byteBuffer, bitDepthChromaMinus8 | (31 << 3));
-            IsoTypeWriter.writeUInt8(byteBuffer, sequenceParameterSetExts.size());
+
+            bwb = new BitWriterBuffer(byteBuffer);
+            bwb.writeBits(chromaFormatPaddingBits, 6);
+            bwb.writeBits(chromaFormat, 2);
+            bwb.writeBits(bitDepthLumaMinus8PaddingBits, 5);
+            bwb.writeBits(bitDepthLumaMinus8, 3);
+            bwb.writeBits(bitDepthChromaMinus8PaddingBits, 5);
+            bwb.writeBits(bitDepthChromaMinus8, 3);
             for (byte[] sequenceParameterSetExtNALUnit : sequenceParameterSetExts) {
                 IsoTypeWriter.writeUInt16(byteBuffer, sequenceParameterSetExtNALUnit.length);
                 byteBuffer.put(sequenceParameterSetExtNALUnit);
