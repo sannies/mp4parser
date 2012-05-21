@@ -16,13 +16,11 @@
 package com.googlecode.mp4parser.authoring;
 
 import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackRunBox;
+import com.coremedia.iso.boxes.fragment.*;
 import com.coremedia.iso.boxes.mdat.SampleList;
 
 import java.nio.ByteBuffer;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -57,9 +55,11 @@ public class Mp4TrackImpl extends AbstractTrack {
             decodingTimeEntries = new LinkedList<TimeToSampleBox.Entry>();
             compositionTimeEntries = new LinkedList<CompositionTimeToSample.Entry>();
             sampleDependencies = new LinkedList<SampleDependencyTypeBox.Entry>();
+            List<Long> syncSampleList = new LinkedList<Long>();
 
             for (MovieFragmentBox movieFragmentBox : trackBox.getIsoFile().getBoxes(MovieFragmentBox.class)) {
                 List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
+                long sampleNumber = 1;//todo do sample numbers start with 0 or 1?
                 for (TrackFragmentBox traf : trafs) {
                     if (traf.getTrackFragmentHeaderBox().getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
                         List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
@@ -83,7 +83,14 @@ public class Mp4TrackImpl extends AbstractTrack {
                                         e.setCount(e.getCount() + 1);
                                     }
                                 }
-
+                                if (trun.isSampleFlagsPresent()) {
+                                    final SampleFlags sampleFlags = entry.getSampleFlags();
+                                    if (!sampleFlags.isSampleIsDifferenceSample()) {
+                                        //iframe
+                                        syncSampleList.add(sampleNumber);
+                                    }
+                                }
+                                sampleNumber++;
                             }
 
 
@@ -92,6 +99,13 @@ public class Mp4TrackImpl extends AbstractTrack {
 
                     }
                 }
+            }
+            syncSamples = new long[syncSampleList.size()];
+            final Iterator<Long> iterator = syncSampleList.iterator();
+            int i = 0;
+            while (iterator.hasNext()) {
+                Long syncSampleNumber = iterator.next();
+                syncSamples[i++] = syncSampleNumber;
             }
         } else {
             decodingTimeEntries = stbl.getTimeToSampleBox().getEntries();
