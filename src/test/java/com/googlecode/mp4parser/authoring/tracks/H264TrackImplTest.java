@@ -19,6 +19,7 @@ import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedInputStream;
@@ -34,6 +35,7 @@ import java.util.Arrays;
 public class H264TrackImplTest {
 
     @Test
+    @Ignore
     public void freeze() throws IOException {
         Track t = new H264TrackImpl(new BufferedInputStream(AACTrackImplTest.class.getResourceAsStream("/com/googlecode/mp4parser/authoring/tracks/h264-sample.h264")));
         Movie m = new Movie();
