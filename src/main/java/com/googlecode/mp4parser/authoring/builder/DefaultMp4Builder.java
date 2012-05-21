@@ -94,12 +94,12 @@ public class DefaultMp4Builder implements Mp4Builder {
         for (Track track : movie.getTracks()) {
             // getting the samples may be a time consuming activity
             List<ByteBuffer> samples = track.getSamples();
-            track2Sample.put(track, samples);
+            putSampes(track, samples);
             long[] sizes = new long[samples.size()];
             for (int i = 0; i < sizes.length; i++) {
                 sizes[i] = samples.get(i).limit();
             }
-            track2SampleSizes.put(track, sizes);
+            putSampleSizes(track, sizes);
         }
 
         IsoFile isoFile = new IsoFile();
@@ -128,6 +128,14 @@ public class DefaultMp4Builder implements Mp4Builder {
 
 
         return isoFile;
+    }
+
+    protected long[] putSampleSizes(Track track, long[] sizes) {
+        return track2SampleSizes.put(track, sizes);
+    }
+
+    protected List<ByteBuffer> putSampes(Track track, List<ByteBuffer> samples) {
+        return track2Sample.put(track, samples);
     }
 
     private MovieBox createMovieBox(Movie movie) {
