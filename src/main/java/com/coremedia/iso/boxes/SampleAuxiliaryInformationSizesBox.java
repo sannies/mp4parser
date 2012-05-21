@@ -48,7 +48,7 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         }
 
         size += 5;
-        size += sampleInfoSizes.size();
+        size += defaultSampleInfoSize == 0 ? sampleInfoSizes.size() : 0;
         return size;
     }
 
@@ -61,6 +61,7 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         }
 
         IsoTypeWriter.writeUInt8(byteBuffer, defaultSampleInfoSize);
+
         if (defaultSampleInfoSize == 0) {
             IsoTypeWriter.writeUInt32(byteBuffer, sampleInfoSizes.size());
             for (short sampleInfoSize : sampleInfoSizes) {
@@ -80,12 +81,14 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         }
 
         defaultSampleInfoSize = (short) IsoTypeReader.readUInt8(content);
-        int sampleCount = l2i(IsoTypeReader.readUInt32(content));
+        sampleCount = l2i(IsoTypeReader.readUInt32(content));
 
         sampleInfoSizes.clear();
 
-        for (int i = 0; i < sampleCount; i++) {
-            sampleInfoSizes.add((short) IsoTypeReader.readUInt8(content));
+        if (defaultSampleInfoSize == 0) {
+            for (int i = 0; i < sampleCount; i++) {
+                sampleInfoSizes.add((short) IsoTypeReader.readUInt8(content));
+            }
         }
     }
 
@@ -111,10 +114,8 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
 
     public void setDefaultSampleInfoSize(int defaultSampleInfoSize) {
         assert defaultSampleInfoSize <= 255;
-        assert defaultSampleInfoSize > 0;
         this.defaultSampleInfoSize = defaultSampleInfoSize;
     }
-
 
     public List<Short> getSampleInfoSizes() {
         return sampleInfoSizes;
