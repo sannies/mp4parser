@@ -41,4 +41,11 @@ public class XmlBox extends AbstractFullBox {
         writeVersionAndFlags(byteBuffer);
         byteBuffer.put(Utf8.convert(xml));
     }
+
+    @Override
+    public String toString() {
+        return "XmlBox{" +
+                "xml='" + xml + '\'' +
+                '}';
+    }
 }

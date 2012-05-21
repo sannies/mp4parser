@@ -284,4 +284,11 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
         }
     }
 
+    @Override
+    public String toString() {
+        return "TrackFragmentRandomAccessBox{" +
+                "trackId=" + trackId +
+                ", entries=" + entries +
+                '}';
+    }
 }
