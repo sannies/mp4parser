@@ -159,8 +159,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         }
         if (nuSyncSampleArray.length < (syncSamples.length * 0.3)) {
             String log = "";
-            log += (nuSyncSampleArray.length);
-            log += ("Common:  [");
+            log += String.format("%5d - Common:  [", nuSyncSampleArray.length);
             for (long l : nuSyncSampleArray) {
                 log += (String.format("%10d,", l));
             }
@@ -168,8 +167,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             LOG.warning(log);
             log = "";
 
-            log += (syncSamples.length);
-            log += ("In    :  [");
+            log += String.format("%5d - In    :  [", syncSamples.length);
             for (long l : syncSamples) {
                 log += (String.format("%10d,", l));
             }
@@ -199,8 +197,10 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
 
         long timeScale = 1;
         for (Track track1 : m.getTracks()) {
-            if (track1.getTrackMetaData().getTimescale() != track.getTrackMetaData().getTimescale()) {
-                timeScale = lcm(timeScale, track1.getTrackMetaData().getTimescale());
+            if (track1.getHandler().equals(track.getHandler())) {
+                if (track1.getTrackMetaData().getTimescale() != track.getTrackMetaData().getTimescale()) {
+                    timeScale = lcm(timeScale, track1.getTrackMetaData().getTimescale());
+                }
             }
         }
 
