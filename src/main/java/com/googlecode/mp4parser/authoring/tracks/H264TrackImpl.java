@@ -203,7 +203,7 @@ public class H264TrackImpl extends AbstractTrack {
 
 
         findNextStartcode();
-        reader.mark(65536);
+        reader.mark();
         long pos = reader.getPos();
 
         ArrayList<byte[]> buffered = new ArrayList<byte[]>();
@@ -272,7 +272,7 @@ public class H264TrackImpl extends AbstractTrack {
             }
             pos = newpos;
             reader.seek(4);
-            reader.mark(65536);
+            reader.mark();
         }
         return true;
     }
@@ -336,7 +336,7 @@ public class H264TrackImpl extends AbstractTrack {
 
             case 7:
                 if (seqParameterSet == null) {
-                    ByteArrayInputStream is = new ByteArrayInputStream(data);
+                    ByteArrayInputStream is = cleanBuffer(data);
                     is.read();
                     seqParameterSet = SeqParameterSet.read(is);
                     seqParameterSetList.add(data);
@@ -500,13 +500,17 @@ public class H264TrackImpl extends AbstractTrack {
             return pos;
         }
 
-        public void mark(int i) {
+        public void mark() {
+            int i = 262144;
+            System.out.println("Marking with " + i + " at " + pos);
             inputStream.mark(i);
             markPos = pos;
         }
 
 
         public void reset() throws IOException {
+            long diff = pos - markPos;
+            System.out.println("Resetting to " + markPos + " (pos is " + pos + ") which makes the buffersize " + diff);
             inputStream.reset();
             pos = markPos;
         }
