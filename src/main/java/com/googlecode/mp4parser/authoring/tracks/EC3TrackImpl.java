@@ -66,7 +66,7 @@ public class EC3TrackImpl extends AbstractTrack {
 
         sampleDescriptionBox = new SampleDescriptionBox();
         AudioSampleEntry audioSampleEntry = new AudioSampleEntry("ec-3");
-        audioSampleEntry.setChannelCount(2);
+        audioSampleEntry.setChannelCount(2);  // According to  ETSI TS 102 366 Annex F
         audioSampleEntry.setSampleRate(samplerate);
         audioSampleEntry.setDataReferenceIndex(1);
         audioSampleEntry.setSampleSize(16);
@@ -203,7 +203,7 @@ public class EC3TrackImpl extends AbstractTrack {
                 break;
 
         }
-        entry.frameSize *= (6 / numberOfBlocksPerSyncFrame); // Not sure if this is the correct algorithm?
+        entry.frameSize *= (6 / numberOfBlocksPerSyncFrame);
 
         entry.acmod = brb.readBits(3);
         entry.lfeon = brb.readBits(1);
