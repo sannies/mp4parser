@@ -56,7 +56,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         } else if ("soun".equals(track.getHandler())) {
             Track referenceTrack = null;
             for (Track candidate : movie.getTracks()) {
-                if (candidate.getSyncSamples() != null && candidate.getSyncSamples().length > 0) {
+                if (candidate.getSyncSamples() != null && "vide".equals(candidate.getHandler()) && candidate.getSyncSamples().length > 0) {
                     referenceTrack = candidate;
                 }
             }
