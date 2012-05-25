@@ -120,6 +120,10 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         return (getFlags() & 0x1) != 0;
     }
 
+    public boolean hasDefaultSampleSize() {
+        return (getFlags() & 0x10) != 0;
+    }
+
     public long getTrackId() {
         return trackId;
     }

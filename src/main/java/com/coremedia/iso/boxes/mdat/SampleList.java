@@ -1,16 +1,8 @@
 package com.coremedia.iso.boxes.mdat;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ChunkOffsetBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackRunBox;
+import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.fragment.*;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractList;
@@ -180,11 +172,38 @@ public class SampleList extends AbstractList<ByteBuffer> {
 
                 for (TrackRunBox trun : trackFragmentBox.getBoxes(TrackRunBox.class)) {
                     long sampleBaseOffset = baseDataOffset + trun.getDataOffset();
-                    long[] sampleOffsets = trun.getSampleOffsets();
-                    long[] sampleSizes = trun.getSampleSizes();
-                    for (int i = 0; i < sampleSizes.length; i++) {
-                        offsets2Sizes.put(sampleOffsets[i] + sampleBaseOffset, sampleSizes[i]);
+                    final TrackFragmentHeaderBox tfhd = ((TrackFragmentBox) trun.getParent()).getTrackFragmentHeaderBox();
+                    final List<MovieBox> movieBoxes = tfhd.getIsoFile().getBoxes(MovieBox.class);
+                    assert movieBoxes.size() == 1;
+                    final List<TrackExtendsBox> trexBoxes = movieBoxes.get(0).getBoxes(TrackExtendsBox.class, true);
+                    TrackExtendsBox trex = null;
+                    for (TrackExtendsBox aTrex : trexBoxes) {
+                        if (aTrex.getTrackId() == trackId) {
+                            trex = aTrex;
+                        }
                     }
+                    assert trex != null;
+
+                    long offset = 0;
+                    for (TrackRunBox.Entry entry : trun.getEntries()) {
+                        final long sampleSize;
+                        if (trun.isSampleSizePresent()) {
+                            sampleSize = entry.getSampleSize();
+                            offsets2Sizes.put(offset + sampleBaseOffset, sampleSize);
+                            offset += sampleSize;
+                        } else {
+                            if (tfhd.hasDefaultSampleSize()) {
+                                sampleSize = tfhd.getDefaultSampleSize();
+                                offsets2Sizes.put(offset + sampleBaseOffset, sampleSize);
+                                offset += sampleSize;
+                            } else {
+                                sampleSize = trex.getDefaultSampleSize();
+                                offsets2Sizes.put(offset + sampleBaseOffset, sampleSize);
+                                offset += sampleSize;
+                            }
+                        }
+                    }
+
                 }
             }
         }

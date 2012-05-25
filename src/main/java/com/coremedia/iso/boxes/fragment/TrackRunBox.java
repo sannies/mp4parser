@@ -122,36 +122,6 @@ public class TrackRunBox extends AbstractFullBox {
         this.dataOffset = dataOffset;
     }
 
-    public long[] getSampleOffsets() {
-        long[] result = new long[entries.size()];
-
-        long offset = 0;
-        for (int i = 0; i < result.length; i++) {
-            result[i] = offset;
-            if (isSampleSizePresent()) {
-                offset += entries.get(i).getSampleSize();
-            } else {
-                offset += ((TrackFragmentBox) getParent()).getTrackFragmentHeaderBox().getDefaultSampleSize();
-            }
-        }
-
-        return result;
-    }
-
-    public long[] getSampleSizes() {
-        long[] result = new long[entries.size()];
-
-        for (int i = 0; i < result.length; i++) {
-            if (isSampleSizePresent()) {
-                result[i] = entries.get(i).getSampleSize();
-            } else {
-                result[i] = ((TrackFragmentBox) getParent()).getTrackFragmentHeaderBox().getDefaultSampleSize();
-            }
-        }
-
-        return result;
-    }
-
     public long[] getSampleCompositionTimeOffsets() {
         if (isSampleCompositionTimeOffsetPresent()) {
             long[] result = new long[entries.size()];
