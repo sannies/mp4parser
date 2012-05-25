@@ -18,6 +18,7 @@ package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.boxes.MovieBox;
 import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.nio.ByteBuffer;
@@ -134,18 +135,21 @@ public class TrackRunBox extends AbstractFullBox {
         return null;
     }
 
-    public long[] getSampleDurations() {
-        long[] result = new long[entries.size()];
-
-        for (int i = 0; i < result.length; i++) {
-            if (isSampleDurationPresent()) {
-                result[i] = entries.get(i).getSampleDuration();
-            } else {
-                result[i] = ((TrackFragmentBox) getParent()).getTrackFragmentHeaderBox().getDefaultSampleDuration();
-            }
+    public TrackExtendsBox getTrackExtendsBox() {
+        final TrackFragmentHeaderBox tfhd = ((TrackFragmentBox) getParent()).getTrackFragmentHeaderBox();
+        final List<MovieBox> movieBoxes = tfhd.getIsoFile().getBoxes(MovieBox.class);
+        if (movieBoxes.size() == 0) {
+            return null;
         }
 
-        return result;
+        final List<TrackExtendsBox> trexBoxes = movieBoxes.get(0).getBoxes(TrackExtendsBox.class, true);
+        TrackExtendsBox trex = null;
+        for (TrackExtendsBox aTrex : trexBoxes) {
+            if (aTrex.getTrackId() == tfhd.getTrackId()) {
+                trex = aTrex;
+            }
+        }
+        return trex;
     }
 
     public TrackRunBox() {

@@ -59,11 +59,14 @@ public class Mp4TrackImpl extends AbstractTrack {
 
             for (MovieFragmentBox movieFragmentBox : trackBox.getIsoFile().getBoxes(MovieFragmentBox.class)) {
                 List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
-                long sampleNumber = 1;//todo do sample numbers start with 0 or 1?
+                long sampleNumber = 1;
                 for (TrackFragmentBox traf : trafs) {
                     if (traf.getTrackFragmentHeaderBox().getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
                         List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
                         for (TrackRunBox trun : truns) {
+                            final TrackFragmentHeaderBox tfhd = ((TrackFragmentBox) trun.getParent()).getTrackFragmentHeaderBox();
+                            final TrackExtendsBox trex = trun.getTrackExtendsBox();
+                            boolean first = true;
                             for (TrackRunBox.Entry entry : trun.getEntries()) {
                                 if (trun.isSampleDurationPresent()) {
                                     if (decodingTimeEntries.size() == 0 ||
@@ -73,7 +76,14 @@ public class Mp4TrackImpl extends AbstractTrack {
                                         TimeToSampleBox.Entry e = decodingTimeEntries.get(decodingTimeEntries.size() - 1);
                                         e.setCount(e.getCount() + 1);
                                     }
+                                } else {
+                                    if (tfhd.hasDefaultSampleDuration()) {
+                                        decodingTimeEntries.add(new TimeToSampleBox.Entry(1, tfhd.getDefaultSampleDuration()));
+                                    } else {
+                                        decodingTimeEntries.add(new TimeToSampleBox.Entry(1, trex.getDefaultSampleDuration()));
+                                    }
                                 }
+
                                 if (trun.isSampleCompositionTimeOffsetPresent()) {
                                     if (compositionTimeEntries.size() == 0 ||
                                             compositionTimeEntries.get(compositionTimeEntries.size() - 1).getOffset() != entry.getSampleCompositionTimeOffset()) {
@@ -83,14 +93,26 @@ public class Mp4TrackImpl extends AbstractTrack {
                                         e.setCount(e.getCount() + 1);
                                     }
                                 }
+                                final SampleFlags sampleFlags;
                                 if (trun.isSampleFlagsPresent()) {
-                                    final SampleFlags sampleFlags = entry.getSampleFlags();
-                                    if (!sampleFlags.isSampleIsDifferenceSample()) {
-                                        //iframe
-                                        syncSampleList.add(sampleNumber);
+                                    sampleFlags = entry.getSampleFlags();
+                                } else {
+                                    if (first && trun.isFirstSampleFlagsPresent()) {
+                                        sampleFlags = trun.getFirstSampleFlags();
+                                    } else {
+                                        if (tfhd.hasDefaultSampleFlags()) {
+                                            sampleFlags = tfhd.getDefaultSampleFlags();
+                                        } else {
+                                            sampleFlags = trex.getDefaultSampleFlags();
+                                        }
                                     }
                                 }
+                                if (sampleFlags != null && !sampleFlags.isSampleIsDifferenceSample()) {
+                                    //iframe
+                                    syncSampleList.add(sampleNumber);
+                                }
                                 sampleNumber++;
+                                first = false;
                             }
 
 

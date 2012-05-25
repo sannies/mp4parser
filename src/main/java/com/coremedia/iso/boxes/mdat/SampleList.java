@@ -173,16 +173,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
                 for (TrackRunBox trun : trackFragmentBox.getBoxes(TrackRunBox.class)) {
                     long sampleBaseOffset = baseDataOffset + trun.getDataOffset();
                     final TrackFragmentHeaderBox tfhd = ((TrackFragmentBox) trun.getParent()).getTrackFragmentHeaderBox();
-                    final List<MovieBox> movieBoxes = tfhd.getIsoFile().getBoxes(MovieBox.class);
-                    assert movieBoxes.size() == 1;
-                    final List<TrackExtendsBox> trexBoxes = movieBoxes.get(0).getBoxes(TrackExtendsBox.class, true);
-                    TrackExtendsBox trex = null;
-                    for (TrackExtendsBox aTrex : trexBoxes) {
-                        if (aTrex.getTrackId() == trackId) {
-                            trex = aTrex;
-                        }
-                    }
-                    assert trex != null;
+                    final TrackExtendsBox trex = trun.getTrackExtendsBox();
 
                     long offset = 0;
                     for (TrackRunBox.Entry entry : trun.getEntries()) {
@@ -203,7 +194,6 @@ public class SampleList extends AbstractList<ByteBuffer> {
                             }
                         }
                     }
-
                 }
             }
         }
