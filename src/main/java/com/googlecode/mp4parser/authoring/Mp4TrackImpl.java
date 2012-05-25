@@ -41,93 +41,94 @@ public class Mp4TrackImpl extends AbstractTrack {
     private AbstractMediaHeaderBox mihd;
 
     public Mp4TrackImpl(TrackBox trackBox) {
+        final long trackId = trackBox.getTrackHeaderBox().getTrackId();
         samples = new SampleList(trackBox);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
         handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
 
-
         mihd = trackBox.getMediaBox().getMediaInformationBox().getMediaHeaderBox();
 
-
         sampleDescriptionBox = stbl.getSampleDescriptionBox();
-        if (trackBox.getParent().getBoxes(MovieExtendsBox.class).size() > 0) {
+        final List<MovieExtendsBox> movieExtendsBoxes = trackBox.getParent().getBoxes(MovieExtendsBox.class);
+        if (movieExtendsBoxes.size() > 0) {
+            for (MovieExtendsBox mvex : movieExtendsBoxes) {
+                final List<TrackExtendsBox> trackExtendsBoxes = mvex.getBoxes(TrackExtendsBox.class);
+                for (TrackExtendsBox trex : trackExtendsBoxes) {
+                    if (trex.getTrackId() == trackId) {
+                        decodingTimeEntries = new LinkedList<TimeToSampleBox.Entry>();
+                        compositionTimeEntries = new LinkedList<CompositionTimeToSample.Entry>();
+                        sampleDependencies = new LinkedList<SampleDependencyTypeBox.Entry>();
+                        List<Long> syncSampleList = new LinkedList<Long>();
 
-            decodingTimeEntries = new LinkedList<TimeToSampleBox.Entry>();
-            compositionTimeEntries = new LinkedList<CompositionTimeToSample.Entry>();
-            sampleDependencies = new LinkedList<SampleDependencyTypeBox.Entry>();
-            List<Long> syncSampleList = new LinkedList<Long>();
+                        for (MovieFragmentBox movieFragmentBox : trackBox.getIsoFile().getBoxes(MovieFragmentBox.class)) {
+                            List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
+                            long sampleNumber = 1;
+                            for (TrackFragmentBox traf : trafs) {
+                                if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
+                                    List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
+                                    for (TrackRunBox trun : truns) {
+                                        final TrackFragmentHeaderBox tfhd = ((TrackFragmentBox) trun.getParent()).getTrackFragmentHeaderBox();
+                                        boolean first = true;
+                                        for (TrackRunBox.Entry entry : trun.getEntries()) {
+                                            if (trun.isSampleDurationPresent()) {
+                                                if (decodingTimeEntries.size() == 0 ||
+                                                        decodingTimeEntries.get(decodingTimeEntries.size() - 1).getDelta() != entry.getSampleDuration()) {
+                                                    decodingTimeEntries.add(new TimeToSampleBox.Entry(1, entry.getSampleDuration()));
+                                                } else {
+                                                    TimeToSampleBox.Entry e = decodingTimeEntries.get(decodingTimeEntries.size() - 1);
+                                                    e.setCount(e.getCount() + 1);
+                                                }
+                                            } else {
+                                                if (tfhd.hasDefaultSampleDuration()) {
+                                                    decodingTimeEntries.add(new TimeToSampleBox.Entry(1, tfhd.getDefaultSampleDuration()));
+                                                } else {
+                                                    decodingTimeEntries.add(new TimeToSampleBox.Entry(1, trex.getDefaultSampleDuration()));
+                                                }
+                                            }
 
-            for (MovieFragmentBox movieFragmentBox : trackBox.getIsoFile().getBoxes(MovieFragmentBox.class)) {
-                List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
-                long sampleNumber = 1;
-                for (TrackFragmentBox traf : trafs) {
-                    if (traf.getTrackFragmentHeaderBox().getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
-                        List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
-                        for (TrackRunBox trun : truns) {
-                            final TrackFragmentHeaderBox tfhd = ((TrackFragmentBox) trun.getParent()).getTrackFragmentHeaderBox();
-                            final TrackExtendsBox trex = trun.getTrackExtendsBox();
-                            boolean first = true;
-                            for (TrackRunBox.Entry entry : trun.getEntries()) {
-                                if (trun.isSampleDurationPresent()) {
-                                    if (decodingTimeEntries.size() == 0 ||
-                                            decodingTimeEntries.get(decodingTimeEntries.size() - 1).getDelta() != entry.getSampleDuration()) {
-                                        decodingTimeEntries.add(new TimeToSampleBox.Entry(1, entry.getSampleDuration()));
-                                    } else {
-                                        TimeToSampleBox.Entry e = decodingTimeEntries.get(decodingTimeEntries.size() - 1);
-                                        e.setCount(e.getCount() + 1);
-                                    }
-                                } else {
-                                    if (tfhd.hasDefaultSampleDuration()) {
-                                        decodingTimeEntries.add(new TimeToSampleBox.Entry(1, tfhd.getDefaultSampleDuration()));
-                                    } else {
-                                        decodingTimeEntries.add(new TimeToSampleBox.Entry(1, trex.getDefaultSampleDuration()));
-                                    }
-                                }
-
-                                if (trun.isSampleCompositionTimeOffsetPresent()) {
-                                    if (compositionTimeEntries.size() == 0 ||
-                                            compositionTimeEntries.get(compositionTimeEntries.size() - 1).getOffset() != entry.getSampleCompositionTimeOffset()) {
-                                        compositionTimeEntries.add(new CompositionTimeToSample.Entry(1, l2i(entry.getSampleCompositionTimeOffset())));
-                                    } else {
-                                        CompositionTimeToSample.Entry e = compositionTimeEntries.get(compositionTimeEntries.size() - 1);
-                                        e.setCount(e.getCount() + 1);
-                                    }
-                                }
-                                final SampleFlags sampleFlags;
-                                if (trun.isSampleFlagsPresent()) {
-                                    sampleFlags = entry.getSampleFlags();
-                                } else {
-                                    if (first && trun.isFirstSampleFlagsPresent()) {
-                                        sampleFlags = trun.getFirstSampleFlags();
-                                    } else {
-                                        if (tfhd.hasDefaultSampleFlags()) {
-                                            sampleFlags = tfhd.getDefaultSampleFlags();
-                                        } else {
-                                            sampleFlags = trex.getDefaultSampleFlags();
+                                            if (trun.isSampleCompositionTimeOffsetPresent()) {
+                                                if (compositionTimeEntries.size() == 0 ||
+                                                        compositionTimeEntries.get(compositionTimeEntries.size() - 1).getOffset() != entry.getSampleCompositionTimeOffset()) {
+                                                    compositionTimeEntries.add(new CompositionTimeToSample.Entry(1, l2i(entry.getSampleCompositionTimeOffset())));
+                                                } else {
+                                                    CompositionTimeToSample.Entry e = compositionTimeEntries.get(compositionTimeEntries.size() - 1);
+                                                    e.setCount(e.getCount() + 1);
+                                                }
+                                            }
+                                            final SampleFlags sampleFlags;
+                                            if (trun.isSampleFlagsPresent()) {
+                                                sampleFlags = entry.getSampleFlags();
+                                            } else {
+                                                if (first && trun.isFirstSampleFlagsPresent()) {
+                                                    sampleFlags = trun.getFirstSampleFlags();
+                                                } else {
+                                                    if (tfhd.hasDefaultSampleFlags()) {
+                                                        sampleFlags = tfhd.getDefaultSampleFlags();
+                                                    } else {
+                                                        sampleFlags = trex.getDefaultSampleFlags();
+                                                    }
+                                                }
+                                            }
+                                            if (sampleFlags != null && !sampleFlags.isSampleIsDifferenceSample()) {
+                                                //iframe
+                                                syncSampleList.add(sampleNumber);
+                                            }
+                                            sampleNumber++;
+                                            first = false;
                                         }
                                     }
                                 }
-                                if (sampleFlags != null && !sampleFlags.isSampleIsDifferenceSample()) {
-                                    //iframe
-                                    syncSampleList.add(sampleNumber);
-                                }
-                                sampleNumber++;
-                                first = false;
                             }
-
-
                         }
-
-
+                        syncSamples = new long[syncSampleList.size()];
+                        final Iterator<Long> iterator = syncSampleList.iterator();
+                        int i = 0;
+                        while (iterator.hasNext()) {
+                            Long syncSampleNumber = iterator.next();
+                            syncSamples[i++] = syncSampleNumber;
+                        }
                     }
                 }
-            }
-            syncSamples = new long[syncSampleList.size()];
-            final Iterator<Long> iterator = syncSampleList.iterator();
-            int i = 0;
-            while (iterator.hasNext()) {
-                Long syncSampleNumber = iterator.next();
-                syncSamples[i++] = syncSampleNumber;
             }
         } else {
             decodingTimeEntries = stbl.getTimeToSampleBox().getEntries();

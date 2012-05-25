@@ -206,11 +206,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
 
 
     private String getAudioCodecPrivateData(ESDescriptorBox esDescriptorBox) {
-
-        ByteBuffer configBytes = esDescriptorBox.getEsDescriptor().getDecoderConfigDescriptor().getAudioSpecificInfo().getConfigBytes();
-        byte[] configByteArray = new byte[configBytes.limit()];
-        configBytes.rewind();
-        configBytes.get(configByteArray);
+        byte[] configByteArray = esDescriptorBox.getEsDescriptor().getDecoderConfigDescriptor().getAudioSpecificInfo().getConfigBytes();
         return Hex.encodeHex(configByteArray);
     }
 

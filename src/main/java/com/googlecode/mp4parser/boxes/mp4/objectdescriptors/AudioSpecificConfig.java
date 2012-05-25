@@ -15,6 +15,7 @@
  */
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
+import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
@@ -264,8 +265,7 @@ import java.util.Map;
 
 @Descriptor(tags = 0x5, objectTypeIndication = 0x40)
 public class AudioSpecificConfig extends BaseDescriptor {
-    ByteBuffer configBytes;
-    long endPos;
+    byte[] configBytes;
 
     public static Map<Integer, Integer> samplingFrequencyIndexMap = new HashMap<Integer, Integer>();
     public static Map<Integer, String> audioObjectTypeMap = new HashMap<Integer, String>();
@@ -318,10 +318,14 @@ public class AudioSpecificConfig extends BaseDescriptor {
 
     @Override
     public void parseDetail(ByteBuffer bb) throws IOException {
-        configBytes = bb.slice();
+        ByteBuffer configBytes = bb.slice();
         configBytes.limit(sizeOfInstance);
         bb.position(bb.position() + sizeOfInstance);
 
+        //copy original bytes to internal array for constructing codec config strings (todo until writing of the config is supported)
+        this.configBytes = new byte[sizeOfInstance];
+        configBytes.get(this.configBytes);
+        configBytes.rewind();
 
         BitReaderBuffer bitReaderBuffer = new BitReaderBuffer(configBytes);
         audioObjectType = getAudioObjectType(bitReaderBuffer);
@@ -680,7 +684,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         }
     }
 
-    public ByteBuffer getConfigBytes() {
+    public byte[] getConfigBytes() {
         return configBytes;
     }
 
@@ -720,7 +724,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("AudioSpecificConfig");
-        sb.append("{configBytes=").append(configBytes);
+        sb.append("{configBytes=").append(Hex.encodeHex(configBytes));
         sb.append(", audioObjectType=").append(audioObjectType).append(" (").append(audioObjectTypeMap.get(audioObjectType)).append(")");
         sb.append(", samplingFrequencyIndex=").append(samplingFrequencyIndex).append(" (").append(samplingFrequencyIndexMap.get(samplingFrequencyIndex)).append(")");
         sb.append(", samplingFrequency=").append(samplingFrequency);

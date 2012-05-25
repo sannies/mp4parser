@@ -120,7 +120,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
             for (TrackExtendsBox trackExtendsBox : trackExtendsBoxes) {
                 if (trackExtendsBox.getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
                     for (MovieFragmentBox movieFragmentBox : trackBox.getIsoFile().getBoxes(MovieFragmentBox.class)) {
-                        offsets2Sizes.putAll(getOffsets(movieFragmentBox, trackBox.getTrackHeaderBox().getTrackId()));
+                        offsets2Sizes.putAll(getOffsets(movieFragmentBox, trackBox.getTrackHeaderBox().getTrackId(), trackExtendsBox));
                     }
                 }
             }
@@ -158,7 +158,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
         throw new RuntimeException("The sample with offset " + offset + " and size " + sampleSize + " is NOT located within an mdat");
     }
 
-    Map<Long, Long> getOffsets(MovieFragmentBox moof, long trackId) {
+    Map<Long, Long> getOffsets(MovieFragmentBox moof, long trackId, TrackExtendsBox trackExtendsBox) {
         Map<Long, Long> offsets2Sizes = new HashMap<Long, Long>();
         List<TrackFragmentBox> traf = moof.getBoxes(TrackFragmentBox.class);
         for (TrackFragmentBox trackFragmentBox : traf) {
@@ -173,7 +173,6 @@ public class SampleList extends AbstractList<ByteBuffer> {
                 for (TrackRunBox trun : trackFragmentBox.getBoxes(TrackRunBox.class)) {
                     long sampleBaseOffset = baseDataOffset + trun.getDataOffset();
                     final TrackFragmentHeaderBox tfhd = ((TrackFragmentBox) trun.getParent()).getTrackFragmentHeaderBox();
-                    final TrackExtendsBox trex = trun.getTrackExtendsBox();
 
                     long offset = 0;
                     for (TrackRunBox.Entry entry : trun.getEntries()) {
@@ -188,7 +187,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
                                 offsets2Sizes.put(offset + sampleBaseOffset, sampleSize);
                                 offset += sampleSize;
                             } else {
-                                sampleSize = trex.getDefaultSampleSize();
+                                sampleSize = trackExtendsBox.getDefaultSampleSize();
                                 offsets2Sizes.put(offset + sampleBaseOffset, sampleSize);
                                 offset += sampleSize;
                             }
