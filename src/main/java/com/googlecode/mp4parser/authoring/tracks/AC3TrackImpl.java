@@ -120,10 +120,11 @@ public class AC3TrackImpl extends AbstractTrack {
 
     private boolean readVariables() throws IOException {
         byte[] data = new byte[100];
+        inputStream.mark(100);
         if (100 != inputStream.read(data, 0, 100)) {
             return false;
         }
-        inputStream.skip(-100); // Rewind
+        inputStream.reset(); // Rewind
         ByteBuffer bb = ByteBuffer.wrap(data);
         BitReaderBuffer brb = new BitReaderBuffer(bb);
         int syncword = brb.readBits(16);
@@ -247,16 +248,17 @@ public class AC3TrackImpl extends AbstractTrack {
         readSamples = true;
         byte[] header = new byte[5];
         boolean ret = false;
+        inputStream.mark(5);
         while (-1 != inputStream.read(header)) {
             ret = true;
             int frmsizecode = header[4] & 63;
             calcBitrateAndFrameSize(frmsizecode);
-            inputStream.skip(-5);
+            inputStream.reset();
             byte[] data = new byte[frameSize];
             inputStream.read(data);
             samples.add(ByteBuffer.wrap(data));
             stts.add(new TimeToSampleBox.Entry(1, 1536));
-
+            inputStream.mark(5);
         }
         return ret;
     }

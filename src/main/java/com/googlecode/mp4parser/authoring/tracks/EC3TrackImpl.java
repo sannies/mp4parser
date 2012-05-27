@@ -45,19 +45,21 @@ public class EC3TrackImpl extends AbstractTrack {
             if (bsi == null) {
                 throw new IOException();
             }
-            for (int i = 0; i < entries.size(); i++) {
-                if (bsi.strmtyp != 1 && entries.get(i).substreamid == bsi.substreamid) {
+            for (BitStreamInfo entry : entries) {
+                if (bsi.strmtyp != 1 && entry.substreamid == bsi.substreamid) {
                     done = true;
                 }
             }
             if (!done) {
                 entries.add(bsi);
-                inputStream.skip(bsi.frameSize);
+                long skipped = inputStream.skip(bsi.frameSize);
+                assert skipped == bsi.frameSize;
             }
         }
-        for (BitStreamInfo bsi : entries) {
-            inputStream.skip(-1 * bsi.frameSize);
-        }
+     /*   for (BitStreamInfo bsi : entries) {
+            long skipped = inputStream.skip(-1 * bsi.frameSize);
+            assert skipped == bsi.frameSize;
+        }*/
 
         if (entries.size() == 0) {
             throw new IOException();
@@ -157,10 +159,11 @@ public class EC3TrackImpl extends AbstractTrack {
 
     private BitStreamInfo readVariables() throws IOException {
         byte[] data = new byte[200];
+        inputStream.mark(200);
         if (200 != inputStream.read(data, 0, 200)) {
             return null;
         }
-        inputStream.skip(-200); // Rewind
+        inputStream.reset(); // Rewind
         ByteBuffer bb = ByteBuffer.wrap(data);
         BitReaderBuffer brb = new BitReaderBuffer(bb);
         int syncword = brb.readBits(16);
