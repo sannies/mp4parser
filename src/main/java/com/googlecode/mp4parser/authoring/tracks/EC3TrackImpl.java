@@ -56,10 +56,12 @@ public class EC3TrackImpl extends AbstractTrack {
                 assert skipped == bsi.frameSize;
             }
         }
-     /*   for (BitStreamInfo bsi : entries) {
+       for (BitStreamInfo bsi : entries) {
             long skipped = inputStream.skip(-1 * bsi.frameSize);
-            assert skipped == bsi.frameSize;
-        }*/
+            if (skipped != bsi.frameSize) {
+                throw new RuntimeException();
+            }
+        }
 
         if (entries.size() == 0) {
             throw new IOException();
