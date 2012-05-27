@@ -4,13 +4,11 @@ import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
 import com.googlecode.mp4parser.AbstractFullBox;
 import com.googlecode.mp4parser.boxes.basemediaformat.TrackEncryptionBox;
 import com.googlecode.mp4parser.util.Path;
-import sun.plugin.javascript.navig.LinkArray;
 
 import java.io.IOException;
 import java.math.BigInteger;
