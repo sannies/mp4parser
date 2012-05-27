@@ -50,7 +50,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         if (((getFlags() & 0x1) == 0)) {
             List<Box> tkhds = Path.getPaths(this, "/moov[0]/trak/tkhd");
             for (Box tkhd : tkhds) {
-                if (((TrackHeaderBox)tkhd).getTrackId() == this.getParent().getBoxes(TrackFragmentHeaderBox.class).get(0).getTrackId()) {
+                if (((TrackHeaderBox) tkhd).getTrackId() == this.getParent().getBoxes(TrackFragmentHeaderBox.class).get(0).getTrackId()) {
                     TrackEncryptionBox tenc = (TrackEncryptionBox) Path.getPath(tkhd, "../mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/tenc[0]");
                     ivSize = tenc.getDefaultIvSize();
                 }
@@ -59,7 +59,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
         while (numOfEntries-- > 0) {
             Entry e = new Entry();
-            e.iv = new byte[ivSize];
+            e.iv = new byte[ivSize < 0 ? 8 : ivSize];  // default to 8
             content.get(e.iv);
             if ((getFlags() & 0x2) > 0) {
                 int numOfPairs = IsoTypeReader.readUInt16(content);
