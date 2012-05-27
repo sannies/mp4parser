@@ -23,6 +23,7 @@ import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -47,6 +48,9 @@ public final class MediaDataBox implements Box {
     ByteBuffer header;
     ByteBuffer content;
 
+    FileChannel fileChannel;
+    long startPosition;
+    long contentSize;
 
     public ContainerBox getParent() {
         return parent;
@@ -62,20 +66,34 @@ public final class MediaDataBox implements Box {
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         header.rewind();
-        content.rewind();
         writableByteChannel.write(header);
-        writableByteChannel.write(content);
+
+        if (content != null) {
+            content.rewind();
+            writableByteChannel.write(content);
+        } else {
+            fileChannel.transferTo(startPosition, contentSize, writableByteChannel);
+        }
     }
 
     public long getSize() {
-        return header.limit() + content.limit();
+        long size = header.limit();
+        if (content != null) {
+            size += content.limit();
+        } else {
+            size += contentSize;
+        }
+        return size;
     }
 
     public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         this.header = header;
         if (readableByteChannel instanceof FileChannel && contentSize > 1024 * 1024) {
             // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
-            content = ((FileChannel) readableByteChannel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) readableByteChannel).position(), contentSize);
+            // AND on-demand
+            this.contentSize = contentSize;
+            this.startPosition = ((FileChannel) readableByteChannel).position();
+            this.fileChannel = ((FileChannel) readableByteChannel);
             ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
         } else {
             content = ChannelHelper.readFully(readableByteChannel, l2i(contentSize));
@@ -84,11 +102,30 @@ public final class MediaDataBox implements Box {
 
     }
 
-    public ByteBuffer getContent() {
-        return content;
+    public synchronized ByteBuffer getContent() {
+        if (content != null) {
+            return content;
+        } else {
+            try {
+                content = fileChannel.map(FileChannel.MapMode.READ_ONLY, startPosition, contentSize);
+                return content;
+            } catch (IOException e) {
+                throw new MappingFailedRuntimeException("Mapping the mdat into memory does not work and there is nothing I can do against it", e);
+            }
+        }
+    }
+
+    public FileChannel getFileChannel() {
+        return fileChannel;
     }
 
     public ByteBuffer getHeader() {
         return header;
+    }
+
+    public static class MappingFailedRuntimeException extends RuntimeException {
+        public MappingFailedRuntimeException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }

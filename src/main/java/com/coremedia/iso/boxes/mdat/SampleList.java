@@ -1,9 +1,19 @@
 package com.coremedia.iso.boxes.mdat;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.*;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.ChunkOffsetBox;
+import com.coremedia.iso.boxes.SampleSizeBox;
+import com.coremedia.iso.boxes.SampleToChunkBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
+import com.coremedia.iso.boxes.fragment.TrackRunBox;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -147,11 +157,25 @@ public class SampleList extends AbstractList<ByteBuffer> {
             long start = mdatStartCache.get(mediaDataBox);
             long end = mdatEndCache.get(mediaDataBox);
             if ((start <= offset) && (offset + sampleSize <= end)) {
-                ByteBuffer bb = mediaDataBox.getContent();
-                bb.position(l2i(offset - start));
-                ByteBuffer sample = bb.slice();
-                sample.limit(sampleSize);
-                return sample;
+                try {
+                    ByteBuffer bb = mediaDataBox.getContent();
+                    bb.position(l2i(offset - start));
+                    ByteBuffer sample = bb.slice();
+                    sample.limit(sampleSize);
+                    return sample;
+                } catch (MediaDataBox.MappingFailedRuntimeException e) {
+                    // On 32 bit systems mapping big files may fail
+                    // just read sample by sample then
+                    // that's slow but at least it's working.
+                    ByteBuffer sample = ByteBuffer.allocate(sampleSize);
+                    try {
+                        mediaDataBox.getFileChannel().position(offset);
+                        mediaDataBox.getFileChannel().read(sample);
+                        return sample;
+                    } catch (IOException e1) {
+                        throw new RuntimeException(e1);
+                    }
+                }
             }
         }
 
