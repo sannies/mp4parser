@@ -3,7 +3,14 @@ package com.googlecode.mp4parser.boxes;
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
 import com.googlecode.mp4parser.AbstractFullBox;
+import com.googlecode.mp4parser.boxes.basemediaformat.TrackEncryptionBox;
+import com.googlecode.mp4parser.util.Path;
+import sun.plugin.javascript.navig.LinkArray;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -42,9 +49,19 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
             content.get(kid);
         }
         long numOfEntries = IsoTypeReader.readUInt32(content);
+        if (((getFlags() & 0x1) == 0)) {
+            List<Box> tkhds = Path.getPaths(this, "/moov[0]/trak/tkhd");
+            for (Box tkhd : tkhds) {
+                if (((TrackHeaderBox)tkhd).getTrackId() == this.getParent().getBoxes(TrackFragmentHeaderBox.class).get(0).getTrackId()) {
+                    TrackEncryptionBox tenc = (TrackEncryptionBox) Path.getPath(tkhd, "../mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/tenc[0]");
+                    ivSize = tenc.getDefaultIvSize();
+                }
+            }
+        }
+
         while (numOfEntries-- > 0) {
             Entry e = new Entry();
-            e.iv = new byte[((getFlags() & 0x1) > 0) ? ivSize : 8];
+            e.iv = new byte[ivSize];
             content.get(e.iv);
             if ((getFlags() & 0x2) > 0) {
                 int numOfPairs = IsoTypeReader.readUInt16(content);

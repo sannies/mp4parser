@@ -80,7 +80,7 @@ public class Path {
             if (m.matches()) {
                 String type = m.group(1);
                 if ("..".equals(type)) {
-                    return Collections.<Box>singletonList(box.getParent());
+                    return getPaths(box.getParent(), later);
                 } else {
                     int index = -1;
                     if (m.group(2) != null) {
@@ -91,7 +91,7 @@ public class Path {
                     List<Box> children = new LinkedList<Box>();
                     int currentIndex = 0;
                     for (Box box1 : ((ContainerBox) box).getBoxes()) {
-                        if (box1.getType().equals(type)) {
+                        if (box1.getType().matches(type)) {
                             if (index == -1 || index == currentIndex) {
                                 children.addAll(getPaths(box1, later));
                             }
