@@ -24,8 +24,6 @@ import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.DataEntryUrlBox;
 import com.coremedia.iso.boxes.DataInformationBox;
 import com.coremedia.iso.boxes.DataReferenceBox;
-import com.coremedia.iso.boxes.EditBox;
-import com.coremedia.iso.boxes.EditListBox;
 import com.coremedia.iso.boxes.FileTypeBox;
 import com.coremedia.iso.boxes.HandlerBox;
 import com.coremedia.iso.boxes.MediaBox;
@@ -53,7 +51,6 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,12 +73,6 @@ public class DefaultMp4Builder implements Mp4Builder {
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
     private FragmentIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder();
 
-    List<String> hdlrs = new LinkedList<String>();
-
-    public void setAllowedHandlers(List<String> hdlrs) {
-        this.hdlrs = hdlrs;
-    }
-
     public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
         this.intersectionFinder = intersectionFinder;
     }
@@ -89,12 +80,12 @@ public class DefaultMp4Builder implements Mp4Builder {
     /**
      * {@inheritDoc}
      */
-    public IsoFile build(Movie movie)  {
+    public IsoFile build(Movie movie) {
         LOG.fine("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
             // getting the samples may be a time consuming activity
             List<ByteBuffer> samples = track.getSamples();
-            putSampes(track, samples);
+            putSamples(track, samples);
             long[] sizes = new long[samples.size()];
             for (int i = 0; i < sizes.length; i++) {
                 sizes[i] = samples.get(i).limit();
@@ -134,7 +125,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         return track2SampleSizes.put(track, sizes);
     }
 
-    protected List<ByteBuffer> putSampes(Track track, List<ByteBuffer> samples) {
+    protected List<ByteBuffer> putSamples(Track track, List<ByteBuffer> samples) {
         return track2Sample.put(track, samples);
     }
 
@@ -180,6 +171,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     /**
      * Override to create a user data box that may contain metadata.
+     *
      * @return a 'udta' box or <code>null</code> if none provided
      */
     protected Box createUdta(Movie movie) {

@@ -14,7 +14,9 @@ import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -92,6 +94,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
                 // Every sample has the same size!
                 // no need to store each size separately
                 // this happens when people use raw audio formats in MP4 (are you stupid guys???)
+                // and assign each PCM sample its own MP4 sample
                 offsets2Sizes = new DummyMap<Long, Long>(sampleSizeBox.getSampleSize());
                 long sampleSize = sampleSizeBox.getSampleSize();
                 for (int i = 0; i < numberOfSamplesInChunk.length; i++) {
@@ -146,6 +149,9 @@ public class SampleList extends AbstractList<ByteBuffer> {
         return offsets2Sizes.size();
     }
 
+    // A simple
+    private HashMap<MediaDataBox, Map<Long, SoftReference<ByteBuffer>>> cache = new HashMap<MediaDataBox, Map<Long, SoftReference<ByteBuffer>>>();
+    private final long BUFFER_SIZE = 1024 * 1024;
 
     @Override
     public ByteBuffer get(int index) {
@@ -154,6 +160,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
         int sampleSize = l2i(offsets2Sizes.get(offset));
 
         for (MediaDataBox mediaDataBox : mdats) {
+            // todo MOVE ALL THAT STUFF INTO THE MDAT BOX. It shouldn't be here.
             long start = mdatStartCache.get(mediaDataBox);
             long end = mdatEndCache.get(mediaDataBox);
             if ((start <= offset) && (offset + sampleSize <= end)) {
@@ -167,11 +174,30 @@ public class SampleList extends AbstractList<ByteBuffer> {
                     // On 32 bit systems mapping big files may fail
                     // just read sample by sample then
                     // that's slow but at least it's working.
-                    ByteBuffer sample = ByteBuffer.allocate(sampleSize);
                     try {
-                        mediaDataBox.getFileChannel().position(offset);
-                        mediaDataBox.getFileChannel().read(sample);
-                        return sample;
+                        Map<Long, SoftReference<ByteBuffer>> mdatsCache = cache.get(mediaDataBox);
+                        if (mdatsCache != null) {
+                            for (Map.Entry<Long, SoftReference<ByteBuffer>> entry : mdatsCache.entrySet()) {
+                                if (entry.getKey() < offset) {
+                                    if ((entry.getValue().get() != null) && ((entry.getKey() + entry.getValue().get().limit()) >= (offset + sampleSize))) {
+                                        ByteBuffer cacheEntry = entry.getValue().get();
+                                        cacheEntry.position((int) (offset - entry.getKey()));
+                                        ByteBuffer cachedSample = cacheEntry.slice();
+                                        cachedSample.limit(sampleSize);
+                                        return cachedSample;
+                                    }
+                                }
+                            }
+                        } else {
+                            mdatsCache = new HashMap<Long, SoftReference<ByteBuffer>>();
+                            cache.put(mediaDataBox, mdatsCache);
+                        }
+                        ByteBuffer cacheEntry = mediaDataBox.getFileChannel().map(FileChannel.MapMode.READ_ONLY, offset, BUFFER_SIZE);
+                        mdatsCache.put(offset, new SoftReference<ByteBuffer>(cacheEntry));
+                        cacheEntry.position(0);
+                        ByteBuffer cachedSample = cacheEntry.slice();
+                        cachedSample.limit(sampleSize);
+                        return cachedSample;
                     } catch (IOException e1) {
                         throw new RuntimeException(e1);
                     }

@@ -23,7 +23,6 @@ import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -106,11 +105,15 @@ public final class MediaDataBox implements Box {
         if (content != null) {
             return content;
         } else {
-            try {
-                content = fileChannel.map(FileChannel.MapMode.READ_ONLY, startPosition, contentSize);
-                return content;
-            } catch (IOException e) {
-                throw new MappingFailedRuntimeException("Mapping the mdat into memory does not work and there is nothing I can do against it", e);
+            if (false) {
+                try {
+                    content = fileChannel.map(FileChannel.MapMode.READ_ONLY, startPosition, contentSize);
+                    return content;
+                } catch (IOException e) {
+                    throw new MappingFailedRuntimeException("Mapping the mdat into memory does not work and there is nothing I can do against it", e);
+                }
+            } else {
+                throw new MappingFailedRuntimeException("Forced Exception", null);
             }
         }
     }
