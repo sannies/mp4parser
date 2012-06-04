@@ -192,13 +192,14 @@ public class SampleList extends AbstractList<ByteBuffer> {
                             mdatsCache = new HashMap<Long, SoftReference<ByteBuffer>>();
                             cache.put(mediaDataBox, mdatsCache);
                         }
-                        ByteBuffer cacheEntry = mediaDataBox.getFileChannel().map(FileChannel.MapMode.READ_ONLY, offset, BUFFER_SIZE);
+                        ByteBuffer cacheEntry = mediaDataBox.getFileChannel().map(FileChannel.MapMode.READ_ONLY, offset, Math.min(BUFFER_SIZE, mediaDataBox.getFileChannel().size() - offset));
                         mdatsCache.put(offset, new SoftReference<ByteBuffer>(cacheEntry));
                         cacheEntry.position(0);
                         ByteBuffer cachedSample = cacheEntry.slice();
                         cachedSample.limit(sampleSize);
                         return cachedSample;
                     } catch (IOException e1) {
+                        e1.printStackTrace();
                         throw new RuntimeException(e1);
                     }
                 }
