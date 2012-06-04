@@ -41,6 +41,8 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * also be referenced and used.
  */
 public final class MediaDataBox implements Box {
+    public static boolean FAKE_MAPPING_FAIL = false;
+
     public static final String TYPE = "mdat";
     ContainerBox parent;
 
@@ -87,7 +89,7 @@ public final class MediaDataBox implements Box {
 
     public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         this.header = header;
-        if (readableByteChannel instanceof FileChannel && contentSize > 1024 * 1024) {
+        if (readableByteChannel instanceof FileChannel && (contentSize > 1024 * 1024 || FAKE_MAPPING_FAIL)) {
             // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
             // AND on-demand
             this.contentSize = contentSize;
@@ -105,15 +107,15 @@ public final class MediaDataBox implements Box {
         if (content != null) {
             return content;
         } else {
-            if (false) {
+            if (FAKE_MAPPING_FAIL) {
+                throw new MappingFailedRuntimeException("Forced Exception for testing", null);
+            } else {
                 try {
                     content = fileChannel.map(FileChannel.MapMode.READ_ONLY, startPosition, contentSize);
                     return content;
                 } catch (IOException e) {
                     throw new MappingFailedRuntimeException("Mapping the mdat into memory does not work and there is nothing I can do against it", e);
                 }
-            } else {
-                throw new MappingFailedRuntimeException("Forced Exception", null);
             }
         }
     }
