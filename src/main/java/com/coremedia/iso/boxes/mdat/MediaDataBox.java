@@ -22,10 +22,14 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -41,17 +45,25 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * also be referenced and used.
  */
 public final class MediaDataBox implements Box {
-    public static boolean FAKE_MAPPING_FAIL = false;
+    private static Logger LOG = Logger.getLogger(MediaDataBox.class.getName());
 
     public static final String TYPE = "mdat";
     ContainerBox parent;
 
     ByteBuffer header;
-    ByteBuffer content;
 
-    FileChannel fileChannel;
-    long startPosition;
-    long contentSize;
+    // Contains the memory mapped content of the mdat if memory mapping was successful
+    // on 32 bit system memory mapping will fail for large files due to not enough
+    // continuous memory
+    private ByteBuffer content;
+
+
+    // The next fields are required in case of failed memory mapping of the input file.
+    public static boolean FAKE_MAPPING_FAIL = false;
+    private FileChannel fileChannel;
+    private long startPosition;
+    private long contentSize;
+    private Map<Long, SoftReference<ByteBuffer>> cache;
 
     public ContainerBox getParent() {
         return parent;
@@ -103,34 +115,70 @@ public final class MediaDataBox implements Box {
 
     }
 
-    public synchronized ByteBuffer getContent() {
+    public synchronized ByteBuffer getContent(long offset, int length) {
         if (content != null) {
-            return content;
+            // The whole content is available in one bytebuffer! Everyting is fine.
+            content.position(l2i(offset));
+            ByteBuffer sample = content.slice();
+            sample.limit(length);
+            sample.rewind();
+            return sample;
         } else {
-            if (FAKE_MAPPING_FAIL) {
-                throw new MappingFailedRuntimeException("Forced Exception for testing", null);
+            if (cache != null) {
+                for (Map.Entry<Long, SoftReference<ByteBuffer>> entry : cache.entrySet()) {
+                    if (entry.getKey() < offset) {
+                        ByteBuffer cacheEntry = entry.getValue().get();
+                        if ((cacheEntry != null) && ((entry.getKey() + cacheEntry.limit()) >= (offset + length))) {
+                            // CACHE HIT
+                            cacheEntry.position((int) (offset - entry.getKey()));
+                            ByteBuffer cachedSample = cacheEntry.slice();
+                            cachedSample.limit(length);
+                            cachedSample.rewind();
+                            return cachedSample;
+                        }
+                    }
+                }
+                // CACHE MISS
+                ByteBuffer cacheEntry;
+                try {
+                    // Mapping whole file failed, mapping only 10MB at a time
+                    cacheEntry = fileChannel.map(FileChannel.MapMode.READ_ONLY, startPosition + offset, Math.min(10 * 1024 * 1024, contentSize - offset));
+                } catch (IOException e1) {
+                    LOG.fine("Even mapping just 10MB of the source file into the memory failed. " + e1);
+                    throw new RuntimeException(
+                            "Delayed reading of mdat content failed. Make sure not to close " +
+                                    "the FileChannel that has been used to create the IsoFile!", e1);
+                }
+                cache.put(offset, new SoftReference<ByteBuffer>(cacheEntry));
+                cacheEntry.position(0);
+                ByteBuffer cachedSample = cacheEntry.slice();
+                cachedSample.limit(length);
+                cachedSample.rewind();
+                return cachedSample;
             } else {
                 try {
+                    if (FAKE_MAPPING_FAIL) {
+                        System.err.println("#############################");
+                        System.err.println("### FAKING MEM MAP FAILED ###");
+                        System.err.println("#############################");
+                        throw new IOException("Intentional IOException to test coping with failed memory mapping");
+                    }
                     content = fileChannel.map(FileChannel.MapMode.READ_ONLY, startPosition, contentSize);
-                    return content;
+                    fileChannel = null;
+                    LOG.fine("Successfully mapped the complete 'mdat' content into the memory.");
+                    return getContent(offset, length);
                 } catch (IOException e) {
-                    throw new MappingFailedRuntimeException("Mapping the mdat into memory does not work and there is nothing I can do against it", e);
+                    LOG.fine("Mapping the complete 'mdat' content into the memory failed. Trying piece by piece from now on.");
+                    cache = new HashMap<Long, SoftReference<ByteBuffer>>();
+                    // Creating the cache makes sure no further memory mapping is tried
+                    return getContent(offset, length);
                 }
             }
         }
-    }
-
-    public FileChannel getFileChannel() {
-        return fileChannel;
     }
 
     public ByteBuffer getHeader() {
         return header;
     }
 
-    public static class MappingFailedRuntimeException extends RuntimeException {
-        public MappingFailedRuntimeException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
 }

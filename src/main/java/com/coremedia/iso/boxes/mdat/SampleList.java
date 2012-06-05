@@ -149,9 +149,6 @@ public class SampleList extends AbstractList<ByteBuffer> {
         return offsets2Sizes.size();
     }
 
-    // A simple
-    private HashMap<MediaDataBox, Map<Long, SoftReference<ByteBuffer>>> cache = new HashMap<MediaDataBox, Map<Long, SoftReference<ByteBuffer>>>();
-    private final long BUFFER_SIZE = 1024 * 1024;
 
     @Override
     public ByteBuffer get(int index) {
@@ -160,51 +157,10 @@ public class SampleList extends AbstractList<ByteBuffer> {
         int sampleSize = l2i(offsets2Sizes.get(offset));
 
         for (MediaDataBox mediaDataBox : mdats) {
-            // todo MOVE ALL THAT STUFF INTO THE MDAT BOX. It shouldn't be here.
             long start = mdatStartCache.get(mediaDataBox);
             long end = mdatEndCache.get(mediaDataBox);
             if ((start <= offset) && (offset + sampleSize <= end)) {
-                try {
-                    ByteBuffer bb = mediaDataBox.getContent();
-                    bb.position(l2i(offset - start));
-                    ByteBuffer sample = bb.slice();
-                    sample.limit(sampleSize);
-                    return sample;
-                } catch (MediaDataBox.MappingFailedRuntimeException e) {
-                    // On 32 bit systems mapping big files may fail
-                    // just read sample by sample then
-                    // that's slow but at least it's working.
-                    try {
-                        Map<Long, SoftReference<ByteBuffer>> mdatsCache = cache.get(mediaDataBox);
-                        if (mdatsCache != null) {
-                            for (Map.Entry<Long, SoftReference<ByteBuffer>> entry : mdatsCache.entrySet()) {
-                                if (entry.getKey() < offset) {
-                                    if ((entry.getValue().get() != null) && ((entry.getKey() + entry.getValue().get().limit()) >= (offset + sampleSize))) {
-                                        ByteBuffer cacheEntry = entry.getValue().get();
-                                        cacheEntry.position((int) (offset - entry.getKey()));
-                                        ByteBuffer cachedSample = cacheEntry.slice();
-                                        cachedSample.limit(sampleSize);
-                                        return cachedSample;
-                                    }
-                                }
-                            }
-                        } else {
-                            mdatsCache = new HashMap<Long, SoftReference<ByteBuffer>>();
-                            cache.put(mediaDataBox, mdatsCache);
-                        }
-                        ByteBuffer cacheEntry = ByteBuffer.allocate(l2i(Math.min(BUFFER_SIZE, mediaDataBox.getFileChannel().size() - offset)));
-                        mediaDataBox.getFileChannel().position(offset);
-                        mediaDataBox.getFileChannel().read(cacheEntry);
-                        mdatsCache.put(offset, new SoftReference<ByteBuffer>(cacheEntry));
-                        cacheEntry.position(0);
-                        ByteBuffer cachedSample = cacheEntry.slice();
-                        cachedSample.limit(sampleSize);
-                        return cachedSample;
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                        throw new RuntimeException(e1);
-                    }
-                }
+                return mediaDataBox.getContent(offset - start, sampleSize );
             }
         }
 
