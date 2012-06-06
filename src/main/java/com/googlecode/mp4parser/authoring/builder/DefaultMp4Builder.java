@@ -474,7 +474,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             long start = referenceChunkStarts[i] - 1;
             long end;
             if (referenceChunkStarts.length == i + 1) {
-                end = track.getSamples().size() - 1;
+                end = track.getSamples().size();
             } else {
                 end = referenceChunkStarts[i + 1] - 1;
             }
