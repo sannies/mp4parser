@@ -57,7 +57,7 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
 
         long fragments[] = new long[fragmentCount];
         Arrays.fill(fragments, -1);
-        fragments[0] = 0;
+        fragments[0] = 1;
 
         long time = 0;
         int samples = 0;
@@ -67,15 +67,15 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
                 if (currentFragment >= fragments.length) {
                     break;
                 }
-                fragments[currentFragment] = samples++;
+                fragments[currentFragment] = samples++ + 1;
                 time += entry.getDelta();
             }
         }
-        long last = samples;
+        long last = samples + 1;
         // fill all -1 ones.
         for (int i = fragments.length - 1; i >= 0; i--) {
             if (fragments[i] == -1) {
-                fragments[i] = last;
+                fragments[i] = last ;
             }
             last = fragments[i];
         }
