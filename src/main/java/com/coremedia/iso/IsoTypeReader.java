@@ -32,12 +32,11 @@ public final class IsoTypeReader {
 
 
     public static long readUInt32(ByteBuffer bb) {
-        long ch1 = readUInt8(bb);
-        long ch2 = readUInt8(bb);
-        long ch3 = readUInt8(bb);
-        long ch4 = readUInt8(bb);
-        return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0));
-
+        long i = bb.getInt();
+        if (i < 0) {
+            i += 1l<<32;
+        }
+        return i;
     }
 
     public static int readUInt24(ByteBuffer bb) {
