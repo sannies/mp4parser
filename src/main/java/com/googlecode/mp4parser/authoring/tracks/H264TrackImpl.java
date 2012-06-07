@@ -23,12 +23,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * The <code>H264TrackImpl</code> creates a <code>Track</code> from an H.264
  * Annex B file.
  */
 public class H264TrackImpl extends AbstractTrack {
+    private static final Logger LOG = Logger.getLogger(H264TrackImpl.class.getName());
+    
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
 
@@ -219,7 +222,7 @@ public class H264TrackImpl extends AbstractTrack {
             int type = data[0];
             int nal_ref_idc = (type >> 5) & 3;
             int nal_unit_type = type & 0x1f;
-            System.out.println("Found startcode at " + (pos -4)  + " Type: " + nal_unit_type + " ref idc: " + nal_ref_idc + " (size " + size + ")");
+            LOG.fine("Found startcode at " + (pos -4)  + " Type: " + nal_unit_type + " ref idc: " + nal_ref_idc + " (size " + size + ")");
             NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, data);
             switch (action) {
                 case IGNORE:
@@ -244,7 +247,7 @@ public class H264TrackImpl extends AbstractTrack {
                     if (sh.slice_type == SliceHeader.SliceType.B) {
                         stdpValue += 4;
                     }
-                    System.out.println("Adding sample with size " + bb.capacity() + " and header " + sh);
+                    LOG.fine("Adding sample with size " + bb.capacity() + " and header " + sh);
                     buffered.clear();
                     samples.add(bb);
                     stts.add(new TimeToSampleBox.Entry(1, frametick));
@@ -377,7 +380,7 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     public void printAccessUnitDelimiter(byte[] data) {
-        System.out.println("Access unit delimiter: " + (data[0] >> 5));
+        LOG.fine("Access unit delimiter: " + (data[0] >> 5));
     }
 
     public static class SliceHeader {
@@ -502,7 +505,7 @@ public class H264TrackImpl extends AbstractTrack {
 
         public void mark() {
             int i = 262144;
-            System.out.println("Marking with " + i + " at " + pos);
+            LOG.fine("Marking with " + i + " at " + pos);
             inputStream.mark(i);
             markPos = pos;
         }
@@ -510,7 +513,7 @@ public class H264TrackImpl extends AbstractTrack {
 
         public void reset() throws IOException {
             long diff = pos - markPos;
-            System.out.println("Resetting to " + markPos + " (pos is " + pos + ") which makes the buffersize " + diff);
+            LOG.fine("Resetting to " + markPos + " (pos is " + pos + ") which makes the buffersize " + diff);
             inputStream.reset();
             pos = markPos;
         }
@@ -658,7 +661,7 @@ public class H264TrackImpl extends AbstractTrack {
                 } else {
                     read = datasize;
                 }
-                System.out.println(this);
+                LOG.fine(this.toString());
             }
         }
 
