@@ -56,6 +56,7 @@ public class CroppedTrack extends AbstractTrack {
 
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
         if (origTrack.getDecodingTimeEntries() != null && !origTrack.getDecodingTimeEntries().isEmpty()) {
+            // todo optimize! too much long is allocated but then not used
             long[] decodingTimes = TimeToSampleBox.blowupTimeToSamples(origTrack.getDecodingTimeEntries());
             long[] nuDecodingTimes = new long[toSample - fromSample];
             System.arraycopy(decodingTimes, fromSample, nuDecodingTimes, 0, toSample - fromSample);

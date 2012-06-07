@@ -1,28 +1,14 @@
 package com.coremedia.iso.boxes.mdat;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ChunkOffsetBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
 
-import java.io.IOException;
-import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -31,12 +17,14 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  */
 public class SampleList extends AbstractList<ByteBuffer> {
 
-    Map<Long, Long> offsets2Sizes;
-    List<Long> offsetKeys = null;
+
+    long[] offsets;
+    long[] sizes;
+
     IsoFile isoFile;
     HashMap<MediaDataBox, Long> mdatStartCache = new HashMap<MediaDataBox, Long>();
     HashMap<MediaDataBox, Long> mdatEndCache = new HashMap<MediaDataBox, Long>();
-    ArrayList<MediaDataBox> mdats = new ArrayList<MediaDataBox>(1);
+    MediaDataBox[] mdats;
 
     /**
      * Gets a sorted random access optimized list of all sample offsets.
@@ -44,25 +32,17 @@ public class SampleList extends AbstractList<ByteBuffer> {
      *
      * @return the sorted list of sample offsets
      */
-    public List<Long> getOffsetKeys() {
-        if (offsetKeys == null) {
-            List<Long> offsetKeys = new ArrayList<Long>(offsets2Sizes.size());
-            for (Long aLong : offsets2Sizes.keySet()) {
-                offsetKeys.add(aLong);
-            }
-            Collections.sort(offsetKeys);
-            this.offsetKeys = offsetKeys;
-        }
-        return offsetKeys;
+    public long[] getOffsetKeys() {
+        return offsets;
     }
 
 
     public SampleList(TrackBox trackBox) {
         this.isoFile = trackBox.getIsoFile(); // where are we?
-        offsets2Sizes = new HashMap<Long, Long>();
 
         // find all mdats first to be able to use them later with explicitly looking them up
         long currentOffset = 0;
+        LinkedList<MediaDataBox> mdats = new LinkedList<MediaDataBox>();
         for (Box b : isoFile.getBoxes()) {
             long currentSize = b.getSize();
             if ("mdat".equals(b.getType())) {
@@ -77,6 +57,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
             }
             currentOffset += currentSize;
         }
+        this.mdats = mdats.toArray(new MediaDataBox[mdats.size()]);
 
 
         // first we get all sample from the 'normal' MP4 part.
@@ -87,56 +68,58 @@ public class SampleList extends AbstractList<ByteBuffer> {
         SampleToChunkBox sampleToChunkBox = trackBox.getSampleTableBox().getSampleToChunkBox();
 
 
-        if (sampleToChunkBox != null && sampleToChunkBox.getEntries().size() > 0 && chunkOffsetBox != null &&
-                chunkOffsetBox.getChunkOffsets().length > 0 && sampleSizeBox != null && sampleSizeBox.getSampleCount() > 0) {
-            long[] numberOfSamplesInChunk = sampleToChunkBox.blowup(chunkOffsetBox.getChunkOffsets().length);
-            if (sampleSizeBox.getSampleSize() > 0) {
-                // Every sample has the same size!
-                // no need to store each size separately
-                // this happens when people use raw audio formats in MP4 (are you stupid guys???)
-                // and assign each PCM sample its own MP4 sample
-                offsets2Sizes = new DummyMap<Long, Long>(sampleSizeBox.getSampleSize());
-                long sampleSize = sampleSizeBox.getSampleSize();
-                for (int i = 0; i < numberOfSamplesInChunk.length; i++) {
-                    long thisChunksNumberOfSamples = numberOfSamplesInChunk[i];
-                    long sampleOffset = chunkOffsetBox.getChunkOffsets()[i];
-                    for (int j = 0; j < thisChunksNumberOfSamples; j++) {
-                        offsets2Sizes.put(sampleOffset, sampleSize);
-                        sampleOffset += sampleSize;
-                    }
-                }
-            } else {
-                // the normal case where all samples have different sizes
-                int sampleIndex = 0;
-                long sampleSizes[] = sampleSizeBox.getSampleSizes();
-                for (int i = 0; i < numberOfSamplesInChunk.length; i++) {
-                    long thisChunksNumberOfSamples = numberOfSamplesInChunk[i];
-                    long sampleOffset = chunkOffsetBox.getChunkOffsets()[i];
-                    for (int j = 0; j < thisChunksNumberOfSamples; j++) {
-                        long sampleSize = sampleSizes[sampleIndex];
-                        offsets2Sizes.put(sampleOffset, sampleSize);
-                        sampleOffset += sampleSize;
-                        sampleIndex++;
-                    }
-                }
+        final long[] chunkOffsets = chunkOffsetBox != null ? chunkOffsetBox.getChunkOffsets() : new long[0];
+        if (sampleToChunkBox != null && sampleToChunkBox.getEntries().size() > 0 &&
+                chunkOffsets.length > 0 && sampleSizeBox != null && sampleSizeBox.getSampleCount() > 0) {
+            long[] numberOfSamplesInChunk = sampleToChunkBox.blowup(chunkOffsets.length);
 
+            int sampleIndex = 0;
+
+            if (sampleSizeBox.getSampleSize() > 0) {
+                sizes = new long[l2i(sampleSizeBox.getSampleCount())];
+                Arrays.fill(sizes, sampleSizeBox.getSampleSize());
+            } else {
+                sizes = sampleSizeBox.getSampleSizes();
             }
+            offsets = new long[sizes.length];
+
+            for (int i = 0; i < numberOfSamplesInChunk.length; i++) {
+                long thisChunksNumberOfSamples = numberOfSamplesInChunk[i];
+                long sampleOffset = chunkOffsets[i];
+                for (int j = 0; j < thisChunksNumberOfSamples; j++) {
+                    long sampleSize = sizes[sampleIndex];
+                    offsets[sampleIndex] = sampleOffset;
+                    sampleOffset += sampleSize;
+                    sampleIndex++;
+                }
+            }
+
+
         }
 
         // Next we add all samples from the fragments
         // in most cases - I've never seen it different it's either normal or fragmented.
 
-        List<MovieExtendsBox> movieExtendsBoxes = trackBox.getParent().getBoxes(MovieExtendsBox.class);
-
-        if (movieExtendsBoxes.size() > 0) {
-            List<TrackExtendsBox> trackExtendsBoxes = movieExtendsBoxes.get(0).getBoxes(TrackExtendsBox.class);
-            for (TrackExtendsBox trackExtendsBox : trackExtendsBoxes) {
-                if (trackExtendsBox.getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
-                    for (MovieFragmentBox movieFragmentBox : trackBox.getIsoFile().getBoxes(MovieFragmentBox.class)) {
-                        offsets2Sizes.putAll(getOffsets(movieFragmentBox, trackBox.getTrackHeaderBox().getTrackId(), trackExtendsBox));
-                    }
-                }
+        if (sizes == null) {
+            sizes = new long[0];
+        }
+        if (offsets == null) {
+            offsets = new long[0];
+        }
+        for (MovieFragmentBox moof : trackBox.getIsoFile().getBoxes(MovieFragmentBox.class)) {
+            Map<Long, Long> offset2Sizes = getOffsets(moof, trackBox.getTrackHeaderBox().getTrackId());
+            List<Long> keys = new ArrayList<Long>(offset2Sizes.keySet());
+            Collections.sort(keys);
+            long[] nuSizes = new long[sizes.length + keys.size()];
+            System.arraycopy(sizes, 0, nuSizes, 0, sizes.length);
+            long[] nuOffsets = new long[offsets.length + keys.size()];
+            System.arraycopy(offsets, 0, nuOffsets, 0, offsets.length);
+            for (int i = 0; i < keys.size(); i++) {
+                  nuOffsets[i + offsets.length] = keys.get(i);
+                  nuSizes[i + offsets.length] = offset2Sizes.get(keys.get(i));
             }
+            sizes = nuSizes;
+            offsets = nuOffsets;
         }
 
 
@@ -146,28 +129,28 @@ public class SampleList extends AbstractList<ByteBuffer> {
 
     @Override
     public int size() {
-        return offsets2Sizes.size();
+        return sizes.length;
     }
 
 
     @Override
     public ByteBuffer get(int index) {
         // it is a two stage lookup: from index to offset to size
-        Long offset = getOffsetKeys().get(index);
-        int sampleSize = l2i(offsets2Sizes.get(offset));
+        long offset = offsets[index];
+        int sampleSize = l2i(sizes[index]);
 
         for (MediaDataBox mediaDataBox : mdats) {
             long start = mdatStartCache.get(mediaDataBox);
             long end = mdatEndCache.get(mediaDataBox);
             if ((start <= offset) && (offset + sampleSize <= end)) {
-                return mediaDataBox.getContent(offset - start, sampleSize );
+                return mediaDataBox.getContent(offset - start, sampleSize);
             }
         }
 
         throw new RuntimeException("The sample with offset " + offset + " and size " + sampleSize + " is NOT located within an mdat");
     }
 
-    Map<Long, Long> getOffsets(MovieFragmentBox moof, long trackId, TrackExtendsBox trackExtendsBox) {
+    Map<Long, Long> getOffsets(MovieFragmentBox moof, long trackId) {
         Map<Long, Long> offsets2Sizes = new HashMap<Long, Long>();
         List<TrackFragmentBox> traf = moof.getBoxes(TrackFragmentBox.class);
         for (TrackFragmentBox trackFragmentBox : traf) {
@@ -196,7 +179,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
                                 offsets2Sizes.put(offset + sampleBaseOffset, sampleSize);
                                 offset += sampleSize;
                             } else {
-                                sampleSize = trackExtendsBox.getDefaultSampleSize();
+                                sampleSize = trun.getTrackExtendsBox().getDefaultSampleSize();
                                 offsets2Sizes.put(offset + sampleBaseOffset, sampleSize);
                                 offset += sampleSize;
                             }

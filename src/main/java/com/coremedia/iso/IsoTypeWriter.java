@@ -15,23 +15,16 @@
  */
 package com.coremedia.iso;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public final class IsoTypeWriter {
 
     public static void writeUInt64(ByteBuffer bb, long u) {
-
-        writeUInt32(bb, ((u >> 32) & 0xFFFFFFFFl));
-        writeUInt32(bb, u & 0xFFFFFFFFl);
-
+        bb.putLong(u);
     }
 
     public static void writeUInt32(ByteBuffer bb, long u) {
-        assert u >= 0 && u <= 1L << 32 : "The given long is not in the range of uint32 (" + u + ")";
-        writeUInt16(bb, (int) ((u >> 16) & 0xFFFF));
-        writeUInt16(bb, (int) u & 0xFFFF);
+        bb.putInt((int) u);
 
     }
 
@@ -64,7 +57,8 @@ public final class IsoTypeWriter {
     }
 
     public static void writeUInt8(ByteBuffer bb, int i) {
-        bb.put(int2byte(i));
+        i = i & 0xFF;
+        bb.put((byte) i);
     }
 
 
@@ -80,11 +74,6 @@ public final class IsoTypeWriter {
         short result = (short) (v * 256);
         bb.put((byte) ((result & 0xFF00) >> 8));
         bb.put((byte) ((result & 0x00FF)));
-    }
-
-    public static byte int2byte(int i) {
-        i = i & 0xFF;
-        return (byte) (i > 127 ? i - 256 : i);
     }
 
     public static void writeIso639(ByteBuffer bb, String language) {

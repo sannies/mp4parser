@@ -1,13 +1,10 @@
 package com.coremedia.iso;
 
-import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.UUID;
 
 /**
  * Test symmetrie of IsoBufferWrapper and Iso
@@ -17,27 +14,26 @@ public class IsoTypeReaderTest {
 
     @Test
     public void testInt() throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ByteBuffer bb = ByteBuffer.allocate(20);
 
         IsoTypeWriter.writeUInt8(bb, 0);
         IsoTypeWriter.writeUInt8(bb, 255);
         IsoTypeWriter.writeUInt16(bb, 0);
-        IsoTypeWriter.writeUInt16(bb, 2 ^ 16 - 1);
+        IsoTypeWriter.writeUInt16(bb, (1<<16) - 1);
         IsoTypeWriter.writeUInt24(bb, 0);
-        IsoTypeWriter.writeUInt24(bb, 2 ^ 24 - 1);
+        IsoTypeWriter.writeUInt24(bb, (1<<24) - 1);
         IsoTypeWriter.writeUInt32(bb, 0);
-        IsoTypeWriter.writeUInt32(bb, 2 ^ 32 - 1);
+        IsoTypeWriter.writeUInt32(bb, (1l<< 32) - 1);
         bb.rewind();
 
         Assert.assertEquals(0, IsoTypeReader.readUInt8(bb));
         Assert.assertEquals(255, IsoTypeReader.readUInt8(bb));
         Assert.assertEquals(0, IsoTypeReader.readUInt16(bb));
-        Assert.assertEquals(2 ^ 16 - 1, IsoTypeReader.readUInt16(bb));
+        Assert.assertEquals((1<<16) - 1, IsoTypeReader.readUInt16(bb));
         Assert.assertEquals(0, IsoTypeReader.readUInt24(bb));
-        Assert.assertEquals(2 ^ 24 - 1, IsoTypeReader.readUInt24(bb));
+        Assert.assertEquals((1<<24) - 1, IsoTypeReader.readUInt24(bb));
         Assert.assertEquals(0, IsoTypeReader.readUInt32(bb));
-        Assert.assertEquals(2 ^ 32 - 1, IsoTypeReader.readUInt32(bb));
+        Assert.assertEquals((1l<< 32) - 1, IsoTypeReader.readUInt32(bb));
     }
 
     @Test

@@ -369,7 +369,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         // fast forward composition stuff
         for (long i = 1; i < startSample; i++) {
             if (compositionTimeQueue != null) {
-                trun.setSampleCompositionTimeOffsetPresent(true);
+                //trun.setSampleCompositionTimeOffsetPresent(true);
                 if (--compositionTimeEntriesLeft == 0 && compositionTimeQueue.size() > 1) {
                     compositionTimeQueue.remove();
                     compositionTimeEntriesLeft = compositionTimeQueue.element().getCount();
@@ -417,7 +417,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
             }
 
             if (compositionTimeQueue != null) {
-                trun.setSampleCompositionTimeOffsetPresent(true);
                 entry.setSampleCompositionTimeOffset(compositionTimeQueue.peek().getOffset());
                 if (--compositionTimeEntriesLeft == 0 && compositionTimeQueue.size() > 1) {
                     compositionTimeQueue.remove();

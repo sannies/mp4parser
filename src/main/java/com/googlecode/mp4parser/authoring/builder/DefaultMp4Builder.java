@@ -58,6 +58,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -282,18 +283,23 @@ public class DefaultMp4Builder implements Mp4Builder {
             sdtp.setEntries(track.getSampleDependencies());
             stbl.addBox(sdtp);
         }
-        int chunkSize[] = getChunkSizes(track, movie);
+        HashMap<Track,int[]> track2ChunkSizes = new HashMap<Track, int[]>();
+        for (Track current : movie.getTracks()) {
+            track2ChunkSizes.put(current, getChunkSizes(current, movie));
+        }
+        int[] tracksChunkSizes = track2ChunkSizes.get(track);
+
         SampleToChunkBox stsc = new SampleToChunkBox();
         stsc.setEntries(new LinkedList<SampleToChunkBox.Entry>());
         long lastChunkSize = Integer.MIN_VALUE; // to be sure the first chunks hasn't got the same size
-        for (int i = 0; i < chunkSize.length; i++) {
+        for (int i = 0; i < tracksChunkSizes.length; i++) {
             // The sample description index references the sample description box
             // that describes the samples of this chunk. My Tracks cannot have more
             // than one sample description box. Therefore 1 is always right
             // the first chunk has the number '1'
-            if (lastChunkSize != chunkSize[i]) {
-                stsc.getEntries().add(new SampleToChunkBox.Entry(i + 1, chunkSize[i], 1));
-                lastChunkSize = chunkSize[i];
+            if (lastChunkSize != tracksChunkSizes[i]) {
+                stsc.getEntries().add(new SampleToChunkBox.Entry(i + 1, tracksChunkSizes[i], 1));
+                lastChunkSize = tracksChunkSizes[i];
             }
         }
         stbl.addBox(stsc);
@@ -309,17 +315,25 @@ public class DefaultMp4Builder implements Mp4Builder {
         StaticChunkOffsetBox stco = new StaticChunkOffsetBox();
         this.chunkOffsetBoxes.add(stco);
         long offset = 0;
-        long[] chunkOffset = new long[chunkSize.length];
+        long[] chunkOffset = new long[tracksChunkSizes.length];
         // all tracks have the same number of chunks
-        LOG.fine("Calculating chunk offsets for track_" + track.getTrackMetaData().getTrackId());
-        for (int i = 0; i < chunkSize.length; i++) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Calculating chunk offsets for track_" + track.getTrackMetaData().getTrackId());
+        }
+
+
+        for (int i = 0; i < tracksChunkSizes.length; i++) {
             // The filelayout will be:
             // chunk_1_track_1,... ,chunk_1_track_n, chunk_2_track_1,... ,chunk_2_track_n, ... , chunk_m_track_1,... ,chunk_m_track_n
             // calculating the offsets
-            LOG.finer("Calculating chunk offsets for track_" + track.getTrackMetaData().getTrackId() + " chunk " + i);
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer("Calculating chunk offsets for track_" + track.getTrackMetaData().getTrackId() + " chunk " + i);
+            }
             for (Track current : movie.getTracks()) {
-                LOG.finest("Adding offsets of track_" + current.getTrackMetaData().getTrackId());
-                int[] chunkSizes = getChunkSizes(current, movie);
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.finest("Adding offsets of track_" + current.getTrackMetaData().getTrackId());
+                }
+                int[] chunkSizes = track2ChunkSizes.get(current);
                 long firstSampleOfChunk = 0;
                 for (int j = 0; j < i; j++) {
                     firstSampleOfChunk += chunkSizes[j];
@@ -342,7 +356,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     private class InterleaveChunkMdat implements Box {
         List<Track> tracks;
-        List<ByteBuffer> samples = new LinkedList<ByteBuffer>();
+        List<ByteBuffer> samples = new ArrayList<ByteBuffer>();
         ContainerBox parent;
 
         long contentSize = 0;
