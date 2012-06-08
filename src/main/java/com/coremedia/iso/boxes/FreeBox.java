@@ -17,42 +17,37 @@
 package com.coremedia.iso.boxes;
 
 
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.ChannelHelper;
+import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractBox;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.LinkedList;
+import java.util.List;
+
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * A free box. Just a placeholder to enable editing without rewriting the whole file.
  */
-public class FreeBox extends AbstractBox {
+public class FreeBox implements Box {
     public static final String TYPE = "free";
     ByteBuffer data;
+    List<Box> replacers = new LinkedList<Box>();
+    private ContainerBox parent;
 
     public FreeBox() {
-        super(TYPE);
     }
 
     public FreeBox(int size) {
-        super(TYPE);
         this.data = ByteBuffer.allocate(size);
     }
 
-    @Override
-    protected long getContentSize() {
-        return data.limit();
-    }
-
-    @Override
-    public void _parseDetails(ByteBuffer content) {
-        data = content;
-        data.position(data.position() + data.remaining());
-    }
-
-    @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        data.rewind();
-        byteBuffer.put(data);
-    }
 
     public ByteBuffer getData() {
         return data;
@@ -61,4 +56,59 @@ public class FreeBox extends AbstractBox {
     public void setData(ByteBuffer data) {
         this.data = data;
     }
+
+    public void getBox(WritableByteChannel os) throws IOException {
+        for (Box replacer : replacers) {
+            replacer.getBox(os);
+        }
+        ByteBuffer header = ByteBuffer.allocate(8);
+        IsoTypeWriter.writeUInt32(header, 8 + data.limit());
+        header.put(TYPE.getBytes());
+        header.rewind();
+        os.write(header);
+        data.rewind();
+        os.write(data);
+
+    }
+
+    public ContainerBox getParent() {
+        return parent;
+    }
+
+    public void setParent(ContainerBox parent) {
+        this.parent = parent;
+    }
+
+    public long getSize() {
+        long size = 8;
+        for (Box replacer : replacers) {
+            size += replacer.getSize();
+        }
+        size += data.limit();
+        return size;
+    }
+
+    public String getType() {
+        return TYPE;
+    }
+
+    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        if (readableByteChannel instanceof FileChannel && contentSize > 1024 * 1024) {
+            // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
+            data = ((FileChannel) readableByteChannel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) readableByteChannel).position(), contentSize);
+            ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
+        } else {
+            assert contentSize < Integer.MAX_VALUE;
+            data = ChannelHelper.readFully(readableByteChannel, contentSize);
+        }
+    }
+
+
+    public void addAndReplace(Box box) {
+        data.position(l2i(box.getSize()));
+        data = data.slice();
+        replacers.add(box);
+    }
+
+
 }
