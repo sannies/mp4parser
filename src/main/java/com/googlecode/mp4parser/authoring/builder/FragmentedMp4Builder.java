@@ -75,9 +75,17 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * Creates a fragmented MP4 file.
  */
 public class FragmentedMp4Builder implements Mp4Builder {
-    FragmentIntersectionFinder intersectionFinder = new SyncSampleIntersectFinderImpl();
-
     private static final Logger LOG = Logger.getLogger(FragmentedMp4Builder.class.getName());
+
+    protected FragmentIntersectionFinder intersectionFinder;
+
+    public FragmentedMp4Builder() {
+        this.intersectionFinder = new SyncSampleIntersectFinderImpl();
+    }
+
+    public FragmentedMp4Builder(int minFragmentDuration) {
+        this.intersectionFinder = new SyncSampleIntersectFinderImpl(minFragmentDuration);
+    }
 
     public List<String> getAllowedHandlers() {
         return Arrays.asList("soun", "vide");

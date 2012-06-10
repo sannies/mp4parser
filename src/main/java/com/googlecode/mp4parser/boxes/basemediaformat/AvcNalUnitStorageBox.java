@@ -22,6 +22,7 @@ import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -30,46 +31,67 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * as defined in section 5.2.4.1 of the ISO 14496-12.
  */
 public class AvcNalUnitStorageBox extends AbstractBox {
-    byte[] data;
+    AvcConfigurationBox.AVCDecoderConfigurationRecord avcDecoderConfigurationRecord;
 
     public AvcNalUnitStorageBox() {
         super("avcn");
     }
 
-
     public AvcNalUnitStorageBox(AvcConfigurationBox avcConfigurationBox) {
         super("avcn");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        this.avcDecoderConfigurationRecord = avcConfigurationBox.getavcDecoderConfigurationRecord();
+    }
 
-        ByteBuffer content = ByteBuffer.allocate(l2i(avcConfigurationBox.getContentSize()));
-        avcConfigurationBox.getContent(content);
-        data = content.array();
+    public AvcConfigurationBox.AVCDecoderConfigurationRecord getAvcDecoderConfigurationRecord() {
+        return avcDecoderConfigurationRecord;
+    }
+
+    // just to display sps in isoviewer no practical use
+    public int getLengthSizeMinusOne() {
+        return avcDecoderConfigurationRecord.lengthSizeMinusOne;
+    }
+
+    public String[] getSPS() {
+        return avcDecoderConfigurationRecord.getSPS();
+    }
+
+    public String[] getPPS() {
+        return avcDecoderConfigurationRecord.getPPS();
+    }
+
+    public List<String> getSequenceParameterSetsAsStrings() {
+        return avcDecoderConfigurationRecord.getSequenceParameterSetsAsStrings();
+    }
+
+    public List<String> getSequenceParameterSetExtsAsStrings() {
+        return avcDecoderConfigurationRecord.getSequenceParameterSetExtsAsStrings();
+    }
+
+    public List<String> getPictureParameterSetsAsStrings() {
+        return avcDecoderConfigurationRecord.getPictureParameterSetsAsStrings();
     }
 
     @Override
     protected long getContentSize() {
-        return data.length;
-    }
-
-
-    public void setData(byte[] data) {
-        this.data = data;
+        return avcDecoderConfigurationRecord.getContentSize();
     }
 
     @Override
     public void _parseDetails(ByteBuffer content) {
-        data = new byte[content.remaining()];
+        this.avcDecoderConfigurationRecord = new AvcConfigurationBox.AVCDecoderConfigurationRecord(content);
     }
 
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
-        byteBuffer.put(data);
+        this.avcDecoderConfigurationRecord.getContent(byteBuffer);
     }
 
     @Override
     public String toString() {
         return "AvcNalUnitStorageBox{" +
-                "data=" + Arrays.toString(data) +
+                "SPS=" + avcDecoderConfigurationRecord.getSequenceParameterSetsAsStrings() +
+                ",PPS=" + avcDecoderConfigurationRecord.getPictureParameterSetsAsStrings() +
+                ",lengthSize=" + (avcDecoderConfigurationRecord.lengthSizeMinusOne + 1) +
                 '}';
     }
 }
