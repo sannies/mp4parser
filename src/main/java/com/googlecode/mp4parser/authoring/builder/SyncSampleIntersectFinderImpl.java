@@ -37,6 +37,16 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
 
     private static Logger LOG = Logger.getLogger(SyncSampleIntersectFinderImpl.class.getName());
 
+    private final int minFragmentDurationSeconds;
+
+    public SyncSampleIntersectFinderImpl() {
+        minFragmentDurationSeconds = 0;
+    }
+
+    public SyncSampleIntersectFinderImpl(int minFragmentDurationSeconds) {
+        this.minFragmentDurationSeconds = minFragmentDurationSeconds;
+    }
+
     /**
      * Gets an array of sample numbers that are meant to be the first sample of each
      * chunk or fragment.
@@ -49,7 +59,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         if ("vide".equals(track.getHandler())) {
             if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
                 List<long[]> times = getSyncSamplesTimestamps(movie, track);
-                return getCommonIndices(track.getSyncSamples(), getTimes(movie, track), times.toArray(new long[times.size()][]));
+                return getCommonIndices(track.getSyncSamples(), getTimes(track, movie), track.getTrackMetaData().getTimescale(), times.toArray(new long[times.size()][]));
             } else {
                 throw new RuntimeException("Video Tracks need sync samples. Only tracks other than video may have no sync samples.");
             }
@@ -134,7 +144,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             if (currentTrack.getHandler().equals(track.getHandler())) {
                 long[] currentTrackSyncSamples = currentTrack.getSyncSamples();
                 if (currentTrackSyncSamples != null && currentTrackSyncSamples.length > 0) {
-                    final long[] currentTrackTimes = getTimes(movie, currentTrack);
+                    final long[] currentTrackTimes = getTimes(currentTrack, movie);
                     times.add(currentTrackTimes);
                 }
             }
@@ -142,22 +152,31 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         return times;
     }
 
-    public static long[] getCommonIndices(long[] syncSamples, long[] syncSampleTimes, long[]... otherTracksTimes) {
+    public long[] getCommonIndices(long[] syncSamples, long[] syncSampleTimes, long timeScale, long[]... otherTracksTimes) {
         List<Long> nuSyncSamples = new LinkedList<Long>();
+        long lastSyncSampleTime = -1;
         for (int i = 0; i < syncSampleTimes.length; i++) {
             boolean foundInEveryRef = true;
             for (long[] times : otherTracksTimes) {
                 foundInEveryRef &= (Arrays.binarySearch(times, syncSampleTimes[i]) >= 0);
             }
+
             if (foundInEveryRef) {
-                nuSyncSamples.add(syncSamples[i]);
+                final long syncSampleTime = syncSampleTimes[i];
+                if (lastSyncSampleTime == -1 || (syncSampleTime-lastSyncSampleTime) / timeScale >= minFragmentDurationSeconds) {
+                    nuSyncSamples.add(syncSamples[i]);
+                    lastSyncSampleTime = syncSampleTime;
+                }
             }
         }
         long[] nuSyncSampleArray = new long[nuSyncSamples.size()];
         for (int i = 0; i < nuSyncSampleArray.length; i++) {
             nuSyncSampleArray[i] = nuSyncSamples.get(i);
         }
-        if (nuSyncSampleArray.length < (syncSamples.length * 0.3)) {
+
+        long numFragments = minFragmentDurationSeconds > 0 ?
+                ((lastSyncSampleTime / timeScale) / minFragmentDurationSeconds) + 1 : Long.MAX_VALUE;
+        if (nuSyncSampleArray.length > numFragments && nuSyncSampleArray.length < (syncSamples.length * 0.25)) {
             String log = "";
             log += String.format("%5d - Common:  [", nuSyncSampleArray.length);
             for (long l : nuSyncSampleArray) {
@@ -184,7 +203,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
     }
 
 
-    private static long[] getTimes(Movie m, Track track) {
+    private static long[] getTimes(Track track, Movie m) {
         long[] syncSamples = track.getSyncSamples();
         long[] syncSampleTimes = new long[syncSamples.length];
         Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
@@ -195,19 +214,11 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         int currentSyncSampleIndex = 0;
         long left = 0;
 
-        long timeScale = 1;
-        for (Track track1 : m.getTracks()) {
-            if (track1.getHandler().equals(track.getHandler())) {
-                if (track1.getTrackMetaData().getTimescale() != track.getTrackMetaData().getTimescale()) {
-                    timeScale = lcm(timeScale, track1.getTrackMetaData().getTimescale());
-                }
-            }
-        }
-
+        final long scalingFactor = calculateTracktimesScalingFactor(m, track);
 
         while (currentSample <= syncSamples[syncSamples.length - 1]) {
             if (currentSample++ == syncSamples[currentSyncSampleIndex]) {
-                syncSampleTimes[currentSyncSampleIndex++] = currentDuration * timeScale;
+                syncSampleTimes[currentSyncSampleIndex++] = currentDuration * scalingFactor;
             }
             if (left-- == 0) {
                 TimeToSampleBox.Entry entry = timeQueue.poll();
@@ -218,5 +229,17 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         }
         return syncSampleTimes;
 
+    }
+
+    private static long calculateTracktimesScalingFactor(Movie m, Track track) {
+        long timeScale = 1;
+        for (Track track1 : m.getTracks()) {
+            if (track1.getHandler().equals(track.getHandler())) {
+                if (track1.getTrackMetaData().getTimescale() != track.getTrackMetaData().getTimescale()) {
+                    timeScale = lcm(timeScale, track1.getTrackMetaData().getTimescale());
+                }
+            }
+        }
+        return timeScale;
     }
 }

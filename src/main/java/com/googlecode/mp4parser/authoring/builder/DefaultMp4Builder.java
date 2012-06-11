@@ -122,6 +122,10 @@ public class DefaultMp4Builder implements Mp4Builder {
         return isoFile;
     }
 
+    public FragmentIntersectionFinder getFragmentIntersectionFinder() {
+        throw new UnsupportedOperationException("No fragment intersection finder in default MP4 builder!");
+    }
+
     protected long[] putSampleSizes(Track track, long[] sizes) {
         return track2SampleSizes.put(track, sizes);
     }

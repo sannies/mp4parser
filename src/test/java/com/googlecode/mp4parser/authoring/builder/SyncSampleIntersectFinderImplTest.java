@@ -37,12 +37,29 @@ public class SyncSampleIntersectFinderImplTest {
 
     @Test
     public void testGetIndicesToBeRemoved() {
+        SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl();
         long[] a_sample = new long[]{20, 40, 48, 60, 80, 82};
         long[] a_times = new long[]{10, 20, 24, 30, 40, 41};
         long[] b_1 = new long[]{10, 20, 26, 30, 40};
         long[] b_2 = new long[]{10, 20, 25, 30, 40};
-        long[] a_2 = SyncSampleIntersectFinderImpl.getCommonIndices(a_sample, a_times, b_1, b_2);
+        long[] a_2 = syncSampleIntersectFinder.getCommonIndices(a_sample, a_times, 10, b_1, b_2);
+//        long[] a_sample = new long[]{20, 40, 48, 60, 80, 82, 100};
+//        long[] a_times = new long[]{10, 20, 24, 30, 40, 41, 80, 81};
+//        long[] b_1 = new long[]{10, 20, 26, 30, 40, 80};
+//        long[] b_2 = new long[]{10, 20, 25, 30, 40, 80};
+//        long[] a_2 = SyncSampleIntersectFinderImpl.getCommonIndices(a_sample, a_times, 10, b_1, b_2);
         Assert.assertArrayEquals(new long[]{20, 40, 60, 80}, a_2);
+    }
+
+    @Test
+    public void testGetIndicesToBeRemovedMinTwoSecondsFragments() {
+        SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl(2);
+        long[] a_sample = new long[]{20, 40, 48, 60, 80, 82, 90, 100};
+        long[] a_times = new long[]{10, 20, 24, 30, 60, 61, 80, 81};
+        long[] b_1 = new long[]{10, 20, 26, 30, 40, 80, 81, 100};
+        long[] b_2 = new long[]{10, 20, 25, 30, 40, 80, 90, 100};
+        long[] a_2 = syncSampleIntersectFinder.getCommonIndices(a_sample, a_times, 10, b_1, b_2);
+        Assert.assertArrayEquals(new long[]{20, 60, 90}, a_2);
     }
 
     @Test

@@ -16,11 +16,7 @@
 package com.googlecode.mp4parser.authoring.builder.smoothstreaming;
 
 import com.coremedia.iso.Hex;
-import com.coremedia.iso.boxes.OriginalFormatBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.SoundMediaHeaderBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.VideoMediaHeaderBox;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
@@ -29,13 +25,9 @@ import com.googlecode.mp4parser.Version;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
-import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
+import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
-import nu.xom.Attribute;
-import nu.xom.Comment;
-import nu.xom.Document;
-import nu.xom.Element;
-import nu.xom.Serializer;
+import nu.xom.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,13 +43,12 @@ public class FlatManifestWriterImpl implements ManifestWriter {
     private static final Logger LOG = Logger.getLogger(FlatManifestWriterImpl.class.getName());
 
 
-    private FragmentIntersectionFinder intersectionFinder = new SyncSampleIntersectFinderImpl();
+    private FragmentIntersectionFinder intersectionFinder;
     private long[] audioFragmentsDurations;
     private long[] videoFragmentsDurations;
 
-
-    public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
-        this.intersectionFinder = intersectionFinder;
+    public FlatManifestWriterImpl(FragmentedMp4Builder fragmentedMp4Builder) {
+        this.intersectionFinder = fragmentedMp4Builder.getFragmentIntersectionFinder();
     }
 
     /**

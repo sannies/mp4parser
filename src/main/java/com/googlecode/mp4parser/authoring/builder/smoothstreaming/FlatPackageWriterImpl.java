@@ -23,10 +23,8 @@ import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
 import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
-import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
 import com.googlecode.mp4parser.authoring.tracks.ChangeTimeScaleTrack;
 
 import java.io.File;
@@ -43,17 +41,13 @@ public class FlatPackageWriterImpl implements PackageWriter {
 
     private File outputDirectory;
     private boolean debugOutput;
-    private Mp4Builder ismvBuilder;
+    private FragmentedMp4Builder ismvBuilder;
     ManifestWriter manifestWriter;
-    FragmentIntersectionFinder fragmentIntersectionFinder;
 
-    {
-        ismvBuilder = new FragmentedMp4Builder();
-        fragmentIntersectionFinder = new SyncSampleIntersectFinderImpl();
-        ((FragmentedMp4Builder) ismvBuilder).setIntersectionFinder(fragmentIntersectionFinder);
-        manifestWriter = new FlatManifestWriterImpl();
+    public FlatPackageWriterImpl(int minFragmentDuration) {
+        ismvBuilder = new FragmentedMp4Builder(minFragmentDuration);
+        manifestWriter = new FlatManifestWriterImpl(ismvBuilder);
     }
-
 
     public void setOutputDirectory(File outputDirectory) {
         assert outputDirectory.isDirectory();
@@ -65,8 +59,9 @@ public class FlatPackageWriterImpl implements PackageWriter {
         this.debugOutput = debugOutput;
     }
 
-    public void setIsmvBuilder(Mp4Builder ismvBuilder) {
+    public void setIsmvBuilder(FragmentedMp4Builder ismvBuilder) {
         this.ismvBuilder = ismvBuilder;
+        this.manifestWriter = new FlatManifestWriterImpl((FragmentedMp4Builder) ismvBuilder);
     }
 
     public void setManifestWriter(ManifestWriter manifestWriter) {
@@ -180,7 +175,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
     public Movie correctTimescale(Movie movie) {
         Movie nuMovie = new Movie();
         for (Track track : movie.getTracks()) {
-            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, fragmentIntersectionFinder.sampleNumbers(track, movie)));
+            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, ismvBuilder.getFragmentIntersectionFinder().sampleNumbers(track, movie)));
         }
         return nuMovie;
 
