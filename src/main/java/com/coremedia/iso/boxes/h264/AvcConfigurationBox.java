@@ -38,7 +38,7 @@ import java.util.List;
 public final class AvcConfigurationBox extends AbstractBox {
     public static final String TYPE = "avcC";
 
-    public AVCDecoderConfigurationRecord avcDecoderConfigurationRecord;
+    public AVCDecoderConfigurationRecord avcDecoderConfigurationRecord = new AVCDecoderConfigurationRecord();
 
 
     public AvcConfigurationBox() {
@@ -207,6 +207,9 @@ public final class AvcConfigurationBox extends AbstractBox {
         public int chromaFormatPaddingBits = 31;
         public int bitDepthLumaMinus8PaddingBits = 63;
         public int bitDepthChromaMinus8PaddingBits = 63;
+
+        public AVCDecoderConfigurationRecord() {
+        }
 
         public AVCDecoderConfigurationRecord(ByteBuffer content) {
             configurationVersion = IsoTypeReader.readUInt8(content);
