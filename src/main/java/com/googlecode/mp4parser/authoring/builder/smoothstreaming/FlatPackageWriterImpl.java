@@ -42,6 +42,13 @@ public class FlatPackageWriterImpl implements PackageWriter {
     private FragmentedMp4Builder ismvBuilder;
     ManifestWriter manifestWriter;
 
+    public FlatPackageWriterImpl() {
+        ismvBuilder = new FragmentedMp4Builder();
+        FragmentIntersectionFinder intersectionFinder = new SyncSampleIntersectFinderImpl();
+        ismvBuilder.setIntersectionFinder(intersectionFinder);
+        manifestWriter = new FlatManifestWriterImpl(intersectionFinder);
+    }
+
     /**
      * Creates a factory for a smooth streaming package. A smooth streaming package is
      * a collection of files that can be served by a webserver as a smooth streaming

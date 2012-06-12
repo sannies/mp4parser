@@ -49,8 +49,8 @@ public final class AvcConfigurationBox extends AbstractBox {
         return avcDecoderConfigurationRecord.configurationVersion;
     }
 
-    public int getAvcProfileIndicaation() {
-        return avcDecoderConfigurationRecord.avcProfileIndicaation;
+    public int getAvcProfileIndication() {
+        return avcDecoderConfigurationRecord.avcProfileIndication;
     }
 
     public int getProfileCompatibility() {
@@ -77,8 +77,8 @@ public final class AvcConfigurationBox extends AbstractBox {
         this.avcDecoderConfigurationRecord.configurationVersion = configurationVersion;
     }
 
-    public void setAvcProfileIndicaation(int avcProfileIndicaation) {
-        this.avcDecoderConfigurationRecord.avcProfileIndicaation = avcProfileIndicaation;
+    public void setAvcProfileIndicaation(int avcProfileIndication) {
+        this.avcDecoderConfigurationRecord.avcProfileIndication = avcProfileIndication;
     }
 
     public void setProfileCompatibility(int profileCompatibility) {
@@ -186,7 +186,7 @@ public final class AvcConfigurationBox extends AbstractBox {
 
     public static class AVCDecoderConfigurationRecord {
         public int configurationVersion;
-        public int avcProfileIndicaation;
+        public int avcProfileIndication;
         public int profileCompatibility;
         public int avcLevelIndication;
         public int lengthSizeMinusOne;
@@ -213,7 +213,7 @@ public final class AvcConfigurationBox extends AbstractBox {
 
         public AVCDecoderConfigurationRecord(ByteBuffer content) {
             configurationVersion = IsoTypeReader.readUInt8(content);
-            avcProfileIndicaation = IsoTypeReader.readUInt8(content);
+            avcProfileIndication = IsoTypeReader.readUInt8(content);
             profileCompatibility = IsoTypeReader.readUInt8(content);
             avcLevelIndication = IsoTypeReader.readUInt8(content);
             BitReaderBuffer brb = new BitReaderBuffer(content);
@@ -238,7 +238,7 @@ public final class AvcConfigurationBox extends AbstractBox {
             if (content.remaining() < 4) {
                 hasExts = false;
             }
-            if (hasExts && (avcProfileIndicaation == 100 || avcProfileIndicaation == 110 || avcProfileIndicaation == 122 || avcProfileIndicaation == 144)) {
+            if (hasExts && (avcProfileIndication == 100 || avcProfileIndication == 110 || avcProfileIndication == 122 || avcProfileIndication == 144)) {
                 // actually only some bits are interesting so masking with & x would be good but not all Mp4 creating tools set the reserved bits to 1.
                 // So we need to store all bits
                 brb = new BitReaderBuffer(content);
@@ -264,7 +264,7 @@ public final class AvcConfigurationBox extends AbstractBox {
 
         public void getContent(ByteBuffer byteBuffer) {
             IsoTypeWriter.writeUInt8(byteBuffer, configurationVersion);
-            IsoTypeWriter.writeUInt8(byteBuffer, avcProfileIndicaation);
+            IsoTypeWriter.writeUInt8(byteBuffer, avcProfileIndication);
             IsoTypeWriter.writeUInt8(byteBuffer, profileCompatibility);
             IsoTypeWriter.writeUInt8(byteBuffer, avcLevelIndication);
             BitWriterBuffer bwb = new BitWriterBuffer(byteBuffer);
@@ -281,7 +281,7 @@ public final class AvcConfigurationBox extends AbstractBox {
                 IsoTypeWriter.writeUInt16(byteBuffer, pictureParameterSetNALUnit.length);
                 byteBuffer.put(pictureParameterSetNALUnit);
             }
-            if (hasExts && (avcProfileIndicaation == 100 || avcProfileIndicaation == 110 || avcProfileIndicaation == 122 || avcProfileIndicaation == 144)) {
+            if (hasExts && (avcProfileIndication == 100 || avcProfileIndication == 110 || avcProfileIndication == 122 || avcProfileIndication == 144)) {
 
                 bwb = new BitWriterBuffer(byteBuffer);
                 bwb.writeBits(chromaFormatPaddingBits, 6);
@@ -309,7 +309,7 @@ public final class AvcConfigurationBox extends AbstractBox {
                 size += 2; //lengthSizeMinusOne field
                 size += pictureParameterSetNALUnit.length;
             }
-            if (hasExts && (avcProfileIndicaation == 100 || avcProfileIndicaation == 110 || avcProfileIndicaation == 122 || avcProfileIndicaation == 144)) {
+            if (hasExts && (avcProfileIndication == 100 || avcProfileIndication == 110 || avcProfileIndication == 122 || avcProfileIndication == 144)) {
                 size += 4;
                 for (byte[] sequenceParameterSetExtNALUnit : sequenceParameterSetExts) {
                     size += 2;
