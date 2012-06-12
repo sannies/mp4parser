@@ -101,6 +101,9 @@ public abstract class AbstractBox implements Box {
     @DoNotParseDetail
     public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         if (readableByteChannel instanceof FileChannel && contentSize > 1024 * 1024) {
+            // todo: if I map this here delayed I could use transferFrom/transferTo in the getBox method
+            // todo: potentially this could speed up writing.
+            //
             // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
             content = ((FileChannel) readableByteChannel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) readableByteChannel).position(), contentSize);
             ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
