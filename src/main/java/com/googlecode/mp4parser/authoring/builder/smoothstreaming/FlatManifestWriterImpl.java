@@ -47,8 +47,8 @@ public class FlatManifestWriterImpl implements ManifestWriter {
     private long[] audioFragmentsDurations;
     private long[] videoFragmentsDurations;
 
-    public FlatManifestWriterImpl(FragmentedMp4Builder fragmentedMp4Builder) {
-        this.intersectionFinder = fragmentedMp4Builder.getFragmentIntersectionFinder();
+    public FlatManifestWriterImpl(FragmentIntersectionFinder intersectionFinder) {
+        this.intersectionFinder = intersectionFinder;
     }
 
     /**

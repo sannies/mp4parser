@@ -46,10 +46,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
         this.intersectionFinder = new SyncSampleIntersectFinderImpl();
     }
 
-    public FragmentedMp4Builder(int minFragmentDuration) {
-        this.intersectionFinder = new SyncSampleIntersectFinderImpl(minFragmentDuration);
-    }
-
     public List<String> getAllowedHandlers() {
         return Arrays.asList("soun", "vide");
     }

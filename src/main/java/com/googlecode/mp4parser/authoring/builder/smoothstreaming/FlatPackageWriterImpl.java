@@ -22,9 +22,7 @@ import com.coremedia.iso.boxes.VideoMediaHeaderBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
+import com.googlecode.mp4parser.authoring.builder.*;
 import com.googlecode.mp4parser.authoring.tracks.ChangeTimeScaleTrack;
 
 import java.io.File;
@@ -44,9 +42,17 @@ public class FlatPackageWriterImpl implements PackageWriter {
     private FragmentedMp4Builder ismvBuilder;
     ManifestWriter manifestWriter;
 
+    /**
+     * Creates a factory for a smooth streaming package. A smooth streaming package is
+     * a collection of files that can be served by a webserver as a smooth streaming
+     * stream.
+     * @param minFragmentDuration the smallest allowable duration of a fragment (0 == no restriction).
+     */
     public FlatPackageWriterImpl(int minFragmentDuration) {
-        ismvBuilder = new FragmentedMp4Builder(minFragmentDuration);
-        manifestWriter = new FlatManifestWriterImpl(ismvBuilder);
+        ismvBuilder = new FragmentedMp4Builder();
+        FragmentIntersectionFinder intersectionFinder = new SyncSampleIntersectFinderImpl(minFragmentDuration);
+        ismvBuilder.setIntersectionFinder(intersectionFinder);
+        manifestWriter = new FlatManifestWriterImpl(intersectionFinder);
     }
 
     public void setOutputDirectory(File outputDirectory) {
@@ -61,7 +67,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
 
     public void setIsmvBuilder(FragmentedMp4Builder ismvBuilder) {
         this.ismvBuilder = ismvBuilder;
-        this.manifestWriter = new FlatManifestWriterImpl((FragmentedMp4Builder) ismvBuilder);
+        this.manifestWriter = new FlatManifestWriterImpl(ismvBuilder.getFragmentIntersectionFinder());
     }
 
     public void setManifestWriter(ManifestWriter manifestWriter) {

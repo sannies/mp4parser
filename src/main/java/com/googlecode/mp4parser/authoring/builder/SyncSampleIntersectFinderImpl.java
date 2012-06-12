@@ -43,6 +43,12 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         minFragmentDurationSeconds = 0;
     }
 
+    /**
+     * Creates a <code>SyncSampleIntersectFinderImpl</code> that will not create any fragment
+     * smaller than the given <code>minFragmentDurationSeconds</code>
+     *
+     * @param minFragmentDurationSeconds the smallest allowable duration of a fragment.
+     */
     public SyncSampleIntersectFinderImpl(int minFragmentDurationSeconds) {
         this.minFragmentDurationSeconds = minFragmentDurationSeconds;
     }
@@ -163,7 +169,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
 
             if (foundInEveryRef) {
                 final long syncSampleTime = syncSampleTimes[i];
-                if (lastSyncSampleTime == -1 || (syncSampleTime-lastSyncSampleTime) / timeScale >= minFragmentDurationSeconds) {
+                if (lastSyncSampleTime == -1 || (syncSampleTime - lastSyncSampleTime) / timeScale >= minFragmentDurationSeconds) {
                     nuSyncSamples.add(syncSamples[i]);
                     lastSyncSampleTime = syncSampleTime;
                 }
