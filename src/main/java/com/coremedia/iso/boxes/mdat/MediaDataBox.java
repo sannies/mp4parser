@@ -82,14 +82,39 @@ public final class MediaDataBox implements Box {
     }
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        header.rewind();
-        writableByteChannel.write(header);
         if (fileChannel != null) {
-            fileChannel.transferTo(startPosition, contentSize, writableByteChannel);
+            assert checkStillOk();
+            fileChannel.transferTo(startPosition - header.limit(), contentSize + header.limit(), writableByteChannel);
         } else {
+            header.rewind();
+            writableByteChannel.write(header);
             writableByteChannel.write(content);
         }
     }
+
+    /**
+     * If someone use the same file as source and sink it could the case that
+     * inserting a few bytes before the mdat results in overwrting data we still
+     * need to write this mdat here. This method just makes sure that we haven't already
+     * overwritten the mdat contents.
+     * @return true if ok
+     */
+    private boolean checkStillOk() {
+        try {
+            fileChannel.position(startPosition - header.limit());
+            ByteBuffer h2 = ByteBuffer.allocate(header.limit());
+            fileChannel.read(h2);
+            header.rewind();
+            h2.rewind();
+            assert h2.equals(header): "It seems that the content I want to read has already been overwritten.";
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
 
     public long getSize() {
         long size = header.limit();
