@@ -18,7 +18,7 @@ import java.util.List;
 public class BoxComparator {
 
 
-    public static boolean isIgnore(Box b, List<String> ignores) {
+    public static boolean isIgnore(Box b, String[] ignores) {
         for (String ignore : ignores) {
             if (Path.isContained(b, ignore)) {
                 return true;
@@ -27,7 +27,7 @@ public class BoxComparator {
         return false;
     }
 
-    public static void check(Box b1, Box b2, List<String> ignores) throws IOException {
+    public static void check(Box b1, Box b2,String... ignores) throws IOException {
         Assert.assertEquals(b1.getType(), b2.getType());
         if (!isIgnore(b1, ignores)) {
         //    System.err.println(b1.getType());
@@ -45,7 +45,7 @@ public class BoxComparator {
         }
     }
 
-    private static void chechBox(Box b1, Box b2, List<String> ignores) throws IOException {
+    private static void chechBox(Box b1, Box b2, String[] ignores) throws IOException {
         if (!isIgnore(b1, ignores)) {
             ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
             ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
@@ -60,7 +60,7 @@ public class BoxComparator {
         }
     }
 
-    private static void checkContainer(ContainerBox cb1, ContainerBox cb2, List<String> ignores) throws IOException {
+    private static void checkContainer(ContainerBox cb1, ContainerBox cb2, String[] ignores) throws IOException {
         Iterator<Box> it1 = cb1.getBoxes().iterator();
         Iterator<Box> it2 = cb2.getBoxes().iterator();
 

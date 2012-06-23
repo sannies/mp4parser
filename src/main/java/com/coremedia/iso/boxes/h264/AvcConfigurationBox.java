@@ -203,7 +203,7 @@ public final class AvcConfigurationBox extends AbstractBox {
         /**
          * Just for non-spec-conform encoders
          */
-        public int numberOfSeuqenceParameterSetsPaddingBits = 31;
+        public int numberOfSequenceParameterSetsPaddingBits = 7;
         public int chromaFormatPaddingBits = 31;
         public int bitDepthLumaMinus8PaddingBits = 63;
         public int bitDepthChromaMinus8PaddingBits = 63;
@@ -219,7 +219,7 @@ public final class AvcConfigurationBox extends AbstractBox {
             BitReaderBuffer brb = new BitReaderBuffer(content);
             lengthSizeMinusOnePaddingBits = brb.readBits(6);
             lengthSizeMinusOne = brb.readBits(2);
-            numberOfSeuqenceParameterSetsPaddingBits = brb.readBits(3);
+            numberOfSequenceParameterSetsPaddingBits = brb.readBits(3);
             int numberOfSeuqenceParameterSets = brb.readBits(5);
             for (int i = 0; i < numberOfSeuqenceParameterSets; i++) {
                 int sequenceParameterSetLength = IsoTypeReader.readUInt16(content);
@@ -270,7 +270,7 @@ public final class AvcConfigurationBox extends AbstractBox {
             BitWriterBuffer bwb = new BitWriterBuffer(byteBuffer);
             bwb.writeBits(lengthSizeMinusOnePaddingBits, 6);
             bwb.writeBits(lengthSizeMinusOne, 2);
-            bwb.writeBits(numberOfSeuqenceParameterSetsPaddingBits, 3);
+            bwb.writeBits(numberOfSequenceParameterSetsPaddingBits, 3);
             bwb.writeBits(pictureParameterSets.size(), 5);
             for (byte[] sequenceParameterSetNALUnit : sequenceParameterSets) {
                 IsoTypeWriter.writeUInt16(byteBuffer, sequenceParameterSetNALUnit.length);

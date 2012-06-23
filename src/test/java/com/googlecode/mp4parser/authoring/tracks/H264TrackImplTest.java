@@ -46,6 +46,6 @@ public class H264TrackImplTest {
 //        isoFile.getBox(fc);
 //        fc.close();
         IsoFile isoFileReference = new IsoFile(Channels.newChannel(AACTrackImplTest.class.getResourceAsStream("/com/googlecode/mp4parser/authoring/tracks/h264-sample.mp4")));
-        BoxComparator.check(isoFile, isoFileReference, Arrays.asList("/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]"));
+        BoxComparator.check(isoFile, isoFileReference, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]");
     }
 }

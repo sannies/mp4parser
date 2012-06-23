@@ -1,6 +1,7 @@
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
 import com.coremedia.iso.IsoTypeReader;
+import com.googlecode.mp4parser.boxes.BoxWriteReadBase;
 import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,13 +10,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.util.Map;
 
 /**
  *
  */
-public class BaseLocationBoxTest {
+public class BaseLocationBoxTest extends BoxWriteReadBase<BaseLocationBox> {
 
-    @Test
     public void testSimple() throws IOException {
         BaseLocationBox bloc = new BaseLocationBox();
         bloc.setBaseLocation("baseloc");
@@ -36,5 +37,16 @@ public class BaseLocationBoxTest {
         Assert.assertEquals(bloc.getPurchaseLocation(), bloc2.getPurchaseLocation());
 
         Assert.assertTrue(bloc.equals(bloc2));
+    }
+
+    @Override
+    public Class<BaseLocationBox> getBoxUnderTest() {
+        return BaseLocationBox.class;
+    }
+
+    @Override
+    public void setupProperties(Map<String, Object> addPropsHere) {
+        addPropsHere.put("baseLocation", "this is my baselocation");
+        addPropsHere.put("purchaseLocation", "this is my purchaseLocation");
     }
 }

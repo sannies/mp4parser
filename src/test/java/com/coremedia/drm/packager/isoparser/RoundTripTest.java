@@ -17,19 +17,15 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.IsoFile;
+import com.googlecode.mp4parser.authoring.tracks.BoxComparator;
 import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.util.Arrays;
 
 /**
  * Tests ISO Roundtrip.
@@ -104,16 +100,17 @@ public class RoundTripTest extends TestCase {
         wbc.close();
         long start6 = System.currentTimeMillis();
 
-        System.err.println("Preparing tmp copy took: " + (start2 - start1) + "ms");
+     /*   System.err.println("Preparing tmp copy took: " + (start2 - start1) + "ms");
         System.err.println("Parsing took           : " + (start3 - start2) + "ms");
         System.err.println("Writing took           : " + (start6 - start3) + "ms");
-        System.err.println("Walking took           : " + (start5 - start4) + "ms");
+        System.err.println("Walking took           : " + (start5 - start4) + "ms");*/
 
+    //    BoxComparator.check(isoFile, new IsoFile(Channels.newChannel(new ByteArrayInputStream(baos.toByteArray()))), "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]");
 
         byte[] a = IOUtils.toByteArray(getClass().getResourceAsStream(resource));
         byte[] b = baos.toByteArray();
-//        new FileOutputStream("a.mp4").write(a);
-//        new FileOutputStream("b.mp4").write(b);
+    //    new FileOutputStream("a.mp4").write(a);
+    //    new FileOutputStream("b.mp4").write(b);
         Assert.assertArrayEquals(a, b);
 
     }

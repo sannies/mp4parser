@@ -14,6 +14,9 @@ public class BitWriterBuffer {
     }
 
     public void writeBits(int i, int numBits) {
+        assert i <= ((1 << numBits)-1): String.format("Trying to write a value bigger (%s) than the number bits (%s) allows. " +
+                "Please mask the value before writing it and make your code is really working as intended.", i, (1<<numBits)-1);
+
         int left = 8 - position % 8;
         if (numBits <= left) {
             int current = (buffer.get(initialPos + position / 8));
