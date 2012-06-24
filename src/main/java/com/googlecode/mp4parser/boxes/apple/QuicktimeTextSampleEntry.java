@@ -43,9 +43,9 @@ public class QuicktimeTextSampleEntry extends SampleEntry {
     byte reserved2;
     short reserved3;
 
-    int foregroundR;
-    int foregroundG;
-    int foregroundB;
+    int foregroundR = 65535;
+    int foregroundG = 65535;
+    int foregroundB = 65535;
 
     String fontName = "";
 
@@ -72,15 +72,19 @@ public class QuicktimeTextSampleEntry extends SampleEntry {
         foregroundG = IsoTypeReader.readUInt16(content);
         foregroundB = IsoTypeReader.readUInt16(content);
 
-        int length = IsoTypeReader.readUInt8(content);
-        byte[] myFontName = new byte[length];
-        content.get(myFontName);
-        fontName = new String(myFontName);
+        if (content.remaining() > 0) {
+            int length = IsoTypeReader.readUInt8(content);
+            byte[] myFontName = new byte[length];
+            content.get(myFontName);
+            fontName = new String(myFontName);
+        } else {
+            fontName = null;
+        }
     }
 
 
     protected long getContentSize() {
-        return 52 + fontName.length();
+        return 52 + (fontName != null ? fontName.length() : 0);
     }
 
 
@@ -222,9 +226,10 @@ public class QuicktimeTextSampleEntry extends SampleEntry {
         IsoTypeWriter.writeUInt16(byteBuffer, foregroundR);
         IsoTypeWriter.writeUInt16(byteBuffer, foregroundG);
         IsoTypeWriter.writeUInt16(byteBuffer, foregroundB);
-
-        IsoTypeWriter.writeUInt8(byteBuffer, fontName.length());
-        byteBuffer.put(fontName.getBytes());
+        if (fontName != null) {
+            IsoTypeWriter.writeUInt8(byteBuffer, fontName.length());
+            byteBuffer.put(fontName.getBytes());
+        }
 
     }
 
