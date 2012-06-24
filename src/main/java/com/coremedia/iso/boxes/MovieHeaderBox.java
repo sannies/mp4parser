@@ -41,6 +41,15 @@ public class MovieHeaderBox extends AbstractFullBox {
     private float volume = 1.0f;
     private long[] matrix = new long[]{0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000};
     private long nextTrackId;
+
+    private int previewTime;
+    private int previewDuration;
+    private int posterTime;
+    private int selectionTime;
+    private int selectionDuration;
+    private int currentTime;
+
+
     public static final String TYPE = "mvhd";
 
     public MovieHeaderBox() {
@@ -113,9 +122,14 @@ public class MovieHeaderBox extends AbstractFullBox {
         for (int i = 0; i < 9; i++) {
             matrix[i] = IsoTypeReader.readUInt32(content);
         }
-        for (int i = 0; i < 6; i++) {
-            IsoTypeReader.readUInt32(content);
-        }
+
+        previewTime = content.getInt();
+        previewDuration = content.getInt();
+        posterTime = content.getInt();
+        selectionTime = content.getInt();
+        selectionDuration = content.getInt();
+        currentTime = content.getInt();
+
         nextTrackId = IsoTypeReader.readUInt32(content);
 
     }
@@ -169,9 +183,15 @@ public class MovieHeaderBox extends AbstractFullBox {
         for (int i = 0; i < 9; i++) {
             IsoTypeWriter.writeUInt32(byteBuffer, matrix[i]);
         }
-        for (int i = 0; i < 6; i++) {
-            IsoTypeWriter.writeUInt32(byteBuffer, 0);
-        }
+
+
+        byteBuffer.putInt(previewTime);
+        byteBuffer.putInt(previewDuration);
+        byteBuffer.putInt(posterTime);
+        byteBuffer.putInt(selectionTime);
+        byteBuffer.putInt(selectionDuration);
+        byteBuffer.putInt(currentTime);
+
         IsoTypeWriter.writeUInt32(byteBuffer, nextTrackId);
     }
 
@@ -206,5 +226,53 @@ public class MovieHeaderBox extends AbstractFullBox {
 
     public void setNextTrackId(long nextTrackId) {
         this.nextTrackId = nextTrackId;
+    }
+
+    public int getPreviewTime() {
+        return previewTime;
+    }
+
+    public void setPreviewTime(int previewTime) {
+        this.previewTime = previewTime;
+    }
+
+    public int getPreviewDuration() {
+        return previewDuration;
+    }
+
+    public void setPreviewDuration(int previewDuration) {
+        this.previewDuration = previewDuration;
+    }
+
+    public int getPosterTime() {
+        return posterTime;
+    }
+
+    public void setPosterTime(int posterTime) {
+        this.posterTime = posterTime;
+    }
+
+    public int getSelectionTime() {
+        return selectionTime;
+    }
+
+    public void setSelectionTime(int selectionTime) {
+        this.selectionTime = selectionTime;
+    }
+
+    public int getSelectionDuration() {
+        return selectionDuration;
+    }
+
+    public void setSelectionDuration(int selectionDuration) {
+        this.selectionDuration = selectionDuration;
+    }
+
+    public int getCurrentTime() {
+        return currentTime;
+    }
+
+    public void setCurrentTime(int currentTime) {
+        this.currentTime = currentTime;
     }
 }
