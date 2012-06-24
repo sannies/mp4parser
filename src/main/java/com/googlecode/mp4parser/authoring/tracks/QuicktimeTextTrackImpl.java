@@ -55,7 +55,7 @@ public class QuicktimeTextTrackImpl extends AbstractTrack {
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
-        trackMetaData.setTimescale(600); // Quicktime uses that scales so I don't deviate
+        trackMetaData.setTimescale(1000);
 
 
     }
