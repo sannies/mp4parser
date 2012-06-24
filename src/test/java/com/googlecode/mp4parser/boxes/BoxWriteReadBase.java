@@ -1,13 +1,10 @@
 package com.googlecode.mp4parser.boxes;
 
 
-import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
 import com.googlecode.mp4parser.AbstractContainerBox;
-import junit.framework.Assert;
-import org.junit.Assume;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.beans.BeanInfo;
@@ -15,13 +12,12 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class BoxWriteReadBase<T extends Box> {
 
@@ -105,7 +101,13 @@ public abstract class BoxWriteReadBase<T extends Box> {
             for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
                 if (property.equals(propertyDescriptor.getName())) {
                     found = true;
-                    Assert.assertEquals("Writing and parsing changed the value", props.get(property).toString(), (Object) propertyDescriptor.getReadMethod().invoke(parsedBox).toString());
+                    if (props.get(property) instanceof int[]) {
+                        Assert.assertArrayEquals("Writing and parsing changed the value", (int[]) props.get(property), (int[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
+                    } else if (props.get(property) instanceof long[]) {
+                        Assert.assertArrayEquals("Writing and parsing changed the value", (long[]) props.get(property), (long[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
+                    } else {
+                        Assert.assertEquals("Writing and parsing changed the value", props.get(property).toString(), (Object) propertyDescriptor.getReadMethod().invoke(parsedBox).toString());
+                    }
                 }
             }
             if (!found) {
