@@ -9,10 +9,10 @@ import java.nio.ByteBuffer;
 public class BaseMediaInfoAtom extends AbstractFullBox {
     public static final String TYPE = "gmin";
 
-    short graphicsMode;
-    int opColorR;
-    int opColorG;
-    int opColorB;
+    short graphicsMode = 64;
+    int opColorR = 32768;
+    int opColorG = 32768;
+    int opColorB = 32768;
     short balance;
     short reserved;
 
