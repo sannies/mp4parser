@@ -45,6 +45,7 @@ public class TextTrackImpl extends AbstractTrack {
     public TextTrackImpl() {
         sampleDescriptionBox = new SampleDescriptionBox();
         TextSampleEntry tx3g = new TextSampleEntry("tx3g");
+        tx3g.setDataReferenceIndex(1);
         tx3g.setStyleRecord(new TextSampleEntry.StyleRecord());
         tx3g.setBoxRecord(new TextSampleEntry.BoxRecord());
         sampleDescriptionBox.addBox(tx3g);
@@ -125,7 +126,7 @@ public class TextTrackImpl extends AbstractTrack {
     }
 
     public String getHandler() {
-        return "text";
+        return "sbtl";
     }
 
 
