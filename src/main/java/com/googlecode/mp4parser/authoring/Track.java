@@ -53,7 +53,7 @@ public interface Track {
 
     List<ByteBuffer> getSamples();
 
-    public AbstractMediaHeaderBox getMediaHeaderBox();
+    public Box getMediaHeaderBox();
 
     public SubSampleInformationBox getSubsampleInformationBox();
 

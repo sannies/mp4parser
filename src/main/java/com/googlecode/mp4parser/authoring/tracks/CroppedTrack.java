@@ -140,7 +140,7 @@ public class CroppedTrack extends AbstractTrack {
         return origTrack.getHandler();
     }
 
-    public AbstractMediaHeaderBox getMediaHeaderBox() {
+    public Box getMediaHeaderBox() {
         return origTrack.getMediaHeaderBox();
     }
 

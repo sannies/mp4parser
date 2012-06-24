@@ -194,7 +194,7 @@ public class AACTrackImpl extends AbstractTrack {
         return samples;
     }
 
-    public AbstractMediaHeaderBox getMediaHeaderBox() {
+    public Box getMediaHeaderBox() {
         return new SoundMediaHeaderBox();
     }
 

@@ -19,6 +19,9 @@ import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.TextSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
+import com.googlecode.mp4parser.boxes.apple.BaseMediaInfoAtom;
+import com.googlecode.mp4parser.boxes.apple.GenericMediaHeaderAtom;
+import com.googlecode.mp4parser.boxes.apple.GenericMediaHeaderTextAtom;
 import com.googlecode.mp4parser.boxes.apple.QuicktimeTextSampleEntry;
 import com.googlecode.mp4parser.boxes.threegpp26245.FontTableBox;
 
@@ -149,8 +152,11 @@ public class QuicktimeTextTrackImpl extends AbstractTrack {
         }
     }
 
-    public AbstractMediaHeaderBox getMediaHeaderBox() {
-        return new NullMediaHeaderBox();
+    public Box getMediaHeaderBox() {
+        GenericMediaHeaderAtom ghmd = new GenericMediaHeaderAtom();
+        ghmd.addBox(new BaseMediaInfoAtom());
+        ghmd.addBox(new GenericMediaHeaderTextAtom());
+        return ghmd;
     }
 
     public SubSampleInformationBox getSubsampleInformationBox() {

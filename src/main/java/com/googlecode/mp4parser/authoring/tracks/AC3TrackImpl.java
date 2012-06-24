@@ -110,7 +110,7 @@ public class AC3TrackImpl extends AbstractTrack {
         return "soun";
     }
 
-    public AbstractMediaHeaderBox getMediaHeaderBox() {
+    public Box getMediaHeaderBox() {
         return new SoundMediaHeaderBox();
     }
 

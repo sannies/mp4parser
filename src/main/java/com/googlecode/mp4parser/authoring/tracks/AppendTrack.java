@@ -155,7 +155,7 @@ public class AppendTrack extends AbstractTrack {
         return tracks[0].getHandler();
     }
 
-    public AbstractMediaHeaderBox getMediaHeaderBox() {
+    public Box getMediaHeaderBox() {
         return tracks[0].getMediaHeaderBox();
     }
 
