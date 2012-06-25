@@ -77,6 +77,9 @@ public final class IsoTypeWriter {
     }
 
     public static void writeIso639(ByteBuffer bb, String language) {
+        if (language.getBytes().length != 3) {
+            throw new IllegalArgumentException("\"" + language + "\" language string isn't exactly 3 characters long!");
+        }
         int bits = 0;
         for (int i = 0; i < 3; i++) {
             bits += (language.getBytes()[i] - 0x60) << (2 - i) * 5;

@@ -89,7 +89,7 @@ public class H264TrackImpl extends AbstractTrack {
         avcConfigurationBox.setSequenceParameterSets(seqParameterSetList);
         avcConfigurationBox.setPictureParameterSets(pictureParameterSetList);
         avcConfigurationBox.setAvcLevelIndication(seqParameterSet.level_idc);
-        avcConfigurationBox.setAvcProfileIndicaation(seqParameterSet.profile_idc);
+        avcConfigurationBox.setAvcProfileIndication(seqParameterSet.profile_idc);
         avcConfigurationBox.setBitDepthLumaMinus8(seqParameterSet.bit_depth_luma_minus8);
         avcConfigurationBox.setBitDepthChromaMinus8(seqParameterSet.bit_depth_chroma_minus8);
         avcConfigurationBox.setChromaFormat(seqParameterSet.chroma_format_idc.getId());

@@ -77,7 +77,7 @@ public final class AvcConfigurationBox extends AbstractBox {
         this.avcDecoderConfigurationRecord.configurationVersion = configurationVersion;
     }
 
-    public void setAvcProfileIndicaation(int avcProfileIndication) {
+    public void setAvcProfileIndication(int avcProfileIndication) {
         this.avcDecoderConfigurationRecord.avcProfileIndication = avcProfileIndication;
     }
 
