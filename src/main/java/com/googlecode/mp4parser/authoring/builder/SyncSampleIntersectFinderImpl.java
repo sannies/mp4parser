@@ -92,9 +92,11 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                             minSampleRate = ase.getSampleRate();
                             long sc = testTrack.getSamples().size();
                             double stretch = (double) sc / refSampleCount;
+                            TimeToSampleBox.Entry sttsEntry = testTrack.getDecodingTimeEntries().get(0);
+                            long samplesPerFrame = sttsEntry.getDelta(); // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
 
                             for (int i = 0; i < syncSamples.length; i++) {
-                                int start = (int) Math.ceil(stretch * (refSyncSamples[i] - 1)) + 1;
+                                int start = (int)((int) Math.ceil(stretch * (refSyncSamples[i] - 1)) * samplesPerFrame);
                                 syncSamples[i] = start;
                                 // The Stretch makes sure that there are as much audio and video chunks!
                             }
@@ -102,12 +104,14 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                     }
                 }
                 AudioSampleEntry ase = (AudioSampleEntry) track.getSampleDescriptionBox().getSampleEntry();
+                TimeToSampleBox.Entry sttsEntry = track.getDecodingTimeEntries().get(0);
+                long samplesPerFrame = sttsEntry.getDelta(); // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
                 double factor = (double) ase.getSampleRate() / (double) minSampleRate;
                 if (factor != Math.rint(factor)) { // Not an integer
                     throw new RuntimeException("Sample rates must be a multiple of the lowest sample rate to create a correct file!");
                 }
-                for (int i = 1; i < syncSamples.length; i++) {
-                    syncSamples[i] = (int) (1 + (syncSamples[i] - 1) * factor);
+                for (int i = 0; i < syncSamples.length; i++) {
+                    syncSamples[i] = (int) (1 + syncSamples[i] * factor / (double) samplesPerFrame);
                 }
                 return syncSamples;
             }

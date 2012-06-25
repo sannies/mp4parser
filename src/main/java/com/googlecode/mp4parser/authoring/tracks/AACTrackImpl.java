@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.boxes.AC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.*;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -72,14 +73,14 @@ public class AACTrackImpl extends AbstractTrack {
     long maxBitRate;
     long avgBitRate;
 
-    private InputStream inputStream;
+    private BufferedInputStream inputStream;
     private List<ByteBuffer> samples;
     boolean readSamples = false;
     List<TimeToSampleBox.Entry> stts;
 
 
     public AACTrackImpl(InputStream inputStream) throws IOException {
-        this.inputStream = inputStream;
+        this.inputStream = new BufferedInputStream(inputStream);
         stts = new LinkedList<TimeToSampleBox.Entry>();
 
         if (!readVariables()) {

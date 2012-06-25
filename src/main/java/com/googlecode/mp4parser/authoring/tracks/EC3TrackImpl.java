@@ -8,6 +8,7 @@ import com.googlecode.mp4parser.boxes.AC3SpecificBox;
 import com.googlecode.mp4parser.boxes.EC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -32,14 +33,15 @@ public class EC3TrackImpl extends AbstractTrack {
 
     List<BitStreamInfo> entries = new LinkedList<BitStreamInfo>();
 
-    private InputStream inputStream;
+    private BufferedInputStream inputStream;
     private List<ByteBuffer> samples;
     List<TimeToSampleBox.Entry> stts = new LinkedList<TimeToSampleBox.Entry>();
 
     public EC3TrackImpl(InputStream fin) throws IOException {
-        inputStream = fin;
+        inputStream = new BufferedInputStream(fin);
 
         boolean done = false;
+        inputStream.mark(10000);
         while (!done) {
             BitStreamInfo bsi = readVariables();
             if (bsi == null) {
@@ -56,12 +58,8 @@ public class EC3TrackImpl extends AbstractTrack {
                 assert skipped == bsi.frameSize;
             }
         }
-       for (BitStreamInfo bsi : entries) {
-            long skipped = inputStream.skip(-1 * bsi.frameSize);
-            if (skipped != bsi.frameSize) {
-                throw new RuntimeException();
-            }
-        }
+
+        inputStream.reset();
 
         if (entries.size() == 0) {
             throw new IOException();
