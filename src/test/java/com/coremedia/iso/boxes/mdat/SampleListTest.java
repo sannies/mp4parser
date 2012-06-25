@@ -55,7 +55,8 @@ public class SampleListTest {
         fos.write(content);
         fos.close();
 
-        IsoFile isoFile = new IsoFile(new RandomAccessFile(originalFile, "r").getChannel());
+        FileChannel fc = new RandomAccessFile(originalFile, "r").getChannel();
+        IsoFile isoFile = new IsoFile(fc);
 
         TrackBox tb = isoFile.getBoxes(MovieBox.class).get(0).getBoxes(TrackBox.class).get(0);
         SampleList sl = new SampleList(tb);
@@ -70,6 +71,7 @@ public class SampleListTest {
             }
 
         }
+        fc.close();
         Assert.assertTrue(originalFile.delete());
     }
 
