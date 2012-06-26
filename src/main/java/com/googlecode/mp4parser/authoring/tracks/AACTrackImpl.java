@@ -269,5 +269,15 @@ public class AACTrackImpl extends AbstractTrack {
         }
         return ret;
     }
+
+    @Override
+    public String toString() {
+        return "AACTrackImpl{" +
+                "samplerate=" + samplerate +
+                ", bitrate=" + bitrate +
+                ", channelCount=" + channelCount +
+                ", channelconfig=" + channelconfig +
+                '}';
+    }
 }
 
