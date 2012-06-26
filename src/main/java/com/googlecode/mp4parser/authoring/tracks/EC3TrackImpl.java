@@ -402,5 +402,26 @@ public class EC3TrackImpl extends AbstractTrack {
         public int samplerate;
         public int strmtyp;
         public int chanmap;
+
+        @Override
+        public String toString() {
+            return "BitStreamInfo{" +
+                    "frameSize=" + frameSize +
+                    ", substreamid=" + substreamid +
+                    ", bitrate=" + bitrate +
+                    ", samplerate=" + samplerate +
+                    ", strmtyp=" + strmtyp +
+                    ", chanmap=" + chanmap +
+                    '}';
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "EC3TrackImpl{" +
+                "bitrate=" + bitrate +
+                ", samplerate=" + samplerate +
+                ", entries=" + entries +
+                '}';
     }
 }
