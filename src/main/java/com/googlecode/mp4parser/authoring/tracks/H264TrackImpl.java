@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 /**
  * The <code>H264TrackImpl</code> creates a <code>Track</code> from an H.264
@@ -53,6 +53,8 @@ public class H264TrackImpl extends AbstractTrack {
     private int height;
     private int timescale;
     private int frametick;
+    private int currentScSize;
+    private int prevScSize;
 
     private SEIMessage seiMessage;
     int frameNrInGop = 0;
@@ -187,6 +189,13 @@ public class H264TrackImpl extends AbstractTrack {
             test[2] = test[3];
             test[3] = (byte) c;
             if (test[0] == 0 && test[1] == 0 && test[2] == 0 && test[3] == 1) {
+                prevScSize = currentScSize;
+                currentScSize = 4;
+                return true;
+            }
+            if (test[0] == 0 && test[1] == 0 && test[2] == 1) {
+                prevScSize = currentScSize;
+                currentScSize = 3;
                 return true;
             }
         }
@@ -215,7 +224,7 @@ public class H264TrackImpl extends AbstractTrack {
 
         while (findNextStartcode()) {
             long newpos = reader.getPos();
-            int size = (int) (newpos - pos - 4);
+            int size = (int) (newpos - pos - prevScSize);
             reader.reset();
             byte[] data = new byte[size ];
             reader.read(data);
@@ -274,7 +283,7 @@ public class H264TrackImpl extends AbstractTrack {
 
             }
             pos = newpos;
-            reader.seek(4);
+            reader.seek(currentScSize);
             reader.mark();
         }
         return true;
@@ -333,6 +342,8 @@ public class H264TrackImpl extends AbstractTrack {
 
             case 9:
 //                printAccessUnitDelimiter(data);
+                int type = data[1] >> 5;
+                LOG.fine("Access unit delimiter type: " + type);
                 action = NALActions.BUFFER;
                 break;
 
@@ -380,7 +391,7 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     public void printAccessUnitDelimiter(byte[] data) {
-        LOG.fine("Access unit delimiter: " + (data[0] >> 5));
+        LOG.fine("Access unit delimiter: " + (data[1] >> 5));
     }
 
     public static class SliceHeader {
@@ -504,7 +515,7 @@ public class H264TrackImpl extends AbstractTrack {
         }
 
         public void mark() {
-            int i = 262144;
+            int i = 1048576;
             LOG.fine("Marking with " + i + " at " + pos);
             inputStream.mark(i);
             markPos = pos;
