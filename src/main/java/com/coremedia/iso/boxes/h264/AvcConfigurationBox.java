@@ -205,8 +205,8 @@ public final class AvcConfigurationBox extends AbstractBox {
          */
         public int numberOfSequenceParameterSetsPaddingBits = 7;
         public int chromaFormatPaddingBits = 31;
-        public int bitDepthLumaMinus8PaddingBits = 63;
-        public int bitDepthChromaMinus8PaddingBits = 63;
+        public int bitDepthLumaMinus8PaddingBits = 31;
+        public int bitDepthChromaMinus8PaddingBits = 31;
 
         public AVCDecoderConfigurationRecord() {
         }
