@@ -53,7 +53,7 @@ public class RequiresParseDetailAspect {
                 ((AbstractBox) joinPoint.getTarget()).parseDetails();
             }
         } else {
-            throw new RuntimeException("Only methods in subclasses of " + AbstractBox.class.getName() + " can  be annotated with DoNotParseDetail");
+            throw new RuntimeException("Only methods in subclasses of " + AbstractBox.class.getName() + " can  be annotated with ParseDetail");
         }
 
     }
