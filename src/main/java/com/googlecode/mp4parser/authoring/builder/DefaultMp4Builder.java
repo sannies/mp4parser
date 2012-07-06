@@ -137,7 +137,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     private MovieBox createMovieBox(Movie movie) {
         MovieBox movieBox = new MovieBox();
         MovieHeaderBox mvhd = new MovieHeaderBox();
-        mvhd.setVersion(1);
+
         mvhd.setCreationTime(DateHelper.convert(new Date()));
         mvhd.setModificationTime(DateHelper.convert(new Date()));
 
@@ -161,6 +161,12 @@ public class DefaultMp4Builder implements Mp4Builder {
             nextTrackId = nextTrackId < track.getTrackMetaData().getTrackId() ? track.getTrackMetaData().getTrackId() : nextTrackId;
         }
         mvhd.setNextTrackId(++nextTrackId);
+        if (mvhd.getCreationTime() >= 1l << 32 ||
+                mvhd.getModificationTime() >= 1l << 32 ||
+                mvhd.getDuration() >= 1l << 32) {
+            mvhd.setVersion(1);
+        }
+
         movieBox.addBox(mvhd);
         for (Track track : movie.getTracks()) {
             movieBox.addBox(createTrackBox(track, movie));
@@ -188,7 +194,6 @@ public class DefaultMp4Builder implements Mp4Builder {
         LOG.info("Creating Mp4TrackImpl " + track);
         TrackBox trackBox = new TrackBox();
         TrackHeaderBox tkhd = new TrackHeaderBox();
-        tkhd.setVersion(1);
         int flags = 0;
         if (track.isEnabled()) {
             flags += 1;
@@ -219,6 +224,12 @@ public class DefaultMp4Builder implements Mp4Builder {
         tkhd.setModificationTime(DateHelper.convert(new Date()));
         tkhd.setTrackId(track.getTrackMetaData().getTrackId());
         tkhd.setVolume(track.getTrackMetaData().getVolume());
+        if (tkhd.getCreationTime() >= 1l << 32 ||
+                tkhd.getModificationTime() >= 1l << 32 ||
+                tkhd.getDuration() >= 1l << 32) {
+            tkhd.setVersion(1);
+        }
+
         trackBox.addBox(tkhd);
 
 /*
@@ -287,7 +298,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             sdtp.setEntries(track.getSampleDependencies());
             stbl.addBox(sdtp);
         }
-        HashMap<Track,int[]> track2ChunkSizes = new HashMap<Track, int[]>();
+        HashMap<Track, int[]> track2ChunkSizes = new HashMap<Track, int[]>();
         for (Track current : movie.getTracks()) {
             track2ChunkSizes.put(current, getChunkSizes(current, movie));
         }
