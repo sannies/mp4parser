@@ -45,7 +45,7 @@ public class AppendTrack extends AbstractTrack {
             if (referenceSampleDescriptionBox == null) {
                 referenceSampleDescriptionBox = baos.toByteArray();
             } else if (!Arrays.equals(referenceSampleDescriptionBox, baos.toByteArray())) {
-                throw new IOException("Cannot append " + track + " to " + tracks[0] + " since their Sample Description Boxes differ");
+                throw new IOException("Cannot append " + track + " to " + tracks[0] + " since their Sample Description Boxes differ: \n" + track.getSampleDescriptionBox() + "\n vs. \n" + tracks[0].getSampleDescriptionBox());
             }
         }
     }
