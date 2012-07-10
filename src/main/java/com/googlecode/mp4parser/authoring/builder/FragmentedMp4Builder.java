@@ -604,6 +604,14 @@ public class FragmentedMp4Builder implements Mp4Builder {
      */
     protected Box createMvex(Movie movie) {
         MovieExtendsBox mvex = new MovieExtendsBox();
+        final MovieExtendsHeaderBox mved = new MovieExtendsHeaderBox();
+        for (Track track : movie.getTracks()) {
+            final long trackDuration = getTrackDuration(movie, track);
+            if (mved.getFragmentDuration() < trackDuration) {
+                mved.setFragmentDuration(trackDuration);
+            }
+        }
+        mvex.addBox(mved);
 
         for (Track track : movie.getTracks()) {
             mvex.addBox(createTrex(movie, track));
@@ -637,7 +645,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         // We need to take edit list box into account in trackheader duration
         // but as long as I don't support edit list boxes it is sufficient to
         // just translate media duration to movie timescale
-        tkhd.setDuration(getDuration(track) * movie.getTimescale() / track.getTrackMetaData().getTimescale());
+        tkhd.setDuration(getTrackDuration(movie, track));
         tkhd.setHeight(track.getTrackMetaData().getHeight());
         tkhd.setWidth(track.getTrackMetaData().getWidth());
         tkhd.setLayer(track.getTrackMetaData().getLayer());
@@ -645,6 +653,10 @@ public class FragmentedMp4Builder implements Mp4Builder {
         tkhd.setTrackId(track.getTrackMetaData().getTrackId());
         tkhd.setVolume(track.getTrackMetaData().getVolume());
         return tkhd;
+    }
+
+    private long getTrackDuration(Movie movie, Track track) {
+        return getDuration(track) * movie.getTimescale() / track.getTrackMetaData().getTimescale();
     }
 
     protected Box createMdhd(Movie movie, Track track) {

@@ -64,4 +64,8 @@ public class MovieExtendsHeaderBox extends AbstractFullBox {
     public long getFragmentDuration() {
         return fragmentDuration;
     }
+
+    public void setFragmentDuration(long fragmentDuration) {
+        this.fragmentDuration = fragmentDuration;
+    }
 }
