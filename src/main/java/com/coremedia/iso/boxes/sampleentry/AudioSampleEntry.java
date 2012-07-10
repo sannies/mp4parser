@@ -214,9 +214,20 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         return contentSize;
     }
 
-
+    @Override
     public String toString() {
-        return "AudioSampleEntry";
+        return "AudioSampleEntry{" +
+                "bytesPerSample=" + bytesPerSample +
+                ", bytesPerFrame=" + bytesPerFrame +
+                ", bytesPerPacket=" + bytesPerPacket +
+                ", samplesPerPacket=" + samplesPerPacket +
+                ", packetSize=" + packetSize +
+                ", compressionId=" + compressionId +
+                ", soundVersion=" + soundVersion +
+                ", sampleRate=" + sampleRate +
+                ", sampleSize=" + sampleSize +
+                ", channelCount=" + channelCount +
+                '}';
     }
 
     @Override
