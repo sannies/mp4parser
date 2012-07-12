@@ -107,6 +107,18 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         return bytesPerSample;
     }
 
+    public byte[] getSoundVersion2Data() {
+        return soundVersion2Data;
+    }
+
+    public int getReserved1() {
+        return reserved1;
+    }
+
+    public long getReserved2() {
+        return reserved2;
+    }
+
     public void setChannelCount(int channelCount) {
         this.channelCount = channelCount;
     }
