@@ -69,7 +69,7 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
         this.boxes = new LinkedList<Box>(boxes);
     }
 
-    public void addBox(AbstractBox b) {
+    public void addBox(Box b) {
         b.setParent(this);
         boxes.add(b);
     }
