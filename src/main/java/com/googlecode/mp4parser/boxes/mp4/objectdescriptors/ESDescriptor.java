@@ -329,5 +329,48 @@ public class ESDescriptor extends BaseDescriptor {
         return sb.toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
+        ESDescriptor that = (ESDescriptor) o;
+
+        if (URLFlag != that.URLFlag) return false;
+        if (URLLength != that.URLLength) return false;
+        if (dependsOnEsId != that.dependsOnEsId) return false;
+        if (esId != that.esId) return false;
+        if (oCREsId != that.oCREsId) return false;
+        if (oCRstreamFlag != that.oCRstreamFlag) return false;
+        if (remoteODFlag != that.remoteODFlag) return false;
+        if (streamDependenceFlag != that.streamDependenceFlag) return false;
+        if (streamPriority != that.streamPriority) return false;
+        if (URLString != null ? !URLString.equals(that.URLString) : that.URLString != null) return false;
+        if (decoderConfigDescriptor != null ? !decoderConfigDescriptor.equals(that.decoderConfigDescriptor) : that.decoderConfigDescriptor != null)
+            return false;
+        if (otherDescriptors != null ? !otherDescriptors.equals(that.otherDescriptors) : that.otherDescriptors != null)
+            return false;
+        if (slConfigDescriptor != null ? !slConfigDescriptor.equals(that.slConfigDescriptor) : that.slConfigDescriptor != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = esId;
+        result = 31 * result + streamDependenceFlag;
+        result = 31 * result + URLFlag;
+        result = 31 * result + oCRstreamFlag;
+        result = 31 * result + streamPriority;
+        result = 31 * result + URLLength;
+        result = 31 * result + (URLString != null ? URLString.hashCode() : 0);
+        result = 31 * result + remoteODFlag;
+        result = 31 * result + dependsOnEsId;
+        result = 31 * result + oCREsId;
+        result = 31 * result + (decoderConfigDescriptor != null ? decoderConfigDescriptor.hashCode() : 0);
+        result = 31 * result + (slConfigDescriptor != null ? slConfigDescriptor.hashCode() : 0);
+        result = 31 * result + (otherDescriptors != null ? otherDescriptors.hashCode() : 0);
+        return result;
+    }
 }

@@ -20,6 +20,7 @@ import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -979,5 +980,197 @@ public class AudioSpecificConfig extends BaseDescriptor {
 
     public int getChannelConfiguration() {
         return channelConfiguration;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        AudioSpecificConfig that = (AudioSpecificConfig) o;
+
+        if (aacScalefactorDataResilienceFlag != that.aacScalefactorDataResilienceFlag) {
+            return false;
+        }
+        if (aacSectionDataResilienceFlag != that.aacSectionDataResilienceFlag) {
+            return false;
+        }
+        if (aacSpectralDataResilienceFlag != that.aacSpectralDataResilienceFlag) {
+            return false;
+        }
+        if (audioObjectType != that.audioObjectType) {
+            return false;
+        }
+        if (channelConfiguration != that.channelConfiguration) {
+            return false;
+        }
+        if (coreCoderDelay != that.coreCoderDelay) {
+            return false;
+        }
+        if (dependsOnCoreCoder != that.dependsOnCoreCoder) {
+            return false;
+        }
+        if (directMapping != that.directMapping) {
+            return false;
+        }
+        if (epConfig != that.epConfig) {
+            return false;
+        }
+        if (erHvxcExtensionFlag != that.erHvxcExtensionFlag) {
+            return false;
+        }
+        if (extensionAudioObjectType != that.extensionAudioObjectType) {
+            return false;
+        }
+        if (extensionChannelConfiguration != that.extensionChannelConfiguration) {
+            return false;
+        }
+        if (extensionFlag != that.extensionFlag) {
+            return false;
+        }
+        if (extensionFlag3 != that.extensionFlag3) {
+            return false;
+        }
+        if (extensionSamplingFrequency != that.extensionSamplingFrequency) {
+            return false;
+        }
+        if (extensionSamplingFrequencyIndex != that.extensionSamplingFrequencyIndex) {
+            return false;
+        }
+        if (fillBits != that.fillBits) {
+            return false;
+        }
+        if (frameLengthFlag != that.frameLengthFlag) {
+            return false;
+        }
+        if (gaSpecificConfig != that.gaSpecificConfig) {
+            return false;
+        }
+        if (hilnContMode != that.hilnContMode) {
+            return false;
+        }
+        if (hilnEnhaLayer != that.hilnEnhaLayer) {
+            return false;
+        }
+        if (hilnEnhaQuantMode != that.hilnEnhaQuantMode) {
+            return false;
+        }
+        if (hilnFrameLength != that.hilnFrameLength) {
+            return false;
+        }
+        if (hilnMaxNumLine != that.hilnMaxNumLine) {
+            return false;
+        }
+        if (hilnQuantMode != that.hilnQuantMode) {
+            return false;
+        }
+        if (hilnSampleRateCode != that.hilnSampleRateCode) {
+            return false;
+        }
+        if (hvxcRateMode != that.hvxcRateMode) {
+            return false;
+        }
+        if (hvxcVarMode != that.hvxcVarMode) {
+            return false;
+        }
+        if (isBaseLayer != that.isBaseLayer) {
+            return false;
+        }
+        if (layerNr != that.layerNr) {
+            return false;
+        }
+        if (layer_length != that.layer_length) {
+            return false;
+        }
+        if (numOfSubFrame != that.numOfSubFrame) {
+            return false;
+        }
+        if (paraExtensionFlag != that.paraExtensionFlag) {
+            return false;
+        }
+        if (paraMode != that.paraMode) {
+            return false;
+        }
+        if (parametricSpecificConfig != that.parametricSpecificConfig) {
+            return false;
+        }
+        if (psPresentFlag != that.psPresentFlag) {
+            return false;
+        }
+        if (sacPayloadEmbedding != that.sacPayloadEmbedding) {
+            return false;
+        }
+        if (samplingFrequency != that.samplingFrequency) {
+            return false;
+        }
+        if (samplingFrequencyIndex != that.samplingFrequencyIndex) {
+            return false;
+        }
+        if (sbrPresentFlag != that.sbrPresentFlag) {
+            return false;
+        }
+        if (syncExtensionType != that.syncExtensionType) {
+            return false;
+        }
+        if (var_ScalableFlag != that.var_ScalableFlag) {
+            return false;
+        }
+        if (!Arrays.equals(configBytes, that.configBytes)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = configBytes != null ? Arrays.hashCode(configBytes) : 0;
+        result = 31 * result + audioObjectType;
+        result = 31 * result + samplingFrequencyIndex;
+        result = 31 * result + samplingFrequency;
+        result = 31 * result + channelConfiguration;
+        result = 31 * result + extensionAudioObjectType;
+        result = 31 * result + sbrPresentFlag;
+        result = 31 * result + psPresentFlag;
+        result = 31 * result + extensionSamplingFrequencyIndex;
+        result = 31 * result + extensionSamplingFrequency;
+        result = 31 * result + extensionChannelConfiguration;
+        result = 31 * result + sacPayloadEmbedding;
+        result = 31 * result + fillBits;
+        result = 31 * result + epConfig;
+        result = 31 * result + directMapping;
+        result = 31 * result + syncExtensionType;
+        result = 31 * result + frameLengthFlag;
+        result = 31 * result + dependsOnCoreCoder;
+        result = 31 * result + coreCoderDelay;
+        result = 31 * result + extensionFlag;
+        result = 31 * result + layerNr;
+        result = 31 * result + numOfSubFrame;
+        result = 31 * result + layer_length;
+        result = 31 * result + aacSectionDataResilienceFlag;
+        result = 31 * result + aacScalefactorDataResilienceFlag;
+        result = 31 * result + aacSpectralDataResilienceFlag;
+        result = 31 * result + extensionFlag3;
+        result = 31 * result + (gaSpecificConfig ? 1 : 0);
+        result = 31 * result + isBaseLayer;
+        result = 31 * result + paraMode;
+        result = 31 * result + paraExtensionFlag;
+        result = 31 * result + hvxcVarMode;
+        result = 31 * result + hvxcRateMode;
+        result = 31 * result + erHvxcExtensionFlag;
+        result = 31 * result + var_ScalableFlag;
+        result = 31 * result + hilnQuantMode;
+        result = 31 * result + hilnMaxNumLine;
+        result = 31 * result + hilnSampleRateCode;
+        result = 31 * result + hilnFrameLength;
+        result = 31 * result + hilnContMode;
+        result = 31 * result + hilnEnhaLayer;
+        result = 31 * result + hilnEnhaQuantMode;
+        result = 31 * result + (parametricSpecificConfig ? 1 : 0);
+        return result;
     }
 }

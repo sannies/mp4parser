@@ -93,4 +93,27 @@ public class SLConfigDescriptor extends BaseDescriptor {
         sb.append('}');
         return sb.toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        SLConfigDescriptor that = (SLConfigDescriptor) o;
+
+        if (predefined != that.predefined) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return predefined;
+    }
 }

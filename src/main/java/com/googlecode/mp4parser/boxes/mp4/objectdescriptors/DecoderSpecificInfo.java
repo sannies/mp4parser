@@ -20,6 +20,7 @@ import com.coremedia.iso.Hex;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * abstract class DecoderSpecificInfo extends BaseDescriptor : bit(8)
@@ -57,5 +58,28 @@ public class DecoderSpecificInfo extends BaseDescriptor {
         sb.append("{bytes=").append(bytes == null ? "null" : Hex.encodeHex(bytes));
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        DecoderSpecificInfo that = (DecoderSpecificInfo) o;
+
+        if (!Arrays.equals(bytes, that.bytes)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return bytes != null ? Arrays.hashCode(bytes) : 0;
     }
 }

@@ -239,6 +239,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
                 ", sampleRate=" + sampleRate +
                 ", sampleSize=" + sampleSize +
                 ", channelCount=" + channelCount +
+                ", boxes=" + getBoxes() +
                 '}';
     }
 
