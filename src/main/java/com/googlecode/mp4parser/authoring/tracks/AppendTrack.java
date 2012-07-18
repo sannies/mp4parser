@@ -183,7 +183,7 @@ public class AppendTrack extends AbstractTrack {
                                     return null;
                                 }
                                 if (dcd1.getAvgBitRate() != dcd2.getAvgBitRate()) {
-                                    return null;
+                                    // I don't care
                                 }
                                 if (dcd1.getBufferSizeDB() != dcd2.getBufferSizeDB()) {
                                     // I don't care
@@ -194,7 +194,7 @@ public class AppendTrack extends AbstractTrack {
                                 }
 
                                 if (dcd1.getMaxBitRate() != dcd2.getMaxBitRate()) {
-                                    return null;
+                                    // I don't care
                                 }
                                 if (!dcd1.getProfileLevelIndicationDescriptors().equals(dcd2.getProfileLevelIndicationDescriptors())) {
                                     return null;
