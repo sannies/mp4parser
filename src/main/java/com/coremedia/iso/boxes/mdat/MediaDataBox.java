@@ -126,7 +126,7 @@ public final class MediaDataBox implements Box {
         this.header = header;
         this.contentSize = contentSize;
 
-        if (readableByteChannel instanceof FileChannel && (contentSize > 1024 * 1024)) {
+        if (readableByteChannel instanceof FileChannel && (contentSize > 100 * 1024)) {
             this.fileChannel = ((FileChannel) readableByteChannel);
             this.startPosition = ((FileChannel) readableByteChannel).position();
             ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
