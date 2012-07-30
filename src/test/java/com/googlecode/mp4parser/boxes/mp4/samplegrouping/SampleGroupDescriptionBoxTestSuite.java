@@ -13,6 +13,7 @@ import java.util.Map;
 @Suite.SuiteClasses(value = {
         SampleGroupDescriptionBoxTestSuite.TestRateShareEntry.class,
         SampleGroupDescriptionBoxTestSuite.TestUnkownEntry.class,
+        SampleGroupDescriptionBoxTestSuite.TestCencSampleEncryptionInformationGroupEntry.class,
         SampleGroupDescriptionBoxTestSuite.TestRollRecoveryEntry.class
 })
 public class SampleGroupDescriptionBoxTestSuite {
@@ -44,6 +45,7 @@ public class SampleGroupDescriptionBoxTestSuite {
             addPropsHere.put("groupingType", RateShareEntry.TYPE);
         }
     }
+
     public static class TestUnkownEntry extends BoxWriteReadBase<SampleGroupDescriptionBox> {
         @Override
         public Class<SampleGroupDescriptionBox> getBoxUnderTest() {
@@ -63,6 +65,7 @@ public class SampleGroupDescriptionBoxTestSuite {
             addPropsHere.put("groupingType", "unkn");
         }
     }
+
     public static class TestRollRecoveryEntry extends BoxWriteReadBase<SampleGroupDescriptionBox> {
         @Override
         public Class<SampleGroupDescriptionBox> getBoxUnderTest() {
@@ -72,7 +75,7 @@ public class SampleGroupDescriptionBoxTestSuite {
         @Override
         public void setupProperties(Map<String, Object> addPropsHere) {
             RollRecoveryEntry entry = new RollRecoveryEntry();
-            entry .setRollDistance((short) 6);
+            entry.setRollDistance((short) 6);
 
             addPropsHere.put("defaultLength", 5);
             addPropsHere.put("version", 1);
@@ -80,6 +83,28 @@ public class SampleGroupDescriptionBoxTestSuite {
                     entry
             ));
             addPropsHere.put("groupingType", "roll");
+        }
+    }
+
+    public static class TestCencSampleEncryptionInformationGroupEntry extends BoxWriteReadBase<SampleGroupDescriptionBox> {
+        @Override
+        public Class<SampleGroupDescriptionBox> getBoxUnderTest() {
+            return SampleGroupDescriptionBox.class;
+        }
+
+        @Override
+        public void setupProperties(Map<String, Object> addPropsHere) {
+            CencSampleEncryptionInformationGroupEntry entry = new CencSampleEncryptionInformationGroupEntry();
+            entry.setEncrypted(1);
+            entry.setIvSize((byte) 16);
+            entry.setKid(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+
+            addPropsHere.put("defaultLength", 5);
+            addPropsHere.put("version", 1);
+            addPropsHere.put("groupEntries", Arrays.asList(
+                    entry
+            ));
+            addPropsHere.put("groupingType", "seig");
         }
     }
 
