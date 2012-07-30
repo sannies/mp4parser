@@ -103,6 +103,34 @@ public class SampleToGroupBox extends AbstractFullBox {
                     ", groupDescriptionIndex=" + groupDescriptionIndex +
                     '}';
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Entry entry = (Entry) o;
+
+            if (groupDescriptionIndex != entry.groupDescriptionIndex) {
+                return false;
+            }
+            if (sampleCount != entry.sampleCount) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (int) (sampleCount ^ (sampleCount >>> 32));
+            result = 31 * result + groupDescriptionIndex;
+            return result;
+        }
     }
 
     public String getGroupingType() {
