@@ -14,10 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Constructor;
 import java.nio.channels.Channels;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class BoxWriteReadBase<T extends Box> {
 
@@ -105,6 +102,8 @@ public abstract class BoxWriteReadBase<T extends Box> {
                         Assert.assertArrayEquals("Writing and parsing changed the value", (int[]) props.get(property), (int[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
                     } else if (props.get(property) instanceof long[]) {
                         Assert.assertArrayEquals("Writing and parsing changed the value", (long[]) props.get(property), (long[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
+                    } else if (props.get(property) instanceof List) {
+                        Assert.assertEquals("Writing and parsing changed the value", (List) props.get(property), (List) propertyDescriptor.getReadMethod().invoke(parsedBox));
                     } else {
                         Assert.assertEquals("Writing and parsing changed the value", props.get(property).toString(), (Object) propertyDescriptor.getReadMethod().invoke(parsedBox).toString());
                     }
@@ -129,7 +128,6 @@ public abstract class BoxWriteReadBase<T extends Box> {
                 }
             }
         }
-
     }
 
     class DummyContainerBox extends AbstractContainerBox {
