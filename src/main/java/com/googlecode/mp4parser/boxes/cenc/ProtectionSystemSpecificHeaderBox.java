@@ -64,11 +64,12 @@ public class ProtectionSystemSpecificHeaderBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 20 + content.length;
+        return 24 + content.length;
     }
 
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
+        writeVersionAndFlags(byteBuffer);
         assert systemId.length == 16;
         byteBuffer.put(systemId, 0, 16);
         IsoTypeWriter.writeUInt32(byteBuffer, content.length);
@@ -77,6 +78,7 @@ public class ProtectionSystemSpecificHeaderBox extends AbstractFullBox {
 
     @Override
     protected void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         systemId = new byte[16];
         content.get(systemId);
         long length = IsoTypeReader.readUInt32(content);
