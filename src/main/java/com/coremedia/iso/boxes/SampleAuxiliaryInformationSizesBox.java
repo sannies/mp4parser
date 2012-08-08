@@ -132,4 +132,14 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
     public void setSampleCount(int sampleCount) {
         this.sampleCount = sampleCount;
     }
+
+    @Override
+    public String toString() {
+        return "SampleAuxiliaryInformationSizesBox{" +
+                "defaultSampleInfoSize=" + defaultSampleInfoSize +
+                ", sampleCount=" + sampleCount +
+                ", auxInfoType='" + auxInfoType + '\'' +
+                ", auxInfoTypeParameter='" + auxInfoTypeParameter + '\'' +
+                '}';
+    }
 }

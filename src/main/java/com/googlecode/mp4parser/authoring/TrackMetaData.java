@@ -120,14 +120,6 @@ public class TrackMetaData implements Cloneable {
         this.group = group;
     }
 
-    public double getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(double startTime) {
-        this.startTime = startTime;
-    }
-
     public Object clone() {
         try {
             return super.clone();

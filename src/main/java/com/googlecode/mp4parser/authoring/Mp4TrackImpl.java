@@ -34,7 +34,7 @@ public class Mp4TrackImpl extends AbstractTrack {
     private SampleDescriptionBox sampleDescriptionBox;
     private List<TimeToSampleBox.Entry> decodingTimeEntries;
     private List<CompositionTimeToSample.Entry> compositionTimeEntries;
-    private long[] syncSamples;
+    private long[] syncSamples = new long[0];
     private List<SampleDependencyTypeBox.Entry> sampleDependencies;
     private TrackMetaData trackMetaData = new TrackMetaData();
     private String handler;
@@ -47,6 +47,21 @@ public class Mp4TrackImpl extends AbstractTrack {
         handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
 
         mihd = trackBox.getMediaBox().getMediaInformationBox().getMediaHeaderBox();
+        decodingTimeEntries = new LinkedList<TimeToSampleBox.Entry>();
+        compositionTimeEntries = new LinkedList<CompositionTimeToSample.Entry>();
+        sampleDependencies = new LinkedList<SampleDependencyTypeBox.Entry>();
+
+        decodingTimeEntries.addAll(stbl.getTimeToSampleBox().getEntries());
+        if (stbl.getCompositionTimeToSample() != null) {
+            compositionTimeEntries.addAll(stbl.getCompositionTimeToSample().getEntries());
+        }
+        if (stbl.getSampleDependencyTypeBox() != null) {
+            sampleDependencies.addAll(stbl.getSampleDependencyTypeBox().getEntries());
+        }
+        if (stbl.getSyncSampleBox() != null) {
+            syncSamples = stbl.getSyncSampleBox().getSampleNumber();
+        }
+
 
         sampleDescriptionBox = stbl.getSampleDescriptionBox();
         final List<MovieExtendsBox> movieExtendsBoxes = trackBox.getParent().getBoxes(MovieExtendsBox.class);
@@ -55,9 +70,6 @@ public class Mp4TrackImpl extends AbstractTrack {
                 final List<TrackExtendsBox> trackExtendsBoxes = mvex.getBoxes(TrackExtendsBox.class);
                 for (TrackExtendsBox trex : trackExtendsBoxes) {
                     if (trex.getTrackId() == trackId) {
-                        decodingTimeEntries = new LinkedList<TimeToSampleBox.Entry>();
-                        compositionTimeEntries = new LinkedList<CompositionTimeToSample.Entry>();
-                        sampleDependencies = new LinkedList<SampleDependencyTypeBox.Entry>();
                         List<Long> syncSampleList = new LinkedList<Long>();
 
                         for (MovieFragmentBox movieFragmentBox : trackBox.getIsoFile().getBoxes(MovieFragmentBox.class)) {
@@ -120,26 +132,18 @@ public class Mp4TrackImpl extends AbstractTrack {
                                 }
                             }
                         }
-                        syncSamples = new long[syncSampleList.size()];
+                        // Warning: Crappy code
+                        long[] oldSS = syncSamples;
+                        syncSamples = new long[syncSamples.length + syncSampleList.size()];
+                        System.arraycopy(oldSS, 0, syncSamples, 0, oldSS.length);
                         final Iterator<Long> iterator = syncSampleList.iterator();
-                        int i = 0;
+                        int i = oldSS.length;
                         while (iterator.hasNext()) {
                             Long syncSampleNumber = iterator.next();
                             syncSamples[i++] = syncSampleNumber;
                         }
                     }
                 }
-            }
-        } else {
-            decodingTimeEntries = stbl.getTimeToSampleBox().getEntries();
-            if (stbl.getCompositionTimeToSample() != null) {
-                compositionTimeEntries = stbl.getCompositionTimeToSample().getEntries();
-            }
-            if (stbl.getSyncSampleBox() != null) {
-                syncSamples = stbl.getSyncSampleBox().getSampleNumber();
-            }
-            if (stbl.getSampleDependencyTypeBox() != null) {
-                sampleDependencies = stbl.getSampleDependencyTypeBox().getEntries();
             }
         }
         MediaHeaderBox mdhd = trackBox.getMediaBox().getMediaHeaderBox();
