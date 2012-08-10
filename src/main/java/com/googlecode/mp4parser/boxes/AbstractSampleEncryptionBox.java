@@ -51,7 +51,10 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
             List<Box> tkhds = Path.getPaths(this, "/moov[0]/trak/tkhd");
             for (Box tkhd : tkhds) {
                 if (((TrackHeaderBox) tkhd).getTrackId() == this.getParent().getBoxes(TrackFragmentHeaderBox.class).get(0).getTrackId()) {
-                    TrackEncryptionBox tenc = (TrackEncryptionBox) Path.getPath(tkhd, "../mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/tenc[0]");
+                    AbstractTrackEncryptionBox tenc = (AbstractTrackEncryptionBox) Path.getPath(tkhd, "../mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/tenc[0]");
+                    if (tenc == null) {
+                        tenc = (AbstractTrackEncryptionBox) Path.getPath(tkhd, "../mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/uuid[0]");
+                    }
                     ivSize = tenc.getDefaultIvSize();
                 }
             }
