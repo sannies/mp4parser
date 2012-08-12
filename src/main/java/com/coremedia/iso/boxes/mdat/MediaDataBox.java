@@ -81,10 +81,21 @@ public final class MediaDataBox implements Box {
         return TYPE;
     }
 
+    private static void transfer(FileChannel from, long position, long count, WritableByteChannel to) throws IOException {
+        long maxCount = (64 * 1024 * 1024) - (32 * 1024);
+        // Transfer data in chunks a bit less than 64MB
+        // People state that this is a kind of magic number on Windows.
+        // I don't care. The size seems reasonable.
+        long offset = 0;
+        while (offset < count) {
+            offset += from.transferTo(position + offset, Math.min(maxCount, count - offset), to);
+        }
+    }
+
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         if (fileChannel != null) {
             assert checkStillOk();
-            fileChannel.transferTo(startPosition - header.limit(), contentSize + header.limit(), writableByteChannel);
+            transfer(fileChannel, startPosition - header.limit(), contentSize + header.limit(), writableByteChannel);
         } else {
             header.rewind();
             writableByteChannel.write(header);
@@ -97,6 +108,7 @@ public final class MediaDataBox implements Box {
      * inserting a few bytes before the mdat results in overwrting data we still
      * need to write this mdat here. This method just makes sure that we haven't already
      * overwritten the mdat contents.
+     *
      * @return true if ok
      */
     private boolean checkStillOk() {
@@ -106,7 +118,7 @@ public final class MediaDataBox implements Box {
             fileChannel.read(h2);
             header.rewind();
             h2.rewind();
-            assert h2.equals(header): "It seems that the content I want to read has already been overwritten.";
+            assert h2.equals(header) : "It seems that the content I want to read has already been overwritten.";
             return true;
         } catch (IOException e) {
             e.printStackTrace();

@@ -21,9 +21,7 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.MovieBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -34,12 +32,19 @@ import java.nio.channels.WritableByteChannel;
  * Uses IsoBufferWrapper  to access the underlying file.
  */
 @DoNotParseDetail
-public class IsoFile extends AbstractContainerBox {
+public class IsoFile extends AbstractContainerBox implements Closeable {
     protected BoxParser boxParser = new PropertyBoxParserImpl();
     ReadableByteChannel byteChannel;
 
     public IsoFile() {
         super("");
+    }
+
+    public IsoFile(File f) throws IOException {
+        super("");
+        this.byteChannel = new FileInputStream(f).getChannel();
+        boxParser = createBoxParser();
+        parse();
     }
 
     public IsoFile(ReadableByteChannel byteChannel) throws IOException {
@@ -182,5 +187,9 @@ public class IsoFile extends AbstractContainerBox {
             }
 
         }
+    }
+
+    public void close() throws IOException {
+        this.byteChannel.close();
     }
 }
