@@ -44,7 +44,7 @@ import java.util.List;
 public abstract class SampleEntry extends AbstractBox implements ContainerBox {
 
 
-    private int dataReferenceIndex;
+    private int dataReferenceIndex = 1;
     protected List<Box> boxes = new LinkedList<Box>();
     private BoxParser boxParser;
 

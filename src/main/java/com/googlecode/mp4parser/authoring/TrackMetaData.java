@@ -23,14 +23,13 @@ import java.util.Date;
 public class TrackMetaData implements Cloneable {
     private String language;
     private long timescale;
-    private Date modificationTime;
-    private Date creationTime;
+    private Date modificationTime = new Date();
+    private Date creationTime = new Date();
     private double width;
     private double height;
     private float volume;
     private long trackId = 1; // zero is not allowed
     private int group = 0;
-    private double startTime = 0;
 
 
     /**

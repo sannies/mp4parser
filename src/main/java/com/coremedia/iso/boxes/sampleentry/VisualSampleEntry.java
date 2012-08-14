@@ -63,11 +63,11 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
 
     private int width;
     private int height;
-    private double horizresolution;
-    private double vertresolution;
-    private int frameCount;
+    private double horizresolution = 72;
+    private double vertresolution = 72;
+    private int frameCount = 1;
     private String compressorname;
-    private int depth;
+    private int depth = 24;
 
     private long[] predefined = new long[3];
 
