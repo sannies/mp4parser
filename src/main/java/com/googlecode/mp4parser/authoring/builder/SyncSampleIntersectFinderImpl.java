@@ -184,9 +184,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             nuSyncSampleArray[i] = nuSyncSamples.get(i);
         }
 
-        long numFragments = minFragmentDurationSeconds > 0 ?
-                ((lastSyncSampleTime / timeScale) / minFragmentDurationSeconds) + 1 : Long.MAX_VALUE;
-        if (nuSyncSampleArray.length > numFragments && nuSyncSampleArray.length < (syncSamples.length * 0.25)) {
+        if (nuSyncSampleArray.length < (syncSamples.length * 0.25)) {
             String log = "";
             log += String.format("%5d - Common:  [", nuSyncSampleArray.length);
             for (long l : nuSyncSampleArray) {
