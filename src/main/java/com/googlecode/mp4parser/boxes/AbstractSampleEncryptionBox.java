@@ -23,7 +23,7 @@ import java.util.List;
 public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     int algorithmId = -1;
     int ivSize = -1;
-    byte[] kid = new byte[16];
+    byte[] kid = new byte[]{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
     List<Entry> entries = new LinkedList<Entry>();
 
     protected AbstractSampleEncryptionBox(String type) {
@@ -40,14 +40,14 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     @Override
     public void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
+        int useThisIvSize = -1;
         if ((getFlags() & 0x1) > 0) {
             algorithmId = IsoTypeReader.readUInt24(content);
             ivSize = IsoTypeReader.readUInt8(content);
+            useThisIvSize = ivSize;
             kid = new byte[16];
             content.get(kid);
-        }
-        long numOfEntries = IsoTypeReader.readUInt32(content);
-        if (((getFlags() & 0x1) == 0)) {
+        } else {
             List<Box> tkhds = Path.getPaths(this, "/moov[0]/trak/tkhd");
             for (Box tkhd : tkhds) {
                 if (((TrackHeaderBox) tkhd).getTrackId() == this.getParent().getBoxes(TrackFragmentHeaderBox.class).get(0).getTrackId()) {
@@ -55,14 +55,15 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
                     if (tenc == null) {
                         tenc = (AbstractTrackEncryptionBox) Path.getPath(tkhd, "../mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/uuid[0]");
                     }
-                    ivSize = tenc.getDefaultIvSize();
+                    useThisIvSize = tenc.getDefaultIvSize();
                 }
             }
         }
+        long numOfEntries = IsoTypeReader.readUInt32(content);
 
         while (numOfEntries-- > 0) {
             Entry e = new Entry();
-            e.iv = new byte[ivSize < 0 ? 8 : ivSize];  // default to 8
+            e.iv = new byte[useThisIvSize < 0 ? 8 : useThisIvSize];  // default to 8
             content.get(e.iv);
             if ((getFlags() & 0x2) > 0) {
                 int numOfPairs = IsoTypeReader.readUInt16(content);
@@ -228,13 +229,21 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
             @Override
             public boolean equals(Object o) {
-                if (this == o) return true;
-                if (o == null || getClass() != o.getClass()) return false;
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
 
                 Pair pair = (Pair) o;
 
-                if (clear != pair.clear) return false;
-                if (encrypted != pair.encrypted) return false;
+                if (clear != pair.clear) {
+                    return false;
+                }
+                if (encrypted != pair.encrypted) {
+                    return false;
+                }
 
                 return true;
             }
@@ -255,13 +264,21 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
             Entry entry = (Entry) o;
 
-            if (!new BigInteger(iv).equals(new BigInteger(entry.iv))) return false;
-            if (pairs != null ? !pairs.equals(entry.pairs) : entry.pairs != null) return false;
+            if (!new BigInteger(iv).equals(new BigInteger(entry.iv))) {
+                return false;
+            }
+            if (pairs != null ? !pairs.equals(entry.pairs) : entry.pairs != null) {
+                return false;
+            }
 
             return true;
         }
@@ -284,15 +301,27 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         AbstractSampleEncryptionBox that = (AbstractSampleEncryptionBox) o;
 
-        if (algorithmId != that.algorithmId) return false;
-        if (ivSize != that.ivSize) return false;
-        if (entries != null ? !entries.equals(that.entries) : that.entries != null) return false;
-        if (!Arrays.equals(kid, that.kid)) return false;
+        if (algorithmId != that.algorithmId) {
+            return false;
+        }
+        if (ivSize != that.ivSize) {
+            return false;
+        }
+        if (entries != null ? !entries.equals(that.entries) : that.entries != null) {
+            return false;
+        }
+        if (!Arrays.equals(kid, that.kid)) {
+            return false;
+        }
 
         return true;
     }
