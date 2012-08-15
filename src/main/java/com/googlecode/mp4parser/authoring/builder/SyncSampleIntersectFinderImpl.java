@@ -20,10 +20,7 @@ import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.Math.lcm;
@@ -96,7 +93,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                             long samplesPerFrame = sttsEntry.getDelta(); // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
 
                             for (int i = 0; i < syncSamples.length; i++) {
-                                int start = (int)((int) Math.ceil(stretch * (refSyncSamples[i] - 1)) * samplesPerFrame);
+                                int start = (int) ((int) Math.ceil(stretch * (refSyncSamples[i] - 1)) * samplesPerFrame);
                                 syncSamples[i] = start;
                                 // The Stretch makes sure that there are as much audio and video chunks!
                             }
@@ -164,7 +161,9 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
 
     public long[] getCommonIndices(long[] syncSamples, long[] syncSampleTimes, long timeScale, long[]... otherTracksTimes) {
         List<Long> nuSyncSamples = new LinkedList<Long>();
-        long lastSyncSampleTime = -1;
+        List<Long> nuSyncSampleTimes = new LinkedList<Long>();
+
+
         for (int i = 0; i < syncSampleTimes.length; i++) {
             boolean foundInEveryRef = true;
             for (long[] times : otherTracksTimes) {
@@ -172,22 +171,20 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             }
 
             if (foundInEveryRef) {
-                final long syncSampleTime = syncSampleTimes[i];
-                if (lastSyncSampleTime == -1 || (syncSampleTime - lastSyncSampleTime) / timeScale >= minFragmentDurationSeconds) {
-                    nuSyncSamples.add(syncSamples[i]);
-                    lastSyncSampleTime = syncSampleTime;
-                }
+                // use sample only if found in every other track.
+                nuSyncSamples.add(syncSamples[i]);
+                nuSyncSampleTimes.add(syncSampleTimes[i]);
             }
         }
-        long[] nuSyncSampleArray = new long[nuSyncSamples.size()];
-        for (int i = 0; i < nuSyncSampleArray.length; i++) {
-            nuSyncSampleArray[i] = nuSyncSamples.get(i);
-        }
+        // We have two arrays now:
+        // nuSyncSamples: Contains all common sync samples
+        // nuSyncSampleTimes: Contains the times of all sync samples
 
-        if (nuSyncSampleArray.length < (syncSamples.length * 0.25)) {
+        // Start: Warn user if samples are not matching!
+        if (nuSyncSamples.size() < (syncSamples.length * 0.25)) {
             String log = "";
-            log += String.format("%5d - Common:  [", nuSyncSampleArray.length);
-            for (long l : nuSyncSampleArray) {
+            log += String.format("%5d - Common:  [", nuSyncSamples.size());
+            for (long l : nuSyncSamples) {
                 log += (String.format("%10d,", l));
             }
             log += ("]");
@@ -202,12 +199,46 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             LOG.warning(log);
             LOG.warning("There are less than 25% of common sync samples in the given track.");
             throw new RuntimeException("There are less than 25% of common sync samples in the given track.");
-        } else if (nuSyncSampleArray.length < (syncSamples.length * 0.5)) {
+        } else if (nuSyncSamples.size() < (syncSamples.length * 0.5)) {
             LOG.fine("There are less than 50% of common sync samples in the given track. This is implausible but I'm ok to continue.");
-        } else if (nuSyncSampleArray.length < syncSamples.length) {
-            LOG.finest("Common SyncSample positions vs. this tracks SyncSample positions: " + nuSyncSampleArray.length + " vs. " + syncSamples.length);
+        } else if (nuSyncSamples.size() < syncSamples.length) {
+            LOG.finest("Common SyncSample positions vs. this tracks SyncSample positions: " + nuSyncSamples.size() + " vs. " + syncSamples.length);
         }
-        return nuSyncSampleArray;
+        // End: Warn user if samples are not matching!
+
+
+
+
+        List<Long> finalSampleList = new LinkedList<Long>();
+
+        if (minFragmentDurationSeconds > 0) {
+            // if minFragmentDurationSeconds is greater 0
+            // we need to throw away certain samples.
+            long lastSyncSampleTime = -1;
+            Iterator<Long> nuSyncSamplesIterator = nuSyncSamples.iterator();
+            Iterator<Long> nuSyncSampleTimesIterator = nuSyncSampleTimes.iterator();
+            while (nuSyncSamplesIterator.hasNext() && nuSyncSampleTimesIterator.hasNext()) {
+                long curSyncSample = nuSyncSamplesIterator.next();
+                long curSyncSampleTime = nuSyncSampleTimesIterator.next();
+                if (lastSyncSampleTime == -1 || (curSyncSampleTime - lastSyncSampleTime) / timeScale >= minFragmentDurationSeconds) {
+                    finalSampleList.add(curSyncSample);
+                    lastSyncSampleTime = curSyncSampleTime;
+                }
+            }
+        } else {
+            // the list of all samples is the final list of samples
+            // since minFragmentDurationSeconds ist not used.
+            finalSampleList = nuSyncSamples;
+        }
+
+
+        // transform the list to an array
+        long[] finalSampleArray = new long[finalSampleList.size()];
+        for (int i = 0; i < finalSampleArray.length; i++) {
+            finalSampleArray[i] = finalSampleList.get(i);
+        }
+        return finalSampleArray;
+
     }
 
 
