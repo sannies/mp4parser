@@ -39,7 +39,6 @@ public abstract class AbstractManifestWriter implements ManifestWriter {
      * @param movie the <code>track</code> must be part of this <code>movie</code>
      * @return the duration of each fragment in track timescale
      */
-    @Override
     public long[] calculateFragmentDurations(Track track, Movie movie) {
         long[] startSamples = intersectionFinder.sampleNumbers(track, movie);
         long[] durations = new long[startSamples.length];
@@ -63,7 +62,6 @@ public abstract class AbstractManifestWriter implements ManifestWriter {
 
     }
 
-    @Override
     public long getBitrate(Track track) {
         long bitrate = 0;
         for (ByteBuffer sample : track.getSamples()) {
