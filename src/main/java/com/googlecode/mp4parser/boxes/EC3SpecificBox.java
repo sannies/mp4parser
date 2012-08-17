@@ -15,12 +15,13 @@ public class EC3SpecificBox extends AbstractBox {
     List<Entry> entries = new LinkedList<Entry>();
     int dataRate;
     int numIndSub;
+
     public EC3SpecificBox() {
         super("dec3");
     }
 
     @Override
-    protected long getContentSize() {
+    public long getContentSize() {
         long size = 2;
         for (Entry entry : entries) {
             if (entry.num_dep_sub > 0) {
@@ -60,7 +61,7 @@ public class EC3SpecificBox extends AbstractBox {
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) {
+    public void getContent(ByteBuffer byteBuffer) {
         BitWriterBuffer bwb = new BitWriterBuffer(byteBuffer);
         bwb.writeBits(dataRate, 13);
         bwb.writeBits(entries.size() - 1, 3);
