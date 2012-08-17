@@ -49,18 +49,15 @@ public class SampleListTest {
 
     @Test
     public void testGotAll() throws IOException {
-        File originalFile = File.createTempFile("SampleListTest", "testGotAll");
-        FileOutputStream fos = new FileOutputStream(originalFile);
-        byte[] content = IOUtils.toByteArray(getClass().getResourceAsStream("/Beethoven - Bagatelle op.119 no.11 i.m4a"));
-        fos.write(content);
-        fos.close();
+        File input  = new File(SampleListTest.class.getProtectionDomain().getCodeSource().getLocation().getFile(), "/Beethoven - Bagatelle op.119 no.11 i.m4a");
 
-        FileChannel fc = new RandomAccessFile(originalFile, "r").getChannel();
-        IsoFile isoFile = new IsoFile(fc);
+        IsoFile isoFile = new IsoFile(input);
 
         TrackBox tb = isoFile.getBoxes(MovieBox.class).get(0).getBoxes(TrackBox.class).get(0);
         SampleList sl = new SampleList(tb);
-        ByteBuffer mdatContent = getMdatContent(new RandomAccessFile(originalFile, "r").getChannel());
+        FileChannel fc = new RandomAccessFile(input, "r").getChannel();
+        ByteBuffer mdatContent = getMdatContent(fc);
+        fc.close();
 
         for (ByteBuffer sample : sl) {
 
@@ -71,8 +68,7 @@ public class SampleListTest {
             }
 
         }
-        fc.close();
-        Assert.assertTrue(originalFile.delete());
+        isoFile.close();
     }
 
 /*    @Test
