@@ -1,12 +1,6 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.SubSampleInformationBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.VideoMediaHeaderBox;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
@@ -23,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.*;
+import java.util.logging.Logger;
 
 /**
  * The <code>H264TrackImpl</code> creates a <code>Track</code> from an H.264
@@ -58,8 +52,31 @@ public class H264TrackImpl extends AbstractTrack {
 
     private SEIMessage seiMessage;
     int frameNrInGop = 0;
+    private boolean determineFrameRate = true;
+    private String lang = "und";
+
+    public H264TrackImpl(InputStream inputStream, String lang, long timescale) throws IOException {
+        this.lang = lang;
+        if (timescale > 1000) {
+            timescale = timescale; //e.g. 23976
+            frametick = 1000;
+            determineFrameRate = false;
+        } else {
+            throw new IllegalArgumentException("Timescale must be specified in milliseconds!");
+        }
+        parse(inputStream);
+    }
+
+    public H264TrackImpl(InputStream inputStream, String lang) throws IOException {
+        this.lang = lang;
+        parse(inputStream);
+    }
 
     public H264TrackImpl(InputStream inputStream) throws IOException {
+        parse(inputStream);
+    }
+
+    private void parse(InputStream inputStream) throws IOException {
         this.reader = new ReaderWrapper(inputStream);
         stts = new LinkedList<TimeToSampleBox.Entry>();
         ctts = new LinkedList<CompositionTimeToSample.Entry>();
@@ -104,7 +121,7 @@ public class H264TrackImpl extends AbstractTrack {
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
-        trackMetaData.setLanguage("eng");
+        trackMetaData.setLanguage(lang);
         trackMetaData.setTimescale(timescale);
         trackMetaData.setWidth(width);
         trackMetaData.setHeight(height);
@@ -354,14 +371,7 @@ public class H264TrackImpl extends AbstractTrack {
                     is.read();
                     seqParameterSet = SeqParameterSet.read(is);
                     seqParameterSetList.add(data);
-                    if (seqParameterSet.vuiParams != null) {
-                        timescale = seqParameterSet.vuiParams.time_scale >> 1; // Not sure why, but I found this in several places, and it works...
-                        frametick = seqParameterSet.vuiParams.num_units_in_tick;
-                    } else {
-                        System.err.println("Warning: Can't determine frame rate. Guessing 25 fps");
-                        timescale = 90000;
-                        frametick = 3600;
-                    }
+                    configureFramerate();
                 }
                 action = NALActions.IGNORE;
                 break;
@@ -388,6 +398,24 @@ public class H264TrackImpl extends AbstractTrack {
         }
 
         return action;
+    }
+
+    private void configureFramerate() {
+        if (determineFrameRate) {
+            if (seqParameterSet.vuiParams != null) {
+                timescale = seqParameterSet.vuiParams.time_scale >> 1; // Not sure why, but I found this in several places, and it works...
+                frametick = seqParameterSet.vuiParams.num_units_in_tick;
+                if (timescale == 0 || frametick == 0) {
+                    System.err.println("Warning: vuiParams contain invalid values: time_scale: " + timescale + " and frame_tick: " + frametick + ". Setting frame rate to 25fps");
+                    timescale = 90000;
+                    frametick = 3600;
+                }
+            } else {
+                System.err.println("Warning: Can't determine frame rate. Guessing 25 fps");
+                timescale = 90000;
+                frametick = 3600;
+            }
+        }
     }
 
     public void printAccessUnitDelimiter(byte[] data) {

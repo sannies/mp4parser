@@ -77,9 +77,19 @@ public class AACTrackImpl extends AbstractTrack {
     private List<ByteBuffer> samples;
     boolean readSamples = false;
     List<TimeToSampleBox.Entry> stts;
+    private String lang = "und";
 
+
+    public AACTrackImpl(InputStream inputStream, String lang) throws IOException {
+        this.lang = lang;
+        parse(inputStream);
+     }
 
     public AACTrackImpl(InputStream inputStream) throws IOException {
+        parse(inputStream);
+     }
+
+    private void parse(InputStream inputStream) throws IOException {
         this.inputStream = new BufferedInputStream(inputStream);
         stts = new LinkedList<TimeToSampleBox.Entry>();
 
@@ -158,10 +168,9 @@ public class AACTrackImpl extends AbstractTrack {
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
-        trackMetaData.setLanguage("eng");
+        trackMetaData.setLanguage(lang);
         trackMetaData.setTimescale(samplerate); // Audio tracks always use samplerate as timescale
-
-     }
+    }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
         return sampleDescriptionBox;

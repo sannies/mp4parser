@@ -4,7 +4,6 @@ import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
-import com.googlecode.mp4parser.boxes.AC3SpecificBox;
 import com.googlecode.mp4parser.boxes.EC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 
@@ -36,8 +35,18 @@ public class EC3TrackImpl extends AbstractTrack {
     private BufferedInputStream inputStream;
     private List<ByteBuffer> samples;
     List<TimeToSampleBox.Entry> stts = new LinkedList<TimeToSampleBox.Entry>();
+    private String lang = "und";
+
+    public EC3TrackImpl(InputStream fin, String lang) throws IOException {
+        this.lang = lang;
+        parse(fin);
+    }
 
     public EC3TrackImpl(InputStream fin) throws IOException {
+        parse(fin);
+    }
+
+    private void parse(InputStream fin) throws IOException {
         inputStream = new BufferedInputStream(fin);
 
         boolean done = false;
@@ -106,7 +115,7 @@ public class EC3TrackImpl extends AbstractTrack {
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
-        trackMetaData.setLanguage("eng");
+        trackMetaData.setLanguage(lang);
         trackMetaData.setTimescale(samplerate); // Audio tracks always use samplerate as timescale
 
         samples = new LinkedList<ByteBuffer>();

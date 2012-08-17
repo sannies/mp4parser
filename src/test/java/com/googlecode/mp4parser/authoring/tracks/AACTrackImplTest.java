@@ -22,12 +22,8 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import org.junit.Test;
 
 import java.io.BufferedInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Simple test to make sure nothing breaks.
