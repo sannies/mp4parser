@@ -72,9 +72,9 @@ public class Mp4TrackImpl extends AbstractTrack {
                     if (trex.getTrackId() == trackId) {
                         List<Long> syncSampleList = new LinkedList<Long>();
 
+                        long sampleNumber = 1;
                         for (MovieFragmentBox movieFragmentBox : trackBox.getIsoFile().getBoxes(MovieFragmentBox.class)) {
                             List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
-                            long sampleNumber = 1;
                             for (TrackFragmentBox traf : trafs) {
                                 if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
                                     List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
