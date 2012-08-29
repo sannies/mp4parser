@@ -96,7 +96,7 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
             }
         }
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder documentBuilder = null;
+        DocumentBuilder documentBuilder;
         try {
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
@@ -177,7 +177,7 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         StringWriter stringWriter = new StringWriter();
         Result result = new StreamResult(stringWriter);
         TransformerFactory factory = TransformerFactory.newInstance();
-        Transformer transformer = null;
+        Transformer transformer;
         try {
             transformer = factory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -372,8 +372,6 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         if (dtsSpecificBox == null) {
             throw new RuntimeException("DTS track misses DTSSpecificBox!");
         }
-        byte dWChannelMaskFirstByte = 0;
-        byte dWChannelMaskSecondByte = 0;
 
         final ByteBuffer waveformatex = ByteBuffer.allocate(22);
         final int frameDuration = dtsSpecificBox.getFrameDuration();
@@ -392,13 +390,24 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
                 samplesPerBlock = 4096;
                 break;
         }
-        waveformatex.putShort(samplesPerBlock);
-        waveformatex.putInt(dtsSpecificBox.getChannelLayout());
+        waveformatex.put((byte) (samplesPerBlock & 0xff));
+        waveformatex.put((byte) (samplesPerBlock >>> 1));
+        final int dwChannelMask = getNumChannelsAndMask(dtsSpecificBox)[1];
+        waveformatex.put((byte) (dwChannelMask & 0xff));
+        waveformatex.put((byte) (dwChannelMask >>> 1));
+        waveformatex.put((byte) (dwChannelMask >>> 2));
+        waveformatex.put((byte) (dwChannelMask >>> 3));
         waveformatex.put(new byte[]{(byte)0xAE, (byte)0xE4, (byte)0xBF, (byte)0x5E, (byte)0x61, (byte)0x5E, (byte)0x41, (byte)0x87, (byte)0x92, (byte)0xFC, (byte)0xA4, (byte)0x81, (byte)0x26, (byte)0x99, (byte)0x02, (byte)0x11}); //DTS-HD GUID
 
         final ByteBuffer dtsCodecPrivateData= ByteBuffer.allocate(8);
         dtsCodecPrivateData.put((byte) dtsSpecificBox.getStreamConstruction());
-        dtsCodecPrivateData.putInt(dtsSpecificBox.getChannelLayout());
+
+        final int channelLayout = dtsSpecificBox.getChannelLayout();
+        dtsCodecPrivateData.put((byte) (channelLayout & 0xff));
+        dtsCodecPrivateData.put((byte) (channelLayout >>> 1));
+        dtsCodecPrivateData.put((byte) (channelLayout >>> 2));
+        dtsCodecPrivateData.put((byte) (channelLayout >>> 3));
+
         byte dtsFlags = (byte) (dtsSpecificBox.getMultiAssetFlag() << 1);
         dtsFlags |= dtsSpecificBox.getLBRDurationMod();
         dtsCodecPrivateData.put(dtsFlags);
@@ -409,7 +418,7 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         l.bitrate = dtsSpecificBox.getAvgBitRate();
         l.audioTag = 65534;
         l.samplingRate = dtsSpecificBox.getDTSSamplingFrequency();
-        l.channels = getNumChannels(dtsSpecificBox);
+        l.channels = getNumChannelsAndMask(dtsSpecificBox)[0];
         l.bitPerSample = 16;
         l.packetSize = track.getSamples().get(0).limit(); //assuming all are same size
         l.codecPrivateData = Hex.encodeHex(waveformatex.array()) + Hex.encodeHex(dtsCodecPrivateData.array());
@@ -417,74 +426,133 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
 
     }
 
-    private int getNumChannels(DTSSpecificBox dtsSpecificBox) {
+    /* dwChannelMask
+    L SPEAKER_FRONT_LEFT 0x00000001
+    R SPEAKER_FRONT_RIGHT 0x00000002
+    C SPEAKER_FRONT_CENTER 0x00000004
+    LFE1 SPEAKER_LOW_FREQUENCY 0x00000008
+    Ls or Lsr* SPEAKER_BACK_LEFT 0x00000010
+    Rs or Rsr* SPEAKER_BACK_RIGHT 0x00000020
+    Lc SPEAKER_FRONT_LEFT_OF_CENTER 0x00000040
+    Rc SPEAKER_FRONT_RIGHT_OF_CENTER 0x00000080
+    Cs SPEAKER_BACK_CENTER 0x00000100
+    Lss SPEAKER_SIDE_LEFT 0x00000200
+    Rss SPEAKER_SIDE_RIGHT 0x00000400
+    Oh SPEAKER_TOP_CENTER 0x00000800
+    Lh SPEAKER_TOP_FRONT_LEFT 0x00001000
+    Ch SPEAKER_TOP_FRONT_CENTER 0x00002000
+    Rh SPEAKER_TOP_FRONT_RIGHT 0x00004000
+    Lhr SPEAKER_TOP_BACK_LEFT 0x00008000
+    Chf SPEAKER_TOP_BACK_CENTER 0x00010000
+    Rhr SPEAKER_TOP_BACK_RIGHT 0x00020000
+    SPEAKER_RESERVED 0x80000000
+
+    * if Lss, Rss exist, then this position is equivalent to Lsr, Rsr respectively
+     */
+    private int[] getNumChannelsAndMask(DTSSpecificBox dtsSpecificBox) {
         final int channelLayout = dtsSpecificBox.getChannelLayout();
         int numChannels = 0;
+        int dwChannelMask = 0;
         if ((channelLayout & 0x0001) == 0x0001) {
             //0001h Center in front of listener 1
             numChannels += 1;
+            dwChannelMask |= 0x00000004; //SPEAKER_FRONT_CENTER
         }
         if ((channelLayout & 0x0002) == 0x0002) {
             //0002h Left/Right in front 2
             numChannels += 2;
+            dwChannelMask |= 0x00000001; //SPEAKER_FRONT_LEFT
+            dwChannelMask |= 0x00000002; //SPEAKER_FRONT_RIGHT
         }
         if ((channelLayout & 0x0004) == 0x0004) {
             //0004h Left/Right surround on side in rear 2
             numChannels += 2;
+            //* if Lss, Rss exist, then this position is equivalent to Lsr, Rsr respectively
+            dwChannelMask |= 0x00000010; //SPEAKER_BACK_LEFT
+            dwChannelMask |= 0x00000020; //SPEAKER_BACK_RIGHT
         }
         if ((channelLayout & 0x0008) == 0x0008) {
             //0008h Low frequency effects subwoofer 1
             numChannels += 1;
+            dwChannelMask |= 0x00000008; //SPEAKER_LOW_FREQUENCY
         }
         if ((channelLayout & 0x0010) == 0x0010) {
             //0010h Center surround in rear 1
             numChannels += 1;
+            dwChannelMask |= 0x00000100; //SPEAKER_BACK_CENTER
         }
         if ((channelLayout & 0x0020) == 0x0020) {
             //0020h Left/Right height in front 2
             numChannels += 2;
+            dwChannelMask |= 0x00001000; //SPEAKER_TOP_FRONT_LEFT
+            dwChannelMask |= 0x00004000; //SPEAKER_TOP_FRONT_RIGHT
         }
         if ((channelLayout & 0x0040) == 0x0040) {
             //0040h Left/Right surround in rear 2
             numChannels += 2;
+            dwChannelMask |= 0x00000010; //SPEAKER_BACK_LEFT
+            dwChannelMask |= 0x00000020; //SPEAKER_BACK_RIGHT
         }
         if ((channelLayout & 0x0080) == 0x0080) {
             //0080h Center Height in front 1
             numChannels += 1;
+            dwChannelMask |= 0x00002000; //SPEAKER_TOP_FRONT_CENTER
         }
         if ((channelLayout & 0x0100) == 0x0100) {
             //0100h Over the listener’s head 1
             numChannels += 1;
+            dwChannelMask |= 0x00000800; //SPEAKER_TOP_CENTER
         }
         if ((channelLayout & 0x0200) == 0x0200) {
             //0200h Between left/right and center in front 2
             numChannels += 2;
+            dwChannelMask |= 0x00000040; //SPEAKER_FRONT_LEFT_OF_CENTER
+            dwChannelMask |= 0x00000080; //SPEAKER_FRONT_RIGHT_OF_CENTER
         }
         if ((channelLayout & 0x0400) == 0x0400) {
             //0400h Left/Right on side in front 2
             numChannels += 2;
+            dwChannelMask |= 0x00000200; //SPEAKER_SIDE_LEFT
+            dwChannelMask |= 0x00000400; //SPEAKER_SIDE_RIGHT
         }
         if ((channelLayout & 0x0800) == 0x0800) {
             //0800h Left/Right surround on side 2
             numChannels += 2;
+            //* if Lss, Rss exist, then this position is equivalent to Lsr, Rsr respectively
+            dwChannelMask |= 0x00000010; //SPEAKER_BACK_LEFT
+            dwChannelMask |= 0x00000020; //SPEAKER_BACK_RIGHT
         }
         if ((channelLayout & 0x1000) == 0x1000) {
             //1000h Second low frequency effects subwoofer 1
             numChannels += 1;
+            dwChannelMask |= 0x00000008; //SPEAKER_LOW_FREQUENCY
         }
         if ((channelLayout & 0x2000) == 0x2000) {
             //2000h Left/Right height on side 2
             numChannels += 2;
+            dwChannelMask |= 0x00000010; //SPEAKER_BACK_LEFT
+            dwChannelMask |= 0x00000020; //SPEAKER_BACK_RIGHT
         }
         if ((channelLayout & 0x4000) == 0x4000) {
             //4000h Center height in rear 1
             numChannels += 1;
+            dwChannelMask |= 0x00010000; //SPEAKER_TOP_BACK_CENTER
         }
         if ((channelLayout & 0x8000) == 0x8000) {
             //8000h Left/Right height in rear 2
             numChannels += 2;
+            dwChannelMask |= 0x00008000; //SPEAKER_TOP_BACK_LEFT
+            dwChannelMask |= 0x00020000; //SPEAKER_TOP_BACK_RIGHT
         }
-        return numChannels;
+        if ((channelLayout & 0x10000) == 0x10000) {
+            //10000h Center below in front
+            numChannels += 1;
+        }
+        if ((channelLayout & 0x20000) == 0x20000) {
+            //20000h Left/Right below in front
+            numChannels += 2;
+        }
+        return new int[]{numChannels, dwChannelMask};
     }
 
     private String getAudioCodecPrivateData(AudioSpecificConfig audioSpecificConfig) {
