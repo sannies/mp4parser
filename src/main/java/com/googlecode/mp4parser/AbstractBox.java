@@ -46,6 +46,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * it is accessible by the <code>PropertyBoxParserImpl</code>
  */
 public abstract class AbstractBox implements Box {
+    public int MEM_MAP_THRESHOLD = 100 * 1024;
     private static Logger LOG = Logger.getLogger(AbstractBox.class.getName());
 
     protected String type;
@@ -100,7 +101,7 @@ public abstract class AbstractBox implements Box {
      */
     @DoNotParseDetail
     public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        if (readableByteChannel instanceof FileChannel && contentSize > 1024 * 1024) {
+        if (readableByteChannel instanceof FileChannel && contentSize > MEM_MAP_THRESHOLD) {
             // todo: if I map this here delayed I could use transferFrom/transferTo in the getBox method
             // todo: potentially this could speed up writing.
             //
