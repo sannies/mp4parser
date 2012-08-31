@@ -45,6 +45,7 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
     private String groupingType;
     private int defaultLength;
     private List<GroupEntry> groupEntries = new LinkedList<GroupEntry>();
+    private int descriptionLength;
 
     public SampleGroupDescriptionBox() {
         super(TYPE);
@@ -58,7 +59,7 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
         }
         size += 4; // entryCount
         for (GroupEntry groupEntry : groupEntries) {
-            if (getVersion() == 1) {
+            if (getVersion() == 1 && defaultLength == 0) {
                 size += 4;
             }
             size += groupEntry.size();
@@ -75,7 +76,7 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
         }
         IsoTypeWriter.writeUInt32(byteBuffer, this.groupEntries.size());
         for (GroupEntry entry : groupEntries) {
-            if (this.getVersion() == 1) {
+            if (this.getVersion() == 1 && defaultLength == 0) {
                 IsoTypeWriter.writeUInt32(byteBuffer, entry.get().limit());
             }
             byteBuffer.put(entry.get());
@@ -94,16 +95,20 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
         }
         long entryCount = IsoTypeReader.readUInt32(content);
         while (entryCount-- > 0) {
+            int length = defaultLength;
             if (this.getVersion() == 1) {
-                int length = l2i(IsoTypeReader.readUInt32(content));
-                int finalPos = content.position() + length;
-                ByteBuffer parseMe = content.slice();
-                parseMe.limit(length);
-                groupEntries.add(parseGroupEntry(parseMe, groupingType));
-                content.position(finalPos);
+                if (defaultLength == 0) {
+                    descriptionLength = l2i(IsoTypeReader.readUInt32(content));
+                    length = descriptionLength;
+                }
             } else {
                 throw new RuntimeException("This should be implemented");
             }
+            int finalPos = content.position() + length;
+            ByteBuffer parseMe = content.slice();
+            parseMe.limit(length);
+            groupEntries.add(parseGroupEntry(parseMe, groupingType));
+            content.position(finalPos);
         }
 
     }
@@ -116,6 +121,10 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
             groupEntry = new RateShareEntry();
         } else if (CencSampleEncryptionInformationGroupEntry.TYPE.equals(groupingType)) {
             groupEntry = new CencSampleEncryptionInformationGroupEntry();
+        } else if (VisualRandomAccessEntry.TYPE.equals(groupingType)) {
+            groupEntry = new VisualRandomAccessEntry();
+        } else if (TemporalLevelEntry.TYPE.equals(groupingType)) {
+            groupEntry = new TemporalLevelEntry();
         } else {
             groupEntry = new UnknownEntry();
         }
