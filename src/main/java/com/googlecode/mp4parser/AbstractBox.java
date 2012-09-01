@@ -46,7 +46,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * it is accessible by the <code>PropertyBoxParserImpl</code>
  */
 public abstract class AbstractBox implements Box {
-    public int MEM_MAP_THRESHOLD = 100 * 1024;
+    public static int MEM_MAP_THRESHOLD = 100 * 1024;
     private static Logger LOG = Logger.getLogger(AbstractBox.class.getName());
 
     protected String type;

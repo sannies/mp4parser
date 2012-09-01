@@ -20,6 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
+import com.googlecode.mp4parser.AbstractBox;
 
 import java.io.IOException;
 import java.lang.ref.Reference;
@@ -138,7 +139,7 @@ public final class MediaDataBox implements Box {
         this.header = header;
         this.contentSize = contentSize;
 
-        if (readableByteChannel instanceof FileChannel && (contentSize > 100 * 1024)) {
+        if (readableByteChannel instanceof FileChannel && (contentSize > AbstractBox.MEM_MAP_THRESHOLD)) {
             this.fileChannel = ((FileChannel) readableByteChannel);
             this.startPosition = ((FileChannel) readableByteChannel).position();
             ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
@@ -146,8 +147,6 @@ public final class MediaDataBox implements Box {
             content = ChannelHelper.readFully(readableByteChannel, l2i(contentSize));
             cache.put(0l, new SoftReference<ByteBuffer>(content));
         }
-
-
     }
 
     public synchronized ByteBuffer getContent(long offset, int length) {
