@@ -93,10 +93,11 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                             long samplesPerFrame = sttsEntry.getDelta(); // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
 
                             for (int i = 0; i < syncSamples.length; i++) {
-                                int start = (int) ((int) Math.ceil(stretch * (refSyncSamples[i] - 1)) * samplesPerFrame);
+                                int start = (int) Math.ceil(stretch * (refSyncSamples[i] - 1)* samplesPerFrame);
                                 syncSamples[i] = start;
                                 // The Stretch makes sure that there are as much audio and video chunks!
                             }
+                            break;
                         }
                     }
                 }
