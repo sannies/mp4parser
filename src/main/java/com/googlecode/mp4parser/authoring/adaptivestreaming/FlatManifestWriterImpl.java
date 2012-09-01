@@ -391,22 +391,22 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
                 break;
         }
         waveformatex.put((byte) (samplesPerBlock & 0xff));
-        waveformatex.put((byte) (samplesPerBlock >>> 1));
+        waveformatex.put((byte) (samplesPerBlock >>> 8));
         final int dwChannelMask = getNumChannelsAndMask(dtsSpecificBox)[1];
         waveformatex.put((byte) (dwChannelMask & 0xff));
-        waveformatex.put((byte) (dwChannelMask >>> 1));
-        waveformatex.put((byte) (dwChannelMask >>> 2));
-        waveformatex.put((byte) (dwChannelMask >>> 3));
+        waveformatex.put((byte) (dwChannelMask >>> 8));
+        waveformatex.put((byte) (dwChannelMask >>> 16));
+        waveformatex.put((byte) (dwChannelMask >>> 24));
         waveformatex.put(new byte[]{(byte)0xAE, (byte)0xE4, (byte)0xBF, (byte)0x5E, (byte)0x61, (byte)0x5E, (byte)0x41, (byte)0x87, (byte)0x92, (byte)0xFC, (byte)0xA4, (byte)0x81, (byte)0x26, (byte)0x99, (byte)0x02, (byte)0x11}); //DTS-HD GUID
 
-        final ByteBuffer dtsCodecPrivateData= ByteBuffer.allocate(8);
+        final ByteBuffer dtsCodecPrivateData = ByteBuffer.allocate(8);
         dtsCodecPrivateData.put((byte) dtsSpecificBox.getStreamConstruction());
 
         final int channelLayout = dtsSpecificBox.getChannelLayout();
         dtsCodecPrivateData.put((byte) (channelLayout & 0xff));
-        dtsCodecPrivateData.put((byte) (channelLayout >>> 1));
-        dtsCodecPrivateData.put((byte) (channelLayout >>> 2));
-        dtsCodecPrivateData.put((byte) (channelLayout >>> 3));
+        dtsCodecPrivateData.put((byte) (channelLayout >>> 8));
+        dtsCodecPrivateData.put((byte) (channelLayout >>> 16));
+        dtsCodecPrivateData.put((byte) (channelLayout >>> 24));
 
         byte dtsFlags = (byte) (dtsSpecificBox.getMultiAssetFlag() << 1);
         dtsFlags |= dtsSpecificBox.getLBRDurationMod();
