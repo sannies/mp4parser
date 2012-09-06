@@ -190,7 +190,6 @@ public final class AvcConfigurationBox extends AbstractBox {
         public int profileCompatibility;
         public int avcLevelIndication;
         public int lengthSizeMinusOne;
-        public int lengthSizeMinusOnePaddingBits;
         public List<byte[]> sequenceParameterSets = new ArrayList<byte[]>();
         public List<byte[]> pictureParameterSets = new ArrayList<byte[]>();
 
@@ -203,6 +202,7 @@ public final class AvcConfigurationBox extends AbstractBox {
         /**
          * Just for non-spec-conform encoders
          */
+        public int lengthSizeMinusOnePaddingBits = 252;
         public int numberOfSequenceParameterSetsPaddingBits = 7;
         public int chromaFormatPaddingBits = 31;
         public int bitDepthLumaMinus8PaddingBits = 31;
