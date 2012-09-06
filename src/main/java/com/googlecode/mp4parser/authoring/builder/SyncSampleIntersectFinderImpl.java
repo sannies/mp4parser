@@ -21,6 +21,7 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.Math.lcm;
@@ -33,6 +34,8 @@ import static com.googlecode.mp4parser.util.Math.lcm;
 public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder {
 
     private static Logger LOG = Logger.getLogger(SyncSampleIntersectFinderImpl.class.getName());
+    private static Map<CacheTuple, long[]> getTimesCache = new ConcurrentHashMap<CacheTuple, long[]>();
+    private static Map<CacheTuple, long[]> getSampleNumbersCache = new ConcurrentHashMap<CacheTuple, long[]>();
 
     private final int minFragmentDurationSeconds;
 
@@ -59,10 +62,18 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
      * @return an array containing the ordinal of each fragment's first sample
      */
     public long[] sampleNumbers(Track track, Movie movie) {
+        final CacheTuple key = new CacheTuple(track, movie);
+        final long[] result = getSampleNumbersCache.get(key);
+        if (result != null) {
+            return result;
+        }
+
         if ("vide".equals(track.getHandler())) {
             if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
                 List<long[]> times = getSyncSamplesTimestamps(movie, track);
-                return getCommonIndices(track.getSyncSamples(), getTimes(track, movie), track.getTrackMetaData().getTimescale(), times.toArray(new long[times.size()][]));
+                final long[] commonIndices = getCommonIndices(track.getSyncSamples(), getTimes(track, movie), track.getTrackMetaData().getTimescale(), times.toArray(new long[times.size()][]));
+                getSampleNumbersCache.put(key, commonIndices);
+                return commonIndices;
             } else {
                 throw new RuntimeException("Video Tracks need sync samples. Only tracks other than video may have no sync samples.");
             }
@@ -93,7 +104,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                             long samplesPerFrame = sttsEntry.getDelta(); // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
 
                             for (int i = 0; i < syncSamples.length; i++) {
-                                int start = (int) Math.ceil(stretch * (refSyncSamples[i] - 1)* samplesPerFrame);
+                                long start = (long) Math.ceil(stretch * (refSyncSamples[i] - 1) * samplesPerFrame);
                                 syncSamples[i] = start;
                                 // The Stretch makes sure that there are as much audio and video chunks!
                             }
@@ -109,8 +120,9 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                     throw new RuntimeException("Sample rates must be a multiple of the lowest sample rate to create a correct file!");
                 }
                 for (int i = 0; i < syncSamples.length; i++) {
-                    syncSamples[i] = (int) (1 + syncSamples[i] * factor / (double) samplesPerFrame);
+                    syncSamples[i] = (long) (1 + syncSamples[i] * factor / (double) samplesPerFrame);
                 }
+                getSampleNumbersCache.put(key, syncSamples);
                 return syncSamples;
             }
             throw new RuntimeException("There was absolutely no Track with sync samples. I can't work with that!");
@@ -126,10 +138,11 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                     double stretch = (double) sc / refSampleCount;
 
                     for (int i = 0; i < syncSamples.length; i++) {
-                        int start = (int) Math.ceil(stretch * (refSyncSamples[i] - 1)) + 1;
+                        long start = (long) Math.ceil(stretch * (refSyncSamples[i] - 1)) + 1;
                         syncSamples[i] = start;
                         // The Stretch makes sure that there are as much audio and video chunks!
                     }
+                    getSampleNumbersCache.put(key, syncSamples);
                     return syncSamples;
                 }
             }
@@ -244,6 +257,12 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
 
 
     private static long[] getTimes(Track track, Movie m) {
+        final CacheTuple key = new CacheTuple(track, m);
+        final long[] result = getTimesCache.get(key);
+        if (result != null) {
+            return result;
+        }
+
         long[] syncSamples = track.getSyncSamples();
         long[] syncSampleTimes = new long[syncSamples.length];
         Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
@@ -267,8 +286,8 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             }
             currentDuration += currentDelta;
         }
+        getTimesCache.put(key, syncSampleTimes);
         return syncSampleTimes;
-
     }
 
     private static long calculateTracktimesScalingFactor(Movie m, Track track) {
@@ -281,5 +300,35 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             }
         }
         return timeScale;
+    }
+
+    public static class CacheTuple {
+        Track track;
+        Movie movie;
+
+        public CacheTuple(Track track, Movie movie) {
+            this.track = track;
+            this.movie = movie;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            CacheTuple that = (CacheTuple) o;
+
+            if (movie != null ? !movie.equals(that.movie) : that.movie != null) return false;
+            if (track != null ? !track.equals(that.track) : that.track != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = track != null ? track.hashCode() : 0;
+            result = 31 * result + (movie != null ? movie.hashCode() : 0);
+            return result;
+        }
     }
 }
