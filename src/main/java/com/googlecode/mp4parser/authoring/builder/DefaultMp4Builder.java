@@ -67,6 +67,8 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * Creates a plain MP4 file from a video. Plain as plain can be.
  */
 public class DefaultMp4Builder implements Mp4Builder {
+
+    public int STEPSIZE = 64;
     Set<StaticChunkOffsetBox> chunkOffsetBoxes = new HashSet<StaticChunkOffsetBox>();
     private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
 
@@ -465,7 +467,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             if (writableByteChannel instanceof GatheringByteChannel) {
                 List<ByteBuffer> nuSamples = unifyAdjacentBuffers(samples);
 
-                int STEPSIZE = 1024;
+
                 for (int i = 0; i < Math.ceil((double) nuSamples.size() / STEPSIZE); i++) {
                     List<ByteBuffer> sublist = nuSamples.subList(
                             i * STEPSIZE, // start
