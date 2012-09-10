@@ -202,7 +202,7 @@ public final class AvcConfigurationBox extends AbstractBox {
         /**
          * Just for non-spec-conform encoders
          */
-        public int lengthSizeMinusOnePaddingBits = 252;
+        public int lengthSizeMinusOnePaddingBits = 60;
         public int numberOfSequenceParameterSetsPaddingBits = 7;
         public int chromaFormatPaddingBits = 31;
         public int bitDepthLumaMinus8PaddingBits = 31;
