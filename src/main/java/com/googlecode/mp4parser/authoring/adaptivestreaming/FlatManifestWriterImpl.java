@@ -173,7 +173,7 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         }
 
         document.setXmlStandalone(true);
-        Source source = new DOMSource(document);
+        Source source = new DOMSource(customizeManifest(document));
         StringWriter stringWriter = new StringWriter();
         Result result = new StreamResult(stringWriter);
         TransformerFactory factory = TransformerFactory.newInstance();
