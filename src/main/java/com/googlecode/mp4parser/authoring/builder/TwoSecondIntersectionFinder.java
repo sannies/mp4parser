@@ -27,6 +27,14 @@ import java.util.List;
  * snippets.
  */
 public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
+    private int fragmentLength = 2;
+
+    public TwoSecondIntersectionFinder() {
+    }
+
+    public TwoSecondIntersectionFinder(int fragmentLength) {
+        this.fragmentLength = fragmentLength;
+    }
 
     protected long getDuration(Track track) {
         long duration = 0;
@@ -50,7 +58,7 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
             }
         }
 
-        int fragmentCount = (int)Math.ceil(trackLength / 2) - 1;
+        int fragmentCount = (int) Math.ceil(trackLength / fragmentLength) - 1;
         if (fragmentCount < 1) {
             fragmentCount = 1;
         }
@@ -63,7 +71,7 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
         int samples = 0;
         for (TimeToSampleBox.Entry entry : entries) {
             for (int i = 0; i < entry.getCount(); i++) {
-                int currentFragment = (int) (time / track.getTrackMetaData().getTimescale() / 2) + 1;
+                int currentFragment = (int) (time / track.getTrackMetaData().getTimescale() / fragmentLength) + 1;
                 if (currentFragment >= fragments.length) {
                     break;
                 }
@@ -75,7 +83,7 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
         // fill all -1 ones.
         for (int i = fragments.length - 1; i >= 0; i--) {
             if (fragments[i] == -1) {
-                fragments[i] = last ;
+                fragments[i] = last;
             }
             last = fragments[i];
         }

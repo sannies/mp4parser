@@ -21,8 +21,10 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Generates a Track that starts at fromSample and ends at toSample (exclusive). The user of this class
@@ -55,47 +57,74 @@ public class CroppedTrack extends AbstractTrack {
     }
 
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        if (origTrack.getDecodingTimeEntries() != null && !origTrack.getDecodingTimeEntries().isEmpty()) {
-            // todo optimize! too much long is allocated but then not used
-            long[] decodingTimes = TimeToSampleBox.blowupTimeToSamples(origTrack.getDecodingTimeEntries());
-            long[] nuDecodingTimes = new long[toSample - fromSample];
-            System.arraycopy(decodingTimes, fromSample, nuDecodingTimes, 0, toSample - fromSample);
+        return getDecodingTimeEntries(origTrack.getDecodingTimeEntries(), fromSample, toSample);
+    }
 
-            LinkedList<TimeToSampleBox.Entry> returnDecodingEntries = new LinkedList<TimeToSampleBox.Entry>();
+    static List<TimeToSampleBox.Entry> getDecodingTimeEntries(List<TimeToSampleBox.Entry> origSamples, long fromSample, long toSample) {
+        if (origSamples != null && !origSamples.isEmpty()) {
+            long current = 0;
+            ListIterator<TimeToSampleBox.Entry> e = origSamples.listIterator();
+            LinkedList<TimeToSampleBox.Entry> nuList = new LinkedList<TimeToSampleBox.Entry>();
 
-            for (long nuDecodingTime : nuDecodingTimes) {
-                if (returnDecodingEntries.isEmpty() || returnDecodingEntries.getLast().getDelta() != nuDecodingTime) {
-                    TimeToSampleBox.Entry e = new TimeToSampleBox.Entry(1, nuDecodingTime);
-                    returnDecodingEntries.add(e);
-                } else {
-                    TimeToSampleBox.Entry e = returnDecodingEntries.getLast();
-                    e.setCount(e.getCount() + 1);
-                }
+            // Skip while not yet reached:
+            TimeToSampleBox.Entry currentEntry;
+            while ((currentEntry = e.next()).getCount() + current <= fromSample) {
+                current += currentEntry.getCount();
             }
-            return returnDecodingEntries;
+            // Take just a bit from the next
+            if (currentEntry.getCount() + current >= toSample) {
+                nuList.add(new TimeToSampleBox.Entry(toSample - fromSample, currentEntry.getDelta()));
+                return nuList; // done in one step
+            } else {
+                nuList.add(new TimeToSampleBox.Entry(currentEntry.getCount() + current - fromSample, currentEntry.getDelta()));
+            }
+            current += currentEntry.getCount();
+
+            while (e.hasNext() && (currentEntry = e.next()).getCount() + current < toSample) {
+                nuList.add(currentEntry);
+                current += currentEntry.getCount();
+            }
+
+            nuList.add(new TimeToSampleBox.Entry(toSample - current, currentEntry.getDelta()));
+
+            return nuList;
         } else {
             return null;
         }
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
-        if (origTrack.getCompositionTimeEntries() != null && !origTrack.getCompositionTimeEntries().isEmpty()) {
-            int[] compositionTime = CompositionTimeToSample.blowupCompositionTimes(origTrack.getCompositionTimeEntries());
-            int[] nuCompositionTimes = new int[toSample - fromSample];
-            System.arraycopy(compositionTime, fromSample, nuCompositionTimes, 0, toSample - fromSample);
+        return getCompositionTimeEntries(origTrack.getCompositionTimeEntries(), fromSample, toSample);
+    }
 
-            LinkedList<CompositionTimeToSample.Entry> returnDecodingEntries = new LinkedList<CompositionTimeToSample.Entry>();
+    static List<CompositionTimeToSample.Entry> getCompositionTimeEntries(List<CompositionTimeToSample.Entry> origSamples, long fromSample, long toSample) {
+        if (origSamples != null && !origSamples.isEmpty()) {
+            long current = 0;
+            ListIterator<CompositionTimeToSample.Entry> e = origSamples.listIterator();
+            ArrayList<CompositionTimeToSample.Entry> nuList = new ArrayList<CompositionTimeToSample.Entry>();
 
-            for (int nuDecodingTime : nuCompositionTimes) {
-                if (returnDecodingEntries.isEmpty() || returnDecodingEntries.getLast().getOffset() != nuDecodingTime) {
-                    CompositionTimeToSample.Entry e = new CompositionTimeToSample.Entry(1, nuDecodingTime);
-                    returnDecodingEntries.add(e);
-                } else {
-                    CompositionTimeToSample.Entry e = returnDecodingEntries.getLast();
-                    e.setCount(e.getCount() + 1);
-                }
+            // Skip while not yet reached:
+            CompositionTimeToSample.Entry currentEntry;
+            while ((currentEntry = e.next()).getCount() + current <= fromSample) {
+                current += currentEntry.getCount();
             }
-            return returnDecodingEntries;
+            // Take just a bit from the next
+            if (currentEntry.getCount() + current >= toSample) {
+                nuList.add(new CompositionTimeToSample.Entry((int) (toSample - fromSample), currentEntry.getOffset()));
+                return nuList; // done in one step
+            } else {
+                nuList.add(new CompositionTimeToSample.Entry((int) (currentEntry.getCount() + current - fromSample), currentEntry.getCount()));
+            }
+            current += currentEntry.getCount();
+
+            while (e.hasNext() && (currentEntry = e.next()).getCount() + current < toSample) {
+                nuList.add(currentEntry);
+                current += currentEntry.getCount();
+            }
+
+            nuList.add(new CompositionTimeToSample.Entry((int) (toSample - current), currentEntry.getOffset()));
+
+            return nuList;
         } else {
             return null;
         }

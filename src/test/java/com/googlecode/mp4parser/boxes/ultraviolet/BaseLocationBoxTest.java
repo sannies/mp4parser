@@ -17,6 +17,7 @@ import java.util.Map;
  */
 public class BaseLocationBoxTest extends BoxWriteReadBase<BaseLocationBox> {
 
+    @Test
     public void testSimple() throws IOException {
         BaseLocationBox bloc = new BaseLocationBox();
         bloc.setBaseLocation("baseloc");
@@ -46,7 +47,7 @@ public class BaseLocationBoxTest extends BoxWriteReadBase<BaseLocationBox> {
 
     @Override
     public void setupProperties(Map<String, Object> addPropsHere) {
-        addPropsHere.put("baseLocation", "this is my baselocation");
-        addPropsHere.put("purchaseLocation", "this is my purchaseLocation");
+        addPropsHere.put("baseLocation", " ");
+        addPropsHere.put("purchaseLocation", " ");
     }
 }

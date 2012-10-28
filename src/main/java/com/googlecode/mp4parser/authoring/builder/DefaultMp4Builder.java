@@ -18,28 +18,7 @@ package com.googlecode.mp4parser.authoring.builder;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.ContainerBox;
-import com.coremedia.iso.boxes.DataEntryUrlBox;
-import com.coremedia.iso.boxes.DataInformationBox;
-import com.coremedia.iso.boxes.DataReferenceBox;
-import com.coremedia.iso.boxes.FileTypeBox;
-import com.coremedia.iso.boxes.HandlerBox;
-import com.coremedia.iso.boxes.MediaBox;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.MediaInformationBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.MovieHeaderBox;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.StaticChunkOffsetBox;
-import com.coremedia.iso.boxes.SyncSampleBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
@@ -50,14 +29,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,7 +46,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     HashMap<Track, List<ByteBuffer>> track2Sample = new HashMap<Track, List<ByteBuffer>>();
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
-    private FragmentIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder();
+    private FragmentIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder(20);
 
     public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
         this.intersectionFinder = intersectionFinder;
@@ -104,8 +76,15 @@ public class DefaultMp4Builder implements Mp4Builder {
         minorBrands.add("avc1");
 
         isoFile.addBox(new FileTypeBox("isom", 0, minorBrands));
-        isoFile.addBox(createMovieBox(movie));
-        InterleaveChunkMdat mdat = new InterleaveChunkMdat(movie);
+
+        Map<Track, int[]> chunks = new HashMap<Track, int[]>();
+        for (Track track : movie.getTracks()) {
+            chunks.put(track, getChunkSizes(track, movie));
+        }
+
+        isoFile.addBox(createMovieBox(movie, chunks));
+
+        InterleaveChunkMdat mdat = new InterleaveChunkMdat(movie, chunks);
         isoFile.addBox(mdat);
 
         /*
@@ -136,7 +115,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         return track2Sample.put(track, samples);
     }
 
-    private MovieBox createMovieBox(Movie movie) {
+    private MovieBox createMovieBox(Movie movie, Map<Track, int[]> chunks) {
         MovieBox movieBox = new MovieBox();
         MovieHeaderBox mvhd = new MovieHeaderBox();
 
@@ -171,7 +150,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         movieBox.addBox(mvhd);
         for (Track track : movie.getTracks()) {
-            movieBox.addBox(createTrackBox(track, movie));
+            movieBox.addBox(createTrackBox(track, movie, chunks));
         }
         // metadata here
         Box udta = createUdta(movie);
@@ -191,7 +170,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         return null;
     }
 
-    private TrackBox createTrackBox(Track track, Movie movie) {
+    private TrackBox createTrackBox(Track track, Movie movie, Map<Track, int[]> chunks) {
 
         LOG.info("Creating Mp4TrackImpl " + track);
         TrackBox trackBox = new TrackBox();
@@ -300,11 +279,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             sdtp.setEntries(track.getSampleDependencies());
             stbl.addBox(sdtp);
         }
-        HashMap<Track, int[]> track2ChunkSizes = new HashMap<Track, int[]>();
-        for (Track current : movie.getTracks()) {
-            track2ChunkSizes.put(current, getChunkSizes(current, movie));
-        }
-        int[] tracksChunkSizes = track2ChunkSizes.get(track);
+        int[] tracksChunkSizes = chunks.get(track);
 
         SampleToChunkBox stsc = new SampleToChunkBox();
         stsc.setEntries(new LinkedList<SampleToChunkBox.Entry>());
@@ -350,7 +325,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                 if (LOG.isLoggable(Level.FINEST)) {
                     LOG.finest("Adding offsets of track_" + current.getTrackMetaData().getTrackId());
                 }
-                int[] chunkSizes = track2ChunkSizes.get(current);
+                int[] chunkSizes = chunks.get(current);
                 long firstSampleOfChunk = 0;
                 for (int j = 0; j < i; j++) {
                     firstSampleOfChunk += chunkSizes[j];
@@ -389,13 +364,8 @@ public class DefaultMp4Builder implements Mp4Builder {
         public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         }
 
-        private InterleaveChunkMdat(Movie movie) {
-
-            tracks = movie.getTracks();
-            Map<Track, int[]> chunks = new HashMap<Track, int[]>();
-            for (Track track : movie.getTracks()) {
-                chunks.put(track, getChunkSizes(track, movie));
-            }
+        private InterleaveChunkMdat(Movie movie, Map<Track, int[]> chunks) {
+            this.tracks = movie.getTracks();
 
             for (int i = 0; i < chunks.values().iterator().next().length; i++) {
                 for (Track track : tracks) {
