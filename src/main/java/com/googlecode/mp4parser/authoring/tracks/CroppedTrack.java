@@ -113,7 +113,7 @@ public class CroppedTrack extends AbstractTrack {
                 nuList.add(new CompositionTimeToSample.Entry((int) (toSample - fromSample), currentEntry.getOffset()));
                 return nuList; // done in one step
             } else {
-                nuList.add(new CompositionTimeToSample.Entry((int) (currentEntry.getCount() + current - fromSample), currentEntry.getCount()));
+                nuList.add(new CompositionTimeToSample.Entry((int) (currentEntry.getCount() + current - fromSample), currentEntry.getOffset()));
             }
             current += currentEntry.getCount();
 

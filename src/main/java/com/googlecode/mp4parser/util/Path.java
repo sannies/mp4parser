@@ -50,7 +50,7 @@ public class Path {
     }
 
     public static Box getPath(Box box, String path) {
-        List<Box> all = getPaths(box, path);
+        List<? extends Box> all = getPaths(box, path);
         return all.isEmpty() ? null : all.get(0);
     }
 

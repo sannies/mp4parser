@@ -22,6 +22,7 @@ import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -46,7 +47,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     HashMap<Track, List<ByteBuffer>> track2Sample = new HashMap<Track, List<ByteBuffer>>();
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
-    private FragmentIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder(20);
+    private FragmentIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder();
 
     public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
         this.intersectionFinder = intersectionFinder;
@@ -83,8 +84,15 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
 
         isoFile.addBox(createMovieBox(movie, chunks));
+        List<Box> stszs = Path.getPaths(isoFile, "/moov/trak/mdia/minf/stbl/stsz");
 
-        InterleaveChunkMdat mdat = new InterleaveChunkMdat(movie, chunks);
+        long contentSize = 0;
+        for (Box stsz : stszs) {
+            contentSize += sum(((SampleSizeBox) stsz).getSampleSizes());
+
+        }
+
+        InterleaveChunkMdat mdat = new InterleaveChunkMdat(movie, chunks, contentSize);
         isoFile.addBox(mdat);
 
         /*
@@ -348,10 +356,10 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     private class InterleaveChunkMdat implements Box {
         List<Track> tracks;
-        List<ByteBuffer> samples = new ArrayList<ByteBuffer>();
+        List<List<ByteBuffer>> chunkList = new ArrayList<List<ByteBuffer>>();
         ContainerBox parent;
 
-        long contentSize = 0;
+        long contentSize;
 
         public ContainerBox getParent() {
             return parent;
@@ -364,7 +372,8 @@ public class DefaultMp4Builder implements Mp4Builder {
         public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         }
 
-        private InterleaveChunkMdat(Movie movie, Map<Track, int[]> chunks) {
+        private InterleaveChunkMdat(Movie movie, Map<Track, int[]> chunks, long contentSize) {
+            this.contentSize = contentSize;
             this.tracks = movie.getTracks();
 
             for (int i = 0; i < chunks.values().iterator().next().length; i++) {
@@ -375,14 +384,8 @@ public class DefaultMp4Builder implements Mp4Builder {
                     for (int j = 0; j < i; j++) {
                         firstSampleOfChunk += chunkSizes[j];
                     }
-
-                    for (int j = l2i(firstSampleOfChunk); j < firstSampleOfChunk + chunkSizes[i]; j++) {
-
-                        ByteBuffer s = DefaultMp4Builder.this.track2Sample.get(track).get(j);
-                        contentSize += s.limit();
-                        samples.add((ByteBuffer) s.rewind());
-                    }
-
+                    List<ByteBuffer> chunk = DefaultMp4Builder.this.track2Sample.get(track).subList(l2i(firstSampleOfChunk), l2i(firstSampleOfChunk + chunkSizes[i]));
+                    chunkList.add(chunk);
                 }
 
             }
@@ -435,24 +438,30 @@ public class DefaultMp4Builder implements Mp4Builder {
             bb.rewind();
             writableByteChannel.write(bb);
             if (writableByteChannel instanceof GatheringByteChannel) {
-                List<ByteBuffer> nuSamples = unifyAdjacentBuffers(samples);
+                for (List<ByteBuffer> samples : chunkList) {
+                    List<ByteBuffer> nuSamples = unifyAdjacentBuffers(samples);
 
-
-                for (int i = 0; i < Math.ceil((double) nuSamples.size() / STEPSIZE); i++) {
-                    List<ByteBuffer> sublist = nuSamples.subList(
-                            i * STEPSIZE, // start
-                            (i + 1) * STEPSIZE < nuSamples.size() ? (i + 1) * STEPSIZE : nuSamples.size()); // end
-                    ByteBuffer sampleArray[] = sublist.toArray(new ByteBuffer[sublist.size()]);
-                    do {
-                        ((GatheringByteChannel) writableByteChannel).write(sampleArray);
-                    } while (sampleArray[sampleArray.length - 1].remaining() > 0);
+                    for (int i = 0; i < Math.ceil((double) nuSamples.size() / STEPSIZE); i++) {
+                        List<ByteBuffer> sublist = nuSamples.subList(
+                                i * STEPSIZE, // start
+                                (i + 1) * STEPSIZE < nuSamples.size() ? (i + 1) * STEPSIZE : nuSamples.size()); // end
+                        ByteBuffer sampleArray[] = sublist.toArray(new ByteBuffer[sublist.size()]);
+                        do {
+                            ((GatheringByteChannel) writableByteChannel).write(sampleArray);
+                        } while (sampleArray[sampleArray.length - 1].remaining() > 0);
+                    }
                 }
+
                 //System.err.println(bytesWritten);
             } else {
-                for (ByteBuffer sample : samples) {
-                    sample.rewind();
-                    writableByteChannel.write(sample);
+                for (List<ByteBuffer> byteBuffers : chunkList) {
+                    for (ByteBuffer sample : byteBuffers) {
+                        sample.rewind();
+                        writableByteChannel.write(sample);
+
+                    }
                 }
+
             }
         }
 
@@ -491,6 +500,14 @@ public class DefaultMp4Builder implements Mp4Builder {
 
 
     private static long sum(int[] ls) {
+        long rc = 0;
+        for (long l : ls) {
+            rc += l;
+        }
+        return rc;
+    }
+
+    private static long sum(long[] ls) {
         long rc = 0;
         for (long l : ls) {
             rc += l;

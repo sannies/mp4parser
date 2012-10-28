@@ -151,12 +151,13 @@ public final class MediaDataBox implements Box {
 
     public synchronized ByteBuffer getContent(long offset, int length) {
 
-        for (Long chacheEntryOffset : cache.keySet()) {
-            if (chacheEntryOffset <= offset && offset <= chacheEntryOffset + BUFFER_SIZE) {
-                ByteBuffer cacheEntry = cache.get(chacheEntryOffset).get();
-                if ((cacheEntry != null) && ((chacheEntryOffset + cacheEntry.limit()) >= (offset + length))) {
+        for (Map.Entry<Long, Reference<ByteBuffer>> chacheEntry : cache.entrySet()) {
+
+            if (chacheEntry.getKey() <= offset && offset <= chacheEntry.getKey() + BUFFER_SIZE) {
+                ByteBuffer cacheEntry = chacheEntry.getValue().get();
+                if ((cacheEntry != null) && ((chacheEntry.getKey() + cacheEntry.limit()) >= (offset + length))) {
                     // CACHE HIT
-                    cacheEntry.position((int) (offset - chacheEntryOffset));
+                    cacheEntry.position((int) (offset - chacheEntry.getKey()));
                     ByteBuffer cachedSample = cacheEntry.slice();
                     cachedSample.limit(length);
                     return cachedSample;
@@ -167,6 +168,7 @@ public final class MediaDataBox implements Box {
         ByteBuffer cacheEntry;
         try {
             // Just mapping 10MB at a time. Seems reasonable.
+            System.err.println("MMM");
             cacheEntry = fileChannel.map(FileChannel.MapMode.READ_ONLY, startPosition + offset, Math.min(BUFFER_SIZE, contentSize - offset));
         } catch (IOException e1) {
             LOG.fine("Even mapping just 10MB of the source file into the memory failed. " + e1);
