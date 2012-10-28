@@ -66,7 +66,8 @@ public class DefaultMp4Builder implements Mp4Builder {
             for (int i = 0; i < sizes.length; i++) {
                 sizes[i] = samples.get(i).limit();
             }
-            putSampleSizes(track, sizes);
+            track2SampleSizes.put(track, sizes);
+
         }
 
         IsoFile isoFile = new IsoFile();
@@ -115,9 +116,6 @@ public class DefaultMp4Builder implements Mp4Builder {
         throw new UnsupportedOperationException("No fragment intersection finder in default MP4 builder!");
     }
 
-    protected long[] putSampleSizes(Track track, long[] sizes) {
-        return track2SampleSizes.put(track, sizes);
-    }
 
     protected List<ByteBuffer> putSamples(Track track, List<ByteBuffer> samples) {
         return track2Sample.put(track, samples);
@@ -439,12 +437,12 @@ public class DefaultMp4Builder implements Mp4Builder {
             writableByteChannel.write(bb);
             if (writableByteChannel instanceof GatheringByteChannel) {
                 for (List<ByteBuffer> samples : chunkList) {
-                    List<ByteBuffer> nuSamples = unifyAdjacentBuffers(samples);
 
-                    for (int i = 0; i < Math.ceil((double) nuSamples.size() / STEPSIZE); i++) {
-                        List<ByteBuffer> sublist = nuSamples.subList(
+
+                    for (int i = 0; i < Math.ceil((double) samples.size() / STEPSIZE); i++) {
+                        List<ByteBuffer> sublist = samples.subList(
                                 i * STEPSIZE, // start
-                                (i + 1) * STEPSIZE < nuSamples.size() ? (i + 1) * STEPSIZE : nuSamples.size()); // end
+                                (i + 1) * STEPSIZE < samples.size() ? (i + 1) * STEPSIZE : samples.size()); // end
                         ByteBuffer sampleArray[] = sublist.toArray(new ByteBuffer[sublist.size()]);
                         do {
                             ((GatheringByteChannel) writableByteChannel).write(sampleArray);

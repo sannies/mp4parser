@@ -23,14 +23,10 @@ import com.coremedia.iso.boxes.ContainerBox;
 import com.googlecode.mp4parser.AbstractBox;
 
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -59,9 +55,6 @@ public final class MediaDataBox implements Box {
     private FileChannel fileChannel;
     private long startPosition;
     private long contentSize;
-
-
-    private Map<Long, Reference<ByteBuffer>> cache = new HashMap<Long, Reference<ByteBuffer>>();
 
 
     /**
@@ -106,7 +99,7 @@ public final class MediaDataBox implements Box {
 
     /**
      * If someone use the same file as source and sink it could the case that
-     * inserting a few bytes before the mdat results in overwrting data we still
+     * inserting a few bytes before the mdat results in overwriting data we still
      * need to write this mdat here. This method just makes sure that we haven't already
      * overwritten the mdat contents.
      *
@@ -145,30 +138,27 @@ public final class MediaDataBox implements Box {
             ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
         } else {
             content = ChannelHelper.readFully(readableByteChannel, l2i(contentSize));
-            cache.put(0l, new SoftReference<ByteBuffer>(content));
+            cacheSliceCurrentlyInUse = content;
+            cacheSliceCurrentlyInUseStart = 0;
         }
     }
 
+    ByteBuffer cacheSliceCurrentlyInUse = null;
+    long cacheSliceCurrentlyInUseStart = Long.MAX_VALUE;
+
     public synchronized ByteBuffer getContent(long offset, int length) {
-
-        for (Map.Entry<Long, Reference<ByteBuffer>> chacheEntry : cache.entrySet()) {
-
-            if (chacheEntry.getKey() <= offset && offset <= chacheEntry.getKey() + BUFFER_SIZE) {
-                ByteBuffer cacheEntry = chacheEntry.getValue().get();
-                if ((cacheEntry != null) && ((chacheEntry.getKey() + cacheEntry.limit()) >= (offset + length))) {
-                    // CACHE HIT
-                    cacheEntry.position((int) (offset - chacheEntry.getKey()));
-                    ByteBuffer cachedSample = cacheEntry.slice();
-                    cachedSample.limit(length);
-                    return cachedSample;
-                }
-            }
+        // most likely the last used cache slice will be used again
+        if (cacheSliceCurrentlyInUseStart < offset && cacheSliceCurrentlyInUse != null && offset + length <= cacheSliceCurrentlyInUseStart + cacheSliceCurrentlyInUse.limit()) {
+            cacheSliceCurrentlyInUse.position((int) (offset - cacheSliceCurrentlyInUseStart));
+            ByteBuffer cachedSample = cacheSliceCurrentlyInUse.slice();
+            cachedSample.limit(length);
+            return cachedSample;
         }
+
         // CACHE MISS
         ByteBuffer cacheEntry;
         try {
             // Just mapping 10MB at a time. Seems reasonable.
-            System.err.println("MMM");
             cacheEntry = fileChannel.map(FileChannel.MapMode.READ_ONLY, startPosition + offset, Math.min(BUFFER_SIZE, contentSize - offset));
         } catch (IOException e1) {
             LOG.fine("Even mapping just 10MB of the source file into the memory failed. " + e1);
@@ -176,7 +166,8 @@ public final class MediaDataBox implements Box {
                     "Delayed reading of mdat content failed. Make sure not to close " +
                             "the FileChannel that has been used to create the IsoFile!", e1);
         }
-        cache.put(offset, new SoftReference<ByteBuffer>(cacheEntry));
+        cacheSliceCurrentlyInUse = cacheEntry;
+        cacheSliceCurrentlyInUseStart = offset;
         cacheEntry.position(0);
         ByteBuffer cachedSample = cacheEntry.slice();
         cachedSample.limit(length);

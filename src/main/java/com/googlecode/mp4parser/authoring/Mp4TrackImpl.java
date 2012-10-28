@@ -20,6 +20,7 @@ import com.coremedia.iso.boxes.fragment.*;
 import com.coremedia.iso.boxes.mdat.SampleList;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,9 +48,9 @@ public class Mp4TrackImpl extends AbstractTrack {
         handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
 
         mihd = trackBox.getMediaBox().getMediaInformationBox().getMediaHeaderBox();
-        decodingTimeEntries = new LinkedList<TimeToSampleBox.Entry>();
-        compositionTimeEntries = new LinkedList<CompositionTimeToSample.Entry>();
-        sampleDependencies = new LinkedList<SampleDependencyTypeBox.Entry>();
+        decodingTimeEntries = new ArrayList<TimeToSampleBox.Entry>();
+        compositionTimeEntries = new ArrayList<CompositionTimeToSample.Entry>();
+        sampleDependencies = new ArrayList<SampleDependencyTypeBox.Entry>();
 
         decodingTimeEntries.addAll(stbl.getTimeToSampleBox().getEntries());
         if (stbl.getCompositionTimeToSample() != null) {
