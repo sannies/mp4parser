@@ -148,7 +148,7 @@ public final class MediaDataBox implements Box {
 
     public synchronized ByteBuffer getContent(long offset, int length) {
         // most likely the last used cache slice will be used again
-        if (cacheSliceCurrentlyInUseStart < offset && cacheSliceCurrentlyInUse != null && offset + length <= cacheSliceCurrentlyInUseStart + cacheSliceCurrentlyInUse.limit()) {
+        if (cacheSliceCurrentlyInUseStart <= offset && cacheSliceCurrentlyInUse != null && offset + length <= cacheSliceCurrentlyInUseStart + cacheSliceCurrentlyInUse.limit()) {
             cacheSliceCurrentlyInUse.position((int) (offset - cacheSliceCurrentlyInUseStart));
             ByteBuffer cachedSample = cacheSliceCurrentlyInUse.slice();
             cachedSample.limit(length);
