@@ -131,26 +131,9 @@ public class CroppedTrack extends AbstractTrack {
     }
 
     synchronized public long[] getSyncSamples() {
-        if (this.syncSampleArray == null) {
-            if (origTrack.getSyncSamples() != null && origTrack.getSyncSamples().length > 0) {
-                List<Long> syncSamples = new LinkedList<Long>();
-                for (long l : origTrack.getSyncSamples()) {
-                    if (l >= fromSample && l < toSample) {
-                        syncSamples.add(l - fromSample);
-                    }
-                }
-                syncSampleArray = new long[syncSamples.size()];
-                for (int i = 0; i < syncSampleArray.length; i++) {
-                    syncSampleArray[i] = syncSamples.get(i);
-
-                }
-                return syncSampleArray;
-            } else {
-                return null;
-            }
-        } else {
-            return this.syncSampleArray;
-        }
+        syncSampleArray = new long[toSample - fromSample];
+        System.arraycopy(origTrack.getSyncSamples(), fromSample, syncSampleArray, 0, syncSampleArray.length);
+        return syncSampleArray;
     }
 
     public List<SampleDependencyTypeBox.Entry> getSampleDependencies() {
