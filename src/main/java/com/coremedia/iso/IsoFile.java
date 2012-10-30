@@ -16,9 +16,9 @@
 
 package com.coremedia.iso;
 
-import com.googlecode.mp4parser.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.MovieBox;
+import com.googlecode.mp4parser.AbstractContainerBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 
 import java.io.*;
@@ -40,13 +40,40 @@ public class IsoFile extends AbstractContainerBox implements Closeable {
         super("");
     }
 
-    public IsoFile(File f) throws IOException {
-        super("");
-        this.byteChannel = new FileInputStream(f).getChannel();
-        boxParser = createBoxParser();
-        parse();
+    /**
+     * Shortcut constructor that creates a <code>FileChannel</code> from the
+     * given filename and pass it to the {@link IsoFile#IsoFile(java.nio.channels.FileChannel)}
+     * constructor.
+     *
+     * @param filename of the MP4 file to be parsed
+     * @throws IOException in case I/O error
+     */
+    public IsoFile(String filename) throws IOException {
+        this(new FileInputStream(filename).getChannel());
     }
 
+    /**
+     * Creates a new <code>IsoFile</code> from a <code>FileChannel</code>. Uses memory-mapping
+     * to save heap memory.
+     *
+     * @param fileChannel the source file
+     * @throws IOException in case I/O error
+     */
+    public IsoFile(FileChannel fileChannel) throws IOException {
+        this((ReadableByteChannel) fileChannel);
+    }
+
+    /**
+     * Creates a new <code>IsoFile</code> from a <code>ReadableByteChannel</code>.
+     * <p/>
+     * Try to use {@link IsoFile#IsoFile(FileChannel)} so you can benefit from
+     * {@link FileChannel#map(java.nio.channels.FileChannel.MapMode, long, long)}. It will
+     * reduce your heap requirements drastically!
+     *
+     * @param byteChannel the data source
+     * @throws IOException in case I/O error
+     * @deprecated use {@link IsoFile#IsoFile(FileChannel)} to save heap
+     */
     public IsoFile(ReadableByteChannel byteChannel) throws IOException {
         super("");
         this.byteChannel = byteChannel;

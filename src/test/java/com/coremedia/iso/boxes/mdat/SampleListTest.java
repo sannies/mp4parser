@@ -9,7 +9,6 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.TwoSecondIntersectionFinder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -49,7 +48,7 @@ public class SampleListTest {
 
     @Test
     public void testGotAll() throws IOException {
-        File input  = new File(SampleListTest.class.getProtectionDomain().getCodeSource().getLocation().getFile(), "/Beethoven - Bagatelle op.119 no.11 i.m4a");
+        String input = SampleListTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/Beethoven - Bagatelle op.119 no.11 i.m4a";
 
         IsoFile isoFile = new IsoFile(input);
 
