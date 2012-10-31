@@ -208,7 +208,7 @@ public class IsoFile extends AbstractContainerBox implements Closeable {
                 long startPos = ((FileChannel) os).position();
                 box.getBox(os);
                 long size = ((FileChannel) os).position() - startPos;
-                assert size == box.getSize();
+                assert size == box.getSize() : box.getType() + " Size: " + size + " box.getSize(): " + box.getSize();
             } else {
                 box.getBox(os);
             }

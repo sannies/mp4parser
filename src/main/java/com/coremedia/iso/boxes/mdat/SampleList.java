@@ -19,8 +19,6 @@ public class SampleList extends AbstractList<ByteBuffer> {
     long[] sizes;
 
     IsoFile isoFile;
-    HashMap<MediaDataBox, Long> mdatStartCache = new HashMap<MediaDataBox, Long>();
-    HashMap<MediaDataBox, Long> mdatEndCache = new HashMap<MediaDataBox, Long>();
     MediaDataBox[] mdats;
 
     /**
@@ -59,18 +57,18 @@ public class SampleList extends AbstractList<ByteBuffer> {
             }
             offsets = new long[sizes.length];
 
-                for (int i = 0; i < numberOfSamplesInChunk.length; i++) {
-                    long thisChunksNumberOfSamples = numberOfSamplesInChunk[i];
+            for (int i = 0; i < numberOfSamplesInChunk.length; i++) {
+                long thisChunksNumberOfSamples = numberOfSamplesInChunk[i];
                 long sampleOffset = chunkOffsets[i];
-                    for (int j = 0; j < thisChunksNumberOfSamples; j++) {
+                for (int j = 0; j < thisChunksNumberOfSamples; j++) {
                     long sampleSize = sizes[sampleIndex];
                     offsets[sampleIndex] = sampleOffset;
-                        sampleOffset += sampleSize;
-                        sampleIndex++;
-                    }
+                    sampleOffset += sampleSize;
+                    sampleIndex++;
                 }
-
             }
+
+        }
 
         // Next we add all samples from the fragments
         // in most cases - I've never seen it different it's either normal or fragmented.        
@@ -86,15 +84,15 @@ public class SampleList extends AbstractList<ByteBuffer> {
                     }
                 }
             }
-            
+
             if (sizes == null || offsets == null) {
                 sizes = new long[0];
                 offsets = new long[0];
             }
-            
+
             splitToArrays(offsets2Sizes);
         }
-        
+
         // We have now a map from all sample offsets to their sizes
     }
 
@@ -113,7 +111,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
         sizes = nuSizes;
         offsets = nuOffsets;
     }
-    
+
     public SampleList(TrackFragmentBox traf) {
         sizes = new long[0];
         offsets = new long[0];
@@ -143,9 +141,6 @@ public class SampleList extends AbstractList<ByteBuffer> {
             long currentSize = b.getSize();
             if ("mdat".equals(b.getType())) {
                 if (b instanceof MediaDataBox) {
-                    long contentOffset = currentOffset + ((MediaDataBox) b).getHeader().limit();
-                    mdatStartCache.put((MediaDataBox) b, contentOffset);
-                    mdatEndCache.put((MediaDataBox) b, contentOffset + currentSize);
                     mdats.add((MediaDataBox) b);
                 } else {
                     throw new RuntimeException("Sample need to be in mdats and mdats need to be instanceof MediaDataBox");
@@ -170,14 +165,12 @@ public class SampleList extends AbstractList<ByteBuffer> {
         int sampleSize = l2i(sizes[index]);
 
         for (MediaDataBox mediaDataBox : mdats) {
-            long start = mdatStartCache.get(mediaDataBox);
-            long end = mdatEndCache.get(mediaDataBox);
-            if ((start <= offset) && (offset + sampleSize <= end)) {
-                return mediaDataBox.getContent(offset - start, sampleSize);
+            if ((mediaDataBox.getDataStartPosition() <= offset) && (offset + sampleSize <= mediaDataBox.getDataEndPosition())) {
+                return mediaDataBox.getContent(offset - mediaDataBox.getDataStartPosition(), sampleSize);
             }
         }
 
-        throw new RuntimeException("The sample with offset " + offset + " and size " + sampleSize + " is NOT located within an mdat");
+        throw new RuntimeException("The sample with offset " + offset + " and size " + l2i(sizes[index]) + " is NOT located within an mdat");
     }
 
     Map<Long, Long> getOffsets(MovieFragmentBox moof, long trackId, TrackExtendsBox trex) {

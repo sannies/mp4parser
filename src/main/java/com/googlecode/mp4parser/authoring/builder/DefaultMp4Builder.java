@@ -27,7 +27,6 @@ import com.googlecode.mp4parser.util.Path;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
-import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
@@ -178,7 +177,6 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     private TrackBox createTrackBox(Track track, Movie movie, Map<Track, int[]> chunks) {
 
-        LOG.info("Creating Mp4TrackImpl " + track);
         TrackBox trackBox = new TrackBox();
         TrackHeaderBox tkhd = new TrackHeaderBox();
         int flags = 0;
@@ -435,31 +433,11 @@ public class DefaultMp4Builder implements Mp4Builder {
             }
             bb.rewind();
             writableByteChannel.write(bb);
-            if (writableByteChannel instanceof GatheringByteChannel) {
-                for (List<ByteBuffer> samples : chunkList) {
-
-
-                    for (int i = 0; i < Math.ceil((double) samples.size() / STEPSIZE); i++) {
-                        List<ByteBuffer> sublist = samples.subList(
-                                i * STEPSIZE, // start
-                                (i + 1) * STEPSIZE < samples.size() ? (i + 1) * STEPSIZE : samples.size()); // end
-                        ByteBuffer sampleArray[] = sublist.toArray(new ByteBuffer[sublist.size()]);
-                        do {
-                            ((GatheringByteChannel) writableByteChannel).write(sampleArray);
-                        } while (sampleArray[sampleArray.length - 1].remaining() > 0);
-                    }
+            for (List<ByteBuffer> samples : chunkList) {
+                samples = unifyAdjacentBuffers(samples);
+                for (ByteBuffer sample : samples) {
+                    writableByteChannel.write(sample);
                 }
-
-                //System.err.println(bytesWritten);
-            } else {
-                for (List<ByteBuffer> byteBuffers : chunkList) {
-                    for (ByteBuffer sample : byteBuffers) {
-                        sample.rewind();
-                        writableByteChannel.write(sample);
-
-                    }
-                }
-
             }
         }
 
@@ -538,6 +516,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     public List<ByteBuffer> unifyAdjacentBuffers(List<ByteBuffer> samples) {
         ArrayList<ByteBuffer> nuSamples = new ArrayList<ByteBuffer>(samples.size());
+        samples = new ArrayList<ByteBuffer>(samples);
         for (ByteBuffer buffer : samples) {
             int lastIndex = nuSamples.size() - 1;
             if (lastIndex >= 0 && buffer.hasArray() && nuSamples.get(lastIndex).hasArray() && buffer.array() == nuSamples.get(lastIndex).array() &&

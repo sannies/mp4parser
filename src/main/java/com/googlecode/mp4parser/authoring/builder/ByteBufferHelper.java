@@ -41,7 +41,7 @@ public class ByteBufferHelper {
                 ByteBuffer oldBuffer = nuSamples.get(lastIndex);
                 oldBuffer.limit(buffer.limit() + oldBuffer.limit());
             } else {
-                buffer.rewind();
+                buffer.reset();
                 nuSamples.add(buffer);
             }
         }

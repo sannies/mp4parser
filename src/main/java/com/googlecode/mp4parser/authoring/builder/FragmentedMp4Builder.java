@@ -26,7 +26,6 @@ import com.googlecode.mp4parser.authoring.Track;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
@@ -65,20 +64,20 @@ public class FragmentedMp4Builder implements Mp4Builder {
      * <li>video[1].getBytes().length < audio[1].getBytes().length < subs[1].getBytes().length</li>
      * <li> audio[2].getBytes().length < video[2].getBytes().length < subs[2].getBytes().length</li>
      * </ul>
-     *
+     * <p/>
      * make this fragment:
-     *
+     * <p/>
      * <ol>
-     *     <li>video[1]</li>
-     *     <li>audio[1]</li>
-     *     <li>subs[1]</li>
-     *     <li>audio[2]</li>
-     *     <li>video[2]</li>
-     *     <li>subs[2]</li>
+     * <li>video[1]</li>
+     * <li>audio[1]</li>
+     * <li>subs[1]</li>
+     * <li>audio[2]</li>
+     * <li>video[2]</li>
+     * <li>subs[2]</li>
      * </ol>
      *
-     * @param tracks the list of tracks to returned sorted
-     * @param cycle current fragment (sorting may vary between the fragments)
+     * @param tracks          the list of tracks to returned sorted
+     * @param cycle           current fragment (sorting may vary between the fragments)
      * @param intersectionMap a map from tracks to their fragments' first samples.
      * @return the list of tracks in order of appearance in the fragment
      */
@@ -98,11 +97,11 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 List<ByteBuffer> samples2 = o2.getSamples().subList(l2i(startSample2) - 1, l2i(endSample2) - 1);
                 int size1 = 0;
                 for (ByteBuffer byteBuffer : samples1) {
-                    size1 += byteBuffer.limit();
+                    size1 += byteBuffer.remaining();
                 }
                 int size2 = 0;
                 for (ByteBuffer byteBuffer : samples2) {
-                    size2 += byteBuffer.limit();
+                    size2 += byteBuffer.remaining();
                 }
                 return size1 - size2;
             }
@@ -185,7 +184,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
             public long getSize() {
                 long size = 8; // I don't expect 2gig fragments
                 for (ByteBuffer sample : getSamples(startSample, endSample, track, i)) {
-                    size += sample.limit();
+                    size += sample.remaining();
                 }
                 return size;
             }
@@ -195,35 +194,17 @@ public class FragmentedMp4Builder implements Mp4Builder {
             }
 
             public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-                List<ByteBuffer> bbs = getSamples(startSample, endSample, track, i);
-                final List<ByteBuffer> samples = ByteBufferHelper.mergeAdjacentBuffers(bbs);
                 ByteBuffer header = ByteBuffer.allocate(8);
                 IsoTypeWriter.writeUInt32(header, l2i(getSize()));
                 header.put(IsoFile.fourCCtoBytes(getType()));
                 header.rewind();
                 writableByteChannel.write(header);
-                if (writableByteChannel instanceof GatheringByteChannel) {
 
-                    int STEPSIZE = 1024;
-                    // This is required to prevent android from crashing
-                    // it seems that {@link GatheringByteChannel#write(java.nio.ByteBuffer[])}
-                    // just handles up to 1024 buffers
-                    for (int i = 0; i < Math.ceil((double) samples.size() / STEPSIZE); i++) {
-                        List<ByteBuffer> sublist = samples.subList(
-                                i * STEPSIZE, // start
-                                (i + 1) * STEPSIZE < samples.size() ? (i + 1) * STEPSIZE : samples.size()); // end
-                        ByteBuffer sampleArray[] = sublist.toArray(new ByteBuffer[sublist.size()]);
-                        do {
-                            ((GatheringByteChannel) writableByteChannel).write(sampleArray);
-                        } while (sampleArray[sampleArray.length - 1].remaining() > 0);
-                    }
-                    //System.err.println(bytesWritten);
-                } else {
-                    for (ByteBuffer sample : samples) {
-                        sample.rewind();
-                        writableByteChannel.write(sample);
-                    }
+                List<ByteBuffer> samples = getSamples(startSample, endSample, track, i);
+                for (ByteBuffer sample : samples) {
+                    writableByteChannel.write(sample);
                 }
+
 
             }
 
@@ -291,7 +272,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         long[] sampleSizes = new long[samples.size()];
         for (int i = 0; i < sampleSizes.length; i++) {
-            sampleSizes[i] = samples.get(i).limit();
+            sampleSizes[i] = samples.get(i).remaining();
         }
         return sampleSizes;
     }

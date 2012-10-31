@@ -121,7 +121,13 @@ public class SampleListTest {
         while (origBBIt.hasNext() && fragBBIt.hasNext()) {
             ByteBuffer origSample = origBBIt.next();
             ByteBuffer fragSample = fragBBIt.next();
-            Assert.assertEquals(origSample, fragSample);
+            origSample.reset();
+            fragSample.reset();
+            while (origSample.remaining() > 0 && fragSample.remaining() > 0) {
+                Assert.assertEquals((byte) origSample.get(), (byte) fragSample.get());
+            }
+            Assert.assertTrue(origSample.remaining() == 0);
+            Assert.assertTrue(fragSample.remaining() == 0);
         }
 
     }

@@ -128,6 +128,14 @@ public final class MediaDataBox implements Box {
         return size;
     }
 
+    public long getDataStartPosition() {
+        return startPosition;
+    }
+
+    public long getDataEndPosition() {
+        return startPosition + contentSize;
+    }
+
     public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         this.header = header;
         this.contentSize = contentSize;
@@ -138,6 +146,11 @@ public final class MediaDataBox implements Box {
             ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
         } else {
             content = ChannelHelper.readFully(readableByteChannel, l2i(contentSize));
+            startPosition = 0;
+            for (Box box : this.getParent().getBoxes()) {
+                startPosition += box.getSize();
+            }
+            startPosition += header.limit();
             cacheSliceCurrentlyInUse = content;
             cacheSliceCurrentlyInUseStart = 0;
         }
@@ -149,9 +162,10 @@ public final class MediaDataBox implements Box {
     public synchronized ByteBuffer getContent(long offset, int length) {
         // most likely the last used cache slice will be used again
         if (cacheSliceCurrentlyInUseStart <= offset && cacheSliceCurrentlyInUse != null && offset + length <= cacheSliceCurrentlyInUseStart + cacheSliceCurrentlyInUse.limit()) {
-            cacheSliceCurrentlyInUse.position((int) (offset - cacheSliceCurrentlyInUseStart));
-            ByteBuffer cachedSample = cacheSliceCurrentlyInUse.slice();
-            cachedSample.limit(length);
+            ByteBuffer cachedSample = cacheSliceCurrentlyInUse.asReadOnlyBuffer();
+            cachedSample.position((int) (offset - cacheSliceCurrentlyInUseStart));
+            cachedSample.mark();
+            cachedSample.limit((int) (offset - cacheSliceCurrentlyInUseStart) + length);
             return cachedSample;
         }
 
@@ -168,8 +182,9 @@ public final class MediaDataBox implements Box {
         }
         cacheSliceCurrentlyInUse = cacheEntry;
         cacheSliceCurrentlyInUseStart = offset;
-        cacheEntry.position(0);
-        ByteBuffer cachedSample = cacheEntry.slice();
+        ByteBuffer cachedSample = cacheSliceCurrentlyInUse.asReadOnlyBuffer();
+        cachedSample.position(0);
+        cachedSample.mark();
         cachedSample.limit(length);
         return cachedSample;
     }

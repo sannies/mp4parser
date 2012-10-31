@@ -21,10 +21,7 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 /**
  * Generates a Track that starts at fromSample and ends at toSample (exclusive). The user of this class
@@ -131,9 +128,22 @@ public class CroppedTrack extends AbstractTrack {
     }
 
     synchronized public long[] getSyncSamples() {
-        syncSampleArray = new long[toSample - fromSample];
-        System.arraycopy(origTrack.getSyncSamples(), fromSample, syncSampleArray, 0, syncSampleArray.length);
-        return syncSampleArray;
+        if (origTrack.getSyncSamples() != null) {
+            long[] origSyncSamples = origTrack.getSyncSamples();
+            int i = 0, j = origSyncSamples.length;
+            while (i < origSyncSamples.length && origSyncSamples[i] < fromSample) {
+                i++;
+            }
+            while (j > 0 && toSample < origSyncSamples[j - 1]) {
+                j--;
+            }
+            syncSampleArray = Arrays.copyOfRange(origTrack.getSyncSamples(), i, j);
+            for (int k = 0; k < syncSampleArray.length; k++) {
+                syncSampleArray[k] -= fromSample;
+            }
+            return syncSampleArray;
+        }
+        return null;
     }
 
     public List<SampleDependencyTypeBox.Entry> getSampleDependencies() {
