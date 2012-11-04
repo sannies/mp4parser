@@ -256,7 +256,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         IsoTypeWriter.writeUInt16(byteBuffer, sampleSize);
         IsoTypeWriter.writeUInt16(byteBuffer, compressionId);
         IsoTypeWriter.writeUInt16(byteBuffer, packetSize);
-        //isos.writeFixedPont1616(getSampleRate());
+        //isos.writeFixedPoint1616(getSampleRate());
         if (type.equals("mlpa")) {
             IsoTypeWriter.writeUInt32(byteBuffer, getSampleRate());
         } else {

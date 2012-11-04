@@ -43,7 +43,7 @@ public class TrackHeaderBox extends AbstractFullBox {
     private int layer;
     private int alternateGroup;
     private float volume;
-    private long[] matrix = new long[]{0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000};
+    private double[] matrix = new double[]{0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000};
     private double width;
     private double height;
 
@@ -81,7 +81,7 @@ public class TrackHeaderBox extends AbstractFullBox {
         return volume;
     }
 
-    public long[] getMatrix() {
+    public double[] getMatrix() {
         return matrix;
     }
 
@@ -126,10 +126,20 @@ public class TrackHeaderBox extends AbstractFullBox {
         alternateGroup = IsoTypeReader.readUInt16(content);
         volume = IsoTypeReader.readFixedPoint88(content);
         IsoTypeReader.readUInt16(content);     // 212
-        matrix = new long[9];
-        for (int i = 0; i < 9; i++) {
-            matrix[i] = IsoTypeReader.readUInt32(content);
-        }
+        matrix = new double[9];
+        int i = 0;
+        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
+        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
+        matrix[i++] = IsoTypeReader.readFixedPoint0230(content);
+
+        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
+        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
+        matrix[i++] = IsoTypeReader.readFixedPoint0230(content);
+
+        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
+        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
+        matrix[i] = IsoTypeReader.readFixedPoint0230(content);
+
         width = IsoTypeReader.readFixedPoint1616(content);    // 248
         height = IsoTypeReader.readFixedPoint1616(content);
     }
@@ -153,13 +163,23 @@ public class TrackHeaderBox extends AbstractFullBox {
         IsoTypeWriter.writeUInt32(byteBuffer, 0);
         IsoTypeWriter.writeUInt16(byteBuffer, layer);
         IsoTypeWriter.writeUInt16(byteBuffer, alternateGroup);
-        IsoTypeWriter.writeFixedPont88(byteBuffer, volume);
+        IsoTypeWriter.writeFixedPoint88(byteBuffer, volume);
         IsoTypeWriter.writeUInt16(byteBuffer, 0);
-        for (int i = 0; i < 9; i++) {
-            IsoTypeWriter.writeUInt32(byteBuffer, matrix[i]);
-        }
-        IsoTypeWriter.writeFixedPont1616(byteBuffer, width);
-        IsoTypeWriter.writeFixedPont1616(byteBuffer, height);
+        int i = 0;
+        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
+        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
+        IsoTypeWriter.writeFixedPoint0230(byteBuffer, matrix[i++]);
+
+        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
+        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
+        IsoTypeWriter.writeFixedPoint0230(byteBuffer, matrix[i++]);
+
+        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
+        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
+        IsoTypeWriter.writeFixedPoint0230(byteBuffer, matrix[i]);
+
+        IsoTypeWriter.writeFixedPoint1616(byteBuffer, width);
+        IsoTypeWriter.writeFixedPoint1616(byteBuffer, height);
     }
 
     public String toString() {
@@ -218,7 +238,7 @@ public class TrackHeaderBox extends AbstractFullBox {
         this.volume = volume;
     }
 
-    public void setMatrix(long[] matrix) {
+    public void setMatrix(double[] matrix) {
         this.matrix = matrix;
     }
 

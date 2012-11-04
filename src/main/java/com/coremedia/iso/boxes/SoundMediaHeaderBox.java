@@ -48,7 +48,7 @@ public class SoundMediaHeaderBox extends AbstractMediaHeaderBox {
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
-        IsoTypeWriter.writeFixedPont88(byteBuffer, balance);
+        IsoTypeWriter.writeFixedPoint88(byteBuffer, balance);
         IsoTypeWriter.writeUInt16(byteBuffer, 0);
     }
 

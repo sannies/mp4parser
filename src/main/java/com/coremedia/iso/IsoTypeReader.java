@@ -34,7 +34,7 @@ public final class IsoTypeReader {
     public static long readUInt32(ByteBuffer bb) {
         long i = bb.getInt();
         if (i < 0) {
-            i += 1l<<32;
+            i += 1l << 32;
         }
         return i;
     }
@@ -116,6 +116,20 @@ public final class IsoTypeReader {
         result |= ((bytes[2] << 8) & 0xFF00);
         result |= ((bytes[3]) & 0xFF);
         return ((double) result) / 65536;
+
+    }
+
+
+    public static double readFixedPoint0230(ByteBuffer bb) {
+        byte[] bytes = new byte[4];
+        bb.get(bytes);
+
+        int result = 0;
+        result |= ((bytes[0] << 24) & 0xFF000000);
+        result |= ((bytes[1] << 16) & 0xFF0000);
+        result |= ((bytes[2] << 8) & 0xFF00);
+        result |= ((bytes[3]) & 0xFF);
+        return ((double) result) / (1 << 30);
 
     }
 

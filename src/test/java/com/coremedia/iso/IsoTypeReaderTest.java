@@ -19,21 +19,21 @@ public class IsoTypeReaderTest {
         IsoTypeWriter.writeUInt8(bb, 0);
         IsoTypeWriter.writeUInt8(bb, 255);
         IsoTypeWriter.writeUInt16(bb, 0);
-        IsoTypeWriter.writeUInt16(bb, (1<<16) - 1);
+        IsoTypeWriter.writeUInt16(bb, (1 << 16) - 1);
         IsoTypeWriter.writeUInt24(bb, 0);
-        IsoTypeWriter.writeUInt24(bb, (1<<24) - 1);
+        IsoTypeWriter.writeUInt24(bb, (1 << 24) - 1);
         IsoTypeWriter.writeUInt32(bb, 0);
-        IsoTypeWriter.writeUInt32(bb, (1l<< 32) - 1);
+        IsoTypeWriter.writeUInt32(bb, (1l << 32) - 1);
         bb.rewind();
 
         Assert.assertEquals(0, IsoTypeReader.readUInt8(bb));
         Assert.assertEquals(255, IsoTypeReader.readUInt8(bb));
         Assert.assertEquals(0, IsoTypeReader.readUInt16(bb));
-        Assert.assertEquals((1<<16) - 1, IsoTypeReader.readUInt16(bb));
+        Assert.assertEquals((1 << 16) - 1, IsoTypeReader.readUInt16(bb));
         Assert.assertEquals(0, IsoTypeReader.readUInt24(bb));
-        Assert.assertEquals((1<<24) - 1, IsoTypeReader.readUInt24(bb));
+        Assert.assertEquals((1 << 24) - 1, IsoTypeReader.readUInt24(bb));
         Assert.assertEquals(0, IsoTypeReader.readUInt32(bb));
-        Assert.assertEquals((1l<< 32) - 1, IsoTypeReader.readUInt32(bb));
+        Assert.assertEquals((1l << 32) - 1, IsoTypeReader.readUInt32(bb));
     }
 
     @Test
@@ -44,12 +44,28 @@ public class IsoTypeReaderTest {
 
         ByteBuffer bb = ByteBuffer.allocate(8);
 
-        IsoTypeWriter.writeFixedPont1616(bb, fixedPointTest1);
-        IsoTypeWriter.writeFixedPont1616(bb,fixedPointTest2);
+        IsoTypeWriter.writeFixedPoint1616(bb, fixedPointTest1);
+        IsoTypeWriter.writeFixedPoint1616(bb, fixedPointTest2);
         bb.rewind();
 
         Assert.assertEquals("fixedPointTest1", fixedPointTest1, IsoTypeReader.readFixedPoint1616(bb), 1d / 65536);
         Assert.assertEquals("fixedPointTest2", fixedPointTest2, IsoTypeReader.readFixedPoint1616(bb), 1d / 65536);
+    }
+
+    @Test
+    public void testFixedPoint0230() throws IOException {
+        final double fixedPointTest1 = 1.13;
+        final double fixedPointTest2 = -1.13;
+
+
+        ByteBuffer bb = ByteBuffer.allocate(8);
+
+        IsoTypeWriter.writeFixedPoint0230(bb, fixedPointTest1);
+        IsoTypeWriter.writeFixedPoint0230(bb, fixedPointTest2);
+        bb.rewind();
+
+        Assert.assertEquals("fixedPointTest1", fixedPointTest1, IsoTypeReader.readFixedPoint0230(bb), 1d / 65536);
+        Assert.assertEquals("fixedPointTest2", fixedPointTest2, IsoTypeReader.readFixedPoint0230(bb), 1d / 65536);
     }
 
     @Test
@@ -59,9 +75,8 @@ public class IsoTypeReaderTest {
         ByteBuffer bb = ByteBuffer.allocate(4);
 
 
-
-        IsoTypeWriter.writeFixedPont88(bb, fixedPointTest1);
-        IsoTypeWriter.writeFixedPont88(bb, fixedPointTest2);
+        IsoTypeWriter.writeFixedPoint88(bb, fixedPointTest1);
+        IsoTypeWriter.writeFixedPoint88(bb, fixedPointTest2);
         bb.rewind();
 
         Assert.assertEquals("fixedPointTest1", fixedPointTest1, IsoTypeReader.readFixedPoint88(bb), 1d / 256);

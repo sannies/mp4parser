@@ -21,7 +21,6 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -225,7 +224,7 @@ public class EditListBox extends AbstractFullBox {
             return result;
         }
 
-        public void getContent(ByteBuffer bb)  {
+        public void getContent(ByteBuffer bb) {
             if (editListBox.getVersion() == 1) {
                 IsoTypeWriter.writeUInt64(bb, segmentDuration);
                 IsoTypeWriter.writeUInt64(bb, mediaTime);
@@ -233,7 +232,7 @@ public class EditListBox extends AbstractFullBox {
                 IsoTypeWriter.writeUInt32(bb, l2i(segmentDuration));
                 bb.putInt(l2i(mediaTime));
             }
-            IsoTypeWriter.writeFixedPont1616(bb, mediaRate);
+            IsoTypeWriter.writeFixedPoint1616(bb, mediaRate);
         }
 
         @Override

@@ -173,8 +173,8 @@ public class MovieHeaderBox extends AbstractFullBox {
             IsoTypeWriter.writeUInt32(byteBuffer, timescale);
             IsoTypeWriter.writeUInt32(byteBuffer, duration);
         }
-        IsoTypeWriter.writeFixedPont1616(byteBuffer, rate);
-        IsoTypeWriter.writeFixedPont88(byteBuffer, volume);
+        IsoTypeWriter.writeFixedPoint1616(byteBuffer, rate);
+        IsoTypeWriter.writeFixedPoint88(byteBuffer, volume);
         IsoTypeWriter.writeUInt16(byteBuffer, 0);
         IsoTypeWriter.writeUInt32(byteBuffer, 0);
         IsoTypeWriter.writeUInt32(byteBuffer, 0);
