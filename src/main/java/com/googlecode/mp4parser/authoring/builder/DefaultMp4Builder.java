@@ -434,7 +434,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             bb.rewind();
             writableByteChannel.write(bb);
             for (List<ByteBuffer> samples : chunkList) {
-                samples = unifyAdjacentBuffers(samples);
+                // samples = unifyAdjacentBuffers(samples);
                 for (ByteBuffer sample : samples) {
                     writableByteChannel.write(sample);
                 }
