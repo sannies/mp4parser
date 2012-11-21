@@ -22,7 +22,7 @@ public class GenericMediaHeaderTextAtomTest extends BoxWriteReadBase<GenericMedi
     }
 
     @Override
-    public void setupProperties(Map<String, Object> addPropsHere) {
+    public void setupProperties(Map<String, Object> addPropsHere, GenericMediaHeaderTextAtom box) {
         addPropsHere.put("unknown_1", (int) 1);
         addPropsHere.put("unknown_2", (int) 2);
         addPropsHere.put("unknown_3", (int) 3);

@@ -14,7 +14,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Constructor;
 import java.nio.channels.Channels;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class BoxWriteReadBase<T extends Box> {
 
@@ -42,7 +46,7 @@ public abstract class BoxWriteReadBase<T extends Box> {
 
     public abstract Class<T> getBoxUnderTest();
 
-    public abstract void setupProperties(Map<String, Object> addPropsHere);
+    public abstract void setupProperties(Map<String, Object> addPropsHere, T box);
 
 
     @Test
@@ -53,7 +57,7 @@ public abstract class BoxWriteReadBase<T extends Box> {
         BeanInfo beanInfo = Introspector.getBeanInfo(box.getClass());
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
         Map<String, Object> props = new HashMap<String, Object>();
-        setupProperties(props);
+        setupProperties(props, box);
         for (String property : props.keySet()) {
             boolean found = false;
             for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {

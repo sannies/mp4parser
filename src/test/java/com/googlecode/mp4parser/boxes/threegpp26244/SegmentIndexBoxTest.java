@@ -13,7 +13,7 @@ public class SegmentIndexBoxTest extends BoxWriteReadBase<SegmentIndexBox> {
     }
 
     @Override
-    public void setupProperties(Map<String, Object> values) {
+    public void setupProperties(Map<String, Object> values, SegmentIndexBox box) {
         values.put("referenceId", 726);
         values.put("timeScale", 725);
         values.put("earliestPresentationTime", 724);

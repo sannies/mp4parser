@@ -12,8 +12,8 @@ public class CleanApertureAtomTest extends BoxWriteReadBase<CleanApertureAtom> {
     }
 
     @Override
-    public void setupProperties(Map<String, Object> addPropsHere) {
-        addPropsHere.put("height", (long) 123);
-        addPropsHere.put("width", (long) 321);
+    public void setupProperties(Map<String, Object> addPropsHere, CleanApertureAtom box) {
+        addPropsHere.put("height", 123.0);
+        addPropsHere.put("width", 321.0);
     }
 }

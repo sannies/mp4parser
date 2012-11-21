@@ -58,6 +58,7 @@ public abstract class AbstractBoxParser implements BoxParser {
 
 
         String type = IsoTypeReader.read4cc(header);
+        //System.err.println(type);
         byte[] usertype = null;
         long contentSize;
 

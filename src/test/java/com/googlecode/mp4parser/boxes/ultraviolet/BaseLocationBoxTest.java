@@ -46,7 +46,7 @@ public class BaseLocationBoxTest extends BoxWriteReadBase<BaseLocationBox> {
     }
 
     @Override
-    public void setupProperties(Map<String, Object> addPropsHere) {
+    public void setupProperties(Map<String, Object> addPropsHere, BaseLocationBox box) {
         addPropsHere.put("baseLocation", " ");
         addPropsHere.put("purchaseLocation", " ");
     }

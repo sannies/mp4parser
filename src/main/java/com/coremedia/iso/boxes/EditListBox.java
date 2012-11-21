@@ -130,11 +130,11 @@ public class EditListBox extends AbstractFullBox {
         public Entry(EditListBox editListBox, ByteBuffer bb) {
             if (editListBox.getVersion() == 1) {
                 segmentDuration = IsoTypeReader.readUInt64(bb);
-                mediaTime = IsoTypeReader.readUInt64(bb);
+                mediaTime = bb.getLong();
                 mediaRate = IsoTypeReader.readFixedPoint1616(bb);
             } else {
                 segmentDuration = IsoTypeReader.readUInt32(bb);
-                mediaTime = IsoTypeReader.readUInt32(bb);
+                mediaTime = bb.getInt();
                 mediaRate = IsoTypeReader.readFixedPoint1616(bb);
             }
             this.editListBox = editListBox;
@@ -206,13 +206,21 @@ public class EditListBox extends AbstractFullBox {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
             Entry entry = (Entry) o;
 
-            if (mediaTime != entry.mediaTime) return false;
-            if (segmentDuration != entry.segmentDuration) return false;
+            if (mediaTime != entry.mediaTime) {
+                return false;
+            }
+            if (segmentDuration != entry.segmentDuration) {
+                return false;
+            }
 
             return true;
         }

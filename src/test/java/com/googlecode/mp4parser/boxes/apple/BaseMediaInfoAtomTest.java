@@ -18,7 +18,7 @@ public class BaseMediaInfoAtomTest extends BoxWriteReadBase<BaseMediaInfoAtom> {
     }
 
     @Override
-    public void setupProperties(Map<String, Object> addPropsHere) {
+    public void setupProperties(Map<String, Object> addPropsHere, BaseMediaInfoAtom box) {
         addPropsHere.put("balance", (short) 321);
         addPropsHere.put("graphicsMode", (short) 43);
         addPropsHere.put("opColorB", (int) 124);

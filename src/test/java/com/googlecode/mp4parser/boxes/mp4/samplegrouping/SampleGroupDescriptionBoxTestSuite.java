@@ -25,7 +25,7 @@ public class SampleGroupDescriptionBoxTestSuite {
         }
 
         @Override
-        public void setupProperties(Map<String, Object> addPropsHere) {
+        public void setupProperties(Map<String, Object> addPropsHere, SampleGroupDescriptionBox box) {
             RateShareEntry rateShareEntry = new RateShareEntry();
             rateShareEntry.setDiscardPriority((short) 56);
             rateShareEntry.setMaximumBitrate(1000);
@@ -53,7 +53,7 @@ public class SampleGroupDescriptionBoxTestSuite {
         }
 
         @Override
-        public void setupProperties(Map<String, Object> addPropsHere) {
+        public void setupProperties(Map<String, Object> addPropsHere, SampleGroupDescriptionBox box) {
             UnknownEntry unknownEntry = new UnknownEntry();
             unknownEntry.setContent(ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6}));
 
@@ -73,7 +73,7 @@ public class SampleGroupDescriptionBoxTestSuite {
         }
 
         @Override
-        public void setupProperties(Map<String, Object> addPropsHere) {
+        public void setupProperties(Map<String, Object> addPropsHere, SampleGroupDescriptionBox box) {
             RollRecoveryEntry entry = new RollRecoveryEntry();
             entry.setRollDistance((short) 6);
 
@@ -93,7 +93,7 @@ public class SampleGroupDescriptionBoxTestSuite {
         }
 
         @Override
-        public void setupProperties(Map<String, Object> addPropsHere) {
+        public void setupProperties(Map<String, Object> addPropsHere, SampleGroupDescriptionBox box) {
             CencSampleEncryptionInformationGroupEntry entry = new CencSampleEncryptionInformationGroupEntry();
             entry.setEncrypted(1);
             entry.setIvSize((byte) 16);
