@@ -43,7 +43,7 @@ public class TrackHeaderBox extends AbstractFullBox {
     private int layer;
     private int alternateGroup;
     private float volume;
-    private double[] matrix = new double[]{0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000};
+    private double[] matrix = new double[]{1.0d, 0, 0, 0, 1.0d, 0, 0, 0, 1.0d};
     private double width;
     private double height;
 
