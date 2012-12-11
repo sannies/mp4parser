@@ -91,7 +91,8 @@ public class DefaultMp4Builder implements Mp4Builder {
             putSamples(track, samples);
             long[] sizes = new long[samples.size()];
             for (int i = 0; i < sizes.length; i++) {
-                sizes[i] = samples.get(i).limit();
+                ByteBuffer b = samples.get(i);
+                sizes[i] = b.limit() - b.position();
             }
             track2SampleSizes.put(track, sizes);
 
