@@ -46,24 +46,48 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * it is accessible by the <code>PropertyBoxParserImpl</code>
  */
 public abstract class AbstractBox implements Box {
-    public static int MEM_MAP_THRESHOLD = 100 * 1024;
+    public static int MEM_MAP_THRESHOLD = 16 * 1024;
     private static Logger LOG = Logger.getLogger(AbstractBox.class.getName());
 
     protected String type;
     private byte[] userType;
     private ContainerBox parent;
+    boolean isParsed;
+    boolean isRead;
+
 
     private ByteBuffer content;
+
+
+    long memMapStartPosition = -1;
+    long memMapSize = -1;
+    FileChannel memMapFileChannel;
+
+    private synchronized void readContent() {
+        if (!isRead) {
+            try {
+                content = memMapFileChannel.map(FileChannel.MapMode.READ_ONLY, memMapStartPosition, memMapSize);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            isRead = true;
+        }
+    }
+
     private ByteBuffer deadBytes = null;
 
 
     protected AbstractBox(String type) {
         this.type = type;
+        isRead = true;
+        isParsed = true;
     }
 
     protected AbstractBox(String type, byte[] userType) {
         this.type = type;
         this.userType = userType;
+        isRead = true;
+        isParsed = true;
     }
 
     /**
@@ -106,31 +130,47 @@ public abstract class AbstractBox implements Box {
             // todo: potentially this could speed up writing.
             //
             // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
-            content = ((FileChannel) readableByteChannel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) readableByteChannel).position(), contentSize);
+            this.memMapStartPosition = ((FileChannel) readableByteChannel).position();
+            this.memMapSize = contentSize;
+            this.memMapFileChannel = (FileChannel) readableByteChannel;
+
             ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
+            isRead = false;
+            isParsed = false;
         } else {
             assert contentSize < Integer.MAX_VALUE;
             content = ChannelHelper.readFully(readableByteChannel, contentSize);
+            isRead = true;
+            isParsed = false;
         }
     }
 
     public void getBox(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getSize()));
-        getHeader(bb);
-        if (content == null) {
-            getContent(bb);
-            if (deadBytes != null) {
-                deadBytes.rewind();
-                while (deadBytes.remaining() > 0) {
-                    bb.put(deadBytes);
+        if (isRead) {
+            if (isParsed) {
+                ByteBuffer bb = ByteBuffer.allocate(l2i(getSize()));
+                getHeader(bb);
+                getContent(bb);
+                if (deadBytes != null) {
+                    deadBytes.rewind();
+                    while (deadBytes.remaining() > 0) {
+                        bb.put(deadBytes);
+                    }
                 }
+                os.write((ByteBuffer) bb.rewind());
+            } else {
+                ByteBuffer header = ByteBuffer.allocate((isSmallBox() ? 8 : 16) + (UserBox.TYPE.equals(getType()) ? 16 : 0));
+                getHeader(header);
+                os.write((ByteBuffer) header.rewind());
+                os.write((ByteBuffer)content.rewind());
             }
+
         } else {
-            content.rewind();
-            bb.put(content);
+            ByteBuffer header = ByteBuffer.allocate(isSmallBox() ? 8 : 16);
+            getHeader(header);
+            os.write((ByteBuffer) header.rewind());
+            memMapFileChannel.transferTo(memMapStartPosition, memMapSize, os);
         }
-        bb.rewind();
-        os.write(bb);
     }
 
 
@@ -139,6 +179,7 @@ public abstract class AbstractBox implements Box {
      * which is done
      */
     synchronized final void parseDetails() {
+        readContent();
         if (content != null) {
             ByteBuffer content = this.content;
             this.content = null;
@@ -147,6 +188,7 @@ public abstract class AbstractBox implements Box {
             if (content.remaining() > 0) {
                 deadBytes = content.slice();
             }
+            isParsed = true;
             assert verify(content);
         }
     }
@@ -168,7 +210,7 @@ public abstract class AbstractBox implements Box {
      * @return the box's size
      */
     public long getSize() {
-        long size = (content == null ? getContentSize() : content.limit());
+        long size = (isRead ? (isParsed ? getContentSize() : content.limit()) : memMapSize);
         size += (8 + // size|type
                 (size >= ((1L << 32) - 8) ? 8 : 0) + // 32bit - 8 byte size and type
                 (UserBox.TYPE.equals(getType()) ? 16 : 0));
@@ -207,7 +249,7 @@ public abstract class AbstractBox implements Box {
      * @return <code>true</code> whenever the content <code>ByteBuffer</code> is not <code>null</code>
      */
     public boolean isParsed() {
-        return content == null;
+        return isParsed;
     }
 
 
@@ -254,7 +296,19 @@ public abstract class AbstractBox implements Box {
     }
 
     private boolean isSmallBox() {
-        return (content == null ? (getContentSize() + (deadBytes != null ? deadBytes.limit() : 0) + 8) : content.limit()) < 1L << 32;
+        int baseSize = 8;
+        if (UserBox.TYPE.equals(getType())) {
+            baseSize += 16;
+        }
+        if (isRead) {
+            if (isParsed) {
+                return (getContentSize() + (deadBytes != null ? deadBytes.limit() : 0) + baseSize) < (1L << 32);
+            } else {
+                return content.limit() + baseSize < (1L << 32);
+            }
+        } else {
+            return memMapSize + baseSize < (1L << 32);
+        }
     }
 
     private void getHeader(ByteBuffer byteBuffer) {

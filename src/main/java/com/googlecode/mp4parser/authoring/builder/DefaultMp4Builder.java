@@ -68,7 +68,6 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  */
 public class DefaultMp4Builder implements Mp4Builder {
 
-    public int STEPSIZE = 64;
     Set<StaticChunkOffsetBox> chunkOffsetBoxes = new HashSet<StaticChunkOffsetBox>();
     private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
 
@@ -139,11 +138,6 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         return isoFile;
     }
-
-    public FragmentIntersectionFinder getFragmentIntersectionFinder() {
-        throw new UnsupportedOperationException("No fragment intersection finder in default MP4 builder!");
-    }
-
 
     protected List<ByteBuffer> putSamples(Track track, List<ByteBuffer> samples) {
         return track2Sample.put(track, samples);
