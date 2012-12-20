@@ -20,7 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
-import com.googlecode.mp4parser.AbstractBox;
+import com.googlecode.mp4parser.util.LazyList;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -140,14 +140,15 @@ public final class MediaDataBox implements Box {
         this.header = header;
         this.contentSize = contentSize;
 
-        if (readableByteChannel instanceof FileChannel && (contentSize > AbstractBox.MEM_MAP_THRESHOLD)) {
+        if (readableByteChannel instanceof FileChannel) {
             this.fileChannel = ((FileChannel) readableByteChannel);
             this.startPosition = ((FileChannel) readableByteChannel).position();
             ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
         } else {
             content = ChannelHelper.readFully(readableByteChannel, l2i(contentSize));
             startPosition = 0;
-            for (Box box : this.getParent().getBoxes()) {
+            // this sucks I don't want to rely on these detailed knowledge of implementation details here.
+            for (Box box : ((LazyList<Box>) this.getParent().getBoxes()).getUnderlying()) {
                 startPosition += box.getSize();
             }
             startPosition += header.limit();
@@ -187,11 +188,6 @@ public final class MediaDataBox implements Box {
         cachedSample.mark();
         cachedSample.limit(length);
         return cachedSample;
-    }
-
-
-    public ByteBuffer getHeader() {
-        return header;
     }
 
 }

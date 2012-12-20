@@ -34,6 +34,7 @@ public interface ContainerBox extends Box {
 
     /**
      * Sets all boxes and removes all previous child boxes.
+     *
      * @param boxes the new list of children
      */
     void setBoxes(List<Box> boxes);
@@ -62,13 +63,6 @@ public interface ContainerBox extends Box {
      * @return a <code>ContainerBox</code> that contains <code>this</code>
      */
     ContainerBox getParent();
-
-    /**
-     * Returns the number of bytes from the start of the box to start of the first child.
-     *
-     * @return offset of first child from box start
-     */
-    long getNumOfBytesToFirstChild();
 
     IsoFile getIsoFile();
 }

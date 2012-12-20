@@ -29,7 +29,7 @@ public class MediaInformationBox extends AbstractContainerBox {
     }
 
     public SampleTableBox getSampleTableBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof SampleTableBox) {
                 return (SampleTableBox) box;
             }
@@ -38,7 +38,7 @@ public class MediaInformationBox extends AbstractContainerBox {
     }
 
     public AbstractMediaHeaderBox getMediaHeaderBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof AbstractMediaHeaderBox) {
                 return (AbstractMediaHeaderBox) box;
             }

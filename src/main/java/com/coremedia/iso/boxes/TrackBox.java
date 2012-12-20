@@ -33,7 +33,7 @@ public class TrackBox extends AbstractContainerBox {
     }
 
     public TrackHeaderBox getTrackHeaderBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof TrackHeaderBox) {
                 return (TrackHeaderBox) box;
             }
@@ -60,7 +60,7 @@ public class TrackBox extends AbstractContainerBox {
 
 
     public MediaBox getMediaBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof MediaBox) {
                 return (MediaBox) box;
             }

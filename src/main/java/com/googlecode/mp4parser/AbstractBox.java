@@ -16,11 +16,7 @@
 
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.ChannelHelper;
-import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.UserBox;
@@ -46,7 +42,6 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * it is accessible by the <code>PropertyBoxParserImpl</code>
  */
 public abstract class AbstractBox implements Box {
-    public static int MEM_MAP_THRESHOLD = 16 * 1024;
     private static Logger LOG = Logger.getLogger(AbstractBox.class.getName());
 
     protected String type;
@@ -125,7 +120,7 @@ public abstract class AbstractBox implements Box {
      */
     @DoNotParseDetail
     public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        if (readableByteChannel instanceof FileChannel && contentSize > MEM_MAP_THRESHOLD) {
+        if (readableByteChannel instanceof FileChannel) {
             // todo: if I map this here delayed I could use transferFrom/transferTo in the getBox method
             // todo: potentially this could speed up writing.
             //
@@ -162,7 +157,7 @@ public abstract class AbstractBox implements Box {
                 ByteBuffer header = ByteBuffer.allocate((isSmallBox() ? 8 : 16) + (UserBox.TYPE.equals(getType()) ? 16 : 0));
                 getHeader(header);
                 os.write((ByteBuffer) header.rewind());
-                os.write((ByteBuffer)content.rewind());
+                os.write((ByteBuffer) content.rewind());
             }
 
         } else {

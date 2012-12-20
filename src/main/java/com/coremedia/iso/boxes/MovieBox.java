@@ -56,7 +56,7 @@ public class MovieBox extends AbstractContainerBox {
     }
 
     public MovieHeaderBox getMovieHeaderBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof MovieHeaderBox) {
                 return (MovieHeaderBox) box;
             }

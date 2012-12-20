@@ -50,19 +50,22 @@ public class Path {
     }
 
     public static Box getPath(Box box, String path) {
-        List<? extends Box> all = getPaths(box, path);
+        List<? extends Box> all = getPaths(box, path, true);
         return all.isEmpty() ? null : all.get(0);
     }
 
-
     public static List<Box> getPaths(Box box, String path) {
+        return getPaths(box, path, false);
+    }
+
+    public static List<Box> getPaths(Box box, String path, boolean singleResult) {
         if (path.startsWith("/")) {
             Box isoFile = box;
             while (isoFile.getParent() != null) {
                 isoFile = isoFile.getParent();
             }
             assert isoFile instanceof IsoFile : isoFile.getType() + " has no parent";
-            return getPaths(isoFile, path.substring(1));
+            return getPaths(isoFile, path.substring(1), singleResult);
         } else if (path.isEmpty()) {
             return Collections.singletonList(box);
         } else {
@@ -80,7 +83,7 @@ public class Path {
             if (m.matches()) {
                 String type = m.group(1);
                 if ("..".equals(type)) {
-                    return getPaths(box.getParent(), later);
+                    return getPaths(box.getParent(), later, singleResult);
                 } else {
                     int index = -1;
                     if (m.group(2) != null) {
@@ -93,9 +96,12 @@ public class Path {
                     for (Box box1 : ((ContainerBox) box).getBoxes()) {
                         if (box1.getType().matches(type)) {
                             if (index == -1 || index == currentIndex) {
-                                children.addAll(getPaths(box1, later));
+                                children.addAll(getPaths(box1, later, singleResult));
                             }
                             currentIndex++;
+                        }
+                        if (singleResult && !children.isEmpty()) {
+                            return children;
                         }
                     }
                     return children;

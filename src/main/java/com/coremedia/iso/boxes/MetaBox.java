@@ -50,17 +50,6 @@ public class MetaBox extends AbstractContainerBox {
     }
 
     @Override
-    public long getNumOfBytesToFirstChild() {
-        if (isMp4Box()) {
-            // it's a fullbox
-            return 12;
-        } else {
-            // it's an apple metabox
-            return 8;
-        }
-    }
-
-    @Override
     public void _parseDetails(ByteBuffer content) {
         int pos = content.position();
         content.get(new byte[4]);
@@ -77,7 +66,7 @@ public class MetaBox extends AbstractContainerBox {
         }
         while (content.remaining() >= 8) {
             try {
-                boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));
+                addBox(boxParser.parseBox(new ByteBufferByteChannel(content), this));
             } catch (IOException e) {
                 throw new RuntimeException("Sebastian needs to fix 7518765283");
             }

@@ -17,27 +17,30 @@
 package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.MovieBox;
-import com.googlecode.mp4parser.AbstractContainerBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
+import com.googlecode.mp4parser.util.LazyList;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.*;
 
 /**
  * The most upper container for ISO Boxes. It is a container box that is a file.
  * Uses IsoBufferWrapper  to access the underlying file.
  */
 @DoNotParseDetail
-public class IsoFile extends AbstractContainerBox implements Closeable {
+public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
     protected BoxParser boxParser = new PropertyBoxParserImpl();
     ReadableByteChannel byteChannel;
+    long position = 0;
+    List<Box> boxes = new LinkedList<Box>();
 
     public IsoFile() {
-        super("");
     }
 
     /**
@@ -75,51 +78,74 @@ public class IsoFile extends AbstractContainerBox implements Closeable {
      * @deprecated use {@link IsoFile#IsoFile(FileChannel)} to save heap
      */
     public IsoFile(ReadableByteChannel byteChannel) throws IOException {
-        super("");
         this.byteChannel = byteChannel;
         boxParser = createBoxParser();
-        parse();
     }
 
     public IsoFile(ReadableByteChannel byteChannel, BoxParser boxParser) throws IOException {
-        super("");
         this.byteChannel = byteChannel;
         this.boxParser = boxParser;
-        parse();
-
-
     }
 
     protected BoxParser createBoxParser() {
         return new PropertyBoxParserImpl();
     }
 
-
-    @Override
-    public void _parseDetails(ByteBuffer content) {
-        // there are no details to parse we should be just file
+    public List<Box> getBoxes() {
+        if (byteChannel != null) {
+            return new LazyList<Box>(boxes, this);
+        } else {
+            return boxes;
+        }
     }
 
-    public void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, AbstractBoxParser abstractBoxParser) throws IOException {
-        throw new IOException("This method is not meant to be called. Use #parse() directly.");
+
+    public void remove() {
+
     }
 
-    private void parse() throws IOException {
+    Box lookahead = null;
 
-        boolean done = false;
-        while (!done) {
+
+    public boolean hasNext() {
+        if (lookahead != null) {
+            return true;
+        } else {
             try {
-                Box box = boxParser.parseBox(byteChannel, this);
-                if (box != null) {
-                    //  System.err.println(box.getType());
-                    boxes.add(box);
-                } else {
-                    done = true;
-                }
-            } catch (EOFException e) {
-                done = true;
+                lookahead = next();
+                return true;
+            } catch (NoSuchElementException e) {
+                return false;
             }
         }
+    }
+
+    public synchronized Box next() {
+        if (lookahead != null) {
+            Box b = lookahead;
+            lookahead = null;
+            return b;
+        } else {
+            if (byteChannel == null) {
+                throw new NoSuchElementException();
+            }
+            try {
+                if (byteChannel instanceof FileChannel) {
+                    ((FileChannel) byteChannel).position(position);
+                }
+                Box b = boxParser.parseBox(byteChannel, this);
+
+                if (byteChannel instanceof FileChannel) {
+                    position = ((FileChannel) byteChannel).position();
+                }
+                return b;
+            } catch (EOFException e) {
+                throw new NoSuchElementException();
+            } catch (IOException e) {
+                throw new NoSuchElementException();
+            }
+        }
+
     }
 
     @DoNotParseDetail
@@ -165,12 +191,6 @@ public class IsoFile extends AbstractContainerBox implements Closeable {
     }
 
 
-    @Override
-    public long getNumOfBytesToFirstChild() {
-        return 0;
-    }
-
-    @Override
     public long getSize() {
         long size = 0;
         for (Box box : boxes) {
@@ -179,7 +199,6 @@ public class IsoFile extends AbstractContainerBox implements Closeable {
         return size;
     }
 
-    @Override
     public IsoFile getIsoFile() {
         return this;
     }
@@ -193,7 +212,7 @@ public class IsoFile extends AbstractContainerBox implements Closeable {
      */
     @DoNotParseDetail
     public MovieBox getMovieBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof MovieBox) {
                 return (MovieBox) box;
             }
@@ -202,7 +221,7 @@ public class IsoFile extends AbstractContainerBox implements Closeable {
     }
 
     public void getBox(WritableByteChannel os) throws IOException {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
 
             if (os instanceof FileChannel) {
                 long startPos = ((FileChannel) os).position();
@@ -218,5 +237,55 @@ public class IsoFile extends AbstractContainerBox implements Closeable {
 
     public void close() throws IOException {
         this.byteChannel.close();
+    }
+
+    public void setBoxes(List<Box> boxes) {
+        byteChannel = null;
+        this.boxes = boxes;
+    }
+
+    public <T extends Box> List<T> getBoxes(Class<T> clazz) {
+        return getBoxes(clazz, false);
+    }
+
+    public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
+        List<T> boxesToBeReturned = new ArrayList<T>(2);
+        for (Box boxe : getBoxes()) {
+            //clazz.isInstance(boxe) / clazz == boxe.getClass()?
+            // I hereby finally decide to use isInstance
+
+            if (clazz.isInstance(boxe)) {
+                boxesToBeReturned.add((T) boxe);
+            }
+
+            if (recursive && boxe instanceof ContainerBox) {
+                boxesToBeReturned.addAll(((ContainerBox) boxe).getBoxes(clazz, recursive));
+            }
+        }
+        return boxesToBeReturned;
+    }
+
+    public ContainerBox getParent() {
+        return null;
+    }
+
+    public void setParent(ContainerBox parent) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getType() {
+        return null;
+    }
+
+    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    public void addBox(Box box) {
+        while (hasNext()) {
+            boxes.add(next());
+        }
+        boxes.add(box);
+        box.setParent(this);
     }
 }

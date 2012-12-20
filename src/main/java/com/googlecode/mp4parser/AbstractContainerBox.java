@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 public abstract class AbstractContainerBox extends AbstractBox implements ContainerBox {
     private static Logger LOG = Logger.getLogger(AbstractContainerBox.class.getName());
 
-    protected List<Box> boxes = new LinkedList<Box>();
+    private List<Box> boxes = new LinkedList<Box>();
     protected BoxParser boxParser;
 
     @Override
@@ -126,15 +126,6 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         return buffer.toString();
     }
 
-    /**
-     * The number of bytes from box start (first length byte) to the
-     * first length byte of the first child box
-     *
-     * @return offset to first child box
-     */
-    public long getNumOfBytesToFirstChild() {
-        return 8;
-    }
 
     @Override
     protected void getContent(ByteBuffer byteBuffer) {

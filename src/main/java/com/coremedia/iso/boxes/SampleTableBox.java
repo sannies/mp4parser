@@ -41,7 +41,7 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof SampleDescriptionBox) {
                 return (SampleDescriptionBox) box;
             }
@@ -50,7 +50,7 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public SampleSizeBox getSampleSizeBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof SampleSizeBox) {
                 return (SampleSizeBox) box;
             }
@@ -59,7 +59,7 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public SampleToChunkBox getSampleToChunkBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof SampleToChunkBox) {
                 return (SampleToChunkBox) box;
             }
@@ -68,7 +68,7 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public ChunkOffsetBox getChunkOffsetBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof ChunkOffsetBox) {
                 return (ChunkOffsetBox) box;
             }
@@ -76,17 +76,9 @@ public class SampleTableBox extends AbstractContainerBox {
         return null;
     }
 
-    public void setChunkOffsetBox(ChunkOffsetBox b) {
-        for (int i = 0; i < boxes.size(); i++) {
-            Box box = boxes.get(i);
-            if (box instanceof ChunkOffsetBox) {
-                boxes.set(i, b);
-            }
-        }
-    }
 
     public TimeToSampleBox getTimeToSampleBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof TimeToSampleBox) {
                 return (TimeToSampleBox) box;
             }
@@ -95,7 +87,7 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public SyncSampleBox getSyncSampleBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof SyncSampleBox) {
                 return (SyncSampleBox) box;
             }
@@ -104,7 +96,7 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public CompositionTimeToSample getCompositionTimeToSample() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof CompositionTimeToSample) {
                 return (CompositionTimeToSample) box;
             }
@@ -113,7 +105,7 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public SampleDependencyTypeBox getSampleDependencyTypeBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof SampleDependencyTypeBox) {
                 return (SampleDependencyTypeBox) box;
             }

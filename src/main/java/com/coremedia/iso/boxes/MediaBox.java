@@ -31,7 +31,7 @@ public class MediaBox extends AbstractContainerBox {
     }
 
     public MediaInformationBox getMediaInformationBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof MediaInformationBox) {
                 return (MediaInformationBox) box;
             }
@@ -40,7 +40,7 @@ public class MediaBox extends AbstractContainerBox {
     }
 
     public MediaHeaderBox getMediaHeaderBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof MediaHeaderBox) {
                 return (MediaHeaderBox) box;
             }
@@ -49,7 +49,7 @@ public class MediaBox extends AbstractContainerBox {
     }
 
     public HandlerBox getHandlerBox() {
-        for (Box box : boxes) {
+        for (Box box : getBoxes()) {
             if (box instanceof HandlerBox) {
                 return (HandlerBox) box;
             }
