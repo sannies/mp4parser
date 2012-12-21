@@ -35,7 +35,7 @@ import java.util.*;
  */
 @DoNotParseDetail
 public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
-    protected BoxParser boxParser = new PropertyBoxParserImpl();
+    protected BoxParser boxParser = createBoxParser();
     ReadableByteChannel byteChannel;
     long position = 0;
     List<Box> boxes = new LinkedList<Box>();
@@ -79,7 +79,6 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
      */
     public IsoFile(ReadableByteChannel byteChannel) throws IOException {
         this.byteChannel = byteChannel;
-        boxParser = createBoxParser();
     }
 
     public IsoFile(ReadableByteChannel byteChannel, BoxParser boxParser) throws IOException {
@@ -101,7 +100,7 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
 
 
     public void remove() {
-
+        throw new UnsupportedOperationException();
     }
 
     Box lookahead = null;

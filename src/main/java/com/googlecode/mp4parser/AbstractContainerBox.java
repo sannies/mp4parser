@@ -95,11 +95,6 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         boxes.add(b);
     }
 
-    public void removeBox(Box b) {
-        b.setParent(this);
-        boxes.remove(b);
-    }
-
     @Override
     public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         super.parse(readableByteChannel, header, contentSize, boxParser);
