@@ -15,8 +15,8 @@
  */
 package com.coremedia.iso;
 
-import com.googlecode.mp4parser.AbstractBox;
 import com.coremedia.iso.boxes.Box;
+import com.googlecode.mp4parser.AbstractBox;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
  */
 public class PropertyBoxParserImpl extends AbstractBoxParser {
     Properties mapping;
+    Pattern constuctorPattern = Pattern.compile("(.*)\\((.*?)\\)");
 
     public PropertyBoxParserImpl(String... customProperties) {
         InputStream is = new BufferedInputStream(getClass().getResourceAsStream("/isoparser-default.properties"));
@@ -72,7 +73,6 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         this.mapping = mapping;
     }
 
-    Pattern p = Pattern.compile("(.*)\\((.*?)\\)");
 
     @SuppressWarnings("unchecked")
     public Class<? extends Box> getClassForFourCc(String type, byte[] userType, String parent) {
@@ -91,9 +91,6 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         String[] param = fourCcToBox.getParam();
         String clazzName = fourCcToBox.getClazzName();
         try {
-            if (param[0].trim().length() == 0) {
-                param = new String[]{};
-            }
             Class clazz = Class.forName(clazzName);
 
             Class[] constructorArgsClazz = new Class[param.length];
@@ -186,13 +183,18 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
             if (constructor == null) {
                 throw new RuntimeException("No box object found for " + type);
             }
-            Matcher m = p.matcher(constructor);
-            boolean matches = m.matches();
-            if (!matches) {
-                throw new RuntimeException("Cannot work with that constructor: " + constructor);
+            if (!constructor.endsWith(")")) {
+                clazzName = constructor;
+                param = new String[]{};
+            } else {
+                Matcher m = constuctorPattern.matcher(constructor);
+                boolean matches = m.matches();
+                if (!matches) {
+                    throw new RuntimeException("Cannot work with that constructor: " + constructor);
+                }
+                clazzName = m.group(1);
+                param = m.group(2).length() > 0 ? m.group(2).split(",") : new String[]{};
             }
-            clazzName = m.group(1);
-            param = m.group(2).split(",");
             return this;
         }
     }

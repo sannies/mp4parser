@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.nio.channels.Channels;
 
 /**
  * Simple test to make sure nothing breaks.
@@ -41,7 +40,7 @@ public class AACTrackImplTest {
 //        FileChannel fc = new FileOutputStream("/home/sannies/scm/svn/mp4parser/isoparser/src/test/resources/com/googlecode/mp4parser/authoring/tracks/aac-sample.mp4").getChannel();
 //        isoFile.getBox(fc);
 //        fc.close();
-        IsoFile isoFileReference = new IsoFile(Channels.newChannel(AACTrackImplTest.class.getResourceAsStream("/com/googlecode/mp4parser/authoring/tracks/aac-sample.mp4")));
+        IsoFile isoFileReference = new IsoFile(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.mp4");
         BoxComparator.check(isoFile, isoFileReference, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]");
     }
 }

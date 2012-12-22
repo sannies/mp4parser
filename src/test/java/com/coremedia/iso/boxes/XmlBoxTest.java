@@ -25,7 +25,7 @@ public class XmlBoxTest {
         xmlBox.getBox(Channels.newChannel(baos));
 
         Properties props = new Properties();
-        props.put("xml ", XmlBox.class.getName() + "()");
+        props.put("xml ", XmlBox.class.getName());
         PropertyBoxParserImpl parser = new PropertyBoxParserImpl(props);
         IsoFile isoFile = new IsoFile(new ByteBufferByteChannel((ByteBuffer) ByteBuffer.wrap(baos.toByteArray()).rewind()), parser);
 
