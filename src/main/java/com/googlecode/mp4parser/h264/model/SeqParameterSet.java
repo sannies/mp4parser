@@ -56,6 +56,8 @@ public class SeqParameterSet extends BitstreamElement {
     public boolean constraint_set_1_flag;
     public boolean constraint_set_2_flag;
     public boolean constraint_set_3_flag;
+    public boolean constraint_set_4_flag;
+    public boolean constraint_set_5_flag;
     public int level_idc;
     public int seq_parameter_set_id;
     public boolean residual_color_transform_flag;
@@ -87,7 +89,12 @@ public class SeqParameterSet extends BitstreamElement {
                 .readBool("SPS: constraint_set_2_flag");
         sps.constraint_set_3_flag = reader
                 .readBool("SPS: constraint_set_3_flag");
-        reader.readNBit(4, "SPS: reserved_zero_4bits");
+        sps.constraint_set_4_flag = reader
+                .readBool("SPS: constraint_set_4_flag");
+        sps.constraint_set_5_flag = reader
+                .readBool("SPS: constraint_set_5_flag");
+
+        reader.readNBit(2, "SPS: reserved_zero_2bits");
         sps.level_idc = (int) reader.readNBit(8, "SPS: level_idc");
         sps.seq_parameter_set_id = reader.readUE("SPS: seq_parameter_set_id");
 
@@ -534,6 +541,8 @@ public class SeqParameterSet extends BitstreamElement {
                 ", \n        constraint_set_1_flag=" + constraint_set_1_flag +
                 ", \n        constraint_set_2_flag=" + constraint_set_2_flag +
                 ", \n        constraint_set_3_flag=" + constraint_set_3_flag +
+                ", \n        constraint_set_4_flag=" + constraint_set_4_flag +
+                ", \n        constraint_set_5_flag=" + constraint_set_5_flag +
                 ", \n        level_idc=" + level_idc +
                 ", \n        seq_parameter_set_id=" + seq_parameter_set_id +
                 ", \n        residual_color_transform_flag=" + residual_color_transform_flag +
