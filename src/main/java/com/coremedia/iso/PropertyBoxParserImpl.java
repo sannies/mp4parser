@@ -16,7 +16,6 @@
 package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.Box;
-import com.googlecode.mp4parser.AbstractBox;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -91,12 +90,11 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         String[] param = fourCcToBox.getParam();
         String clazzName = fourCcToBox.getClazzName();
         try {
-            Class clazz = Class.forName(clazzName);
+            Class<Box> clazz = (Class<Box>) Class.forName(clazzName);
 
             Class[] constructorArgsClazz = new Class[param.length];
             Object[] constructorArgs = new Object[param.length];
             for (int i = 0; i < param.length; i++) {
-
                 if ("userType".equals(param[i])) {
                     constructorArgs[i] = userType;
                     constructorArgsClazz[i] = byte[].class;
@@ -109,17 +107,10 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
                 } else {
                     throw new InternalError("No such param: " + param[i]);
                 }
-
-
             }
-            Constructor<AbstractBox> constructorObject;
-            try {
-                if (param.length > 0) {
-                    constructorObject = clazz.getConstructor(constructorArgsClazz);
-                } else {
-                    constructorObject = clazz.getConstructor();
-                }
 
+            try {
+                Constructor<Box> constructorObject = clazz.getConstructor(constructorArgsClazz);
                 return constructorObject.newInstance(constructorArgs);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
