@@ -167,17 +167,6 @@ public final class AvcConfigurationBox extends AbstractBox {
         return avcDecoderConfigurationRecord.getPPS();
     }
 
-    public List<String> getSequenceParameterSetsAsStrings() {
-        return avcDecoderConfigurationRecord.getSequenceParameterSetsAsStrings();
-    }
-
-    public List<String> getSequenceParameterSetExtsAsStrings() {
-        return avcDecoderConfigurationRecord.getSequenceParameterSetExtsAsStrings();
-    }
-
-    public List<String> getPictureParameterSetsAsStrings() {
-        return avcDecoderConfigurationRecord.getPictureParameterSetsAsStrings();
-    }
 
     public AVCDecoderConfigurationRecord getavcDecoderConfigurationRecord() {
         return avcDecoderConfigurationRecord;
@@ -202,7 +191,7 @@ public final class AvcConfigurationBox extends AbstractBox {
         /**
          * Just for non-spec-conform encoders
          */
-        public int lengthSizeMinusOnePaddingBits = 60;
+        public int lengthSizeMinusOnePaddingBits = 63;
         public int numberOfSequenceParameterSetsPaddingBits = 7;
         public int chromaFormatPaddingBits = 31;
         public int bitDepthLumaMinus8PaddingBits = 31;
@@ -325,7 +314,8 @@ public final class AvcConfigurationBox extends AbstractBox {
             for (byte[] pictureParameterSet : pictureParameterSets) {
                 String details = "not parsable";
                 try {
-                    details = PictureParameterSet.read(pictureParameterSet).toString();
+                    // skip NalUnit Header (will not work 100% but at least most cases)
+                    details = PictureParameterSet.read(new ByteArrayInputStream(pictureParameterSet, 1, pictureParameterSet.length - 1)).toString();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -340,7 +330,8 @@ public final class AvcConfigurationBox extends AbstractBox {
             for (byte[] sequenceParameterSet : sequenceParameterSets) {
                 String detail = "not parsable";
                 try {
-                    detail = SeqParameterSet.read(new ByteArrayInputStream(sequenceParameterSet)).toString();
+                    // skip NalUnit Header (will not work 100% but at least most cases)
+                    detail = SeqParameterSet.read(new ByteArrayInputStream(sequenceParameterSet, 1, sequenceParameterSet.length - 1)).toString();
                 } catch (IOException e) {
 
                 }
@@ -350,7 +341,7 @@ public final class AvcConfigurationBox extends AbstractBox {
         }
 
         public List<String> getSequenceParameterSetsAsStrings() {
-            List <String> result = new ArrayList<String>(sequenceParameterSets.size());
+            List<String> result = new ArrayList<String>(sequenceParameterSets.size());
             for (byte[] parameterSet : sequenceParameterSets) {
                 result.add(Hex.encodeHex(parameterSet));
             }
@@ -358,7 +349,7 @@ public final class AvcConfigurationBox extends AbstractBox {
         }
 
         public List<String> getSequenceParameterSetExtsAsStrings() {
-            List <String> result = new ArrayList<String>(sequenceParameterSetExts.size());
+            List<String> result = new ArrayList<String>(sequenceParameterSetExts.size());
             for (byte[] parameterSet : sequenceParameterSetExts) {
                 result.add(Hex.encodeHex(parameterSet));
             }
@@ -366,7 +357,7 @@ public final class AvcConfigurationBox extends AbstractBox {
         }
 
         public List<String> getPictureParameterSetsAsStrings() {
-            List <String> result = new ArrayList<String>(pictureParameterSets.size());
+            List<String> result = new ArrayList<String>(pictureParameterSets.size());
             for (byte[] parameterSet : pictureParameterSets) {
                 result.add(Hex.encodeHex(parameterSet));
             }
