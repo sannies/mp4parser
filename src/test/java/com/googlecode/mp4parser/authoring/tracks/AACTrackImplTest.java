@@ -21,7 +21,7 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import org.junit.Test;
 
-import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
@@ -31,7 +31,8 @@ public class AACTrackImplTest {
 
     @Test
     public void freeze() throws IOException {
-        Track t = new AACTrackImpl(new BufferedInputStream(AACTrackImplTest.class.getResourceAsStream("/com/googlecode/mp4parser/authoring/tracks/aac-sample.aac")));
+        Track t = new AACTrackImpl(new FileInputStream(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.aac").getChannel());
+        //Track t = new AACTrackImpl2(new FileInputStream(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.aac"));
         Movie m = new Movie();
         m.addTrack(t);
 

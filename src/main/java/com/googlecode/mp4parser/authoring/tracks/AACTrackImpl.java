@@ -15,23 +15,74 @@
  */
 package com.googlecode.mp4parser.authoring.tracks;
 
+import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
-import com.googlecode.mp4parser.boxes.AC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.*;
 
-import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.util.*;
 
 /**
  */
 public class AACTrackImpl extends AbstractTrack {
+
+    static Map<Integer, String> audioObjectTypes = new HashMap<Integer, String>();
+
+    static {
+        audioObjectTypes.put(1, "AAC Main");
+        audioObjectTypes.put(2, "AAC LC (Low Complexity)");
+        audioObjectTypes.put(3, "AAC SSR (Scalable Sample Rate)");
+        audioObjectTypes.put(4, "AAC LTP (Long Term Prediction)");
+        audioObjectTypes.put(5, "SBR (Spectral Band Replication)");
+        audioObjectTypes.put(6, "AAC Scalable");
+        audioObjectTypes.put(7, "TwinVQ");
+        audioObjectTypes.put(8, "CELP (Code Excited Linear Prediction)");
+        audioObjectTypes.put(9, "HXVC (Harmonic Vector eXcitation Coding)");
+        audioObjectTypes.put(10, "Reserved");
+        audioObjectTypes.put(11, "Reserved");
+        audioObjectTypes.put(12, "TTSI (Text-To-Speech Interface)");
+        audioObjectTypes.put(13, "Main Synthesis");
+        audioObjectTypes.put(14, "Wavetable Synthesis");
+        audioObjectTypes.put(15, "General MIDI");
+        audioObjectTypes.put(16, "Algorithmic Synthesis and Audio Effects");
+        audioObjectTypes.put(17, "ER (Error Resilient) AAC LC");
+        audioObjectTypes.put(18, "Reserved");
+        audioObjectTypes.put(19, "ER AAC LTP");
+        audioObjectTypes.put(20, "ER AAC Scalable");
+        audioObjectTypes.put(21, "ER TwinVQ");
+        audioObjectTypes.put(22, "ER BSAC (Bit-Sliced Arithmetic Coding)");
+        audioObjectTypes.put(23, "ER AAC LD (Low Delay)");
+        audioObjectTypes.put(24, "ER CELP");
+        audioObjectTypes.put(25, "ER HVXC");
+        audioObjectTypes.put(26, "ER HILN (Harmonic and Individual Lines plus Noise)");
+        audioObjectTypes.put(27, "ER Parametric");
+        audioObjectTypes.put(28, "SSC (SinuSoidal Coding)");
+        audioObjectTypes.put(29, "PS (Parametric Stereo)");
+        audioObjectTypes.put(30, "MPEG Surround");
+        audioObjectTypes.put(31, "(Escape value)");
+        audioObjectTypes.put(32, "Layer-1");
+        audioObjectTypes.put(33, "Layer-2");
+        audioObjectTypes.put(34, "Layer-3");
+        audioObjectTypes.put(35, "DST (Direct Stream Transfer)");
+        audioObjectTypes.put(36, "ALS (Audio Lossless)");
+        audioObjectTypes.put(37, "SLS (Scalable LosslesS)");
+        audioObjectTypes.put(38, "SLS non-core");
+        audioObjectTypes.put(39, "ER AAC ELD (Enhanced Low Delay)");
+        audioObjectTypes.put(40, "SMR (Symbolic Music Representation) Simple");
+        audioObjectTypes.put(41, "SMR Main");
+        audioObjectTypes.put(42, "USAC (Unified Speech and Audio Coding) (no SBR)");
+        audioObjectTypes.put(43, "SAOC (Spatial Audio Object Coding)");
+        audioObjectTypes.put(44, "LD MPEG Surround");
+        audioObjectTypes.put(45, "USAC");
+    }
+
     public static Map<Integer, Integer> samplingFrequencyIndexMap = new HashMap<Integer, Integer>();
 
     static {
@@ -64,51 +115,39 @@ public class AACTrackImpl extends AbstractTrack {
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
 
-    int samplerate;
-    int bitrate;
-    int channelCount;
-    int channelconfig;
+    AdtsHeader firstHeader;
 
     int bufferSizeDB;
     long maxBitRate;
     long avgBitRate;
 
-    private BufferedInputStream inputStream;
     private List<ByteBuffer> samples;
-    boolean readSamples = false;
     List<TimeToSampleBox.Entry> stts;
     private String lang = "und";
 
 
-    public AACTrackImpl(InputStream inputStream, String lang) throws IOException {
+    public AACTrackImpl(ReadableByteChannel channel, String lang) throws IOException {
         this.lang = lang;
-        parse(inputStream);
-     }
+        parse(channel);
+    }
 
-    public AACTrackImpl(InputStream inputStream) throws IOException {
-        parse(inputStream);
-     }
+    public AACTrackImpl(ReadableByteChannel channel) throws IOException {
+        parse(channel);
+    }
 
-    private void parse(InputStream inputStream) throws IOException {
-        this.inputStream = new BufferedInputStream(inputStream);
+    private void parse(ReadableByteChannel channel) throws IOException {
+
         stts = new LinkedList<TimeToSampleBox.Entry>();
-
-        if (!readVariables()) {
-            throw new IOException();
-        }
-
         samples = new LinkedList<ByteBuffer>();
-        if (!readSamples()) {
-            throw new IOException();
-        }
+        firstHeader = readSamples(channel);
 
-        double packetsPerSecond = (double)samplerate / 1024.0;
+        double packetsPerSecond = (double) firstHeader.sampleRate / 1024.0;
         double duration = samples.size() / packetsPerSecond;
 
         long dataSize = 0;
         LinkedList<Integer> queue = new LinkedList<Integer>();
-        for (int i = 0; i < samples.size(); i++) {
-            int size = samples.get(i).capacity();
+        for (ByteBuffer sample : samples) {
+            int size = sample.remaining();
             dataSize += size;
             queue.add(size);
             while (queue.size() > packetsPerSecond) {
@@ -116,12 +155,12 @@ public class AACTrackImpl extends AbstractTrack {
             }
             if (queue.size() == (int) packetsPerSecond) {
                 int currSize = 0;
-                for (int j = 0 ; j < queue.size(); j++) {
-                    currSize += queue.get(j);
+                for (Integer aQueue : queue) {
+                    currSize += aQueue;
                 }
                 double currBitrate = 8.0 * currSize / queue.size() * packetsPerSecond;
                 if (currBitrate > maxBitRate) {
-                    maxBitRate = (int)currBitrate;
+                    maxBitRate = (int) currBitrate;
                 }
             }
         }
@@ -133,7 +172,7 @@ public class AACTrackImpl extends AbstractTrack {
         sampleDescriptionBox = new SampleDescriptionBox();
         AudioSampleEntry audioSampleEntry = new AudioSampleEntry("mp4a");
         audioSampleEntry.setChannelCount(2);
-        audioSampleEntry.setSampleRate(samplerate);
+        audioSampleEntry.setSampleRate(firstHeader.sampleRate);
         audioSampleEntry.setDataReferenceIndex(1);
         audioSampleEntry.setSampleSize(16);
 
@@ -155,8 +194,8 @@ public class AACTrackImpl extends AbstractTrack {
 
         AudioSpecificConfig audioSpecificConfig = new AudioSpecificConfig();
         audioSpecificConfig.setAudioObjectType(2); // AAC LC
-        audioSpecificConfig.setSamplingFrequencyIndex(samplingFrequencyIndexMap.get(samplerate));
-        audioSpecificConfig.setChannelConfiguration(channelconfig);
+        audioSpecificConfig.setSamplingFrequencyIndex(firstHeader.sampleFrequencyIndex);
+        audioSpecificConfig.setChannelConfiguration(firstHeader.channelconfig);
         decoderConfigDescriptor.setAudioSpecificInfo(audioSpecificConfig);
 
         descriptor.setDecoderConfigDescriptor(decoderConfigDescriptor);
@@ -169,7 +208,7 @@ public class AACTrackImpl extends AbstractTrack {
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
         trackMetaData.setLanguage(lang);
-        trackMetaData.setTimescale(samplerate); // Audio tracks always use samplerate as timescale
+        trackMetaData.setTimescale(firstHeader.sampleRate); // Audio tracks always use sampleRate as timescale
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
@@ -212,80 +251,91 @@ public class AACTrackImpl extends AbstractTrack {
         return null;
     }
 
-    private boolean readVariables() throws IOException {
-        byte[] data = new byte[100];
-        inputStream.mark(100);
-        if (100 != inputStream.read(data, 0, 100)) {
-            return false;
+    class AdtsHeader {
+        int getSize() {
+            return 7 + (protectionAbsent == 0 ? 2 : 0);
         }
-        inputStream.reset(); // Rewind
-        ByteBuffer bb = ByteBuffer.wrap(data);
-        BitReaderBuffer brb = new BitReaderBuffer(bb);
-        int syncword = brb.readBits(12);
-        if (syncword != 0xfff) {
-            return false;
-        }
-        int id = brb.readBits(1);
-        int layer = brb.readBits(2);
-        int protectionAbsent = brb.readBits(1);
-        int profile = brb.readBits(2);
-        samplerate = samplingFrequencyIndexMap.get(brb.readBits(4));
-        brb.readBits(1);
-        channelconfig = brb.readBits(3);
-        int original = brb.readBits(1);
-        int home = brb.readBits(1);
-        int emphasis = brb.readBits(2);
 
-        return true;
+        int sampleFrequencyIndex;
+
+        int mpegVersion;
+        int layer;
+        int protectionAbsent;
+        int profile;
+        int sampleRate;
+
+        int channelconfig;
+        int original;
+        int home;
+        int copyrightedStream;
+        int copyrightStart;
+        int frameLength;
+        int bufferFullness;
+        int numAacFramesPerAdtsFrame;
     }
 
-    private boolean readSamples() throws IOException {
-        if (readSamples) {
-            return true;
+    private AdtsHeader readADTSHeader(ReadableByteChannel channel) throws IOException {
+        AdtsHeader hdr = new AdtsHeader();
+        ByteBuffer bb = ByteBuffer.allocate(7);
+        try {
+            ChannelHelper.readFully(channel, bb);
+        } catch (EOFException e) {
+            return null;
         }
+        BitReaderBuffer brb = new BitReaderBuffer((ByteBuffer) bb.rewind());
+        int syncword = brb.readBits(12); // A
+        if (syncword != 0xfff) {
+            throw new IOException("Expected Start Word 0xfff");
+        }
+        hdr.mpegVersion = brb.readBits(1); // B
+        hdr.layer = brb.readBits(2); // C
+        hdr.protectionAbsent = brb.readBits(1); // D
+        hdr.profile = brb.readBits(2) + 1;  // E
+        //System.err.println(String.format("Profile %s", audioObjectTypes.get(hdr.profile)));
+        hdr.sampleFrequencyIndex = brb.readBits(4);
+        hdr.sampleRate = samplingFrequencyIndexMap.get(hdr.sampleFrequencyIndex); // F
+        brb.readBits(1); // G
+        hdr.channelconfig = brb.readBits(3); // H
+        hdr.original = brb.readBits(1); // I
+        hdr.home = brb.readBits(1); // J
+        hdr.copyrightedStream = brb.readBits(1); // K
+        hdr.copyrightStart = brb.readBits(1); // L
+        hdr.frameLength = brb.readBits(13); // M
+        //System.err.println(hdr.frameLength);
+        hdr.bufferFullness = brb.readBits(11); // 54
+        hdr.numAacFramesPerAdtsFrame = brb.readBits(2) + 1; // 56
+        if (hdr.numAacFramesPerAdtsFrame != 1) {
+            throw new IOException("This muxer can only work with 1 AAC frame per ADTS frame");
+        }
+        if (hdr.protectionAbsent == 0) {
+            channel.read(ByteBuffer.allocate(2));
+        }
+        return hdr;
+    }
 
-        readSamples = true;
-        byte[] header = new byte[15];
-        boolean ret = false;
-        inputStream.mark(15);
-        while (-1 != inputStream.read(header)) {
-            ret = true;
-            ByteBuffer bb = ByteBuffer.wrap(header);
-            inputStream.reset();
-            BitReaderBuffer brb = new BitReaderBuffer(bb);
-            int syncword = brb.readBits(12);
-            if (syncword != 0xfff) {
-                return false;
+    private AdtsHeader readSamples(ReadableByteChannel channel) throws IOException {
+        AdtsHeader first = null;
+        AdtsHeader hdr;
+
+        while ((hdr = readADTSHeader(channel)) != null) {
+            if (first == null) {
+                first = hdr;
             }
-            brb.readBits(3);
-            int protectionAbsent = brb.readBits(1);
-            brb.readBits(14);
-            int frameSize = brb.readBits(13);
-            int bufferFullness = brb.readBits(11);
-            int noBlocks = brb.readBits(2);
-            int used = (int) Math.ceil(brb.getPosition() / 8.0);
-            if (protectionAbsent == 0) {
-                used += 2;
-            }
-            inputStream.skip(used);
-            frameSize -= used;
-//            System.out.println("Size: " + frameSize + " fullness: " + bufferFullness + " no blocks: " + noBlocks);
-            byte[] data = new byte[frameSize];
-            inputStream.read(data);
-            samples.add(ByteBuffer.wrap(data));
+
+            ByteBuffer data = ByteBuffer.allocate(hdr.frameLength - hdr.getSize());
+            channel.read(data);
+            samples.add(data);
+            data.rewind();
             stts.add(new TimeToSampleBox.Entry(1, 1024));
-            inputStream.mark(15);
         }
-        return ret;
+        return first;
     }
 
     @Override
     public String toString() {
         return "AACTrackImpl{" +
-                "samplerate=" + samplerate +
-                ", bitrate=" + bitrate +
-                ", channelCount=" + channelCount +
-                ", channelconfig=" + channelconfig +
+                "sampleRate=" + firstHeader.sampleRate +
+                ", channelconfig=" + firstHeader.channelconfig +
                 '}';
     }
 }
