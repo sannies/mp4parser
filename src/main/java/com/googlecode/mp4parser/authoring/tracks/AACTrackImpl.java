@@ -26,6 +26,7 @@ import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.*;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
 
@@ -321,11 +322,17 @@ public class AACTrackImpl extends AbstractTrack {
             if (first == null) {
                 first = hdr;
             }
-
-            ByteBuffer data = ByteBuffer.allocate(hdr.frameLength - hdr.getSize());
-            channel.read(data);
-            samples.add(data);
-            data.rewind();
+            if (channel instanceof FileChannel) {
+                ByteBuffer data = ((FileChannel) channel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) channel).position(), hdr.frameLength - hdr.getSize());
+                samples.add(data);
+                ((FileChannel) channel).position(((FileChannel) channel).position() + hdr.frameLength - hdr.getSize());
+                data.rewind();
+            } else {
+                ByteBuffer data = ByteBuffer.allocate(hdr.frameLength - hdr.getSize());
+                channel.read(data);
+                samples.add(data);
+                data.rewind();
+            }
             stts.add(new TimeToSampleBox.Entry(1, 1024));
         }
         return first;
