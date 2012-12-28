@@ -38,9 +38,9 @@ public class H264TrackImplTest {
 
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
         IsoFile isoFile = mp4Builder.build(m);
-        //     FileChannel fc = new FileOutputStream("/home/sannies/scm/svn/mp4parser/isoparser/src/test/resources/com/googlecode/mp4parser/authoring/tracks/h264-sample.mp4").getChannel();
-        //     isoFile.getBox(fc);
-        //     fc.close();
+        /*FileChannel fc = new FileOutputStream("/home/sannies/scm/svn/mp4parser-clean/isoparser/src/test/resources/com/googlecode/mp4parser/authoring/tracks/h264-sample.mp4").getChannel();
+        isoFile.getBox(fc);
+        fc.close();*/
 
 
         IsoFile isoFileReference = new IsoFile(Channels.newChannel(AACTrackImplTest.class.getResourceAsStream("/com/googlecode/mp4parser/authoring/tracks/h264-sample.mp4")));
