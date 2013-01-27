@@ -22,6 +22,7 @@ import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Entry type for timed text samples defined in the timed text specification (ISO/IEC 14496-17).
  */
 public class QuicktimeTextSampleEntry extends SampleEntry {

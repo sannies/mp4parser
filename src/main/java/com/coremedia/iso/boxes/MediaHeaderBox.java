@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This box defines overall information which is media-independent, and relevant to the entire presentation
  * considered as a whole.
  */

@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Defined in ISO/IEC 14496-15:2004.
  */
 public final class AvcConfigurationBox extends AbstractBox {

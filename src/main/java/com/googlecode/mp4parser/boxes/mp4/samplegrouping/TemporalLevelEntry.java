@@ -19,10 +19,10 @@ package com.googlecode.mp4parser.boxes.mp4.samplegrouping;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The Temporal Level sample grouping ('tele') provides a codec-independent sample grouping that can be used to group samples (access units) in a track (and potential track fragments) according to temporal level, where samples of one temporal level have no coding dependencies on samples of higher temporal levels. The temporal level equals the sample group description index (taking values 1, 2, 3, etc). The bitstream containing only the access units from the first temporal level to a higher temporal level remains conforming to the coding standard.
- *
+ * <p/>
  * A grouping according to temporal level facilitates easy extraction of temporal subsequences, for instance using the Subsegment Indexing box in 0.
- *
  */
 public class TemporalLevelEntry extends GroupEntry {
     public static final String TYPE = "tele";

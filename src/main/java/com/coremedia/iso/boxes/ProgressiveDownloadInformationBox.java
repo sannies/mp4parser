@@ -9,6 +9,9 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ */
 public class ProgressiveDownloadInformationBox extends AbstractFullBox {
 
 

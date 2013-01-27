@@ -6,7 +6,11 @@ import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
 import java.nio.ByteBuffer;
 
+/**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ */
 public class AC3SpecificBox extends AbstractBox {
+    public static final String TYPE = "dac3";
     int fscod;
     int bsid;
     int bsmod;
@@ -16,7 +20,7 @@ public class AC3SpecificBox extends AbstractBox {
     int reserved;
 
     public AC3SpecificBox() {
-        super("dac3");
+        super(TYPE);
     }
 
     @Override

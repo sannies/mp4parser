@@ -5,7 +5,9 @@ import com.coremedia.iso.boxes.Box;
 
 import java.nio.ByteBuffer;
 
-
+/**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ */
 public class Ovc1VisualSampleEntryImpl extends SampleEntry {
     private byte[] vc1Content;
     public static final String TYPE = "ovc1";

@@ -27,6 +27,7 @@ import java.util.List;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Each sample of a track may be associated to (zero or) one of a number of sample group descriptions, each of
  * which defines a record of rate-share information. Typically the same rate-share information applies to many
  * consecutive samples and it may therefore be enough to define two or three sample group descriptions that
@@ -73,10 +74,10 @@ public class RateShareEntry extends GroupEntry {
 
     @Override
     public ByteBuffer get() {
-        ByteBuffer buf = ByteBuffer.allocate(operationPointCut == 1?13:(operationPointCut * 6 + 11 ));
+        ByteBuffer buf = ByteBuffer.allocate(operationPointCut == 1 ? 13 : (operationPointCut * 6 + 11));
         buf.putShort(operationPointCut);
         if (operationPointCut == 1) {
-            buf.putShort(targetRateShare );
+            buf.putShort(targetRateShare);
         } else {
             for (Entry entry : entries) {
                 buf.putInt(entry.getAvailableBitrate());

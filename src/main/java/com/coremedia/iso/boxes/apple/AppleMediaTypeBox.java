@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * itunes MetaData comment box.
  */
 public class AppleMediaTypeBox extends AbstractAppleMetaDataBox {

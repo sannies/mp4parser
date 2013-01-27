@@ -1,6 +1,7 @@
 package com.coremedia.iso.boxes.apple;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * iTunes Artist box.
  */
 public final class AppleArtistBox extends AbstractAppleMetaDataBox {

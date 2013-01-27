@@ -16,15 +16,16 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.googlecode.mp4parser.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.googlecode.mp4parser.AbstractContainerBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * aligned(8) class MovieFragmentBox extends Box(moof){
  * }
  */

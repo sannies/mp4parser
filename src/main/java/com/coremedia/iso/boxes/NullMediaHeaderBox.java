@@ -18,12 +18,15 @@ package com.coremedia.iso.boxes;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Streams other than visual and audio (e.g., timed metadata streams) may use a
  * Null Media Header Box.
  */
 public class NullMediaHeaderBox extends AbstractMediaHeaderBox {
+    public static String TYPE = "nmhd";
+
     public NullMediaHeaderBox() {
-        super("nmhd");
+        super(TYPE);
     }
 
     @Override

@@ -17,6 +17,7 @@
 package com.googlecode.mp4parser.boxes.mp4;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This object contains an Object Descriptor or an Initial Object Descriptor.
  * There are a number of possible file types based on usage, depending on the descriptor:
  * <ul>

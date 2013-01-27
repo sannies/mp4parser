@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * aligned(8) class TrackFragmentRandomAccessBox
  * extends FullBox('tfra', version, 0) {
  * unsigned int(32) track_ID;

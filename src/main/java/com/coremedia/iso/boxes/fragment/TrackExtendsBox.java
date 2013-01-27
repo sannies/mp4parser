@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * aligned(8) class TrackExtendsBox extends FullBox('trex', 0, 0){
  * unsigned int(32) track_ID;
  * unsigned int(32) default_sample_description_index;

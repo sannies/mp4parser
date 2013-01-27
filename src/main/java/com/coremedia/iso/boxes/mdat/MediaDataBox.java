@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This box contains the media data. In video tracks, this box would contain video frames. A presentation may
  * contain zero or more Media Data Boxes. The actual media data follows the type field; its structure is described
  * by the metadata (see {@link com.coremedia.iso.boxes.SampleTableBox}).<br>

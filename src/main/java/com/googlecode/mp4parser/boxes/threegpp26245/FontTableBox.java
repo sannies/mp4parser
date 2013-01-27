@@ -5,15 +5,16 @@ import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
 import com.googlecode.mp4parser.AbstractBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- *
+ * <h1>4cc = "{@value #TYPE}"</h1>
  */
 public class FontTableBox extends AbstractBox {
+    public static final String TYPE = "ftab";
+
     List<FontRecord> entries = new LinkedList<FontRecord>();
 
     public FontTableBox() {

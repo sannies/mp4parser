@@ -9,14 +9,12 @@ import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 import java.nio.ByteBuffer;
 
 /**
- * Created by IntelliJ IDEA.
- * User: magnus
- * Date: 2012-03-09
- * Time: 16:11
- * To change this template use File | Settings | File Templates.
+ * <h1>4cc = "{@value #TYPE}"</h1>
  */
 public class DTSSpecificBox extends AbstractBox {
-    
+
+    public static final String TYPE = "ddts";
+
     long DTSSamplingFrequency;
     long maxBitRate;
     long avgBitRate;
@@ -35,7 +33,7 @@ public class DTSSpecificBox extends AbstractBox {
     int reserved;
 
     public DTSSpecificBox() {
-        super("ddts");
+        super(TYPE);
     }
 
     @Override

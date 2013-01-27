@@ -19,6 +19,7 @@ package com.googlecode.mp4parser.boxes.mp4;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ESDescriptor;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * ES Descriptor Box.
  */
 public class ESDescriptorBox extends AbstractDescriptorBox {

@@ -1,20 +1,16 @@
 package com.googlecode.mp4parser.boxes.cenc;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.AbstractFullBox;
 import com.googlecode.mp4parser.util.UUIDConverter;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
 
-
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This box contains information needed by a Content Protection System to play back the content. The
  * data format is specified by the system identified by the ‘pssh’ parameter SystemID, and is considered
  * opaque for the purposes of this specification.

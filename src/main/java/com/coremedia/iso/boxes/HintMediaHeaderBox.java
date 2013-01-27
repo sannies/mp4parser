@@ -22,6 +22,7 @@ import com.coremedia.iso.IsoTypeWriter;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The hint media header contains general information, independent of the protocaol, for hint tracks. Resides
  * in Media Information Box.
  *

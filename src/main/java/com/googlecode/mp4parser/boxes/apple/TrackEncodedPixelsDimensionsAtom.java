@@ -7,6 +7,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This atom carries the pixel dimensions of the track’s encoded pixels.
  * The type of the track encoded pixels dimensions atom is 'enof'.
  */

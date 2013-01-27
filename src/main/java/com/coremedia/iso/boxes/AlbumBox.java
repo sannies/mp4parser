@@ -24,6 +24,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Meta information in a 'udta' box about a track.
  * Defined in 3GPP 26.244.
  *

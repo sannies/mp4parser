@@ -1,20 +1,17 @@
 package com.googlecode.mp4parser.boxes.piff;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
-import com.googlecode.mp4parser.util.Path;
 import com.googlecode.mp4parser.util.UUIDConverter;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.Override;import java.lang.String;import java.lang.StringBuilder;import java.nio.ByteBuffer;
+import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * aligned(8) class UuidBasedProtectionSystemSpecificHeaderBox extends FullBox(‘uuid’,
  * extended_type=0xd08a4f18-10f3-4a82-b6c8-32d8aba183d3,
  * version=0, flags=0)
@@ -26,7 +23,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  */
 public class UuidBasedProtectionSystemSpecificHeaderBox extends AbstractFullBox {
     public static byte[] USER_TYPE = new byte[]{(byte) 0xd0, (byte) 0x8a, 0x4f, 0x18, 0x10, (byte) 0xf3, 0x4a, (byte) 0x82,
-                (byte) 0xb6, (byte) 0xc8, 0x32, (byte) 0xd8, (byte) 0xab, (byte) 0xa1, (byte) 0x83, (byte) 0xd3};
+            (byte) 0xb6, (byte) 0xc8, 0x32, (byte) 0xd8, (byte) 0xab, (byte) 0xa1, (byte) 0x83, (byte) 0xd3};
 
     UUID systemId;
 
@@ -100,7 +97,6 @@ public class UuidBasedProtectionSystemSpecificHeaderBox extends AbstractFullBox 
         sb.append('}');
         return sb.toString();
     }
-
 
 
 }

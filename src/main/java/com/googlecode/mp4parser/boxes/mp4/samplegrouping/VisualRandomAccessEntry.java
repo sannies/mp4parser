@@ -16,15 +16,13 @@
 
 package com.googlecode.mp4parser.boxes.mp4.samplegrouping;
 
-import com.coremedia.iso.IsoTypeReader;
-
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * For some coding systems a sync sample is specified to be a random access point after which all samples in decoding order can be correctly decoded. However, it may be possible to encode an “open” random access point, after which all samples in output order can be correctly decoded, but some samples following the random access point in decoding order and preceding the random access point in output order need not be correctly decodable. For example, an intra picture starting an open group of pictures can be followed in decoding order by (bi-)predicted pictures that however precede the intra picture in output order; though they possibly cannot be correctly decoded if the decoding starts from the intra picture, they are not needed.
- *
+ * <p/>
  * Such “open” random-access samples can be marked by being a member of this group. Samples marked by this group must be random access points, and may also be sync points (i.e. it is not required that samples marked by the sync sample table be excluded).
- *
  */
 public class VisualRandomAccessEntry extends GroupEntry {
     public static final String TYPE = "rap ";
@@ -57,7 +55,7 @@ public class VisualRandomAccessEntry extends GroupEntry {
     @Override
     public ByteBuffer get() {
         ByteBuffer content = ByteBuffer.allocate(1);
-        content.put((byte) ((numLeadingSamplesKnown? 0x80 : 0x00)| (numLeadingSamples & 0x7f)));
+        content.put((byte) ((numLeadingSamplesKnown ? 0x80 : 0x00) | (numLeadingSamples & 0x7f)));
         content.rewind();
         return content;
     }

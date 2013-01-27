@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.googlecode.mp4parser.AbstractContainerBox;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * <code>
  * Box Type: 'dinf'<br>
  * Container: {@link com.coremedia.iso.boxes.MediaInformationBox} ('minf')<br>

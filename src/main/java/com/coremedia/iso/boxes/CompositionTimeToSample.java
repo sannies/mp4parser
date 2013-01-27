@@ -12,6 +12,7 @@ import java.util.List;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * <pre>
  * aligned(8) class CompositionOffsetBox
  * extends FullBox(‘ctts’, version = 0, 0) {

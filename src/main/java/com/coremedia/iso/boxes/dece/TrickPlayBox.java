@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * aligned(8) class TrickPlayBox
  * extends FullBox(‘trik’, version=0, flags=0)
  * {

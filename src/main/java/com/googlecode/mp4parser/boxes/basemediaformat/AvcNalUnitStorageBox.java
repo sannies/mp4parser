@@ -16,29 +16,27 @@
 
 package com.googlecode.mp4parser.boxes.basemediaformat;
 
-import com.googlecode.mp4parser.AbstractBox;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
+import com.googlecode.mp4parser.AbstractBox;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.List;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
-
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The AVC NAL Unit Storage Box SHALL contain an AVCDecoderConfigurationRecord,
  * as defined in section 5.2.4.1 of the ISO 14496-12.
  */
 public class AvcNalUnitStorageBox extends AbstractBox {
+    public static final String TYPE = "avcn";
     AvcConfigurationBox.AVCDecoderConfigurationRecord avcDecoderConfigurationRecord;
 
     public AvcNalUnitStorageBox() {
-        super("avcn");
+        super(TYPE);
     }
 
     public AvcNalUnitStorageBox(AvcConfigurationBox avcConfigurationBox) {
-        super("avcn");
+        super(TYPE);
         this.avcDecoderConfigurationRecord = avcConfigurationBox.getavcDecoderConfigurationRecord();
     }
 

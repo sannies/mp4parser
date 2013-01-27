@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * A box in the {@link com.coremedia.iso.boxes.UserDataBox} containing information about the lyric location.
  * Invented by Vodafone.
  */

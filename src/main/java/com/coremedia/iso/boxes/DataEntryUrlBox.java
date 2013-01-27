@@ -21,6 +21,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Only used within the DataReferenceBox. Find more information there.
  *
  * @see com.coremedia.iso.boxes.DataReferenceBox

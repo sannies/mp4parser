@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Abstract Chunk Offset Box
  */
 public class ChunkOffset64BitBox extends ChunkOffsetBox {

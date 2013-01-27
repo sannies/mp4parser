@@ -5,6 +5,7 @@ import com.googlecode.mp4parser.AbstractBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Undocumented atom in the gmhd atom of text tracks.
  */
 public class GenericMediaHeaderTextAtom extends AbstractBox {

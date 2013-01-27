@@ -25,6 +25,7 @@ import com.coremedia.iso.boxes.ContainerBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Contains information common to all visual tracks.
  * <code>
  * <pre>

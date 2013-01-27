@@ -24,6 +24,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Containing genre information and contained in the <code>UserDataBox</code>.
  *
  * @see com.coremedia.iso.boxes.UserDataBox

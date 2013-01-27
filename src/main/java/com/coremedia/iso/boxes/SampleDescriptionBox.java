@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.FullContainerBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The sample description table gives detailed information about the coding type used, and any initialization
  * information needed for that coding. <br>
  * The information stored in the sample description box after the entry-count is both track-type specific as

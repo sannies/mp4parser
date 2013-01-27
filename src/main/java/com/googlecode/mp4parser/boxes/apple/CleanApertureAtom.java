@@ -7,6 +7,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * A container atom that stores information for video correction in the form of three required atoms.
  * This atom is optionally included in the track atom. The type of the track aperture mode dimensions
  * atom is 'tapt'.

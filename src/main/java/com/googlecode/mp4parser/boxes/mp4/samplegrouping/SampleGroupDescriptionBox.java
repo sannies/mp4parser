@@ -27,6 +27,7 @@ import java.util.List;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This description table gives information about the characteristics of sample groups. The descriptive
  * information is any other information needed to define or characterize the sample group.
  * <p/>

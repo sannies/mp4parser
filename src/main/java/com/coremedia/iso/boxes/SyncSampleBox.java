@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This box provides a compact marking of the random access points withinthe stream. The table is arranged in
  * strictly decreasinf order of sample number. Defined in ISO/IEC 14496-12.
  */

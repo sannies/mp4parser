@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This box within a Media Box declares the process by which the media-data in the track is presented,
  * and thus, the nature of the media in a track.
  * This Box when present in a Meta Box, declares the structure or format of the 'meta' box contents.

@@ -24,6 +24,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This box specifies the characteristics of a single track. Exactly one Track Header Box is contained in a track.<br>
  * In the absence of an edit list, the presentation of a track starts at the beginning of the overall presentation. An
  * empty edit is used to offset the start time of a track. <br>

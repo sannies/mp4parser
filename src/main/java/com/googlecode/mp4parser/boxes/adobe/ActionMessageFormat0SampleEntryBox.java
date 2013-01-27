@@ -6,11 +6,14 @@ import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Sample Entry as used for Action Message Format tracks.
  */
 public class ActionMessageFormat0SampleEntryBox extends SampleEntry {
+    public static final String TYPE = "amf0";
+
     public ActionMessageFormat0SampleEntryBox() {
-        super("amf0");
+        super(TYPE);
     }
 
     @Override

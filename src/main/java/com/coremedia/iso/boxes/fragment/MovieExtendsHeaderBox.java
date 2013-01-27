@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * aligned(8) class MovieExtendsHeaderBox extends FullBox('mehd', version, 0) {
  * if (version==1) {
  * unsigned int(64) fragment_duration;

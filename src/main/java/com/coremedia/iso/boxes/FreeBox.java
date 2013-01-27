@@ -20,7 +20,6 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.IsoTypeWriter;
-import com.googlecode.mp4parser.AbstractBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,6 +32,7 @@ import java.util.List;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * A free box. Just a placeholder to enable editing without rewriting the whole file.
  */
 public class FreeBox implements Box {

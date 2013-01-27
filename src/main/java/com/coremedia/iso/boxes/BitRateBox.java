@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.AbstractBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * <code>class BitRateBox extends Box('btrt') {<br/>
  * unsigned int(32) bufferSizeDB;<br/>
  * // gives the size of the decoding buffer for<br/>

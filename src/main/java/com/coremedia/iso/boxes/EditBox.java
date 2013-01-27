@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.googlecode.mp4parser.AbstractContainerBox;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * An Edit Box maps the presentation time-line to the media time-line as it is stored in the file.
  * The Edit Box is a container fpr the edit lists. Defined in ISO/IEC 14496-12.
  *

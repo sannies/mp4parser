@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This box containes the sample count and a table giving the size in bytes of each sample.
  * Defined in ISO/IEC 14496-12.
  */

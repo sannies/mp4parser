@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.AbstractContainerBox;
 import java.util.List;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The metadata for a presentation is stored in the single Movie Box which occurs at the top-level of a file.
  * Normally this box is close to the beginning or end of the file, though this is not required.
  */

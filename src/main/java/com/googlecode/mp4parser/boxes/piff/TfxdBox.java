@@ -7,6 +7,8 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "uuid", 6d1d9b05-42d5-44e6-80e2-141daff757b2</h1>
+ * <p/>
  * The syntax of the fields defined in this section, specified in ABNF [RFC5234], is as follows:
  * TfxdBox = TfxdBoxLength TfxdBoxType [TfxdBoxLongLength] TfxdBoxUUID TfxdBoxFields
  * TfxdBoxChildren

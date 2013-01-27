@@ -20,12 +20,17 @@ import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 
 import java.nio.ByteBuffer;
 
+/**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ */
 public class TimeCodeBox extends SampleEntry {
+    public static final String TYPE = "tmcd";
+
     byte[] data;
 
 
     public TimeCodeBox() {
-        super("tmcd");
+        super(TYPE);
     }
 
     @Override

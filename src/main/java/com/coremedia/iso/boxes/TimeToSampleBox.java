@@ -29,6 +29,7 @@ import java.util.List;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This box contains a compact version of a table that allows indexing from decoding time to sample number.
  * Other tables give sample sizes and pointers, from the sample number. Each entry in the table gives the
  * number of consecutive samples with the same time delta, and the delta of those samples. By adding the

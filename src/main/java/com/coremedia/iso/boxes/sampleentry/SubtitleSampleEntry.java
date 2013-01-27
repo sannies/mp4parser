@@ -6,6 +6,7 @@ import com.coremedia.iso.IsoTypeWriter;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Created by IntelliJ IDEA.
  * User: magnus
  * Date: 2012-03-08

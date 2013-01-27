@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The chunk offset table gives the index of each chunk into the containing file. Defined in ISO/IEC 14496-12.
  */
 public class StaticChunkOffsetBox extends ChunkOffsetBox {

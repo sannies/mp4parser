@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Contained a the <code>UserDataBox</code> and containing information about the media's rating. E.g.
  * PG13or FSK16.
  */

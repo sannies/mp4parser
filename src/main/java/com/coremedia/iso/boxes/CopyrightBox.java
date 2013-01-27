@@ -25,6 +25,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The copyright box contains a copyright declaration which applies to the entire presentation, when contained
  * within the MovieBox, or, when contained in a track, to that entire track. There may be multple boxes using
  * different language codes.
@@ -80,7 +81,6 @@ public class CopyrightBox extends AbstractFullBox {
     public String toString() {
         return "CopyrightBox[language=" + getLanguage() + ";copyright=" + getCopyright() + "]";
     }
-
 
 
 }

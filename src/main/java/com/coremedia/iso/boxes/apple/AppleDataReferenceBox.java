@@ -26,6 +26,9 @@ import java.nio.ByteBuffer;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
+/**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ */
 public class AppleDataReferenceBox extends AbstractFullBox {
     public static final String TYPE = "rdrf";
     private int dataReferenceSize;

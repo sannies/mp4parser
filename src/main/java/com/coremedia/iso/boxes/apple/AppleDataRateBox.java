@@ -22,6 +22,9 @@ import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.nio.ByteBuffer;
 
+/**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ */
 public class AppleDataRateBox extends AbstractFullBox {
     public static final String TYPE = "rmdr";
     private long dataRate;

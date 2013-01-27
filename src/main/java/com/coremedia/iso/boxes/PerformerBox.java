@@ -24,6 +24,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Used to give information about the performer. Mostly used in confunction with music files.
  * See 3GPP 26.234 for details.
  */

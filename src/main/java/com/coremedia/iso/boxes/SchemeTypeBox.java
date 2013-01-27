@@ -25,6 +25,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The Scheme Type Box identifies the protection scheme. Resides in  a Protection Scheme Information Box or
  * an SRTP Process Box.
  *

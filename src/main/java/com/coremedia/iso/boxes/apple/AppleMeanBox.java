@@ -7,6 +7,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Apple Meaning box. Allowed as subbox of "----" box.
  *
  * @see com.coremedia.iso.boxes.apple.AppleGenericBox

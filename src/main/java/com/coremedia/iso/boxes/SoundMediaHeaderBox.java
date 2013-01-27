@@ -21,6 +21,9 @@ import com.coremedia.iso.IsoTypeWriter;
 
 import java.nio.ByteBuffer;
 
+/**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ */
 public class SoundMediaHeaderBox extends AbstractMediaHeaderBox {
 
     public static final String TYPE = "smhd";

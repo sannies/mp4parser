@@ -25,6 +25,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Special box used by Vodafone in their DCF containing information about the artist. Mainly used for OMA DCF files
  * containing music. Resides in the {@link com.coremedia.iso.boxes.UserDataBox}.
  */

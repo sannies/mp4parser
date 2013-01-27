@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.AbstractBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The Original Format Box contains the four-character-code of the original untransformed sample description.
  * See ISO/IEC 14496-12 for details.
  *

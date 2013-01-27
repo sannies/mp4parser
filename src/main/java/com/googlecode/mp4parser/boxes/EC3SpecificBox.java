@@ -9,15 +9,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- *
+ * <h1>4cc = "{@value #TYPE}"</h1>
  */
 public class EC3SpecificBox extends AbstractBox {
+    public static final String TYPE = "dec3";
     List<Entry> entries = new LinkedList<Entry>();
     int dataRate;
     int numIndSub;
 
     public EC3SpecificBox() {
-        super("dec3");
+        super(TYPE);
     }
 
     @Override

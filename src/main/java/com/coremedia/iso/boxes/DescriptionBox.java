@@ -24,6 +24,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Gives a language dependent description of the media contained in the ISO file.
  */
 public class DescriptionBox extends AbstractFullBox {

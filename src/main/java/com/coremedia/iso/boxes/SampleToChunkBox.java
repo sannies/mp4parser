@@ -29,7 +29,7 @@ import java.util.List;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
-/**
+/**<h1>4cc = "{@value #TYPE}"</h1>
  * Samples within the media data are grouped into chunks. Chunks can be of different sizes, and the
  * samples within a chunk can have different sizes. This table can be used to find the chunk that
  * contains a sample, its position, and the associated sample description. Defined in ISO/IEC 14496-12.

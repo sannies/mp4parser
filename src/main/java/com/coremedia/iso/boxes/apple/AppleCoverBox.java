@@ -3,7 +3,7 @@ package com.coremedia.iso.boxes.apple;
 import java.util.logging.Logger;
 
 /**
- *
+ * <h1>4cc = "{@value #TYPE}"</h1>
  */
 public final class AppleCoverBox extends AbstractAppleMetaDataBox {
     private static Logger LOG = Logger.getLogger(AppleCoverBox.class.getName());

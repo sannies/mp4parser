@@ -20,10 +20,10 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Entry type for timed text samples defined in the timed text specification (ISO/IEC 14496-17).
  */
 public class TextSampleEntry extends SampleEntry {
@@ -231,7 +231,7 @@ public class TextSampleEntry extends SampleEntry {
             right = IsoTypeReader.readUInt16(in);
         }
 
-        public void getContent(ByteBuffer bb)  {
+        public void getContent(ByteBuffer bb) {
             IsoTypeWriter.writeUInt16(bb, top);
             IsoTypeWriter.writeUInt16(bb, left);
             IsoTypeWriter.writeUInt16(bb, bottom);

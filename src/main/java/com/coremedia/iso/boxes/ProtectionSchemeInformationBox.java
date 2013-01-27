@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.googlecode.mp4parser.AbstractContainerBox;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The <code>ProtectionSchemeInformationBox</code> contains all the information required both
  * to understand the encryption transform applied and its parameters, and also to find other
  * information such as the kind and location of the key management system. It also documents the

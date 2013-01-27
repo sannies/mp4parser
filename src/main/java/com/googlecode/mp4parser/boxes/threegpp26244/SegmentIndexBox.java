@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * <pre>
  * aligned(8) class SegmentIndexBox extends FullBox(‘sidx’, version, 0) {
  *  unsigned int(32) reference_ID;

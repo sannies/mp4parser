@@ -24,6 +24,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * <code>
  * Box Type: 'titl'<br>
  * Container: {@link UserDataBox} ('udta')<br>

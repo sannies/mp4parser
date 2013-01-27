@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.googlecode.mp4parser.AbstractContainerBox;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The Scheme Information Box is a container box that is only interpreted by the scheme beeing used.
  * Any information the encryption system needs is stored here. The content of this box is a series of
  * boxexes whose type annd format are defined by the scheme declared in the {@link com.coremedia.iso.boxes.SchemeTypeBox}.

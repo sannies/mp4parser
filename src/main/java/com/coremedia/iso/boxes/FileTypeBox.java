@@ -23,12 +23,12 @@ import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This box identifies the specifications to which this file complies. <br>
  * Each brand is a printable four-character code, registered with ISO, that
  * identifies a precise specification.

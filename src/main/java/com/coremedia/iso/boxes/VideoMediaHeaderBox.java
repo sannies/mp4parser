@@ -22,6 +22,7 @@ import com.coremedia.iso.IsoTypeWriter;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The video media header contains general presentation information, independent of the coding, for video
  * media. Note that the flags field has the value 1.
  */

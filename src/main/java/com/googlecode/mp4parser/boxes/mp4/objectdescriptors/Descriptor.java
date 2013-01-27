@@ -16,13 +16,10 @@
 
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Created by IntelliJ IDEA.
  * User: mstattma
  * Date: 06.08.2010

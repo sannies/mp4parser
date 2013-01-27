@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This box contains objects that declare user information about the containing box and its data (presentation or
  * track).<br>
  * The User Data Box is a container box for informative user-data. This user data is formatted as a set of boxes

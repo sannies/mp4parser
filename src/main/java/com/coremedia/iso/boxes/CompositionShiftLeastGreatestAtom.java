@@ -5,6 +5,8 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ * <p/>
  * The optional composition shift least greatest atom summarizes the calculated
  * minimum and maximum offsets between decode and composition time, as well as
  * the start and end times, for all samples. This allows a reader to determine
@@ -13,8 +15,10 @@ import java.nio.ByteBuffer;
  * composition shift least greatest atom is ‘cslg’.
  */
 public class CompositionShiftLeastGreatestAtom extends AbstractFullBox {
+    public static final String TYPE = "cslg";
+
     public CompositionShiftLeastGreatestAtom() {
-        super("cslg");
+        super(TYPE);
     }
 
     // A 32-bit unsigned integer that specifies the calculated value.

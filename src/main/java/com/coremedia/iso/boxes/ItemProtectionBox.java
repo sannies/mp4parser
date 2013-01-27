@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.FullContainerBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * The Item Protection Box provides an array of item protection information, for use by the Item Information Box.
  *
  * @see com.coremedia.iso.boxes.ItemProtectionBox

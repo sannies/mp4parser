@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * aligned(8) class SampleDependencyTypeBox
  * extends FullBox('sdtp', version = 0, 0) {
  * for (i=0; i < sample_count; i++){

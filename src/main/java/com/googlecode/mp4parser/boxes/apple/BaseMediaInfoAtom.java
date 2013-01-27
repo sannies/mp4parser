@@ -6,6 +6,9 @@ import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.nio.ByteBuffer;
 
+/**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ */
 public class BaseMediaInfoAtom extends AbstractFullBox {
     public static final String TYPE = "gmin";
 
@@ -30,8 +33,8 @@ public class BaseMediaInfoAtom extends AbstractFullBox {
         writeVersionAndFlags(byteBuffer);
         byteBuffer.putShort(graphicsMode);
         IsoTypeWriter.writeUInt16(byteBuffer, opColorR);
-        IsoTypeWriter.writeUInt16(byteBuffer,opColorG );
-        IsoTypeWriter.writeUInt16(byteBuffer,opColorB );
+        IsoTypeWriter.writeUInt16(byteBuffer, opColorG);
+        IsoTypeWriter.writeUInt16(byteBuffer, opColorB);
         byteBuffer.putShort(balance);
         byteBuffer.putShort(reserved);
     }

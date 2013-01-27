@@ -45,6 +45,10 @@ aligned(8) class SampleAuxiliaryInformationOffsetsBox
             }
 }
  */
+
+/**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ */
 public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
     public static final String TYPE = "saio";
 

@@ -23,12 +23,12 @@ import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.IsoTypeWriterVariable;
 import com.googlecode.mp4parser.AbstractFullBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * aligned(8) class ItemLocationBox extends FullBox(‘iloc’, version, 0) {
  * unsigned int(4) offset_size;
  * unsigned int(4) length_size;
@@ -222,7 +222,7 @@ public class ItemLocationBox extends AbstractFullBox {
             this.baseOffset = baseOffset;
         }
 
-        public void getContent(ByteBuffer bb)  {
+        public void getContent(ByteBuffer bb) {
             IsoTypeWriter.writeUInt16(bb, itemId);
 
             if (getVersion() == 1) {
@@ -309,7 +309,7 @@ public class ItemLocationBox extends AbstractFullBox {
             extentLength = IsoTypeReaderVariable.read(in, lengthSize);
         }
 
-        public void getContent(ByteBuffer os)  {
+        public void getContent(ByteBuffer os) {
             if ((getVersion() == 1) && indexSize > 0) {
                 IsoTypeWriterVariable.write(extentIndex, os, indexSize);
             }

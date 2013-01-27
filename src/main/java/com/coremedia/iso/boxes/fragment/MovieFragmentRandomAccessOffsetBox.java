@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * aligned(8) class MovieFragmentRandomAccessOffsetBox
  * extends FullBox('mfro', version, 0) {
  * unsigned int(32) size;

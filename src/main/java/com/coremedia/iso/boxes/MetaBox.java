@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * A common base structure to contain general metadata. See ISO/IEC 14496-12 Ch. 8.44.1.
  */
 public class MetaBox extends AbstractContainerBox {

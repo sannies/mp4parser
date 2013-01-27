@@ -21,6 +21,7 @@ import com.googlecode.mp4parser.AbstractBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * A user specifc box. See ISO/IEC 14496-12 for details.
  */
 public class UserBox extends AbstractBox {

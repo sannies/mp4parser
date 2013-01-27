@@ -27,6 +27,7 @@ import java.util.List;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * This table can be used to find the group that a sample belongs to and the associated description of that
  * sample group. The table is compactly coded with each entry giving the index of the first sample of a run of
  * samples with the same sample group descriptor. The sample group description ID is an index that refers to a

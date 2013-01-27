@@ -23,18 +23,20 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
- *
+ * <h1>4cc = "{@value #TYPE}"</h1>
  */
 public class BaseLocationBox extends AbstractFullBox {
+    public static final String TYPE = "bloc";
+
     String baseLocation = "";
     String purchaseLocation = "";
 
     public BaseLocationBox() {
-        super("bloc");
+        super(TYPE);
     }
 
     public BaseLocationBox(String baseLocation, String purchaseLocation) {
-        super("bloc");
+        super(TYPE);
         this.baseLocation = baseLocation;
         this.purchaseLocation = purchaseLocation;
     }

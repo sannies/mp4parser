@@ -7,7 +7,11 @@ import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 import java.nio.ByteBuffer;
 
 
+/**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ */
 public class MLPSpecificBox extends AbstractBox {
+    public static final String TYPE = "dmlp";
 
     int format_info;
     int peak_data_rate;
@@ -15,7 +19,7 @@ public class MLPSpecificBox extends AbstractBox {
     int reserved2;
 
     public MLPSpecificBox() {
-        super("dmlp");
+        super(TYPE);
     }
 
     @Override

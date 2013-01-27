@@ -23,14 +23,18 @@ import com.googlecode.mp4parser.AbstractFullBox;
 import java.nio.ByteBuffer;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ * <p/>
  * AssetInformationBox as defined Common File Format Spec.
  */
 public class AssetInformationBox extends AbstractFullBox {
+    public static final String TYPE = "ainf";
+
     String apid = "";
     String profileVersion = "0000";
 
     public AssetInformationBox() {
-        super("ainf");
+        super(TYPE);
     }
 
     @Override

@@ -28,6 +28,7 @@ import java.util.List;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * aligned(8) class TrackRunBox
  * extends FullBox('trun', 0, tr_flags) {
  * unsigned int(32) sample_count;

@@ -28,6 +28,7 @@ import java.util.List;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * <code>
  * Box Type  : 'elst'<br>
  * Container: {@link EditBox}('edts')<br>
