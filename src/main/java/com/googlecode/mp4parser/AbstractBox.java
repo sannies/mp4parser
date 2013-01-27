@@ -173,7 +173,7 @@ public abstract class AbstractBox implements Box {
      * Parses the raw content of the box. It surrounds the actual parsing
      * which is done
      */
-    synchronized final void parseDetails() {
+    public synchronized final void parseDetails() {
         readContent();
         if (content != null) {
             ByteBuffer content = this.content;

@@ -18,28 +18,7 @@ package com.googlecode.mp4parser.authoring.builder;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.ContainerBox;
-import com.coremedia.iso.boxes.DataEntryUrlBox;
-import com.coremedia.iso.boxes.DataInformationBox;
-import com.coremedia.iso.boxes.DataReferenceBox;
-import com.coremedia.iso.boxes.FileTypeBox;
-import com.coremedia.iso.boxes.HandlerBox;
-import com.coremedia.iso.boxes.MediaBox;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.MediaInformationBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.MovieHeaderBox;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.StaticChunkOffsetBox;
-import com.coremedia.iso.boxes.SyncSampleBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
@@ -50,14 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -98,13 +70,8 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
 
         IsoFile isoFile = new IsoFile();
-        // ouch that is ugly but I don't know how to do it else
-        List<String> minorBrands = new LinkedList<String>();
-        minorBrands.add("isom");
-        minorBrands.add("iso2");
-        minorBrands.add("avc1");
 
-        isoFile.addBox(new FileTypeBox("isom", 0, minorBrands));
+        isoFile.addBox(createFileTypeBox(movie));
 
         Map<Track, int[]> chunks = new HashMap<Track, int[]>();
         for (Track track : movie.getTracks()) {
@@ -143,7 +110,17 @@ public class DefaultMp4Builder implements Mp4Builder {
         return track2Sample.put(track, samples);
     }
 
-    private MovieBox createMovieBox(Movie movie, Map<Track, int[]> chunks) {
+    protected FileTypeBox createFileTypeBox(Movie movie) {
+        List<String> minorBrands = new LinkedList<String>();
+
+        minorBrands.add("isom");
+        minorBrands.add("iso2");
+        minorBrands.add("avc1");
+
+        return new FileTypeBox("isom", 0, minorBrands);
+    }
+
+    protected MovieBox createMovieBox(Movie movie, Map<Track, int[]> chunks) {
         MovieBox movieBox = new MovieBox();
         MovieHeaderBox mvhd = new MovieHeaderBox();
 
@@ -198,7 +175,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         return null;
     }
 
-    private TrackBox createTrackBox(Track track, Movie movie, Map<Track, int[]> chunks) {
+    protected TrackBox createTrackBox(Track track, Movie movie, Map<Track, int[]> chunks) {
 
         TrackBox trackBox = new TrackBox();
         TrackHeaderBox tkhd = new TrackHeaderBox();
