@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  */
 public class H264TrackImpl extends AbstractTrack {
     private static final Logger LOG = Logger.getLogger(H264TrackImpl.class.getName());
-    
+
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
 
@@ -243,12 +243,12 @@ public class H264TrackImpl extends AbstractTrack {
             long newpos = reader.getPos();
             int size = (int) (newpos - pos - prevScSize);
             reader.reset();
-            byte[] data = new byte[size ];
+            byte[] data = new byte[size];
             reader.read(data);
             int type = data[0];
             int nal_ref_idc = (type >> 5) & 3;
             int nal_unit_type = type & 0x1f;
-            LOG.fine("Found startcode at " + (pos -4)  + " Type: " + nal_unit_type + " ref idc: " + nal_ref_idc + " (size " + size + ")");
+            LOG.fine("Found startcode at " + (pos - 4) + " Type: " + nal_unit_type + " ref idc: " + nal_ref_idc + " (size " + size + ")");
             NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, data);
             switch (action) {
                 case IGNORE:
@@ -280,13 +280,13 @@ public class H264TrackImpl extends AbstractTrack {
                     if (nal_unit_type == 5) { // IDR Picture
                         stss.add(frameNr);
                     }
-                    if (seiMessage.n_frames == 0) {
+                    if (seiMessage == null || seiMessage.n_frames == 0) {
                         frameNrInGop = 0;
                     }
                     int offset = 0;
-                    if (seiMessage.clock_timestamp_flag) {
+                    if (seiMessage != null && seiMessage.clock_timestamp_flag) {
                         offset = seiMessage.n_frames - frameNrInGop;
-                    } else if (seiMessage.removal_delay_flag) {
+                    } else if (seiMessage != null && seiMessage.removal_delay_flag) {
                         offset = seiMessage.dpb_removal_delay / 2;
                     }
                     ctts.add(new CompositionTimeToSample.Entry(1, offset * frametick));
