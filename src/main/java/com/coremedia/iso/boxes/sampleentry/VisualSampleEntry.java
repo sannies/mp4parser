@@ -25,7 +25,7 @@ import com.coremedia.iso.boxes.ContainerBox;
 import java.nio.ByteBuffer;
 
 /**
- * <h1>4cc = "{@value #TYPE}"</h1>
+ * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2}" || "{@value #TYPE3}" || "{@value #TYPE4}"</h1>
  * Contains information common to all visual tracks.
  * <code>
  * <pre>
@@ -46,12 +46,13 @@ import java.nio.ByteBuffer;
  * </pre>
  * </code>
  * <p/>
- * Format-specific informationis appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
+ * Format-specific information is appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */
 public class VisualSampleEntry extends SampleEntry implements ContainerBox {
     public static final String TYPE1 = "mp4v";
     public static final String TYPE2 = "s263";
     public static final String TYPE3 = "avc1";
+    public static final String TYPE4 = "drmi";
 
 
     /**

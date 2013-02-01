@@ -148,7 +148,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
             try {
                 box.getBox(wbc);
             } catch (IOException e) {
-                // My WritableByteChannel won't throw any excpetion
+                // My WritableByteChannel won't throw any exception
                 throw new RuntimeException("Cannot happen to me", e);
             }
         }

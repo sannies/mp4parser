@@ -25,7 +25,7 @@ import com.coremedia.iso.boxes.ContainerBox;
 import java.nio.ByteBuffer;
 
 /**
- * <h1>4cc = "{@value #TYPE}"</h1>
+ * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2} || "{@value #TYPE3} || "{@value #TYPE4} || "{@value #TYPE5} || "{@value #TYPE7} || "{@value #TYPE8} || "{@value #TYPE9} || "{@value #TYPE10} || "{@value #TYPE11} || "{@value #TYPE12} || "{@value #TYPE13}"</h1>
  * Contains basic information about the audio samples in this track. Format-specific information
  * is appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */
