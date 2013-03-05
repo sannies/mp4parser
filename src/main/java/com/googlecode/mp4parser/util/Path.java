@@ -66,7 +66,7 @@ public class Path {
             }
             assert isoFile instanceof IsoFile : isoFile.getType() + " has no parent";
             return getPaths(isoFile, path.substring(1), singleResult);
-        } else if (path.isEmpty()) {
+        } else if (path.length() == 0) {
             return Collections.singletonList(box);
         } else {
             String later;
