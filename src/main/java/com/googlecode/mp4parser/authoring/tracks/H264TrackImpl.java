@@ -45,7 +45,7 @@ public class H264TrackImpl extends AbstractTrack {
 
     private int width;
     private int height;
-    private int timescale;
+    private long timescale;
     private int frametick;
     private int currentScSize;
     private int prevScSize;
@@ -57,13 +57,9 @@ public class H264TrackImpl extends AbstractTrack {
 
     public H264TrackImpl(InputStream inputStream, String lang, long timescale) throws IOException {
         this.lang = lang;
-        if (timescale > 1000) {
-            timescale = timescale; //e.g. 23976
-            frametick = 1000;
-            determineFrameRate = false;
-        } else {
-            throw new IllegalArgumentException("Timescale must be specified in milliseconds!");
-        }
+        this.timescale = timescale; //e.g. 23976
+        this.frametick = 1000;
+        this.determineFrameRate = false;
         parse(inputStream);
     }
 
