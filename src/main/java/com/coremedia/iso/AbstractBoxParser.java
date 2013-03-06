@@ -19,6 +19,7 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.UserBox;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -47,7 +48,16 @@ public abstract class AbstractBoxParser implements BoxParser {
     public Box parseBox(ReadableByteChannel byteChannel, ContainerBox parent) throws IOException {
 
 
-        ByteBuffer header = ChannelHelper.readFully(byteChannel, 8);
+        ByteBuffer header = ByteBuffer.allocate(8);
+        int bytesRead = 0;
+        //noinspection StatementWithEmptyBody
+
+        while ((bytesRead += byteChannel.read(header)) != 8) {
+            if (bytesRead < 0) {
+                throw new EOFException();
+            }
+        }
+        header.rewind();
 
         long size = IsoTypeReader.readUInt32(header);
         // do plausibility check

@@ -31,14 +31,13 @@ public class ByteBufferByteChannel implements ByteChannel {
     }
 
     public int read(ByteBuffer dst) throws IOException {
-        byte[] b = dst.array();
-        int r = dst.remaining();
-        if (byteBuffer.remaining() >= r) {
-            byteBuffer.get(b, dst.position(), r);
-            return r;
-        } else {
-            throw new EOFException("Reading beyond end of stream");
+        int rem = dst.remaining();
+        if (byteBuffer.remaining() <= 0) {
+            return -1;
         }
+        dst.put((ByteBuffer) byteBuffer.duplicate().limit(byteBuffer.position() + dst.remaining()));
+        byteBuffer.position(byteBuffer.position() + rem);
+        return rem;
     }
 
     public boolean isOpen() {

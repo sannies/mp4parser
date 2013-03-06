@@ -27,14 +27,17 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 
 public class ChannelHelper {
-    public static ByteBuffer readFully(final ReadableByteChannel channel, long size) throws IOException {
+    private static ByteBuffer empty = ByteBuffer.allocate(0).asReadOnlyBuffer();
 
-        if (channel instanceof FileChannel && size > 1024 * 1024) {
+    public static ByteBuffer readFully(final ReadableByteChannel channel, long size) throws IOException {
+        if (size == 0) {
+            return empty;
+        } else if (channel instanceof FileChannel && size > 1024 * 1024) {
             ByteBuffer bb = ((FileChannel) channel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) channel).position(), size);
             ((FileChannel) channel).position(((FileChannel) channel).position() + size);
             return bb;
         } else {
-            ByteBuffer buf = ByteBuffer.allocate(l2i(size));
+            ByteBuffer buf = ByteBuffer.allocateDirect(l2i(size));
             readFully(channel, buf, buf.limit());
             buf.rewind();
             assert buf.limit() == size;

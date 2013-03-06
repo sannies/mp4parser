@@ -172,17 +172,16 @@ public final class MediaDataBox implements Box {
         }
 
         // CACHE MISS
-        ByteBuffer cacheEntry;
+
         try {
             // Just mapping 10MB at a time. Seems reasonable.
-            cacheEntry = fileChannel.map(FileChannel.MapMode.READ_ONLY, startPosition + offset, Math.min(BUFFER_SIZE, contentSize - offset));
+            cacheSliceCurrentlyInUse = fileChannel.map(FileChannel.MapMode.READ_ONLY, startPosition + offset, Math.min(BUFFER_SIZE, contentSize - offset));
         } catch (IOException e1) {
             LOG.fine("Even mapping just 10MB of the source file into the memory failed. " + e1);
             throw new RuntimeException(
                     "Delayed reading of mdat content failed. Make sure not to close " +
                             "the FileChannel that has been used to create the IsoFile!", e1);
         }
-        cacheSliceCurrentlyInUse = cacheEntry;
         cacheSliceCurrentlyInUseStart = offset;
         ByteBuffer cachedSample = cacheSliceCurrentlyInUse.asReadOnlyBuffer();
         cachedSample.position(0);
