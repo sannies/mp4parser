@@ -17,7 +17,7 @@
 package com.coremedia.iso.boxes.mdat;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.ChannelHelper;
+import com.googlecode.mp4parser.util.ChannelHelper;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.googlecode.mp4parser.util.LazyList;

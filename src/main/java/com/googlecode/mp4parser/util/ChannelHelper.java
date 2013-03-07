@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.coremedia.iso;
+package com.googlecode.mp4parser.util;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -32,6 +32,13 @@ public class ChannelHelper {
     public static ByteBuffer readFully(final ReadableByteChannel channel, long size) throws IOException {
         if (size == 0) {
             return empty;
+        } else if (channel instanceof ByteBufferByteChannel) {
+            if (((ByteBufferByteChannel) channel).byteBuffer.remaining() < size) {
+                throw new IOException("Trying to read more data than available. The file might be corrupt");
+            }
+            ByteBuffer rbb = (ByteBuffer) ((ByteBufferByteChannel) channel).byteBuffer.slice().limit((int) size);
+            ((ByteBufferByteChannel) channel).byteBuffer.position((int) (((ByteBufferByteChannel) channel).byteBuffer.position() + size));
+            return rbb;
         } else if (channel instanceof FileChannel && size > 1024 * 1024) {
             ByteBuffer bb = ((FileChannel) channel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) channel).position(), size);
             ((FileChannel) channel).position(((FileChannel) channel).position() + size);

@@ -21,6 +21,7 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.UserBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
+import com.googlecode.mp4parser.util.ChannelHelper;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
