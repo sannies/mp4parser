@@ -22,13 +22,13 @@ import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.UserBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.util.ChannelHelper;
+import com.googlecode.mp4parser.util.Logger;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -43,7 +43,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * it is accessible by the <code>PropertyBoxParserImpl</code>
  */
 public abstract class AbstractBox implements Box {
-    private static Logger LOG = Logger.getLogger(AbstractBox.class.getName());
+    private static Logger LOG = Logger.getLogger(AbstractBox.class);
 
     protected String type;
     private byte[] userType;
@@ -62,6 +62,7 @@ public abstract class AbstractBox implements Box {
     private synchronized void readContent() {
         if (!isRead) {
             try {
+                LOG.logDebug("mem mapping " + this.getType());
                 content = memMapFileChannel.map(FileChannel.MapMode.READ_ONLY, memMapStartPosition, memMapSize);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -135,6 +136,7 @@ public abstract class AbstractBox implements Box {
             isParsed = false;
         } else {
             assert contentSize < Integer.MAX_VALUE;
+            LOG.logDebug("reading content of " + this.getType());
             content = ChannelHelper.readFully(readableByteChannel, contentSize);
             isRead = true;
             isParsed = false;
@@ -176,6 +178,7 @@ public abstract class AbstractBox implements Box {
      */
     public synchronized final void parseDetails() {
         readContent();
+        LOG.logDebug("parsing details of " + this.getType());
         if (content != null) {
             ByteBuffer content = this.content;
             this.content = null;
@@ -269,7 +272,7 @@ public abstract class AbstractBox implements Box {
 
 
         if (content.remaining() != bb.remaining()) {
-            LOG.severe(this.getType() + ": remaining differs " + content.remaining() + " vs. " + bb.remaining());
+            LOG.logError(this.getType() + ": remaining differs " + content.remaining() + " vs. " + bb.remaining());
             return false;
         }
         int p = content.position();
@@ -277,7 +280,7 @@ public abstract class AbstractBox implements Box {
             byte v1 = content.get(i);
             byte v2 = bb.get(j);
             if (v1 != v2) {
-                LOG.severe(String.format("%s: buffers differ at %d: %2X/%2X", this.getType(), i, v1, v2));
+                LOG.logError(String.format("%s: buffers differ at %d: %2X/%2X", this.getType(), i, v1, v2));
                 byte[] b1 = new byte[content.remaining()];
                 byte[] b2 = new byte[bb.remaining()];
                 content.get(b1);

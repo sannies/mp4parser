@@ -21,6 +21,7 @@ import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.MovieBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.util.LazyList;
+import com.googlecode.mp4parser.util.Logger;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -35,6 +36,7 @@ import java.util.*;
  */
 @DoNotParseDetail
 public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
+    private static Logger LOG = Logger.getLogger(IsoFile.class);
     protected BoxParser boxParser = createBoxParser();
     ReadableByteChannel byteChannel;
     long position = 0;
@@ -107,6 +109,7 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
 
 
     public boolean hasNext() {
+
         if (lookahead != null) {
             return true;
         } else {
@@ -120,11 +123,13 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
     }
 
     public synchronized Box next() {
+
         if (lookahead != null) {
             Box b = lookahead;
             lookahead = null;
             return b;
         } else {
+            LOG.logDebug("Parsing next() box");
             if (byteChannel == null) {
                 throw new NoSuchElementException();
             }

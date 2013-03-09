@@ -10,6 +10,8 @@ import java.util.NoSuchElementException;
  */
 public class LazyList<E> extends AbstractList<E> {
 
+    private static final Logger LOG = Logger.getLogger(LazyList.class);
+
     List<E> underlying;
     Iterator<E> elementSource;
 
@@ -24,6 +26,7 @@ public class LazyList<E> extends AbstractList<E> {
     }
 
     private void blowup() {
+        LOG.logDebug("blowup running");
         while (elementSource.hasNext()) {
             underlying.add(elementSource.next());
         }
@@ -70,6 +73,7 @@ public class LazyList<E> extends AbstractList<E> {
 
     @Override
     public int size() {
+        LOG.logDebug("potentially expensive size() call");
         blowup();
         return underlying.size();
     }
