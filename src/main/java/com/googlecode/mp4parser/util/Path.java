@@ -21,6 +21,7 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -93,7 +94,12 @@ public class Path {
                     }
                     List<Box> children = new LinkedList<Box>();
                     int currentIndex = 0;
-                    for (Box box1 : ((ContainerBox) box).getBoxes()) {
+                    // I'm suspecting some Dalvik VM to create indexed loops from for-each loops
+                    // using the iterator instead makes sure that this doesn't happen
+                    // (and yes - it could be completely useless)
+                    Iterator<Box> iterator = ((ContainerBox) box).getBoxes().iterator();
+                    while (iterator.hasNext()) {
+                        Box box1 = iterator.next();
                         if (box1.getType().matches(type)) {
                             if (index == -1 || index == currentIndex) {
                                 children.addAll(getPaths(box1, later, singleResult));
