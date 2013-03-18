@@ -83,4 +83,13 @@ public class IsoTypeReaderTest {
         Assert.assertEquals("fixedPointTest2", fixedPointTest2, IsoTypeReader.readFixedPoint88(bb), 1d / 256);
     }
 
+    @Test
+    public void testRead4cc() throws IOException {
+        ByteBuffer bb = ByteBuffer.wrap("abcd".getBytes());
+        String code = IsoTypeReader.read4cc(bb);
+        Assert.assertEquals(4, bb.position());
+        Assert.assertEquals("abcd", code);
+
+    }
+
 }

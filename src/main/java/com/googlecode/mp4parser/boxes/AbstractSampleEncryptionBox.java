@@ -7,7 +7,7 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
 import com.googlecode.mp4parser.AbstractFullBox;
-import com.googlecode.mp4parser.boxes.basemediaformat.TrackEncryptionBox;
+import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
@@ -115,14 +115,17 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     }
 
 
+    @DoNotParseDetail
     public boolean isSubSampleEncryption() {
         return (getFlags() & 0x2) > 0;
     }
 
+    @DoNotParseDetail
     public boolean isOverrideTrackEncryptionBoxParameters() {
         return (getFlags() & 0x1) > 0;
     }
 
+    @DoNotParseDetail
     public void setSubSampleEncryption(boolean b) {
         if (b) {
             setFlags(getFlags() | 0x2);
@@ -131,6 +134,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         }
     }
 
+    @DoNotParseDetail
     public void setOverrideTrackEncryptionBoxParameters(boolean b) {
         if (b) {
             setFlags(getFlags() | 0x1);

@@ -19,6 +19,7 @@ package com.coremedia.iso;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.MovieBox;
+import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.util.LazyList;
 import com.googlecode.mp4parser.util.Logger;
@@ -28,7 +29,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * The most upper container for ISO Boxes. It is a container box that is a file.
@@ -40,7 +44,7 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
     protected BoxParser boxParser = createBoxParser();
     ReadableByteChannel byteChannel;
     long position = 0;
-    List<Box> boxes = new LinkedList<Box>();
+    List<Box> boxes = new ArrayList<Box>();
 
     public IsoFile() {
     }
@@ -93,7 +97,7 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
     }
 
     public List<Box> getBoxes() {
-        if (byteChannel != null) {
+        if (byteChannel != null && lookahead != EOF) {
             return new LazyList<Box>(boxes, this);
         } else {
             return boxes;
@@ -105,11 +109,28 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
         throw new UnsupportedOperationException();
     }
 
+    private static final Box EOF = new AbstractBox("eof ") {
+
+        @Override
+        protected long getContentSize() {
+            return 0;
+        }
+
+        @Override
+        protected void getContent(ByteBuffer byteBuffer) {
+        }
+
+        @Override
+        protected void _parseDetails(ByteBuffer content) {
+        }
+    };
     Box lookahead = null;
 
 
     public boolean hasNext() {
-
+        if (lookahead == EOF) {
+            return false;
+        }
         if (lookahead != null) {
             return true;
         } else {
@@ -117,6 +138,7 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
                 lookahead = next();
                 return true;
             } catch (NoSuchElementException e) {
+                lookahead = EOF;
                 return false;
             }
         }
@@ -124,7 +146,7 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
 
     public synchronized Box next() {
 
-        if (lookahead != null) {
+        if (lookahead != null && lookahead != EOF) {
             Box b = lookahead;
             lookahead = null;
             return b;

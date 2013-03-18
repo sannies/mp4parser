@@ -106,7 +106,7 @@ public class Path {
                             }
                             currentIndex++;
                         }
-                        if (singleResult && !children.isEmpty()) {
+                        if ((singleResult || index >= 0) && !children.isEmpty()) {
                             return children;
                         }
                     }

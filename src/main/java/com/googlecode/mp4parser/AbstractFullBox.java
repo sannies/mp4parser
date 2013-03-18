@@ -20,6 +20,7 @@ package com.googlecode.mp4parser;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.FullBox;
+import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 
 import java.nio.ByteBuffer;
 
@@ -38,7 +39,12 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
         super(type, userType);
     }
 
+    @DoNotParseDetail
     public int getVersion() {
+        // it's faster than the join point
+        if (!isParsed) {
+            parseDetails();
+        }
         return version;
     }
 
@@ -46,7 +52,12 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
         this.version = version;
     }
 
+    @DoNotParseDetail
     public int getFlags() {
+        // it's faster than the join point
+        if (!isParsed) {
+            parseDetails();
+        }
         return flags;
     }
 

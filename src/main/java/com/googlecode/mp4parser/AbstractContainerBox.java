@@ -27,7 +27,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -38,14 +37,16 @@ import java.util.logging.Logger;
 public abstract class AbstractContainerBox extends AbstractBox implements ContainerBox {
     private static Logger LOG = Logger.getLogger(AbstractContainerBox.class.getName());
 
-    private List<Box> boxes = new LinkedList<Box>();
+    private List<Box> boxes = Collections.emptyList();
     protected BoxParser boxParser;
 
     @Override
     protected long getContentSize() {
         long contentSize = 0;
-        for (Box boxe : boxes) {
-            contentSize += boxe.getSize();
+        for (int i = 0; i < boxes.size(); i++) {
+            // it's quicker to iterate an array list like that since no iterator
+            // needs to be instantiated
+            contentSize += boxes.get(i).getSize();
         }
         return contentSize;
     }
@@ -59,7 +60,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     public void setBoxes(List<Box> boxes) {
-        this.boxes = new LinkedList<Box>(boxes);
+        this.boxes = new ArrayList<Box>(boxes);
     }
 
     @SuppressWarnings("unchecked")
@@ -91,6 +92,9 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
      * @param b will be added to the container
      */
     public void addBox(Box b) {
+        if (boxes.isEmpty()) {
+            boxes = new ArrayList<Box>();
+        }
         b.setParent(this);
         boxes.add(b);
     }
@@ -128,6 +132,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     protected final void parseChildBoxes(ByteBuffer content) {
+        boxes = new ArrayList<Box>();
         try {
             while (content.remaining() >= 8) { //  8 is the minimal size for a sane box
                 boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));

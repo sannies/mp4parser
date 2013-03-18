@@ -73,120 +73,100 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     }
 
 
-    @SuppressWarnings("unchecked")
-    public Class<? extends Box> getClassForFourCc(String type, byte[] userType, String parent) {
-        FourCcToBox fourCcToBox = new FourCcToBox(type, userType, parent).invoke();
-        try {
-            return (Class<? extends Box>) Class.forName(fourCcToBox.clazzName);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
-    public Box createBox(String type, byte[] userType, String parent) {
+    public synchronized Box createBox(String type, byte[] userType, String parent) {
 
-        FourCcToBox fourCcToBox = new FourCcToBox(type, userType, parent).invoke();
-        String[] param = fourCcToBox.getParam();
-        String clazzName = fourCcToBox.getClazzName();
+        invoke(type, userType, parent);
+
         try {
             Class<Box> clazz = (Class<Box>) Class.forName(clazzName);
-
-            Class[] constructorArgsClazz = new Class[param.length];
-            Object[] constructorArgs = new Object[param.length];
-            for (int i = 0; i < param.length; i++) {
-                if ("userType".equals(param[i])) {
-                    constructorArgs[i] = userType;
-                    constructorArgsClazz[i] = byte[].class;
-                } else if ("type".equals(param[i])) {
-                    constructorArgs[i] = type;
-                    constructorArgsClazz[i] = String.class;
-                } else if ("parent".equals(param[i])) {
-                    constructorArgs[i] = parent;
-                    constructorArgsClazz[i] = String.class;
-                } else {
-                    throw new InternalError("No such param: " + param[i]);
+            if (param.length > 0) {
+                Class[] constructorArgsClazz = new Class[param.length];
+                Object[] constructorArgs = new Object[param.length];
+                for (int i = 0; i < param.length; i++) {
+                    if ("userType".equals(param[i])) {
+                        constructorArgs[i] = userType;
+                        constructorArgsClazz[i] = byte[].class;
+                    } else if ("type".equals(param[i])) {
+                        constructorArgs[i] = type;
+                        constructorArgsClazz[i] = String.class;
+                    } else if ("parent".equals(param[i])) {
+                        constructorArgs[i] = parent;
+                        constructorArgsClazz[i] = String.class;
+                    } else {
+                        throw new InternalError("No such param: " + param[i]);
+                    }
                 }
-            }
 
-            try {
                 Constructor<Box> constructorObject = clazz.getConstructor(constructorArgsClazz);
                 return constructorObject.newInstance(constructorArgs);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
+            } else {
+                return clazz.newInstance();
             }
 
-
         } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private class FourCcToBox {
-        private String type;
-        private byte[] userType;
-        private String parent;
-        private String clazzName;
-        private String[] param;
 
-        public FourCcToBox(String type, byte[] userType, String parent) {
-            this.type = type;
-            this.parent = parent;
-            this.userType = userType;
-        }
+    StringBuilder buildLookupStrings = new StringBuilder();
+    String clazzName;
+    String param[];
+    static String[] EMPTY_STRING_ARRAY = new String[0];
 
-        public String getClazzName() {
-            return clazzName;
-        }
-
-        public String[] getParam() {
-            return param;
-        }
-
-        public FourCcToBox invoke() {
-            String constructor;
-            if (userType != null) {
-                if (!"uuid".equals((type))) {
-                    throw new RuntimeException("we have a userType but no uuid box type. Something's wrong");
-                }
+    public void invoke(String type, byte[] userType, String parent) {
+        String constructor;
+        if (userType != null) {
+            if (!"uuid".equals((type))) {
+                throw new RuntimeException("we have a userType but no uuid box type. Something's wrong");
+            }
+            constructor = mapping.getProperty("uuid[" + Hex.encodeHex(userType).toUpperCase() + "]");
+            if (constructor == null) {
                 constructor = mapping.getProperty((parent) + "-uuid[" + Hex.encodeHex(userType).toUpperCase() + "]");
-                if (constructor == null) {
-                    constructor = mapping.getProperty("uuid[" + Hex.encodeHex(userType).toUpperCase() + "]");
-                }
-                if (constructor == null) {
-                    constructor = mapping.getProperty("uuid");
-                }
-            } else {
-                constructor = mapping.getProperty((parent) + "-" + (type));
-                if (constructor == null) {
-                    constructor = mapping.getProperty((type));
-                }
             }
             if (constructor == null) {
-                constructor = mapping.getProperty("default");
+                constructor = mapping.getProperty("uuid");
             }
+        } else {
+            constructor = mapping.getProperty((type));
             if (constructor == null) {
-                throw new RuntimeException("No box object found for " + type);
+                String lookup = buildLookupStrings.append(parent).append('-').append(type).toString();
+                buildLookupStrings.setLength(0);
+                constructor = mapping.getProperty(lookup);
+
             }
-            if (!constructor.endsWith(")")) {
-                clazzName = constructor;
-                param = new String[]{};
+        }
+        if (constructor == null) {
+            constructor = mapping.getProperty("default");
+        }
+        if (constructor == null) {
+            throw new RuntimeException("No box object found for " + type);
+        }
+        if (!constructor.endsWith(")")) {
+            param = EMPTY_STRING_ARRAY;
+            clazzName = constructor;
+        } else {
+            Matcher m = constuctorPattern.matcher(constructor);
+            boolean matches = m.matches();
+            if (!matches) {
+                throw new RuntimeException("Cannot work with that constructor: " + constructor);
+            }
+            clazzName = m.group(1);
+            if (m.group(2).length() == 0) {
+                param = EMPTY_STRING_ARRAY;
             } else {
-                Matcher m = constuctorPattern.matcher(constructor);
-                boolean matches = m.matches();
-                if (!matches) {
-                    throw new RuntimeException("Cannot work with that constructor: " + constructor);
-                }
-                clazzName = m.group(1);
                 param = m.group(2).length() > 0 ? m.group(2).split(",") : new String[]{};
             }
-            return this;
         }
+
     }
 }

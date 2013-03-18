@@ -177,17 +177,17 @@ public class SampleList extends AbstractList<ByteBuffer> {
         Map<Long, Long> offsets2Sizes = new HashMap<Long, Long>();
         List<TrackFragmentBox> traf = moof.getBoxes(TrackFragmentBox.class);
         for (TrackFragmentBox trackFragmentBox : traf) {
-            if (trackFragmentBox.getTrackFragmentHeaderBox().getTrackId() == trackId) {
+            TrackFragmentHeaderBox tfhd = trackFragmentBox.getTrackFragmentHeaderBox();
+            if (tfhd.getTrackId() == trackId) {
                 long baseDataOffset;
-                if (trackFragmentBox.getTrackFragmentHeaderBox().hasBaseDataOffset()) {
-                    baseDataOffset = trackFragmentBox.getTrackFragmentHeaderBox().getBaseDataOffset();
+                if (tfhd.hasBaseDataOffset()) {
+                    baseDataOffset = tfhd.getBaseDataOffset();
                 } else {
                     baseDataOffset = moof.getOffset();
                 }
 
                 for (TrackRunBox trun : trackFragmentBox.getBoxes(TrackRunBox.class)) {
                     long sampleBaseOffset = baseDataOffset + trun.getDataOffset();
-                    final TrackFragmentHeaderBox tfhd = ((TrackFragmentBox) trun.getParent()).getTrackFragmentHeaderBox();
 
                     long offset = 0;
                     for (TrackRunBox.Entry entry : trun.getEntries()) {

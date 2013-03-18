@@ -17,7 +17,6 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -36,16 +35,31 @@ public interface Box {
 
     /**
      * The box's 4-cc type.
+     *
      * @return the 4 character type of the box
      */
     String getType();
 
     /**
      * Writes the complete box - size | 4-cc | content - to the given <code>writableByteChannel</code>.
+     *
      * @param writableByteChannel the box's sink
      * @throws IOException in case of problems with the <code>Channel</code>
      */
     void getBox(WritableByteChannel writableByteChannel) throws IOException;
 
+    /**
+     * Parses the box excluding the already parsed header (size, 4cc, [long-size], [user-type]).
+     * The remaining size of the box is the <code>contentSize</code>, <code>contentSize</code>
+     * number of bytes should be read from the box source (<code>readableByteChannel</code>).
+     * If you need the <code>header</code> buffer at a later stage you have to create a copy.
+     *
+     * @param readableByteChannel the box' source
+     * @param header              the box' already parsed header (create copy if you need it
+     *                            later as it will be overwritten)
+     * @param contentSize         remaining bytes of this box
+     * @param boxParser           use it to parse sub-boxes.
+     * @throws IOException in case of an error during a read operation
+     */
     void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
 }

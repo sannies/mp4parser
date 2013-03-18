@@ -17,9 +17,9 @@
 package com.coremedia.iso.boxes.mdat;
 
 import com.coremedia.iso.BoxParser;
-import com.googlecode.mp4parser.util.ChannelHelper;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
+import com.googlecode.mp4parser.util.ChannelHelper;
 import com.googlecode.mp4parser.util.LazyList;
 
 import java.io.IOException;
@@ -138,7 +138,9 @@ public final class MediaDataBox implements Box {
     }
 
     public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        this.header = header;
+        this.header = ByteBuffer.wrap(new byte[header.remaining()]);
+        this.header.put(header);
+        this.header.rewind();
         this.contentSize = contentSize;
 
         if (readableByteChannel instanceof FileChannel) {
@@ -152,7 +154,7 @@ public final class MediaDataBox implements Box {
             for (Box box : ((LazyList<Box>) this.getParent().getBoxes()).getUnderlying()) {
                 startPosition += box.getSize();
             }
-            startPosition += header.limit();
+            startPosition += header.remaining();
             cacheSliceCurrentlyInUse = content;
             cacheSliceCurrentlyInUseStart = 0;
         }
