@@ -154,7 +154,7 @@ public final class MediaDataBox implements Box {
             for (Box box : ((LazyList<Box>) this.getParent().getBoxes()).getUnderlying()) {
                 startPosition += box.getSize();
             }
-            startPosition += header.remaining();
+            startPosition += this.header.remaining();
             cacheSliceCurrentlyInUse = content;
             cacheSliceCurrentlyInUseStart = 0;
         }
