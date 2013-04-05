@@ -74,7 +74,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
 
 
     @Override
-    public synchronized Box createBox(String type, byte[] userType, String parent) {
+    public Box createBox(String type, byte[] userType, String parent) {
 
         invoke(type, userType, parent);
 

@@ -36,7 +36,12 @@ public abstract class AbstractBoxParser implements BoxParser {
     public abstract Box createBox(String type, byte[] userType, String parent);
 
 
-    ByteBuffer header = ByteBuffer.allocate(32);
+    ThreadLocal<ByteBuffer> header = new ThreadLocal<ByteBuffer>()  {
+        @Override
+        protected ByteBuffer initialValue() {
+            return ByteBuffer.allocate(32);
+        }
+    };
 
     /**
      * Parses the next size and type, creates a box instance and parses the box's content.
@@ -48,18 +53,18 @@ public abstract class AbstractBoxParser implements BoxParser {
      */
     public Box parseBox(ReadableByteChannel byteChannel, ContainerBox parent) throws IOException {
 
-        header.rewind().limit(8);
+        header.get().rewind().limit(8);
         int bytesRead = 0;
 
 
-        while ((bytesRead += byteChannel.read(header)) != 8) {
+        while ((bytesRead += byteChannel.read(header.get())) != 8) {
             if (bytesRead < 0) {
                 throw new EOFException();
             }
         }
-        header.rewind();
+        header.get().rewind();
 
-        long size = IsoTypeReader.readUInt32(header);
+        long size = IsoTypeReader.readUInt32(header.get());
         // do plausibility check
         if (size < 8 && size > 1) {
             LOG.severe("Plausibility check failed: size < 8 (size = " + size + "). Stop parsing!");
@@ -67,16 +72,16 @@ public abstract class AbstractBoxParser implements BoxParser {
         }
 
 
-        String type = IsoTypeReader.read4cc(header);
+        String type = IsoTypeReader.read4cc(header.get());
         //System.err.println(type);
         byte[] usertype = null;
         long contentSize;
 
         if (size == 1) {
-            header.limit(16);
-            byteChannel.read(header);
-            header.position(8);
-            size = IsoTypeReader.readUInt64(header);
+            header.get().limit(16);
+            byteChannel.read(header.get());
+            header.get().position(8);
+            size = IsoTypeReader.readUInt64(header.get());
             contentSize = size - 16;
         } else if (size == 0) {
             if (byteChannel instanceof FileChannel) {
@@ -89,11 +94,11 @@ public abstract class AbstractBoxParser implements BoxParser {
             contentSize = size - 8;
         }
         if (UserBox.TYPE.equals(type)) {
-            header.limit(header.limit() + 16);
-            byteChannel.read(header);
+            header.get().limit(header.get().limit() + 16);
+            byteChannel.read(header.get());
             usertype = new byte[16];
-            for (int i = header.position() - 16; i < header.position(); i++) {
-                usertype[i - (header.position() - 16)] = header.get(i);
+            for (int i = header.get().position() - 16; i < header.get().position(); i++) {
+                usertype[i - (header.get().position() - 16)] = header.get().get(i);
             }
             contentSize -= 16;
         }
@@ -101,9 +106,9 @@ public abstract class AbstractBoxParser implements BoxParser {
         box.setParent(parent);
         //LOG.finest("Parsing " + box.getType());
         // System.out.println("parsing " + Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
-        header.rewind();
+        header.get().rewind();
 
-        box.parse(byteChannel, header, contentSize, this);
+        box.parse(byteChannel, header.get(), contentSize, this);
         // System.out.println("box = " + box);
 
 

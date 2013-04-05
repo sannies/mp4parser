@@ -42,11 +42,14 @@ import java.util.NoSuchElementException;
 public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
     private static Logger LOG = Logger.getLogger(IsoFile.class);
     protected BoxParser boxParser = createBoxParser();
-    ReadableByteChannel byteChannel;
+    final ReadableByteChannel byteChannel;
     long position = 0;
     List<Box> boxes = new ArrayList<Box>();
+    private final Object SYNCER = new Object();
 
     public IsoFile() {
+        byteChannel = null;
+        lookahead = EOF;
     }
 
     /**
@@ -144,8 +147,7 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
         }
     }
 
-    public synchronized Box next() {
-
+    public Box next() {
         if (lookahead != null && lookahead != EOF) {
             Box b = lookahead;
             lookahead = null;
@@ -156,15 +158,17 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
                 throw new NoSuchElementException();
             }
             try {
-                if (byteChannel instanceof FileChannel) {
-                    ((FileChannel) byteChannel).position(position);
-                }
-                Box b = boxParser.parseBox(byteChannel, this);
+                synchronized (SYNCER) {
+                    if (byteChannel instanceof FileChannel) {
+                        ((FileChannel) byteChannel).position(position);
+                    }
+                    Box b = boxParser.parseBox(byteChannel, this);
 
-                if (byteChannel instanceof FileChannel) {
-                    position = ((FileChannel) byteChannel).position();
+                    if (byteChannel instanceof FileChannel) {
+                        position = ((FileChannel) byteChannel).position();
+                    }
+                    return b;
                 }
-                return b;
             } catch (EOFException e) {
                 throw new NoSuchElementException();
             } catch (IOException e) {
@@ -177,18 +181,7 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
     @DoNotParseDetail
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("IsoFile[");
-        if (boxes == null) {
-            buffer.append("unparsed");
-        } else {
-            for (int i = 0; i < boxes.size(); i++) {
-                if (i > 0) {
-                    buffer.append(";");
-                }
-                buffer.append(boxes.get(i).toString());
-            }
-        }
-        buffer.append("]");
+        buffer.append("IsoFile[").append(byteChannel).append("]");
         return buffer.toString();
     }
 
@@ -266,7 +259,6 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
     }
 
     public void setBoxes(List<Box> boxes) {
-        byteChannel = null;
         this.boxes = boxes;
     }
 

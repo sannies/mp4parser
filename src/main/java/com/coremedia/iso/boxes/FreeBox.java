@@ -18,6 +18,7 @@ package com.coremedia.iso.boxes;
 
 
 import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.util.ChannelHelper;
 import com.coremedia.iso.IsoTypeWriter;
 

@@ -17,6 +17,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoFile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -62,4 +63,5 @@ public interface Box {
      * @throws IOException in case of an error during a read operation
      */
     void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
+
 }

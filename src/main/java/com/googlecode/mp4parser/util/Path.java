@@ -35,6 +35,9 @@ public class Path {
     static Pattern component = Pattern.compile("(....|\\.\\.)(\\[(.*)\\])?");
 
     public static String createPath(Box box) {
+        if (box instanceof IsoFile) {
+            return "/";
+        }
         return createPath(box, "");
     }
 
@@ -42,7 +45,11 @@ public class Path {
         if (box instanceof IsoFile) {
             return path;
         } else {
-            List<?> boxesOfBoxType = box.getParent().getBoxes(box.getClass());
+            ContainerBox parent = box.getParent();
+            if (parent == null) {
+                System.err.println(box);
+            }
+            List<?> boxesOfBoxType = parent.getBoxes(box.getClass());
             int index = boxesOfBoxType.indexOf(box);
             path = String.format("/%s[%d]", box.getType(), index) + path;
 

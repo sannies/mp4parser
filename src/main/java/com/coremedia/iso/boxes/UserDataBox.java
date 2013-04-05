@@ -33,26 +33,6 @@ import java.nio.channels.ReadableByteChannel;
 public class UserDataBox extends AbstractContainerBox {
     public static final String TYPE = "udta";
 
-    @Override
-    protected long getContentSize() {
-        return super.getContentSize();    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        super.parse(readableByteChannel, header, contentSize, boxParser);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void _parseDetails(ByteBuffer content) {
-        super._parseDetails(content);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        super.getContent(byteBuffer);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
     public UserDataBox() {
         super(TYPE);
     }

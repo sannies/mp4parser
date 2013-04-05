@@ -23,6 +23,7 @@ import com.coremedia.iso.boxes.UserBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.util.ChannelHelper;
 import com.googlecode.mp4parser.util.Logger;
+import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -322,7 +323,10 @@ public abstract class AbstractBox implements Box {
         if (UserBox.TYPE.equals(getType())) {
             byteBuffer.put(getUserType());
         }
+    }
 
-
+    @DoNotParseDetail
+    public String getPath() {
+        return Path.createPath(this);
     }
 }

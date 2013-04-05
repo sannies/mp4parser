@@ -17,10 +17,13 @@
 package com.coremedia.iso.boxes.mdat;
 
 import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
+import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.util.ChannelHelper;
 import com.googlecode.mp4parser.util.LazyList;
+import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -190,6 +193,18 @@ public final class MediaDataBox implements Box {
         cachedSample.mark();
         cachedSample.limit(length);
         return cachedSample;
+    }
+
+    @Override
+    public String toString() {
+        return "MediaDataBox{" +
+                "contentSize=" + contentSize +
+                '}';
+    }
+
+    @DoNotParseDetail
+    public String getPath() {
+        return Path.createPath(this);
     }
 
 }
