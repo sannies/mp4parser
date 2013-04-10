@@ -17,7 +17,7 @@
 package com.coremedia.iso.boxes.mdat;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
@@ -53,7 +53,7 @@ public final class MediaDataBox implements Box {
     public static final int BUFFER_SIZE = 10 * 1024 * 1024;
     ContainerBox parent;
 
-    ByteBuffer header;
+    boolean largeBox = false;
 
     // These fields are for the special case of a FileChannel as input.
     private FileChannel fileChannel;
@@ -92,44 +92,27 @@ public final class MediaDataBox implements Box {
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         if (fileChannel != null) {
-            assert checkStillOk();
-            transfer(fileChannel, startPosition - header.limit(), contentSize + header.limit(), writableByteChannel);
+            transfer(fileChannel, startPosition - (largeBox ? 16 : 8), contentSize + (largeBox ? 16 : 8), writableByteChannel);
         } else {
+            ByteBuffer header;
+            if (largeBox) {
+                header = ByteBuffer.wrap(new byte[]{0, 0, 0, 1, 'm', 'd', 'a', 't', 0, 0, 0, 0, 0, 0, 0, 0});
+                header.position(8);
+                IsoTypeWriter.writeUInt64(header, contentSize + 16);
+            } else {
+                header = ByteBuffer.wrap(new byte[]{0, 0, 0, 0, 'm', 'd', 'a', 't'});
+                IsoTypeWriter.writeUInt32(header, contentSize + 8);
+            }
             header.rewind();
             writableByteChannel.write(header);
             writableByteChannel.write(content);
         }
     }
 
-    /**
-     * If someone use the same file as source and sink it could the case that
-     * inserting a few bytes before the mdat results in overwriting data we still
-     * need to write this mdat here. This method just makes sure that we haven't already
-     * overwritten the mdat contents.
-     *
-     * @return true if ok
-     */
-    private boolean checkStillOk() {
-        try {
-            fileChannel.position(startPosition - header.limit());
-            ByteBuffer h2 = ByteBuffer.allocate(header.limit());
-            fileChannel.read(h2);
-            header.rewind();
-            h2.rewind();
-            assert h2.equals(header) : "It seems that the content I want to read has already been overwritten.";
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-    }
-
 
     public long getSize() {
-        long size = header.limit();
-        size += contentSize;
-        return size;
+
+        return (largeBox ? 16 : 8) + contentSize;
     }
 
     public long getDataStartPosition() {
@@ -141,9 +124,7 @@ public final class MediaDataBox implements Box {
     }
 
     public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        this.header = ByteBuffer.wrap(new byte[header.remaining()]);
-        this.header.put(header);
-        this.header.rewind();
+        this.largeBox = header.remaining() == 16;
         this.contentSize = contentSize;
 
         if (readableByteChannel instanceof FileChannel) {
@@ -157,7 +138,7 @@ public final class MediaDataBox implements Box {
             for (Box box : ((LazyList<Box>) this.getParent().getBoxes()).getUnderlying()) {
                 startPosition += box.getSize();
             }
-            startPosition += this.header.remaining();
+            startPosition += header.remaining();
             cacheSliceCurrentlyInUse = content;
             cacheSliceCurrentlyInUseStart = 0;
         }
