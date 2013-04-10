@@ -124,10 +124,6 @@ public abstract class AbstractBox implements Box {
     @DoNotParseDetail
     public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         if (readableByteChannel instanceof FileChannel) {
-            // todo: if I map this here delayed I could use transferFrom/transferTo in the getBox method
-            // todo: potentially this could speed up writing.
-            //
-            // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
             this.memMapStartPosition = ((FileChannel) readableByteChannel).position();
             this.memMapSize = contentSize;
             this.memMapFileChannel = (FileChannel) readableByteChannel;
@@ -182,13 +178,13 @@ public abstract class AbstractBox implements Box {
         LOG.logDebug("parsing details of " + this.getType());
         if (content != null) {
             ByteBuffer content = this.content;
-            this.content = null;
+            isParsed = true;
             content.rewind();
             _parseDetails(content);
             if (content.remaining() > 0) {
                 deadBytes = content.slice();
             }
-            isParsed = true;
+            this.content = null;
             assert verify(content);
         }
     }

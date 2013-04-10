@@ -102,4 +102,12 @@ public class BaseLocationBox extends AbstractFullBox {
         result = 31 * result + (purchaseLocation != null ? purchaseLocation.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "BaseLocationBox{" +
+                "baseLocation='" + baseLocation + '\'' +
+                ", purchaseLocation='" + purchaseLocation + '\'' +
+                '}';
+    }
 }

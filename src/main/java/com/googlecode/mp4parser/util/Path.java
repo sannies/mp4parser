@@ -36,7 +36,7 @@ public class Path {
 
     public static String createPath(Box box) {
         if (box instanceof IsoFile) {
-            return "/";
+            return "";
         }
         return createPath(box, "");
     }
@@ -46,11 +46,16 @@ public class Path {
             return path;
         } else {
             ContainerBox parent = box.getParent();
-            if (parent == null) {
-                System.err.println(box);
+            int index = 0;
+            List<Box> siblings = parent.getBoxes();
+            for (Box sibling : siblings) {
+                if (sibling.getType().equals(box.getType())) {
+                    if (sibling == box) {
+                        break;
+                    }
+                    index++;
+                }
             }
-            List<?> boxesOfBoxType = parent.getBoxes(box.getClass());
-            int index = boxesOfBoxType.indexOf(box);
             path = String.format("/%s[%d]", box.getType(), index) + path;
 
             return createPath(box.getParent(), path);

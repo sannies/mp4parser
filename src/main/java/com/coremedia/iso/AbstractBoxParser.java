@@ -18,12 +18,16 @@ package com.coremedia.iso;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.UserBox;
+import com.googlecode.mp4parser.util.Path;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -35,13 +39,15 @@ public abstract class AbstractBoxParser implements BoxParser {
 
     public abstract Box createBox(String type, byte[] userType, String parent);
 
+    Map<String, Long> boxPositions = new HashMap<String, Long>();
 
-    ThreadLocal<ByteBuffer> header = new ThreadLocal<ByteBuffer>()  {
+    ThreadLocal<ByteBuffer> header = new ThreadLocal<ByteBuffer>() {
         @Override
         protected ByteBuffer initialValue() {
             return ByteBuffer.allocate(32);
         }
     };
+
 
     /**
      * Parses the next size and type, creates a box instance and parses the box's content.
@@ -52,7 +58,10 @@ public abstract class AbstractBoxParser implements BoxParser {
      * @throws java.io.IOException if reading from <code>in</code> fails
      */
     public Box parseBox(ReadableByteChannel byteChannel, ContainerBox parent) throws IOException {
-
+        long pos = -1;
+        if (byteChannel instanceof FileChannel) {
+            pos = ((FileChannel) byteChannel).position();
+        }
         header.get().rewind().limit(8);
         int bytesRead = 0;
 
@@ -109,13 +118,23 @@ public abstract class AbstractBoxParser implements BoxParser {
         header.get().rewind();
 
         box.parse(byteChannel, header.get(), contentSize, this);
-        // System.out.println("box = " + box);
+//        System.out.println("box = " + box.getType());
+        if (true) {
+            int index = 0;
+            List<Box> boxes;
+            if (box.getParent() instanceof IsoFile) {
+                boxes = ((IsoFile) box.getParent()).boxes;
+            } else {
+                boxes = box.getParent().getBoxes();
+            }
+            for (Box siblings : boxes) {
+                if (siblings.getType().equals(box.getType())) {
+                    index++;
+                }
+            }
+            boxPositions.put(Path.createPath(box.getParent()) + "/" + type + "[" + index + "]", pos);
+        }
 
-
-        assert size == box.getSize() :
-                "Reconstructed Size is not x to the number of parsed bytes! (" +
-                        box.getType() + ")"
-                        + " Actual Box size: " + size + " Calculated size: " + box.getSize();
         return box;
     }
 
