@@ -209,6 +209,7 @@ public class AACTrackImpl extends AbstractTrack {
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
         trackMetaData.setLanguage(lang);
+        trackMetaData.setVolume(1);
         trackMetaData.setTimescale(firstHeader.sampleRate); // Audio tracks always use sampleRate as timescale
     }
 

@@ -117,6 +117,7 @@ public class EC3TrackImpl extends AbstractTrack {
         trackMetaData.setModificationTime(new Date());
         trackMetaData.setLanguage(lang);
         trackMetaData.setTimescale(samplerate); // Audio tracks always use samplerate as timescale
+        trackMetaData.setVolume(1);
 
         samples = new LinkedList<ByteBuffer>();
         if (!readSamples()) {
