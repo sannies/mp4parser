@@ -14,13 +14,6 @@ import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
-/**
- * Created with IntelliJ IDEA.
- * User: mstattma
- * Date: 17.08.12
- * Time: 02:51
- * To change this template use File | Settings | File Templates.
- */
 public abstract class AbstractManifestWriter implements ManifestWriter {
     private static final Logger LOG = Logger.getLogger(AbstractManifestWriter.class.getName());
 
@@ -65,7 +58,7 @@ public abstract class AbstractManifestWriter implements ManifestWriter {
     public long getBitrate(Track track) {
         long bitrate = 0;
         for (ByteBuffer sample : track.getSamples()) {
-            bitrate += sample.limit();
+            bitrate += sample.remaining();
         }
         bitrate *= 8; // from bytes to bits
         bitrate /= ((double) getDuration(track)) / track.getTrackMetaData().getTimescale(); // per second
