@@ -85,6 +85,14 @@ public class Movie {
         return timescale;
     }
 
+    public Matrix getMatrix() {
+        return matrix;
+    }
+
+    public void setMatrix(Matrix matrix) {
+        this.matrix = matrix;
+    }
+
     public static long gcd(long a, long b) {
         if (b == 0) {
             return a;

@@ -126,7 +126,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         mvhd.setCreationTime(new Date());
         mvhd.setModificationTime(new Date());
-
+        mvhd.setMatrix(movie.getMatrix());
         long movieTimeScale = getTimescale(movie);
         long duration = 0;
 
@@ -174,23 +174,12 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         TrackBox trackBox = new TrackBox();
         TrackHeaderBox tkhd = new TrackHeaderBox();
-        int flags = 0;
-        if (track.isEnabled()) {
-            flags += 1;
-        }
 
-        if (track.isInMovie()) {
-            flags += 2;
-        }
-
-        if (track.isInPreview()) {
-            flags += 4;
-        }
-
-        if (track.isInPoster()) {
-            flags += 8;
-        }
-        tkhd.setFlags(flags);
+        tkhd.setEnabled(track.isEnabled());
+        tkhd.setInMovie(track.isInMovie());
+        tkhd.setInPreview(track.isInPreview());
+        tkhd.setInPoster(track.isInPoster());
+        tkhd.setMatrix(track.getTrackMetaData().getMatrix());
 
         tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
         tkhd.setCreationTime(track.getTrackMetaData().getCreationTime());

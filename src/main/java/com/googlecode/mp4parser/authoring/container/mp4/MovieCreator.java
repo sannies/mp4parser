@@ -58,6 +58,7 @@ public class MovieCreator {
         for (TrackBox trackBox : trackBoxes) {
             m.addTrack(new Mp4TrackImpl(trackBox));
         }
+        m.setMatrix(isoFile.getMovieBox().getMovieHeaderBox().getMatrix());
         return m;
     }
 }

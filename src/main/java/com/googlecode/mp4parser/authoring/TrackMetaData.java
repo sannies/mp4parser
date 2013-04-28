@@ -15,6 +15,8 @@
  */
 package com.googlecode.mp4parser.authoring;
 
+import com.googlecode.mp4parser.util.Matrix;
+
 import java.util.Date;
 
 /**
@@ -25,6 +27,7 @@ public class TrackMetaData implements Cloneable {
     private long timescale;
     private Date modificationTime = new Date();
     private Date creationTime = new Date();
+    private Matrix matrix = Matrix.ROTATE_0;
     private double width;
     private double height;
     private float volume;
@@ -117,6 +120,14 @@ public class TrackMetaData implements Cloneable {
 
     public void setGroup(int group) {
         this.group = group;
+    }
+
+    public Matrix getMatrix() {
+        return matrix;
+    }
+
+    public void setMatrix(Matrix matrix) {
+        this.matrix = matrix;
     }
 
     public Object clone() {
