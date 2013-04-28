@@ -9,8 +9,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Compares boxes for testing purposes.
@@ -27,18 +25,18 @@ public class BoxComparator {
         return false;
     }
 
-    public static void check(Box b1, Box b2,String... ignores) throws IOException {
+    public static void check(Box b1, Box b2, String... ignores) throws IOException {
         System.err.println(b1.getType() + " - " + b2.getType());
         Assert.assertEquals(b1.getType(), b2.getType());
         if (!isIgnore(b1, ignores)) {
-        //    System.err.println(b1.getType());
+            //    System.err.println(b1.getType());
             Assert.assertEquals("Type differs. \ntypetrace ref : " + Path.createPath(b1) + "\ntypetrace new : " + Path.createPath(b2),
                     b1.getType(), b2.getType());
             if (b1 instanceof ContainerBox ^ !(b2 instanceof ContainerBox)) {
                 if (b1 instanceof ContainerBox) {
                     checkContainer((ContainerBox) b1, (ContainerBox) b2, ignores);
                 } else {
-                    chechBox(b1, b2, ignores);
+                    checkBox(b1, b2, ignores);
                 }
             } else {
                 Assert.fail("Either both boxes are container boxes or none");
@@ -46,7 +44,7 @@ public class BoxComparator {
         }
     }
 
-    private static void chechBox(Box b1, Box b2, String[] ignores) throws IOException {
+    private static void checkBox(Box b1, Box b2, String[] ignores) throws IOException {
         if (!isIgnore(b1, ignores)) {
             ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
             ByteArrayOutputStream baos2 = new ByteArrayOutputStream();

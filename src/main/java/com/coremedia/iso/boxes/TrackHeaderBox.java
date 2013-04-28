@@ -191,14 +191,14 @@ public class TrackHeaderBox extends AbstractFullBox {
 
     public void setCreationTime(Date creationTime) {
         this.creationTime = creationTime;
-        if (DateHelper.convert(creationTime) >= Integer.MAX_VALUE) {
+        if (DateHelper.convert(creationTime) >= (1l << 32)) {
             setVersion(1);
         }
     }
 
     public void setModificationTime(Date modificationTime) {
         this.modificationTime = modificationTime;
-        if (DateHelper.convert(modificationTime) >= Integer.MAX_VALUE) {
+        if (DateHelper.convert(modificationTime) >= (1l << 32)) {
             setVersion(1);
         }
 
@@ -210,7 +210,7 @@ public class TrackHeaderBox extends AbstractFullBox {
 
     public void setDuration(long duration) {
         this.duration = duration;
-        if (duration >= Integer.MAX_VALUE) {
+        if (duration >= (1l << 32)) {
             setFlags(1);
         }
     }

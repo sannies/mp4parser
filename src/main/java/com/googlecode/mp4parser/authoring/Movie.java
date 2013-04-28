@@ -15,6 +15,8 @@
  */
 package com.googlecode.mp4parser.authoring;
 
+import com.googlecode.mp4parser.util.Matrix;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,6 +24,8 @@ import java.util.List;
  *
  */
 public class Movie {
+    Matrix matrix = Matrix.ROTATE_0;
+
     List<Track> tracks = new LinkedList<Track>();
 
     public List<Track> getTracks() {

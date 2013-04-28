@@ -194,7 +194,6 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     private boolean findNextStartcode() throws IOException {
-        System.err.println("Reader pos on findNextStartCode: " + reader.getPos());
         byte[] test = new byte[]{-1, -1, -1, -1};
 
         int c;
@@ -246,9 +245,7 @@ public class H264TrackImpl extends AbstractTrack {
             int type = data[0];
             int nal_ref_idc = (type >> 5) & 3;
             int nal_unit_type = type & 0x1f;
-            System.err.println("Found startcode at " + (pos - 4) + " Type: " + nal_unit_type + " ref idc: " + nal_ref_idc + " (size " + size + ")");
             NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, data);
-            System.err.println(action);
             switch (action) {
                 case IGNORE:
                     break;
