@@ -28,6 +28,7 @@ public class BoxComparator {
     }
 
     public static void check(Box b1, Box b2,String... ignores) throws IOException {
+        System.err.println(b1.getType() + " - " + b2.getType());
         Assert.assertEquals(b1.getType(), b2.getType());
         if (!isIgnore(b1, ignores)) {
         //    System.err.println(b1.getType());

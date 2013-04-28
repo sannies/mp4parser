@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
+import com.googlecode.mp4parser.util.Matrix;
 
 import java.nio.ByteBuffer;
 
@@ -40,7 +41,7 @@ public class MovieHeaderBox extends AbstractFullBox {
     private long duration;
     private double rate = 1.0;
     private float volume = 1.0f;
-    private long[] matrix = new long[]{0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000};
+    private Matrix matrix = Matrix.ROTATE_0;
     private long nextTrackId;
 
     private int previewTime;
@@ -81,7 +82,7 @@ public class MovieHeaderBox extends AbstractFullBox {
         return volume;
     }
 
-    public long[] getMatrix() {
+    public Matrix getMatrix() {
         return matrix;
     }
 
@@ -119,10 +120,8 @@ public class MovieHeaderBox extends AbstractFullBox {
         IsoTypeReader.readUInt16(content);
         IsoTypeReader.readUInt32(content);
         IsoTypeReader.readUInt32(content);
-        matrix = new long[9];
-        for (int i = 0; i < 9; i++) {
-            matrix[i] = IsoTypeReader.readUInt32(content);
-        }
+
+        matrix = Matrix.fromByteBuffer(content);
 
         previewTime = content.getInt();
         previewDuration = content.getInt();
@@ -149,10 +148,8 @@ public class MovieHeaderBox extends AbstractFullBox {
         result.append("rate=").append(getRate());
         result.append(";");
         result.append("volume=").append(getVolume());
-        for (int i = 0; i < matrix.length; i++) {
-            result.append(";");
-            result.append("matrix").append(i).append("=").append(matrix[i]);
-        }
+        result.append(";");
+        result.append("matrix=").append(matrix);
         result.append(";");
         result.append("nextTrackId=").append(getNextTrackId());
         result.append("]");
@@ -180,11 +177,7 @@ public class MovieHeaderBox extends AbstractFullBox {
         IsoTypeWriter.writeUInt32(byteBuffer, 0);
         IsoTypeWriter.writeUInt32(byteBuffer, 0);
 
-
-        for (int i = 0; i < 9; i++) {
-            IsoTypeWriter.writeUInt32(byteBuffer, matrix[i]);
-        }
-
+        matrix.getContent(byteBuffer);
 
         byteBuffer.putInt(previewTime);
         byteBuffer.putInt(previewDuration);
@@ -221,7 +214,7 @@ public class MovieHeaderBox extends AbstractFullBox {
         this.volume = volume;
     }
 
-    public void setMatrix(long[] matrix) {
+    public void setMatrix(Matrix matrix) {
         this.matrix = matrix;
     }
 

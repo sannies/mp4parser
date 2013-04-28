@@ -20,6 +20,7 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
+import com.googlecode.mp4parser.util.Matrix;
 
 import java.nio.ByteBuffer;
 
@@ -44,7 +45,7 @@ public class TrackHeaderBox extends AbstractFullBox {
     private int layer;
     private int alternateGroup;
     private float volume;
-    private double[] matrix = new double[]{1.0d, 0, 0, 0, 1.0d, 0, 0, 0, 1.0d};
+    private Matrix matrix = Matrix.ROTATE_0;
     private double width;
     private double height;
 
@@ -82,7 +83,7 @@ public class TrackHeaderBox extends AbstractFullBox {
         return volume;
     }
 
-    public double[] getMatrix() {
+    public Matrix getMatrix() {
         return matrix;
     }
 
@@ -127,20 +128,7 @@ public class TrackHeaderBox extends AbstractFullBox {
         alternateGroup = IsoTypeReader.readUInt16(content);
         volume = IsoTypeReader.readFixedPoint88(content);
         IsoTypeReader.readUInt16(content);     // 212
-        matrix = new double[9];
-        int i = 0;
-        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
-        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
-        matrix[i++] = IsoTypeReader.readFixedPoint0230(content);
-
-        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
-        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
-        matrix[i++] = IsoTypeReader.readFixedPoint0230(content);
-
-        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
-        matrix[i++] = IsoTypeReader.readFixedPoint1616(content);
-        matrix[i] = IsoTypeReader.readFixedPoint0230(content);
-
+        matrix = Matrix.fromByteBuffer(content);
         width = IsoTypeReader.readFixedPoint1616(content);    // 248
         height = IsoTypeReader.readFixedPoint1616(content);
     }
@@ -167,17 +155,7 @@ public class TrackHeaderBox extends AbstractFullBox {
         IsoTypeWriter.writeFixedPoint88(byteBuffer, volume);
         IsoTypeWriter.writeUInt16(byteBuffer, 0);
         int i = 0;
-        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
-        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
-        IsoTypeWriter.writeFixedPoint0230(byteBuffer, matrix[i++]);
-
-        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
-        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
-        IsoTypeWriter.writeFixedPoint0230(byteBuffer, matrix[i++]);
-
-        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
-        IsoTypeWriter.writeFixedPoint1616(byteBuffer, matrix[i++]);
-        IsoTypeWriter.writeFixedPoint0230(byteBuffer, matrix[i]);
+        matrix.getContent(byteBuffer);
 
         IsoTypeWriter.writeFixedPoint1616(byteBuffer, width);
         IsoTypeWriter.writeFixedPoint1616(byteBuffer, height);
@@ -199,10 +177,8 @@ public class TrackHeaderBox extends AbstractFullBox {
         result.append("alternateGroup=").append(getAlternateGroup());
         result.append(";");
         result.append("volume=").append(getVolume());
-        for (int i = 0; i < matrix.length; i++) {
-            result.append(";");
-            result.append("matrix").append(i).append("=").append(matrix[i]);
-        }
+        result.append(";");
+        result.append("matrix=").append(matrix);
         result.append(";");
         result.append("width=").append(getWidth());
         result.append(";");
@@ -239,7 +215,7 @@ public class TrackHeaderBox extends AbstractFullBox {
         this.volume = volume;
     }
 
-    public void setMatrix(double[] matrix) {
+    public void setMatrix(Matrix matrix) {
         this.matrix = matrix;
     }
 
@@ -250,6 +226,7 @@ public class TrackHeaderBox extends AbstractFullBox {
     public void setHeight(double height) {
         this.height = height;
     }
+
 
 
     public boolean isEnabled() {
@@ -266,5 +243,37 @@ public class TrackHeaderBox extends AbstractFullBox {
 
     public boolean isInPoster() {
         return (getFlags() & 8) > 0;
+    }
+
+    public void setEnabled(boolean enabled) {
+        if (enabled) {
+            setFlags(getFlags() | 1);
+        } else {
+            setFlags(getFlags() & ~1);
+        }
+    }
+
+    public void setInMovie(boolean inMovie) {
+        if (inMovie) {
+            setFlags(getFlags() | 2);
+        } else {
+            setFlags(getFlags() & ~2);
+        }
+    }
+
+    public void setInPreview(boolean inPreview) {
+        if (inPreview) {
+            setFlags(getFlags() | 4);
+        } else {
+            setFlags(getFlags() & ~4);
+        }
+    }
+
+    public void setInPoster(boolean inPoster) {
+        if (inPoster) {
+            setFlags(getFlags() | 8);
+        } else {
+            setFlags(getFlags() & ~8);
+        }
     }
 }

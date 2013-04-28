@@ -37,6 +37,7 @@ public abstract class BoxWriteReadBase<T extends Box> {
             "isoFile",
             "parent",
             "parsed",
+            "path",
             "size",
             "type",
             "userType",
