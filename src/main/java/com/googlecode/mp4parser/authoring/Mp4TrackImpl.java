@@ -18,6 +18,7 @@ package com.googlecode.mp4parser.authoring;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.*;
 import com.coremedia.iso.boxes.mdat.SampleList;
+import com.googlecode.mp4parser.util.DateHelper;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

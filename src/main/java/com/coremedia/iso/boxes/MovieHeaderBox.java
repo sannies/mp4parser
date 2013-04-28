@@ -19,9 +19,11 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
+import com.googlecode.mp4parser.util.DateHelper;
 import com.googlecode.mp4parser.util.Matrix;
 
 import java.nio.ByteBuffer;
+import java.util.Date;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
@@ -35,8 +37,8 @@ import java.nio.ByteBuffer;
  * considered as a whole.
  */
 public class MovieHeaderBox extends AbstractFullBox {
-    private long creationTime;
-    private long modificationTime;
+    private Date creationTime;
+    private Date modificationTime;
     private long timescale;
     private long duration;
     private double rate = 1.0;
@@ -58,11 +60,11 @@ public class MovieHeaderBox extends AbstractFullBox {
         super(TYPE);
     }
 
-    public long getCreationTime() {
+    public Date getCreationTime() {
         return creationTime;
     }
 
-    public long getModificationTime() {
+    public Date getModificationTime() {
         return modificationTime;
     }
 
@@ -105,13 +107,13 @@ public class MovieHeaderBox extends AbstractFullBox {
     public void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
         if (getVersion() == 1) {
-            creationTime = IsoTypeReader.readUInt64(content);
-            modificationTime = IsoTypeReader.readUInt64(content);
+            creationTime = DateHelper.convert(IsoTypeReader.readUInt64(content));
+            modificationTime = DateHelper.convert(IsoTypeReader.readUInt64(content));
             timescale = IsoTypeReader.readUInt32(content);
             duration = IsoTypeReader.readUInt64(content);
         } else {
-            creationTime = IsoTypeReader.readUInt32(content);
-            modificationTime = IsoTypeReader.readUInt32(content);
+            creationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
+            modificationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             timescale = IsoTypeReader.readUInt32(content);
             duration = IsoTypeReader.readUInt32(content);
         }
@@ -161,13 +163,13 @@ public class MovieHeaderBox extends AbstractFullBox {
     protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         if (getVersion() == 1) {
-            IsoTypeWriter.writeUInt64(byteBuffer, creationTime);
-            IsoTypeWriter.writeUInt64(byteBuffer, modificationTime);
+            IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(creationTime));
+            IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, timescale);
             IsoTypeWriter.writeUInt64(byteBuffer, duration);
         } else {
-            IsoTypeWriter.writeUInt32(byteBuffer, creationTime);
-            IsoTypeWriter.writeUInt32(byteBuffer, modificationTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(creationTime));
+            IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, timescale);
             IsoTypeWriter.writeUInt32(byteBuffer, duration);
         }
@@ -190,12 +192,20 @@ public class MovieHeaderBox extends AbstractFullBox {
     }
 
 
-    public void setCreationTime(long creationTime) {
+    public void setCreationTime(Date creationTime) {
         this.creationTime = creationTime;
+        if (DateHelper.convert(creationTime) >= Integer.MAX_VALUE) {
+            setVersion(1);
+        }
+
     }
 
-    public void setModificationTime(long modificationTime) {
+    public void setModificationTime(Date modificationTime) {
         this.modificationTime = modificationTime;
+        if (DateHelper.convert(modificationTime) >= Integer.MAX_VALUE) {
+            setVersion(1);
+        }
+
     }
 
     public void setTimescale(long timescale) {
@@ -204,6 +214,9 @@ public class MovieHeaderBox extends AbstractFullBox {
 
     public void setDuration(long duration) {
         this.duration = duration;
+        if (duration >= Integer.MAX_VALUE) {
+            setVersion(1);
+        }
     }
 
     public void setRate(double rate) {

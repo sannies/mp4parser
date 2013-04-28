@@ -19,9 +19,9 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.*;
-import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.util.DateHelper;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
@@ -124,8 +124,8 @@ public class DefaultMp4Builder implements Mp4Builder {
         MovieBox movieBox = new MovieBox();
         MovieHeaderBox mvhd = new MovieHeaderBox();
 
-        mvhd.setCreationTime(DateHelper.convert(new Date()));
-        mvhd.setModificationTime(DateHelper.convert(new Date()));
+        mvhd.setCreationTime(new Date());
+        mvhd.setModificationTime(new Date());
 
         long movieTimeScale = getTimescale(movie);
         long duration = 0;
@@ -147,11 +147,6 @@ public class DefaultMp4Builder implements Mp4Builder {
             nextTrackId = nextTrackId < track.getTrackMetaData().getTrackId() ? track.getTrackMetaData().getTrackId() : nextTrackId;
         }
         mvhd.setNextTrackId(++nextTrackId);
-        if (mvhd.getCreationTime() >= 1l << 32 ||
-                mvhd.getModificationTime() >= 1l << 32 ||
-                mvhd.getDuration() >= 1l << 32) {
-            mvhd.setVersion(1);
-        }
 
         movieBox.addBox(mvhd);
         for (Track track : movie.getTracks()) {
@@ -198,7 +193,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         tkhd.setFlags(flags);
 
         tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
-        tkhd.setCreationTime(DateHelper.convert(track.getTrackMetaData().getCreationTime()));
+        tkhd.setCreationTime(track.getTrackMetaData().getCreationTime());
         // We need to take edit list box into account in trackheader duration
         // but as long as I don't support edit list boxes it is sufficient to
         // just translate media duration to movie timescale
@@ -206,14 +201,9 @@ public class DefaultMp4Builder implements Mp4Builder {
         tkhd.setHeight(track.getTrackMetaData().getHeight());
         tkhd.setWidth(track.getTrackMetaData().getWidth());
         tkhd.setLayer(track.getTrackMetaData().getLayer());
-        tkhd.setModificationTime(DateHelper.convert(new Date()));
+        tkhd.setModificationTime(new Date());
         tkhd.setTrackId(track.getTrackMetaData().getTrackId());
         tkhd.setVolume(track.getTrackMetaData().getVolume());
-        if (tkhd.getCreationTime() >= 1l << 32 ||
-                tkhd.getModificationTime() >= 1l << 32 ||
-                tkhd.getDuration() >= 1l << 32) {
-            tkhd.setVersion(1);
-        }
 
         trackBox.addBox(tkhd);
 

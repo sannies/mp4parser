@@ -13,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -55,24 +56,24 @@ public class H264TrackImpl extends AbstractTrack {
     private boolean determineFrameRate = true;
     private String lang = "und";
 
-    public H264TrackImpl(InputStream inputStream, String lang, long timescale) throws IOException {
+    public H264TrackImpl(FileChannel fc, String lang, long timescale) throws IOException {
         this.lang = lang;
         this.timescale = timescale; //e.g. 23976
         this.frametick = 1000;
         this.determineFrameRate = false;
-        parse(inputStream);
+        parse(fc);
     }
 
-    public H264TrackImpl(InputStream inputStream, String lang) throws IOException {
+    public H264TrackImpl(FileChannel fc, String lang) throws IOException {
         this.lang = lang;
-        parse(inputStream);
+        parse(fc);
     }
 
-    public H264TrackImpl(InputStream inputStream) throws IOException {
-        parse(inputStream);
+    public H264TrackImpl(FileChannel fc) throws IOException {
+        parse(fc);
     }
 
-    private void parse(InputStream inputStream) throws IOException {
+    private void parse(FileChannel inputStream) throws IOException {
         this.reader = new ReaderWrapper(inputStream);
         stts = new LinkedList<TimeToSampleBox.Entry>();
         ctts = new LinkedList<CompositionTimeToSample.Entry>();
@@ -192,10 +193,8 @@ public class H264TrackImpl extends AbstractTrack {
         return true;
     }
 
-    static int aaa = 0;
-
     private boolean findNextStartcode() throws IOException {
-        System.err.println(aaa++);
+        System.err.println("Reader pos on findNextStartCode: " + reader.getPos());
         byte[] test = new byte[]{-1, -1, -1, -1};
 
         int c;
@@ -247,8 +246,9 @@ public class H264TrackImpl extends AbstractTrack {
             int type = data[0];
             int nal_ref_idc = (type >> 5) & 3;
             int nal_unit_type = type & 0x1f;
-            LOG.fine("Found startcode at " + (pos - 4) + " Type: " + nal_unit_type + " ref idc: " + nal_ref_idc + " (size " + size + ")");
+            System.err.println("Found startcode at " + (pos - 4) + " Type: " + nal_unit_type + " ref idc: " + nal_ref_idc + " (size " + size + ")");
             NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, data);
+            System.err.println(action);
             switch (action) {
                 case IGNORE:
                     break;
@@ -510,50 +510,48 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     private class ReaderWrapper {
-        private InputStream inputStream;
-        private long pos = 0;
+        private FileChannel fc;
+
 
         private long markPos = 0;
 
 
-        private ReaderWrapper(InputStream inputStream) {
-            this.inputStream = inputStream;
+        private ReaderWrapper(FileChannel fc) {
+            this.fc = fc;
         }
 
+        ByteBuffer oneByte = ByteBuffer.allocate(1);
+
         int read() throws IOException {
-            pos++;
-            return inputStream.read();
+
+            if (fc.read((ByteBuffer) oneByte.rewind()) == 1) {
+                return oneByte.get(0) < 0 ? oneByte.get(0) + 256 : oneByte.get(0);
+            } else {
+                return -1;
+            }
         }
 
         long read(byte[] data) throws IOException {
-            long read = inputStream.read(data);
-            pos += read;
-            return read;
+            return fc.read(ByteBuffer.wrap(data));
         }
 
-        long seek(int dist) throws IOException {
-            long seeked = inputStream.skip(dist);
-            pos += seeked;
-            return seeked;
+        void seek(int dist) throws IOException {
+            fc.position(fc.position() + dist);
         }
 
-        public long getPos() {
-            return pos;
+        public long getPos() throws IOException {
+            return fc.position();
         }
 
-        public void mark() {
+        public void mark() throws IOException {
             int i = 1048576;
-            LOG.fine("Marking with " + i + " at " + pos);
-            inputStream.mark(i);
-            markPos = pos;
+            LOG.fine("Marking with " + i + " at " + fc.position());
+            markPos = fc.position();
         }
 
 
         public void reset() throws IOException {
-            long diff = pos - markPos;
-            LOG.fine("Resetting to " + markPos + " (pos is " + pos + ") which makes the buffersize " + diff);
-            inputStream.reset();
-            pos = markPos;
+            fc.position(markPos);
         }
     }
 

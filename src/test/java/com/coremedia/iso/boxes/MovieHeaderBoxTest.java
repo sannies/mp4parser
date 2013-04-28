@@ -3,6 +3,7 @@ package com.coremedia.iso.boxes;
 import com.googlecode.mp4parser.boxes.BoxWriteReadBase;
 import com.googlecode.mp4parser.util.Matrix;
 
+import java.util.Date;
 import java.util.Map;
 
 
@@ -14,11 +15,11 @@ public class MovieHeaderBoxTest extends BoxWriteReadBase<MovieHeaderBox> {
 
     @Override
     public void setupProperties(Map<String, Object> addPropsHere, MovieHeaderBox box) {
-        addPropsHere.put("creationTime", (long) 3453453345l);
+        addPropsHere.put("creationTime", new Date());
         addPropsHere.put("currentTime", (int) 2342);
         addPropsHere.put("duration", (long) 243423);
         addPropsHere.put("matrix", Matrix.ROTATE_270);
-        addPropsHere.put("modificationTime", (long) 423);
+        addPropsHere.put("modificationTime", new Date());
         addPropsHere.put("nextTrackId", (long) 5543);
         addPropsHere.put("posterTime", 5433);
         addPropsHere.put("previewDuration", 5343);

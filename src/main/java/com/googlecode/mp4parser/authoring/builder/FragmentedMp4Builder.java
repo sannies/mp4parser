@@ -20,9 +20,9 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.*;
-import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.util.DateHelper;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -409,8 +409,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
     protected Box createMvhd(Movie movie) {
         MovieHeaderBox mvhd = new MovieHeaderBox();
         mvhd.setVersion(1);
-        mvhd.setCreationTime(DateHelper.convert(new Date()));
-        mvhd.setModificationTime(DateHelper.convert(new Date()));
+        mvhd.setCreationTime(new Date());
+        mvhd.setModificationTime(new Date());
         long movieTimeScale = movie.getTimescale();
         long duration = 0;
 
@@ -622,7 +622,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         tkhd.setFlags(flags);
 
         tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
-        tkhd.setCreationTime(DateHelper.convert(track.getTrackMetaData().getCreationTime()));
+        tkhd.setCreationTime(track.getTrackMetaData().getCreationTime());
         // We need to take edit list box into account in trackheader duration
         // but as long as I don't support edit list boxes it is sufficient to
         // just translate media duration to movie timescale
@@ -630,7 +630,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         tkhd.setHeight(track.getTrackMetaData().getHeight());
         tkhd.setWidth(track.getTrackMetaData().getWidth());
         tkhd.setLayer(track.getTrackMetaData().getLayer());
-        tkhd.setModificationTime(DateHelper.convert(new Date()));
+        tkhd.setModificationTime(new Date());
         tkhd.setTrackId(track.getTrackMetaData().getTrackId());
         tkhd.setVolume(track.getTrackMetaData().getVolume());
         return tkhd;
