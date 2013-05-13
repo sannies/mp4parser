@@ -1,11 +1,27 @@
 package com.coremedia.iso.boxes.mdat;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.*;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.ChunkOffsetBox;
+import com.coremedia.iso.boxes.SampleSizeBox;
+import com.coremedia.iso.boxes.SampleToChunkBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
+import com.coremedia.iso.boxes.fragment.TrackRunBox;
 
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -170,7 +186,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
             }
         }
 
-        throw new RuntimeException("The sample with offset " + offset + " and size " + l2i(sizes[index]) + " is NOT located within an mdat");
+        throw new RuntimeException("The sample with offset " + offset + " and size " + l2i(sizes[index]) + " is NOT located within an mdat (index: " + index + ")");
     }
 
     Map<Long, Long> getOffsets(MovieFragmentBox moof, long trackId, TrackExtendsBox trex) {

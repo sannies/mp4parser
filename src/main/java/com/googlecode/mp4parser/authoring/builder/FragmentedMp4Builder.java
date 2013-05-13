@@ -18,8 +18,37 @@ package com.googlecode.mp4parser.authoring.builder;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.*;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.DataEntryUrlBox;
+import com.coremedia.iso.boxes.DataInformationBox;
+import com.coremedia.iso.boxes.DataReferenceBox;
+import com.coremedia.iso.boxes.FileTypeBox;
+import com.coremedia.iso.boxes.HandlerBox;
+import com.coremedia.iso.boxes.MediaBox;
+import com.coremedia.iso.boxes.MediaHeaderBox;
+import com.coremedia.iso.boxes.MediaInformationBox;
+import com.coremedia.iso.boxes.MovieBox;
+import com.coremedia.iso.boxes.MovieHeaderBox;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleTableBox;
+import com.coremedia.iso.boxes.StaticChunkOffsetBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
+import com.coremedia.iso.boxes.fragment.MovieExtendsHeaderBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentHeaderBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentRandomAccessBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentRandomAccessOffsetBox;
+import com.coremedia.iso.boxes.fragment.SampleFlags;
+import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentRandomAccessBox;
+import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.util.DateHelper;
@@ -28,7 +57,16 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -58,23 +96,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     /**
-     * Some formats require sorting of the fragments. E.g. Ultraviolet CFF files are required
-     * to contain the fragments size sort:
-     * <ul>
-     * <li>video[1].getBytes().length < audio[1].getBytes().length < subs[1].getBytes().length</li>
-     * <li> audio[2].getBytes().length < video[2].getBytes().length < subs[2].getBytes().length</li>
-     * </ul>
-     * <p/>
-     * make this fragment:
-     * <p/>
-     * <ol>
-     * <li>video[1]</li>
-     * <li>audio[1]</li>
-     * <li>subs[1]</li>
-     * <li>audio[2]</li>
-     * <li>video[2]</li>
-     * <li>subs[2]</li>
-     * </ol>
+     * Sorts fragments by start time.
      *
      * @param tracks          the list of tracks to returned sorted
      * @param cycle           current fragment (sorting may vary between the fragments)
@@ -85,25 +107,26 @@ public class FragmentedMp4Builder implements Mp4Builder {
         tracks = new LinkedList<Track>(tracks);
         Collections.sort(tracks, new Comparator<Track>() {
             public int compare(Track o1, Track o2) {
-                long[] startSamples1 = intersectionMap.get(o1);
-                long startSample1 = startSamples1[cycle];
+                long startSample1 = intersectionMap.get(o1)[cycle];
                 // one based sample numbers - the first sample is 1
-                long endSample1 = cycle + 1 < startSamples1.length ? startSamples1[cycle + 1] : o1.getSamples().size() + 1;
-                long[] startSamples2 = intersectionMap.get(o2);
-                long startSample2 = startSamples2[cycle];
+                long startSample2 = intersectionMap.get(o2)[cycle];
                 // one based sample numbers - the first sample is 1
-                long endSample2 = cycle + 1 < startSamples2.length ? startSamples2[cycle + 1] : o2.getSamples().size() + 1;
-                List<ByteBuffer> samples1 = o1.getSamples().subList(l2i(startSample1) - 1, l2i(endSample1) - 1);
-                List<ByteBuffer> samples2 = o2.getSamples().subList(l2i(startSample2) - 1, l2i(endSample2) - 1);
-                int size1 = 0;
-                for (ByteBuffer byteBuffer : samples1) {
-                    size1 += byteBuffer.remaining();
+
+                // now let's get the start times
+                long[] decTimes1 = TimeToSampleBox.blowupTimeToSamples(o1.getDecodingTimeEntries());
+                long[] decTimes2 = TimeToSampleBox.blowupTimeToSamples(o2.getDecodingTimeEntries());
+                long startTime1 = 0;
+                long startTime2 = 0;
+
+                for (int i = 1; i < startSample1; i++) {
+                    startTime1 += decTimes1[i - 1];
                 }
-                int size2 = 0;
-                for (ByteBuffer byteBuffer : samples2) {
-                    size2 += byteBuffer.remaining();
+                for (int i = 1; i < startSample2; i++) {
+                    startTime2 += decTimes2[i - 1];
                 }
-                return size1 - size2;
+
+                // and compare
+                return (int) (((double) startTime1 / o1.getTrackMetaData().getTimescale() - (double) startTime2 / o2.getTrackMetaData().getTimescale()) * 100);
             }
         });
         return tracks;
@@ -565,9 +588,10 @@ public class FragmentedMp4Builder implements Mp4Builder {
         trex.setDefaultSampleDuration(0);
         trex.setDefaultSampleSize(0);
         SampleFlags sf = new SampleFlags();
-        if ("soun".equals(track.getHandler())) {
+        if ("soun".equals(track.getHandler()) || "subt".equals(track.getHandler())) {
             // as far as I know there is no audio encoding
             // where the sample are not self contained.
+            // same seems to be true for subtitle tracks
             sf.setSampleDependsOn(2);
             sf.setSampleIsDependedOn(2);
         }
