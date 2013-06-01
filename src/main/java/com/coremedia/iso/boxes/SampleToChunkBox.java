@@ -29,7 +29,8 @@ import java.util.List;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
-/**<h1>4cc = "{@value #TYPE}"</h1>
+/**
+ * <h1>4cc = "{@value #TYPE}"</h1>
  * Samples within the media data are grouped into chunks. Chunks can be of different sizes, and the
  * samples within a chunk can have different sizes. This table can be used to find the chunk that
  * contains a sample, its position, and the associated sample description. Defined in ISO/IEC 14496-12.
@@ -151,6 +152,28 @@ public class SampleToChunkBox extends AbstractFullBox {
                     ", samplesPerChunk=" + samplesPerChunk +
                     ", sampleDescriptionIndex=" + sampleDescriptionIndex +
                     '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Entry entry = (Entry) o;
+
+            if (firstChunk != entry.firstChunk) return false;
+            if (sampleDescriptionIndex != entry.sampleDescriptionIndex) return false;
+            if (samplesPerChunk != entry.samplesPerChunk) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (int) (firstChunk ^ (firstChunk >>> 32));
+            result = 31 * result + (int) (samplesPerChunk ^ (samplesPerChunk >>> 32));
+            result = 31 * result + (int) (sampleDescriptionIndex ^ (sampleDescriptionIndex >>> 32));
+            return result;
         }
     }
 }

@@ -9,7 +9,6 @@ public final class AppleSynopsisBox extends AbstractAppleMetaDataBox {
 
     public AppleSynopsisBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
 

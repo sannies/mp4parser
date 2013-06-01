@@ -1,43 +1,54 @@
 package com.coremedia.iso.boxes.sampleentry;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 
-public class MpegSampleEntry extends SampleEntry implements ContainerBox {
+public class MpegSampleEntry extends AbstractSampleEntry {
 
-    private BoxParser boxParser;
+    public MpegSampleEntry() {
+        super("mp4s");
+    }
 
     public MpegSampleEntry(String type) {
         super(type);
     }
 
     @Override
-    public void _parseDetails(ByteBuffer content) {
-        _parseReservedAndDataReferenceIndex(content);
-        _parseChildBoxes(content);
-
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        fileChannel.read(bb);
+        bb.position(6);// ignore 6 reserved bytes;
+        dataReferenceIndex = IsoTypeReader.readUInt16(bb);
+        parseContainer(fileChannel, contentSize, boxParser);
     }
 
     @Override
-    protected long getContentSize() {
-        long contentSize = 8;
-        for (Box boxe : boxes) {
-            contentSize += boxe.getSize();
-        }
-        return contentSize;
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(getHeader());
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        bb.position(6);
+        IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
+        writableByteChannel.write((ByteBuffer) bb.rewind());
+        writeContainer(writableByteChannel);
     }
 
     public String toString() {
         return "MpegSampleEntry" + Arrays.asList(getBoxes());
     }
 
+
     @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        _writeReservedAndDataReferenceIndex(byteBuffer);
-        _writeChildBoxes(byteBuffer);
+    public long getSize() {
+        long s = getContainerSize();
+        long t = 8; // bytes to container start
+        return s + t + ((largeBox || (s + t) >= (1L << 32)) ? 16 : 8);
+
     }
 }

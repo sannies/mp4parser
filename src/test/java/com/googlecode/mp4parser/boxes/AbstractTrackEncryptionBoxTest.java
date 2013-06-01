@@ -2,14 +2,13 @@ package com.googlecode.mp4parser.boxes;
 
 
 import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 
 public abstract class AbstractTrackEncryptionBoxTest {
 
@@ -22,12 +21,12 @@ public abstract class AbstractTrackEncryptionBoxTest {
         tenc.setDefaultIvSize(8);
 
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        long sizeBeforeWrite = tenc.getSize();
-        tenc.getBox(Channels.newChannel(baos));
-        Assert.assertEquals(baos.size(), tenc.getSize());
-        Assert.assertEquals(baos.size(), sizeBeforeWrite);
-        IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
+        File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        tenc.getBox(fc);
+        fc.close();
+
+        IsoFile iso = new IsoFile(f.getAbsolutePath());
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractTrackEncryptionBox);
         AbstractTrackEncryptionBox tenc2 = (AbstractTrackEncryptionBox) iso.getBoxes().get(0);

@@ -16,9 +16,9 @@
 
 package com.coremedia.drm.packager.isoparser;
 
-import com.googlecode.mp4parser.AbstractBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.Container;
+import com.googlecode.mp4parser.AbstractBox;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Walks through a ContainerBox and its children to see that no getter throws any exception.
+ * Walks through a Container and its children to see that no getter throws any exception.
  */
 public final class Walk {
     private static final Collection<String> skipList = Arrays.asList("class",
@@ -55,7 +55,7 @@ public final class Walk {
     private Walk() {
     }
 
-    public static void through(ContainerBox container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
+    public static void through(Container container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
         for (Box b : container.getBoxes()) {
             List<Box> myBoxes = (List<Box>) container.getBoxes(b.getClass());
             boolean found = false;
@@ -68,8 +68,8 @@ public final class Walk {
                 throw new RuntimeException("Didn't find the box");
             }
 
-            if (b instanceof ContainerBox) {
-                Walk.through((ContainerBox) b);
+            if (b instanceof Container) {
+                Walk.through((Container) b);
             }
 
 

@@ -9,7 +9,6 @@ public class AppleRecordingYearBox extends AbstractAppleMetaDataBox {
 
     public AppleRecordingYearBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
 

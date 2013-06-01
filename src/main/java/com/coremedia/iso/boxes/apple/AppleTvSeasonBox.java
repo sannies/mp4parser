@@ -10,7 +10,6 @@ public final class AppleTvSeasonBox extends AbstractAppleMetaDataBox {
 
     public AppleTvSeasonBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getUint32AppleDataBox();
     }
 
 }

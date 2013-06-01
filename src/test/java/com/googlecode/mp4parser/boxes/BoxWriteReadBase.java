@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.boxes;
 
 
-import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.PropertyBoxParserImpl;
 import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.AbstractContainerBox;
 import org.junit.Assert;
@@ -10,14 +10,14 @@ import org.junit.Test;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.lang.reflect.Constructor;
-import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public abstract class BoxWriteReadBase<T extends Box> {
@@ -39,9 +39,9 @@ public abstract class BoxWriteReadBase<T extends Box> {
             "parsed",
             "path",
             "size",
+            "offset",
             "type",
             "userType",
-            "numOfBytesToFirstChild",
             "version");
 
 
@@ -50,11 +50,15 @@ public abstract class BoxWriteReadBase<T extends Box> {
     public abstract void setupProperties(Map<String, Object> addPropsHere, T box);
 
 
+    protected T getInstance(Class<T> clazz) throws Exception {
+        Constructor<T> constructor = clazz.getConstructor();
+        return constructor.newInstance();
+    }
+
     @Test
     public void roundtrip() throws Exception {
         Class<T> clazz = getBoxUnderTest();
-        Constructor<T> constructor = clazz.getConstructor();
-        T box = constructor.newInstance();
+        T box = getInstance(clazz);
         BeanInfo beanInfo = Introspector.getBeanInfo(box.getClass());
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
         Map<String, Object> props = new HashMap<String, Object>();
@@ -75,25 +79,26 @@ public abstract class BoxWriteReadBase<T extends Box> {
                         throw e;
                     }
                     // do the next assertion on string level to not trap into the long vs java.lang.Long pitfall
-                    Assert.assertEquals("The symmetry between getter/setter is not given.", props.get(property).toString(), propertyDescriptor.getReadMethod().invoke(box).toString());
+                    Assert.assertEquals("The symmetry between getter/setter of " + property + " is not given.", props.get(property), propertyDescriptor.getReadMethod().invoke(box));
                 }
             }
             if (!found) {
                 Assert.fail("Could not find any property descriptor for " + property);
             }
         }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        box.getBox(Channels.newChannel(baos));
-        Assert.assertEquals(box.getSize(), baos.size());
-        IsoFile singleBoxIsoFile = new IsoFile(Channels.newChannel(new ByteArrayInputStream(baos.toByteArray()))) {
-            @Override
-            public String getType() {
-                return dummyParent;
-            }
-        };
 
+
+        File f = File.createTempFile(this.getClass().getSimpleName(), box.getType());
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        box.getBox(fc);
+        fc.close();
+        fc = new FileInputStream(f).getChannel();
+
+        DummyContainerBox singleBoxIsoFile = new DummyContainerBox(dummyParent);
+        singleBoxIsoFile.parseContainer(fc, fc.size(), new PropertyBoxParserImpl());
+        Assert.assertEquals("Expected box and file size to be the same", box.getSize(), fc.size());
         Assert.assertEquals("Expected a single box in the IsoFile structure", 1, singleBoxIsoFile.getBoxes().size());
-        Assert.assertEquals("Expected to find a box of type " + clazz, clazz, singleBoxIsoFile.getBoxes().get(0).getClass());
+        Assert.assertEquals("Expected to find a box of different type ", clazz, singleBoxIsoFile.getBoxes().get(0).getClass());
 
         T parsedBox = (T) singleBoxIsoFile.getBoxes().get(0);
 
@@ -104,13 +109,13 @@ public abstract class BoxWriteReadBase<T extends Box> {
                 if (property.equals(propertyDescriptor.getName())) {
                     found = true;
                     if (props.get(property) instanceof int[]) {
-                        Assert.assertArrayEquals("Writing and parsing changed the value", (int[]) props.get(property), (int[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
+                        Assert.assertArrayEquals("Writing and parsing changed the value of " + property, (int[]) props.get(property), (int[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
+                    } else if (props.get(property) instanceof byte[]) {
+                        Assert.assertArrayEquals("Writing and parsing changed the value of " + property, (byte[]) props.get(property), (byte[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
                     } else if (props.get(property) instanceof long[]) {
-                        Assert.assertArrayEquals("Writing and parsing changed the value", (long[]) props.get(property), (long[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
-                    } else if (props.get(property) instanceof List) {
-                        Assert.assertEquals("Writing and parsing changed the value", (List) props.get(property), (List) propertyDescriptor.getReadMethod().invoke(parsedBox));
+                        Assert.assertArrayEquals("Writing and parsing changed the value of " + property, (long[]) props.get(property), (long[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
                     } else {
-                        Assert.assertEquals("Writing and parsing changed the value", props.get(property).toString(), (Object) propertyDescriptor.getReadMethod().invoke(parsedBox).toString());
+                        Assert.assertEquals("Writing and parsing changed the value of " + property, props.get(property), (Object) propertyDescriptor.getReadMethod().invoke(parsedBox));
                     }
                 }
             }
@@ -133,6 +138,8 @@ public abstract class BoxWriteReadBase<T extends Box> {
                 }
             }
         }
+        fc.close();
+        f.delete();
     }
 
     class DummyContainerBox extends AbstractContainerBox {
@@ -141,5 +148,6 @@ public abstract class BoxWriteReadBase<T extends Box> {
             super(type);
         }
     }
+
 
 }

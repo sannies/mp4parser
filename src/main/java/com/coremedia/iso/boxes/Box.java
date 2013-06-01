@@ -17,22 +17,28 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoFile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 /**
  * Defines basic interaction possibilities for any ISO box. Each box has a parent box and a type.
  */
 public interface Box {
-    ContainerBox getParent();
+    Container getParent();
 
-    void setParent(ContainerBox parent);
+    void setParent(Container parent);
 
     long getSize();
+
+    /**
+     * Returns the position of the box in the original file.
+     *
+     * @return
+     */
+    long getOffset();
 
     /**
      * The box's 4-cc type.
@@ -55,13 +61,13 @@ public interface Box {
      * number of bytes should be read from the box source (<code>readableByteChannel</code>).
      * If you need the <code>header</code> buffer at a later stage you have to create a copy.
      *
-     * @param readableByteChannel the box' source
-     * @param header              the box' already parsed header (create copy if you need it
-     *                            later as it will be overwritten)
-     * @param contentSize         remaining bytes of this box
-     * @param boxParser           use it to parse sub-boxes.
+     * @param fileChannel
+     * @param header      the box' already parsed header (create copy if you need it
+     *                    later as it will be overwritten)
+     * @param contentSize remaining bytes of this box
+     * @param boxParser   use it to parse sub-boxes.
      * @throws IOException in case of an error during a read operation
      */
-    void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
+    void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
 
 }

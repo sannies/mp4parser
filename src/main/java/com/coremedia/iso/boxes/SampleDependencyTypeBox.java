@@ -91,6 +91,23 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
                     ", sampleHasRedundancy=" + getSampleHasRedundancy() +
                     '}';
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Entry entry = (Entry) o;
+
+            if (value != entry.value) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return value;
+        }
     }
 
     public SampleDependencyTypeBox() {

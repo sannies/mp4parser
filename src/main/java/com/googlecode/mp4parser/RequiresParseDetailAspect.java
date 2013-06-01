@@ -37,6 +37,7 @@ public class RequiresParseDetailAspect {
             "execution(* parse()) || " +
             "execution(* getBox(*)) || " +
             "execution(* getSize()) || " +
+            "execution(* getOffset()) || " +
             "execution(* parseDetails()) || " +
             "execution(* _parseDetails(*)) || " +
             "execution(* parse(*,*,*,*)) || " +

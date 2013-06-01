@@ -15,7 +15,7 @@ public class TrackHeaderBoxTest extends BoxWriteReadBase<TrackHeaderBox> {
     @Override
     public void setupProperties(Map<String, Object> addPropsHere, TrackHeaderBox box) {
         addPropsHere.put("alternateGroup", (int) 2);
-        addPropsHere.put("creationTime", new Date());
+        addPropsHere.put("creationTime", new Date(1369296286000L));
         addPropsHere.put("duration", (long) 423);
         addPropsHere.put("enabled", true);
         addPropsHere.put("height", 480.0);
@@ -24,7 +24,7 @@ public class TrackHeaderBoxTest extends BoxWriteReadBase<TrackHeaderBox> {
         addPropsHere.put("inPreview", true);
         addPropsHere.put("layer", (int) 213);
         addPropsHere.put("matrix", Matrix.ROTATE_180);
-        addPropsHere.put("modificationTime", new Date());
+        addPropsHere.put("modificationTime", new Date(1369296386000L));
         addPropsHere.put("trackId", (long) 23423);
         addPropsHere.put("volume", (float) 1.0);
         addPropsHere.put("width", 640.0);

@@ -8,15 +8,15 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.channels.Channels;
 
 public class PathTest {
     IsoFile isoFile;
 
     @Before
     public void setup() throws IOException {
-        isoFile = new IsoFile(Channels.newChannel(PathTest.class.getResourceAsStream("/multiTrack.3gp")));
+        isoFile = new IsoFile(new FileInputStream(PathTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/multiTrack.3gp").getChannel());
     }
 
     @Test

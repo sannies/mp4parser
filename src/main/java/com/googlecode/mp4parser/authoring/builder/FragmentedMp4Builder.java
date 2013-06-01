@@ -20,7 +20,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.DataEntryUrlBox;
 import com.coremedia.iso.boxes.DataInformationBox;
 import com.coremedia.iso.boxes.DataReferenceBox;
@@ -49,13 +49,14 @@ import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentRandomAccessBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
+import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.util.DateHelper;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -175,9 +176,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
     /**
      * {@inheritDoc}
      */
-    public IsoFile build(Movie movie) {
+    public Container build(Movie movie) {
         LOG.fine("Creating movie " + movie);
-        IsoFile isoFile = new IsoFile();
+        BasicContainer isoFile = new BasicContainer();
 
 
         isoFile.addBox(createFtyp(movie));
@@ -194,13 +195,17 @@ public class FragmentedMp4Builder implements Mp4Builder {
     protected Box createMdat(final long startSample, final long endSample, final Track track, final int i) {
 
         class Mdat implements Box {
-            ContainerBox parent;
+            Container parent;
 
-            public ContainerBox getParent() {
+            public Container getParent() {
                 return parent;
             }
 
-            public void setParent(ContainerBox parent) {
+            public long getOffset() {
+                throw new RuntimeException("Doesn't have any meaning for programmatically created boxes");
+            }
+
+            public void setParent(Container parent) {
                 this.parent = parent;
             }
 
@@ -231,7 +236,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
             }
 
-            public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+            public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
 
             }
         }
@@ -491,14 +496,14 @@ public class FragmentedMp4Builder implements Mp4Builder {
      * @param isoFile the track is contained in
      * @return a track fragment random access box.
      */
-    protected Box createTfra(Track track, IsoFile isoFile) {
+    protected Box createTfra(Track track, Container isoFile) {
         TrackFragmentRandomAccessBox tfra = new TrackFragmentRandomAccessBox();
         tfra.setVersion(1); // use long offsets and times
         List<TrackFragmentRandomAccessBox.Entry> offset2timeEntries = new LinkedList<TrackFragmentRandomAccessBox.Entry>();
-        List<Box> boxes = isoFile.getBoxes();
+
         long offset = 0;
         long duration = 0;
-        for (Box box : boxes) {
+        for (Box box : isoFile.getBoxes()) {
             if (box instanceof MovieFragmentBox) {
                 List<TrackFragmentBox> trafs = ((MovieFragmentBox) box).getBoxes(TrackFragmentBox.class);
                 for (int i = 0; i < trafs.size(); i++) {
@@ -517,7 +522,13 @@ public class FragmentedMp4Builder implements Mp4Builder {
                                 } else if (trun.isSampleFlagsPresent()) {
                                     sf = trunEntry.getSampleFlags();
                                 } else {
-                                    List<MovieExtendsBox> mvexs = isoFile.getMovieBox().getBoxes(MovieExtendsBox.class);
+                                    MovieBox moov = null;
+                                    for (Box box1 : isoFile.getBoxes()) {
+                                        if (box1 instanceof MovieBox) {
+                                            moov = (MovieBox) box1;
+                                        }
+                                    }
+                                    List<MovieExtendsBox> mvexs = moov.getBoxes(MovieExtendsBox.class);
                                     for (MovieExtendsBox mvex : mvexs) {
                                         List<TrackExtendsBox> trexs = mvex.getBoxes(TrackExtendsBox.class);
                                         for (TrackExtendsBox trex : trexs) {
@@ -562,14 +573,14 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     /**
      * Creates a 'mfra' - movie fragment random access box for the given movie in the given
-     * isofile. Uses {@link #createTfra(com.googlecode.mp4parser.authoring.Track, com.coremedia.iso.IsoFile)}
+     * isofile. Uses {@link #createTfra(com.googlecode.mp4parser.authoring.Track, Container)}
      * to generate the child boxes.
      *
      * @param movie   concerned movie
      * @param isoFile concerned isofile
      * @return a complete 'mfra' box
      */
-    protected Box createMfra(Movie movie, IsoFile isoFile) {
+    protected Box createMfra(Movie movie, Container isoFile) {
         MovieFragmentRandomAccessBox mfra = new MovieFragmentRandomAccessBox();
         for (Track track : movie.getTracks()) {
             mfra.addBox(createTfra(track, isoFile));

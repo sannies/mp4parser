@@ -16,12 +16,8 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoTypeReader;
-import com.coremedia.iso.IsoTypeWriter;
-import com.googlecode.mp4parser.AbstractContainerBox;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.googlecode.mp4parser.AbstractBox;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
@@ -29,75 +25,35 @@ import java.nio.ByteBuffer;
  * <h1>4cc = "{@value #TYPE}"</h1>
  * A common base structure to contain general metadata. See ISO/IEC 14496-12 Ch. 8.44.1.
  */
-public class MetaBox extends AbstractContainerBox {
-    private int version = 0;
-    private int flags = 0;
-
+public class MetaBox extends AbstractBox {
     public static final String TYPE = "meta";
+
+    byte[] data;
+
+    protected long getContentSize() {
+        return data.length;
+    }
 
     public MetaBox() {
         super(TYPE);
     }
 
-    @Override
-    public long getContentSize() {
-        if (isMp4Box()) {
-            // it's a fullbox
-            return 4 + super.getContentSize();
-        } else {
-            // it's an apple metabox
-            return super.getContentSize();
-        }
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
+    public byte[] getData() {
+        return data;
     }
 
     @Override
     public void _parseDetails(ByteBuffer content) {
-        int pos = content.position();
-        content.get(new byte[4]);
-        String isHdlr = IsoTypeReader.read4cc(content);
-        if ("hdlr".equals(isHdlr)) {
-            //  this is apple bullshit - it's NO FULLBOX
-            content.position(pos);
-            version = -1;
-            flags = -1;
-        } else {
-            content.position(pos);
-            version = IsoTypeReader.readUInt8(content);
-            flags = IsoTypeReader.readUInt24(content);
-        }
-        while (content.remaining() >= 8) {
-            try {
-                addBox(boxParser.parseBox(new ByteBufferByteChannel(content), this));
-            } catch (IOException e) {
-                throw new RuntimeException("Sebastian needs to fix 7518765283");
-            }
-        }
-        if (content.remaining() > 0) {
-            throw new RuntimeException("Sebastian needs to fix it 90732r26537");
-        }
+        data = new byte[content.remaining()];
+        content.get(data);
     }
 
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
-        if (isMp4Box()) {
-            IsoTypeWriter.writeUInt8(byteBuffer, version);
-            IsoTypeWriter.writeUInt24(byteBuffer, flags);
-        }
-        writeChildBoxes(byteBuffer);
-    }
-
-
-    public boolean isMp4Box() {
-        return version != -1 && flags != -1;
-    }
-
-    public void setMp4Box(boolean mp4) {
-        if (mp4) {
-            version = 0;
-            flags = 0;
-        } else {
-            version = -1;
-            flags = -1;
-        }
+        byteBuffer.put(data);
     }
 }

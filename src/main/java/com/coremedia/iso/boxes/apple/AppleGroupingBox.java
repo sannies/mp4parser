@@ -10,7 +10,6 @@ public final class AppleGroupingBox extends AbstractAppleMetaDataBox {
 
     public AppleGroupingBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
 }

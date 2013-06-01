@@ -16,14 +16,14 @@
 package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.Container;
 
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.FileChannel;
 
 /**
  * Basic interface to create boxes from a <code>IsoBufferWrapper</code> and its parent.
  */
 public interface BoxParser {
-    Box parseBox(ReadableByteChannel in, ContainerBox parent) throws IOException;
+    Box parseBox(FileChannel in, Container parent) throws IOException;
 }

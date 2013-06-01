@@ -17,7 +17,6 @@
 package com.coremedia.iso.boxes;
 
 
-import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.AbstractContainerBox;
 
 import java.util.List;
@@ -49,9 +48,7 @@ public class MovieBox extends AbstractContainerBox {
         List<TrackBox> trackBoxes = this.getBoxes(TrackBox.class);
         long[] trackNumbers = new long[trackBoxes.size()];
         for (int trackCounter = 0; trackCounter < trackBoxes.size(); trackCounter++) {
-            AbstractBox trackBoxe = trackBoxes.get(trackCounter);
-            TrackBox trackBox = (TrackBox) trackBoxe;
-            trackNumbers[trackCounter] = trackBox.getTrackHeaderBox().getTrackId();
+            trackNumbers[trackCounter] = trackBoxes.get(trackCounter).getTrackHeaderBox().getTrackId();
         }
         return trackNumbers;
     }

@@ -9,7 +9,6 @@ public final class AppleTrackAuthorBox extends AbstractAppleMetaDataBox {
 
     public AppleTrackAuthorBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
 

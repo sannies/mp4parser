@@ -19,17 +19,18 @@ package com.coremedia.iso.boxes.sampleentry;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2} || "{@value #TYPE3} || "{@value #TYPE4} || "{@value #TYPE5} || "{@value #TYPE7} || "{@value #TYPE8} || "{@value #TYPE9} || "{@value #TYPE10} || "{@value #TYPE11} || "{@value #TYPE12} || "{@value #TYPE13}"</h1>
  * Contains basic information about the audio samples in this track. Format-specific information
  * is appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */
-public class AudioSampleEntry extends SampleEntry implements ContainerBox {
+public class AudioSampleEntry extends AbstractSampleEntry {
 
     public static final String TYPE1 = "samr";
     public static final String TYPE2 = "sawb";
@@ -65,7 +66,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     private int reserved1;
     private long reserved2;
     private byte[] soundVersion2Data;
-    private BoxParser boxParser;
+
 
     public AudioSampleEntry(String type) {
         super(type);
@@ -110,6 +111,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     public long getBytesPerSample() {
         return bytesPerSample;
     }
+
 
     public byte[] getSoundVersion2Data() {
         return soundVersion2Data;
@@ -175,13 +177,13 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         this.soundVersion2Data = soundVersion2Data;
     }
 
-    public void setBoxParser(BoxParser boxParser) {
-        this.boxParser = boxParser;
-    }
-
     @Override
-    public void _parseDetails(ByteBuffer content) {
-        _parseReservedAndDataReferenceIndex(content);    //parses the six reserved bytes and dataReferenceIndex
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        ByteBuffer content = ByteBuffer.allocate(28);
+        fileChannel.read(content);
+        content.position(6);
+        dataReferenceIndex = IsoTypeReader.readUInt16(content);
+
         // 8 bytes already parsed
         //reserved bits - used by qt
         soundVersion = IsoTypeReader.readUInt16(content);
@@ -203,31 +205,83 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         }
 
         //more qt stuff - see http://mp4v2.googlecode.com/svn-history/r388/trunk/src/atom_sound.cpp
-        if (soundVersion > 0) {
-            samplesPerPacket = IsoTypeReader.readUInt32(content);
-            bytesPerPacket = IsoTypeReader.readUInt32(content);
-            bytesPerFrame = IsoTypeReader.readUInt32(content);
-            bytesPerSample = IsoTypeReader.readUInt32(content);
+
+        if (soundVersion == 1) {
+            ByteBuffer appleStuff = ByteBuffer.allocate(16);
+            fileChannel.read(appleStuff);
+            appleStuff.rewind();
+            samplesPerPacket = IsoTypeReader.readUInt32(appleStuff);
+            bytesPerPacket = IsoTypeReader.readUInt32(appleStuff);
+            bytesPerFrame = IsoTypeReader.readUInt32(appleStuff);
+            bytesPerSample = IsoTypeReader.readUInt32(appleStuff);
         }
         if (soundVersion == 2) {
-
+            ByteBuffer appleStuff = ByteBuffer.allocate(36);
+            fileChannel.read(appleStuff);
+            appleStuff.rewind();
+            samplesPerPacket = IsoTypeReader.readUInt32(appleStuff);
+            bytesPerPacket = IsoTypeReader.readUInt32(appleStuff);
+            bytesPerFrame = IsoTypeReader.readUInt32(appleStuff);
+            bytesPerSample = IsoTypeReader.readUInt32(appleStuff);
             soundVersion2Data = new byte[20];
-            content.get(20);
+            appleStuff.get(soundVersion2Data);
         }
-        _parseChildBoxes(content);
 
+
+        parseContainer(fileChannel,
+                contentSize - 28
+                        - (soundVersion == 1 ? 16 : 0)
+                        - (soundVersion == 2 ? 36 : 0), boxParser);
     }
 
+    @Override
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(getHeader());
+        ByteBuffer byteBuffer = ByteBuffer.allocate(28
+                + (soundVersion == 1 ? 16 : 0)
+                + (soundVersion == 2 ? 36 : 0));
+        byteBuffer.position(6);
+        IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
+        IsoTypeWriter.writeUInt16(byteBuffer, soundVersion);
+        IsoTypeWriter.writeUInt16(byteBuffer, reserved1);
+        IsoTypeWriter.writeUInt32(byteBuffer, reserved2);
+        IsoTypeWriter.writeUInt16(byteBuffer, channelCount);
+        IsoTypeWriter.writeUInt16(byteBuffer, sampleSize);
+        IsoTypeWriter.writeUInt16(byteBuffer, compressionId);
+        IsoTypeWriter.writeUInt16(byteBuffer, packetSize);
+        //isos.writeFixedPoint1616(getSampleRate());
+        if (type.equals("mlpa")) {
+            IsoTypeWriter.writeUInt32(byteBuffer, getSampleRate());
+        } else {
+            IsoTypeWriter.writeUInt32(byteBuffer, getSampleRate() << 16);
+        }
+
+        if (soundVersion == 1) {
+            IsoTypeWriter.writeUInt32(byteBuffer, samplesPerPacket);
+            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerPacket);
+            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerFrame);
+            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerSample);
+        }
+
+        if (soundVersion == 2) {
+            IsoTypeWriter.writeUInt32(byteBuffer, samplesPerPacket);
+            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerPacket);
+            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerFrame);
+            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerSample);
+            byteBuffer.put(soundVersion2Data);
+        }
+        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writeContainer(writableByteChannel);
+    }
 
     @Override
-    protected long getContentSize() {
-        long contentSize = 28;
-        contentSize += soundVersion > 0 ? 16 : 0;
-        contentSize += soundVersion == 2 ? 20 : 0;
-        for (Box boxe : boxes) {
-            contentSize += boxe.getSize();
-        }
-        return contentSize;
+    public long getSize() {
+        long s = 28
+                + (soundVersion == 1 ? 16 : 0)
+                + (soundVersion == 2 ? 36 : 0) + getContainerSize();
+        s += ((this.largeBox || (s + 8) >= (1L << 32)) ? 16 : 8);
+        return s;
+
     }
 
     @Override
@@ -247,33 +301,4 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
                 '}';
     }
 
-    @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        _writeReservedAndDataReferenceIndex(byteBuffer);
-        IsoTypeWriter.writeUInt16(byteBuffer, soundVersion);
-        IsoTypeWriter.writeUInt16(byteBuffer, reserved1);
-        IsoTypeWriter.writeUInt32(byteBuffer, reserved2);
-        IsoTypeWriter.writeUInt16(byteBuffer, channelCount);
-        IsoTypeWriter.writeUInt16(byteBuffer, sampleSize);
-        IsoTypeWriter.writeUInt16(byteBuffer, compressionId);
-        IsoTypeWriter.writeUInt16(byteBuffer, packetSize);
-        //isos.writeFixedPoint1616(getSampleRate());
-        if (type.equals("mlpa")) {
-            IsoTypeWriter.writeUInt32(byteBuffer, getSampleRate());
-        } else {
-            IsoTypeWriter.writeUInt32(byteBuffer, getSampleRate() << 16);
-        }
-
-        if (soundVersion > 0) {
-            IsoTypeWriter.writeUInt32(byteBuffer, samplesPerPacket);
-            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerPacket);
-            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerFrame);
-            IsoTypeWriter.writeUInt32(byteBuffer, bytesPerSample);
-        }
-
-        if (soundVersion == 2) {
-            byteBuffer.put(soundVersion2Data);
-        }
-        _writeChildBoxes(byteBuffer);
-    }
 }

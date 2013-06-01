@@ -18,7 +18,29 @@ package com.googlecode.mp4parser.authoring.builder;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.Container;
+import com.coremedia.iso.boxes.DataEntryUrlBox;
+import com.coremedia.iso.boxes.DataInformationBox;
+import com.coremedia.iso.boxes.DataReferenceBox;
+import com.coremedia.iso.boxes.FileTypeBox;
+import com.coremedia.iso.boxes.HandlerBox;
+import com.coremedia.iso.boxes.MediaBox;
+import com.coremedia.iso.boxes.MediaHeaderBox;
+import com.coremedia.iso.boxes.MediaInformationBox;
+import com.coremedia.iso.boxes.MovieBox;
+import com.coremedia.iso.boxes.MovieHeaderBox;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleSizeBox;
+import com.coremedia.iso.boxes.SampleTableBox;
+import com.coremedia.iso.boxes.SampleToChunkBox;
+import com.coremedia.iso.boxes.StaticChunkOffsetBox;
+import com.coremedia.iso.boxes.SyncSampleBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.util.DateHelper;
@@ -27,9 +49,16 @@ import com.googlecode.mp4parser.util.Path;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,7 +83,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     /**
      * {@inheritDoc}
      */
-    public IsoFile build(Movie movie) {
+    public Container build(Movie movie) {
         LOG.fine("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
             // getting the samples may be a time consuming activity
@@ -69,7 +98,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         }
 
-        IsoFile isoFile = new IsoFile();
+        BasicContainer isoFile = new BasicContainer();
 
         isoFile.addBox(createFileTypeBox(movie));
 
@@ -77,9 +106,9 @@ public class DefaultMp4Builder implements Mp4Builder {
         for (Track track : movie.getTracks()) {
             chunks.put(track, getChunkSizes(track, movie));
         }
-
-        isoFile.addBox(createMovieBox(movie, chunks));
-        List<Box> stszs = Path.getPaths(isoFile, "/moov/trak/mdia/minf/stbl/stsz");
+        Box moov = createMovieBox(movie, chunks);
+        isoFile.addBox(moov);
+        List<Box> stszs = Path.getPaths(moov, "trak/mdia/minf/stbl/stsz");
 
         long contentSize = 0;
         for (Box stsz : stszs) {
@@ -332,19 +361,23 @@ public class DefaultMp4Builder implements Mp4Builder {
     private class InterleaveChunkMdat implements Box {
         List<Track> tracks;
         List<List<ByteBuffer>> chunkList = new ArrayList<List<ByteBuffer>>();
-        ContainerBox parent;
+        Container parent;
 
         long contentSize;
 
-        public ContainerBox getParent() {
+        public Container getParent() {
             return parent;
         }
 
-        public void setParent(ContainerBox parent) {
+        public long getOffset() {
+            throw new RuntimeException("Doesn't have any meaning for programmatically created boxes");
+        }
+
+        public void setParent(Container parent) {
             this.parent = parent;
         }
 
-        public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         }
 
         private InterleaveChunkMdat(Movie movie, Map<Track, int[]> chunks, long contentSize) {
@@ -368,16 +401,16 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
 
         public long getDataOffset() {
-            Box b = this;
+            Object b = this;
             long offset = 16;
-            while (b.getParent() != null) {
-                for (Box box : b.getParent().getBoxes()) {
+            while (b instanceof Box) {
+                for (Box box : ((Box) b).getParent().getBoxes()) {
                     if (b == box) {
                         break;
                     }
                     offset += box.getSize();
                 }
-                b = b.getParent();
+                b = ((Box) b).getParent();
             }
             return offset;
         }
@@ -415,7 +448,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             for (List<ByteBuffer> samples : chunkList) {
                 samples = unifyAdjacentBuffers(samples);
                 for (ByteBuffer sample : samples) {
-                    writableByteChannel.write(sample);
+                    writableByteChannel.write((ByteBuffer) sample.rewind());
                 }
             }
         }

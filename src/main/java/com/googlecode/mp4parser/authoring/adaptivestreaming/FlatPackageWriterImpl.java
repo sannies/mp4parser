@@ -15,14 +15,17 @@
  */
 package com.googlecode.mp4parser.authoring.adaptivestreaming;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.SoundMediaHeaderBox;
 import com.coremedia.iso.boxes.VideoMediaHeaderBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.*;
+import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
+import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
+import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
 import com.googlecode.mp4parser.authoring.tracks.ChangeTimeScaleTrack;
 
 import java.io.File;
@@ -53,6 +56,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
      * Creates a factory for a smooth streaming package. A smooth streaming package is
      * a collection of files that can be served by a webserver as a smooth streaming
      * stream.
+     *
      * @param minFragmentDuration the smallest allowable duration of a fragment (0 == no restriction).
      */
     public FlatPackageWriterImpl(int minFragmentDuration) {
@@ -93,10 +97,10 @@ public class FlatPackageWriterImpl implements PackageWriter {
         if (debugOutput) {
             outputDirectory.mkdirs();
             DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
-            IsoFile muxed = defaultMp4Builder.build(source);
+            Container muxed = defaultMp4Builder.build(source);
             File muxedFile = new File(outputDirectory, "debug_1_muxed.mp4");
             FileOutputStream muxedFileOutputStream = new FileOutputStream(muxedFile);
-            muxed.getBox(muxedFileOutputStream.getChannel());
+            muxed.writeContainer(muxedFileOutputStream.getChannel());
             muxedFileOutputStream.close();
         }
         Movie cleanedSource = removeUnknownTracks(source);
@@ -104,17 +108,18 @@ public class FlatPackageWriterImpl implements PackageWriter {
 
         if (debugOutput) {
             DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
-            IsoFile muxed = defaultMp4Builder.build(movieWithAdjustedTimescale);
+            Container muxed = defaultMp4Builder.build(movieWithAdjustedTimescale);
             File muxedFile = new File(outputDirectory, "debug_2_timescale.mp4");
             FileOutputStream muxedFileOutputStream = new FileOutputStream(muxedFile);
-            muxed.getBox(muxedFileOutputStream.getChannel());
+            muxed.writeContainer(muxedFileOutputStream.getChannel());
             muxedFileOutputStream.close();
         }
-        IsoFile isoFile = ismvBuilder.build(movieWithAdjustedTimescale);
+        Container isoFile = ismvBuilder.build(movieWithAdjustedTimescale);
         if (debugOutput) {
             File allQualities = new File(outputDirectory, "debug_3_fragmented.mp4");
             FileOutputStream allQualis = new FileOutputStream(allQualities);
-            isoFile.getBox(allQualis.getChannel());
+            isoFile.writeContainer(allQualis.getChannel());
+
             allQualis.close();
         }
 

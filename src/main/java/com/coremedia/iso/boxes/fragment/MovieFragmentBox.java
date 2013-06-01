@@ -16,11 +16,10 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.googlecode.mp4parser.AbstractContainerBox;
-import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,22 +52,6 @@ public class MovieFragmentBox extends AbstractContainerBox {
         return result;
     }
 
-    @DoNotParseDetail
-    public long getOffset() {
-        Box b = this;
-        long offset = 0;
-        while (b.getParent() != null) {
-            for (Box box : b.getParent().getBoxes()) {
-                if (b == box) {
-                    break;
-                }
-                offset += box.getSize();
-            }
-            b = b.getParent();
-        }
-        return offset;
-    }
-
 
     public int getTrackCount() {
         return getBoxes(TrackFragmentBox.class, false).size();
@@ -97,5 +80,9 @@ public class MovieFragmentBox extends AbstractContainerBox {
 
     public List<TrackRunBox> getTrackRunBoxes() {
         return getBoxes(TrackRunBox.class, true);
+    }
+
+    public FileChannel getFileChannel() {
+        return this.fileChannel;
     }
 }

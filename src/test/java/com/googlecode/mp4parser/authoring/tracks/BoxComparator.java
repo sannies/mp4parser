@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.util.Path;
 import org.junit.Assert;
 
@@ -25,16 +25,17 @@ public class BoxComparator {
         return false;
     }
 
+
     public static void check(Box b1, Box b2, String... ignores) throws IOException {
-        System.err.println(b1.getType() + " - " + b2.getType());
+        //System.err.println(b1.getType() + " - " + b2.getType());
         Assert.assertEquals(b1.getType(), b2.getType());
         if (!isIgnore(b1, ignores)) {
             //    System.err.println(b1.getType());
             Assert.assertEquals("Type differs. \ntypetrace ref : " + Path.createPath(b1) + "\ntypetrace new : " + Path.createPath(b2),
                     b1.getType(), b2.getType());
-            if (b1 instanceof ContainerBox ^ !(b2 instanceof ContainerBox)) {
-                if (b1 instanceof ContainerBox) {
-                    checkContainer((ContainerBox) b1, (ContainerBox) b2, ignores);
+            if (b1 instanceof Container ^ !(b2 instanceof Container)) {
+                if (b1 instanceof Container) {
+                    check((Container) b1, (Container) b2, ignores);
                 } else {
                     checkBox(b1, b2, ignores);
                 }
@@ -59,7 +60,7 @@ public class BoxComparator {
         }
     }
 
-    private static void checkContainer(ContainerBox cb1, ContainerBox cb2, String[] ignores) throws IOException {
+    public static void check(Container cb1, Container cb2, String... ignores) throws IOException {
         Iterator<Box> it1 = cb1.getBoxes().iterator();
         Iterator<Box> it2 = cb2.getBoxes().iterator();
 

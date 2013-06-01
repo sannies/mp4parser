@@ -9,7 +9,6 @@ public final class AppleNetworkBox extends AbstractAppleMetaDataBox {
 
     public AppleNetworkBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
 

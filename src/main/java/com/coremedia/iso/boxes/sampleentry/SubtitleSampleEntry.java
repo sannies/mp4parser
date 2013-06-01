@@ -1,53 +1,69 @@
 package com.coremedia.iso.boxes.sampleentry;
 
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 
-/**
- * <h1>4cc = "{@value #TYPE}"</h1>
- * Created by IntelliJ IDEA.
- * User: magnus
- * Date: 2012-03-08
- * Time: 11:36
- * To change this template use File | Settings | File Templates.
- */
-public class SubtitleSampleEntry extends SampleEntry {
+public class SubtitleSampleEntry extends AbstractSampleEntry {
 
     public static final String TYPE1 = "stpp";
 
-    public static final String TYPE_ENCRYPTED = ""; // This is not known!
+    private String namespace = "";
+    private String schemaLocation = "";
+    private String imageMimeType = "";
 
-    private String namespace;
-    private String schemaLocation;
-    private String imageMimeType;
-
-    public SubtitleSampleEntry(String type) {
-        super(type);
+    public SubtitleSampleEntry() {
+        super(TYPE1);
     }
 
     @Override
-    protected long getContentSize() {
-        long contentSize = 8 + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3;
-        return contentSize;
+    public long getSize() {
+        long s = getContainerSize();
+        long t = 8 + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3;
+        return s + t + ((largeBox || (s + t + 8) >= (1L << 32)) ? 16 : 8);
     }
 
     @Override
-    public void _parseDetails(ByteBuffer content) {
-        _parseReservedAndDataReferenceIndex(content);
-        namespace = IsoTypeReader.readString(content);
-        schemaLocation = IsoTypeReader.readString(content);
-        imageMimeType = IsoTypeReader.readString(content);
-        _parseChildBoxes(content);
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(8);
+        fileChannel.read((ByteBuffer) byteBuffer.rewind());
+        byteBuffer.position(6);
+        dataReferenceIndex = IsoTypeReader.readUInt16(byteBuffer);
+
+        long start = fileChannel.position();
+        ByteBuffer content = ByteBuffer.allocate(1024);
+
+        fileChannel.read((ByteBuffer) content.rewind());
+        namespace = IsoTypeReader.readString((ByteBuffer) content.rewind());
+        fileChannel.position(start + namespace.length() + 1);
+
+        fileChannel.read((ByteBuffer) content.rewind());
+        schemaLocation = IsoTypeReader.readString((ByteBuffer) content.rewind());
+        fileChannel.position(start + namespace.length() + schemaLocation.length() + 2);
+
+        fileChannel.read((ByteBuffer) content.rewind());
+        imageMimeType = IsoTypeReader.readString((ByteBuffer) content.rewind());
+        fileChannel.position(start + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3);
+
+        parseContainer(fileChannel, contentSize - (header.remaining() + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3), boxParser);
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        _writeReservedAndDataReferenceIndex(byteBuffer);
-        IsoTypeWriter.writeUtf8String(byteBuffer, namespace);
-        IsoTypeWriter.writeUtf8String(byteBuffer, schemaLocation);
-        IsoTypeWriter.writeUtf8String(byteBuffer, imageMimeType);
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(getHeader());
+        ByteBuffer byteBuffer = ByteBuffer.allocate(8 + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3);
+        byteBuffer.position(6);
+        IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
+        IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, namespace);
+        IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, schemaLocation);
+        IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, imageMimeType);
+        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writeContainer(writableByteChannel);
     }
 
     public String getNamespace() {

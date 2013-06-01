@@ -10,7 +10,6 @@ public final class AppleCompilationBox extends AbstractAppleMetaDataBox {
 
     public AppleCompilationBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
 }

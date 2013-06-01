@@ -9,7 +9,6 @@ public final class AppleIdBox extends AbstractAppleMetaDataBox {
 
     public AppleIdBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
 }

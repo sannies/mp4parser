@@ -1,16 +1,15 @@
 package com.googlecode.mp4parser.boxes;
 
 import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import com.googlecode.mp4parser.util.UUIDConverter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -49,12 +48,13 @@ public abstract class AbstractSampleEncryptionBoxTest {
 
         senc.setEntries(entries);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        long sizeBeforeWrite = senc.getSize();
-        senc.getBox(Channels.newChannel(baos));
-        Assert.assertEquals(baos.size(), senc.getSize());
-        Assert.assertEquals(baos.size(), sizeBeforeWrite);
-        IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
+        File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        senc.getBox(fc);
+        fc.close();
+
+        Assert.assertEquals(f.length(), senc.getSize());
+        IsoFile iso = new IsoFile(f.getAbsolutePath());
 
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
@@ -75,12 +75,14 @@ public abstract class AbstractSampleEncryptionBoxTest {
 
         senc.setEntries(entries);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        long sizeBeforeWrite = senc.getSize();
-        senc.getBox(Channels.newChannel(baos));
-        Assert.assertEquals(baos.size(), senc.getSize());
-        Assert.assertEquals(baos.size(), sizeBeforeWrite);
-        IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
+        File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        senc.getBox(fc);
+        fc.close();
+        Assert.assertEquals(f.length(), senc.getSize());
+
+
+        IsoFile iso = new IsoFile(f.getAbsolutePath());
 
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
@@ -104,12 +106,12 @@ public abstract class AbstractSampleEncryptionBoxTest {
         entries.add(entry);
 
         senc.setEntries(entries);
-        long sizeBeforeWrite = senc.getSize();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        senc.getBox(Channels.newChannel(baos));
-        Assert.assertEquals(baos.size(), senc.getSize());
-        Assert.assertEquals(sizeBeforeWrite, senc.getSize());
-        IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
+        File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        senc.getBox(fc);
+        fc.close();
+
+        IsoFile iso = new IsoFile(f.getAbsolutePath());
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);
@@ -135,10 +137,12 @@ public abstract class AbstractSampleEncryptionBoxTest {
 
         senc.setEntries(entries);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        senc.getBox(Channels.newChannel(baos));
-        Assert.assertEquals(baos.size(), senc.getSize());
-        IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
+        File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        senc.getBox(fc);
+        fc.close();
+
+        IsoFile iso = new IsoFile(f.getAbsolutePath());
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);
@@ -171,12 +175,12 @@ public abstract class AbstractSampleEncryptionBoxTest {
 
         senc.setEntries(entries);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        senc.getBox(Channels.newChannel(baos));
+        File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        senc.getBox(fc);
+        fc.close();
 
-        Assert.assertEquals(baos.size(), senc.getSize());
-
-        IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
+        IsoFile iso = new IsoFile(f.getAbsolutePath());
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);

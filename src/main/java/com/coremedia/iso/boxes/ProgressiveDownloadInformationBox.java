@@ -13,12 +13,12 @@ import java.util.List;
  * <h1>4cc = "{@value #TYPE}"</h1>
  */
 public class ProgressiveDownloadInformationBox extends AbstractFullBox {
-
+    public static final String TYPE = "pdin";
 
     List<Entry> entries = Collections.emptyList();
 
     public ProgressiveDownloadInformationBox() {
-        super("pdin");
+        super(TYPE);
     }
 
     @Override
@@ -85,6 +85,26 @@ public class ProgressiveDownloadInformationBox extends AbstractFullBox {
                     "rate=" + rate +
                     ", initialDelay=" + initialDelay +
                     '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Entry entry = (Entry) o;
+
+            if (initialDelay != entry.initialDelay) return false;
+            if (rate != entry.rate) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (int) (rate ^ (rate >>> 32));
+            result = 31 * result + (int) (initialDelay ^ (initialDelay >>> 32));
+            return result;
         }
     }
 

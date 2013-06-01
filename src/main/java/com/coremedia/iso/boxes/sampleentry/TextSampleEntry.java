@@ -16,23 +16,27 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.Box;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.Arrays;
 
 /**
- * <h1>4cc = "{@value #TYPE}"</h1>
+ * <h1>4cc = "{@value #TYPE1}"</h1>
  * Entry type for timed text samples defined in the timed text specification (ISO/IEC 14496-17).
  */
-public class TextSampleEntry extends SampleEntry {
+public class TextSampleEntry extends AbstractSampleEntry {
 
     public static final String TYPE1 = "tx3g";
 
     public static final String TYPE_ENCRYPTED = "enct";
 
-/*  class TextSampleEntry() extends SampleEntry ('tx3g') {
+/*  class TextSampleEntry() extends AbstractSampleEntry ('tx3g') {
     unsigned int(32)  displayFlags;
     signed int(8)     horizontal-justification;
     signed int(8)     vertical-justification;
@@ -50,13 +54,20 @@ public class TextSampleEntry extends SampleEntry {
     private BoxRecord boxRecord = new BoxRecord();
     private StyleRecord styleRecord = new StyleRecord();
 
+    public TextSampleEntry() {
+        super(TYPE1);
+    }
+
     public TextSampleEntry(String type) {
         super(type);
     }
 
     @Override
-    public void _parseDetails(ByteBuffer content) {
-        _parseReservedAndDataReferenceIndex(content);
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        ByteBuffer content = ByteBuffer.allocate(38);
+        fileChannel.read(content);
+        content.position(6);
+        dataReferenceIndex = IsoTypeReader.readUInt16(content);
         displayFlags = IsoTypeReader.readUInt32(content);
         horizontalJustification = IsoTypeReader.readUInt8(content);
         verticalJustification = IsoTypeReader.readUInt8(content);
@@ -70,27 +81,15 @@ public class TextSampleEntry extends SampleEntry {
 
         styleRecord = new StyleRecord();
         styleRecord.parse(content);
-        _parseChildBoxes(content);
-    }
-
-
-    protected long getContentSize() {
-        long contentSize = 18;
-        contentSize += boxRecord.getSize();
-        contentSize += styleRecord.getSize();
-        for (Box boxe : boxes) {
-            contentSize += boxe.getSize();
-        }
-        return contentSize;
-    }
-
-    public String toString() {
-        return "TextSampleEntry";
+        parseContainer(fileChannel, contentSize - 38, boxParser);
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        _writeReservedAndDataReferenceIndex(byteBuffer);
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(getHeader());
+        ByteBuffer byteBuffer = ByteBuffer.allocate(38);
+        byteBuffer.position(6);
+        IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
         IsoTypeWriter.writeUInt32(byteBuffer, displayFlags);
         IsoTypeWriter.writeUInt8(byteBuffer, horizontalJustification);
         IsoTypeWriter.writeUInt8(byteBuffer, verticalJustification);
@@ -100,8 +99,13 @@ public class TextSampleEntry extends SampleEntry {
         IsoTypeWriter.writeUInt8(byteBuffer, backgroundColorRgba[3]);
         boxRecord.getContent(byteBuffer);
         styleRecord.getContent(byteBuffer);
+        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writeContainer(writableByteChannel);
+    }
 
-        _writeChildBoxes(byteBuffer);
+
+    public String toString() {
+        return "TextSampleEntry";
     }
 
     public BoxRecord getBoxRecord() {
@@ -224,6 +228,16 @@ public class TextSampleEntry extends SampleEntry {
         int bottom;
         int right;
 
+        public BoxRecord() {
+        }
+
+        public BoxRecord(int top, int left, int bottom, int right) {
+            this.top = top;
+            this.left = left;
+            this.bottom = bottom;
+            this.right = right;
+        }
+
         public void parse(ByteBuffer in) {
             top = IsoTypeReader.readUInt16(in);
             left = IsoTypeReader.readUInt16(in);
@@ -240,6 +254,30 @@ public class TextSampleEntry extends SampleEntry {
 
         public int getSize() {
             return 8;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            BoxRecord boxRecord = (BoxRecord) o;
+
+            if (bottom != boxRecord.bottom) return false;
+            if (left != boxRecord.left) return false;
+            if (right != boxRecord.right) return false;
+            if (top != boxRecord.top) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = top;
+            result = 31 * result + left;
+            result = 31 * result + bottom;
+            result = 31 * result + right;
+            return result;
         }
     }
 
@@ -270,6 +308,18 @@ public class TextSampleEntry extends SampleEntry {
         int fontSize;
         int[] textColor = new int[]{0xff, 0xff, 0xff, 0xff};
 
+        public StyleRecord() {
+        }
+
+        public StyleRecord(int startChar, int endChar, int fontId, int faceStyleFlags, int fontSize, int[] textColor) {
+            this.startChar = startChar;
+            this.endChar = endChar;
+            this.fontId = fontId;
+            this.faceStyleFlags = faceStyleFlags;
+            this.fontSize = fontSize;
+            this.textColor = textColor;
+        }
+
         public void parse(ByteBuffer in) {
             startChar = IsoTypeReader.readUInt16(in);
             endChar = IsoTypeReader.readUInt16(in);
@@ -296,9 +346,45 @@ public class TextSampleEntry extends SampleEntry {
             IsoTypeWriter.writeUInt8(bb, textColor[3]);
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            StyleRecord that = (StyleRecord) o;
+
+            if (endChar != that.endChar) return false;
+            if (faceStyleFlags != that.faceStyleFlags) return false;
+            if (fontId != that.fontId) return false;
+            if (fontSize != that.fontSize) return false;
+            if (startChar != that.startChar) return false;
+            if (!Arrays.equals(textColor, that.textColor)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = startChar;
+            result = 31 * result + endChar;
+            result = 31 * result + fontId;
+            result = 31 * result + faceStyleFlags;
+            result = 31 * result + fontSize;
+            result = 31 * result + (textColor != null ? Arrays.hashCode(textColor) : 0);
+            return result;
+        }
+
         public int getSize() {
             return 12;
         }
+    }
+
+    @Override
+    public long getSize() {
+        long s = getContainerSize();
+        long t = 38; // bytes to container start
+        return s + t + ((largeBox || (s + t) >= (1L << 32)) ? 16 : 8);
+
     }
 
 

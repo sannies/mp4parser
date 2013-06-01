@@ -10,7 +10,6 @@ public final class AppleCommentBox extends AbstractAppleMetaDataBox {
 
     public AppleCommentBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
 

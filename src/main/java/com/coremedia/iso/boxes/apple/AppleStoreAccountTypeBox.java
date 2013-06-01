@@ -10,11 +10,10 @@ public class AppleStoreAccountTypeBox extends AbstractAppleMetaDataBox {
 
     public AppleStoreAccountTypeBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
     public String getReadableValue() {
-        byte value = this.appleDataBox.getData()[0];
+        int value = 0;
         switch (value) {
             case 0:
                 return "iTunes Account";

@@ -16,6 +16,7 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -38,7 +39,8 @@ public class H264TrackImplTest {
         m.addTrack(t);
 
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
-        IsoFile isoFile = mp4Builder.build(m);
+        Container isoFile = mp4Builder.build(m);
+
        /* FileChannel fcOut = new FileOutputStream("h264-sample.mp4").getChannel();
         isoFile.getBox(fcOut);
         fcOut.close();

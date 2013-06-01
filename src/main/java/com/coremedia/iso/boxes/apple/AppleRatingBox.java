@@ -10,7 +10,6 @@ public final class AppleRatingBox extends AbstractAppleMetaDataBox {
 
     public AppleRatingBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
 

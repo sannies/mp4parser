@@ -17,29 +17,39 @@
 package com.googlecode.mp4parser;
 
 import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.logging.Logger;
 
 /**
  * Abstract base class for a full iso box only containing ither boxes.
  */
-public abstract class FullContainerBox extends AbstractFullBox implements ContainerBox {
-    protected List<Box> boxes = new LinkedList<Box>();
+public abstract class FullContainerBox extends AbstractContainerBox implements FullBox {
     private static Logger LOG = Logger.getLogger(FullContainerBox.class.getName());
-    BoxParser boxParser;
+    private int version;
+    private int flags;
 
-    public void setBoxes(List<Box> boxes) {
-        this.boxes = new LinkedList<Box>(boxes);
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public void setFlags(int flags) {
+        this.flags = flags;
     }
 
     @SuppressWarnings("unchecked")
@@ -47,113 +57,58 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
         return getBoxes(clazz, false);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
-        List<T> boxesToBeReturned = new ArrayList<T>(2);
-        for (Box boxe : boxes) { //clazz.isInstance(boxe) / clazz == boxe.getClass()?
-            if (clazz == boxe.getClass()) {
-                boxesToBeReturned.add((T) boxe);
-            }
-
-            if (recursive && boxe instanceof ContainerBox) {
-                boxesToBeReturned.addAll((((ContainerBox) boxe).getBoxes(clazz, recursive)));
-            }
-        }
-        // Optimize here! Spare object creation work on arrays directly! System.arrayCopy
-        return boxesToBeReturned;
-        //return (T[]) boxesToBeReturned.toArray();
-    }
-
-    protected long getContentSize() {
-        long contentSize = 4; // flags and version
-        for (Box boxe : boxes) {
-            contentSize += boxe.getSize();
-        }
-        return contentSize;
-    }
-
-    public void addBox(Box b) {
-        b.setParent(this);
-        boxes.add(b);
-    }
-
-    public void removeBox(Box b) {
-        b.setParent(null);
-        boxes.remove(b);
-    }
-
     public FullContainerBox(String type) {
         super(type);
     }
 
-    public List<Box> getBoxes() {
-        return boxes;
-    }
-
     @Override
-    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        super.parse(readableByteChannel, header, contentSize, boxParser);
-        this.boxParser = boxParser;
-    }
-
-    @Override
-    public void _parseDetails(ByteBuffer content) {
-        parseVersionAndFlags(content);
-        parseChildBoxes(content);
-    }
-
-    protected final void parseChildBoxes(ByteBuffer content) {
-        try {
-            while (content.remaining() >= 8) { //  8 is the minimal size for a sane box
-                boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));
-            }
-
-            if (content.remaining() != 0) {
-                setDeadBytes(content.slice());
-                LOG.severe("Some sizes are wrong");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        ByteBuffer versionAndFlags = ByteBuffer.allocate(4);
+        fileChannel.read(versionAndFlags);
+        parseVersionAndFlags((ByteBuffer) versionAndFlags.rewind());
+        super.parse(fileChannel, header, contentSize, boxParser);
     }
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(this.getClass().getSimpleName()).append("[");
-        for (int i = 0; i < boxes.size(); i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes.get(i).toString());
-        }
-        buffer.append("]");
+        buffer.append(this.getClass().getSimpleName()).append("[childBoxes]");
         return buffer.toString();
     }
 
-
-    protected void getContent(ByteBuffer byteBuffer) {
-        writeVersionAndFlags(byteBuffer);
-        writeChildBoxes(byteBuffer);
+    /**
+     * Parses the version/flags header and returns the remaining box size.
+     *
+     * @param content
+     * @return number of bytes read
+     */
+    protected final long parseVersionAndFlags(ByteBuffer content) {
+        version = IsoTypeReader.readUInt8(content);
+        flags = IsoTypeReader.readUInt24(content);
+        return 4;
     }
 
-    protected final void writeChildBoxes(ByteBuffer bb) {
-        WritableByteChannel wbc = new ByteBufferByteChannel(bb);
-        for (Box box : boxes) {
-            try {
-                box.getBox(wbc);
-            } catch (IOException e) {
-                // cannot happen since my WritableByteChannel won't throw any excpetion
-                throw new RuntimeException("Cannot happen.", e);
-            }
+    protected final void writeVersionAndFlags(ByteBuffer bb) {
+        IsoTypeWriter.writeUInt8(bb, version);
+        IsoTypeWriter.writeUInt24(bb, flags);
+    }
 
+    @Override
+    protected ByteBuffer getHeader() {
+        ByteBuffer header;
+        if (largeBox || getSize() >= (1L << 32)) {
+            header = ByteBuffer.wrap(new byte[]{0, 0, 0, 1, type.getBytes()[0], type.getBytes()[1], type.getBytes()[2], type.getBytes()[3], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+            header.position(8);
+            IsoTypeWriter.writeUInt64(header, getSize());
+            writeVersionAndFlags(header);
+        } else {
+            header = ByteBuffer.wrap(new byte[]{0, 0, 0, 0, type.getBytes()[0], type.getBytes()[1], type.getBytes()[2], type.getBytes()[3], 0, 0, 0, 0});
+            IsoTypeWriter.writeUInt32(header, getSize());
+            header.position(8);
+            writeVersionAndFlags(header);
         }
+        header.rewind();
+        return header;
+
     }
 
-    public long getNumOfBytesToFirstChild() {
-        long sizeOfChildren = 0;
-        for (Box box : boxes) {
-            sizeOfChildren += box.getSize();
-        }
-        return getSize() - sizeOfChildren;
-    }
 }

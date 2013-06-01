@@ -16,20 +16,23 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.Container;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2}" || "{@value #TYPE3}" || "{@value #TYPE4}"</h1>
  * Contains information common to all visual tracks.
  * <code>
  * <pre>
- * class VisualSampleEntry(codingname) extends SampleEntry (codingname){
+ * class VisualSampleEntry(codingname) extends AbstractSampleEntry (codingname){
  * unsigned int(16) pre_defined = 0;
  * const unsigned int(16) reserved = 0;
  * unsigned int(32)[3] pre_defined = 0;
@@ -48,7 +51,7 @@ import java.nio.ByteBuffer;
  * <p/>
  * Format-specific information is appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */
-public class VisualSampleEntry extends SampleEntry implements ContainerBox {
+public class VisualSampleEntry extends AbstractSampleEntry implements Container {
     public static final String TYPE1 = "mp4v";
     public static final String TYPE2 = "s263";
     public static final String TYPE3 = "avc1";
@@ -68,10 +71,14 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
     private double horizresolution = 72;
     private double vertresolution = 72;
     private int frameCount = 1;
-    private String compressorname;
+    private String compressorname = "";
     private int depth = 24;
 
     private long[] predefined = new long[3];
+
+    public VisualSampleEntry() {
+        super(TYPE3);
+    }
 
     public VisualSampleEntry(String type) {
         super(type);
@@ -134,8 +141,12 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
     }
 
     @Override
-    public void _parseDetails(ByteBuffer content) {
-        _parseReservedAndDataReferenceIndex(content);
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        ByteBuffer content = ByteBuffer.allocate(78);
+        fileChannel.read(content);
+        content.position(6);
+        dataReferenceIndex = IsoTypeReader.readUInt16(content);
+
         long tmp = IsoTypeReader.readUInt16(content);
         assert 0 == tmp : "reserved byte not 0";
         tmp = IsoTypeReader.readUInt16(content);
@@ -167,22 +178,16 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         tmp = IsoTypeReader.readUInt16(content);
         assert 0xFFFF == tmp;
 
-        _parseChildBoxes(content);
+        parseContainer(fileChannel, contentSize - 78, boxParser);
 
-    }
-
-
-    protected long getContentSize() {
-        long contentSize = 78;
-        for (Box boxe : boxes) {
-            contentSize += boxe.getSize();
-        }
-        return contentSize;
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        _writeReservedAndDataReferenceIndex(byteBuffer);
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(getHeader());
+        ByteBuffer byteBuffer = ByteBuffer.allocate(78);
+        byteBuffer.position(6);
+        IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
         IsoTypeWriter.writeUInt16(byteBuffer, 0);
         IsoTypeWriter.writeUInt16(byteBuffer, 0);
         IsoTypeWriter.writeUInt32(byteBuffer, predefined[0]);
@@ -208,8 +213,17 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         IsoTypeWriter.writeUInt16(byteBuffer, getDepth());
         IsoTypeWriter.writeUInt16(byteBuffer, 0xFFFF);
 
-        _writeChildBoxes(byteBuffer);
+        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+
+        writeContainer(writableByteChannel);
 
     }
 
+
+    @Override
+    public long getSize() {
+        long s = getContainerSize();
+        long t = 78;
+        return s + t + ((largeBox || (s + t + 8) >= (1L << 32)) ? 16 : 8);
+    }
 }

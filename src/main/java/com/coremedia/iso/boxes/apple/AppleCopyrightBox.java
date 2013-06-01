@@ -10,7 +10,6 @@ public final class AppleCopyrightBox extends AbstractAppleMetaDataBox {
 
     public AppleCopyrightBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
 }

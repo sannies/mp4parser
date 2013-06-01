@@ -17,40 +17,25 @@
 package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.MovieBox;
-import com.googlecode.mp4parser.AbstractBox;
+import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
-import com.googlecode.mp4parser.util.LazyList;
 import com.googlecode.mp4parser.util.Logger;
 
-import java.io.*;
-import java.nio.ByteBuffer;
+import java.io.Closeable;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 /**
  * The most upper container for ISO Boxes. It is a container box that is a file.
  * Uses IsoBufferWrapper  to access the underlying file.
  */
 @DoNotParseDetail
-public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
+public class IsoFile extends BasicContainer implements Closeable {
     private static Logger LOG = Logger.getLogger(IsoFile.class);
-    protected BoxParser boxParser = createBoxParser();
-    final ReadableByteChannel byteChannel;
-    long position = 0;
-    List<Box> boxes = new ArrayList<Box>();
-    private final Object SYNCER = new Object();
-
-    public IsoFile() {
-        byteChannel = null;
-        lookahead = EOF;
-    }
 
     /**
      * Shortcut constructor that creates a <code>FileChannel</code> from the
@@ -64,128 +49,27 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
         this(new FileInputStream(filename).getChannel());
     }
 
+
     /**
-     * Creates a new <code>IsoFile</code> from a <code>FileChannel</code>. Uses memory-mapping
-     * to save heap memory.
-     *
-     * @param fileChannel the source file
+     * @param fileChannel the data source
      * @throws IOException in case I/O error
      */
     public IsoFile(FileChannel fileChannel) throws IOException {
-        this((ReadableByteChannel) fileChannel);
+        parseContainer(fileChannel, fileChannel.size(), new PropertyBoxParserImpl());
+
     }
 
-    /**
-     * Creates a new <code>IsoFile</code> from a <code>ReadableByteChannel</code>.
-     * <p/>
-     * Try to use {@link IsoFile#IsoFile(FileChannel)} so you can benefit from
-     * {@link FileChannel#map(java.nio.channels.FileChannel.MapMode, long, long)}. It will
-     * reduce your heap requirements drastically!
-     *
-     * @param byteChannel the data source
-     * @throws IOException in case I/O error
-     * @deprecated use {@link IsoFile#IsoFile(FileChannel)} to save heap
-     */
-    public IsoFile(ReadableByteChannel byteChannel) throws IOException {
-        this.byteChannel = byteChannel;
-    }
-
-    public IsoFile(ReadableByteChannel byteChannel, BoxParser boxParser) throws IOException {
-        this.byteChannel = byteChannel;
+    public IsoFile(FileChannel fileChannel, BoxParser boxParser) throws IOException {
+        this.fileChannel = fileChannel;
         this.boxParser = boxParser;
     }
 
-    protected BoxParser createBoxParser() {
-        return new PropertyBoxParserImpl();
-    }
-
-    public List<Box> getBoxes() {
-        if (byteChannel != null && lookahead != EOF) {
-            return new LazyList<Box>(boxes, this);
-        } else {
-            return boxes;
-        }
-    }
-
-
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
-
-    private static final Box EOF = new AbstractBox("eof ") {
-
-        @Override
-        protected long getContentSize() {
-            return 0;
-        }
-
-        @Override
-        protected void getContent(ByteBuffer byteBuffer) {
-        }
-
-        @Override
-        protected void _parseDetails(ByteBuffer content) {
-        }
-    };
-    Box lookahead = null;
-
-
-    public boolean hasNext() {
-        if (lookahead == EOF) {
-            return false;
-        }
-        if (lookahead != null) {
-            return true;
-        } else {
-            try {
-                lookahead = next();
-                return true;
-            } catch (NoSuchElementException e) {
-                lookahead = EOF;
-                return false;
-            }
-        }
-    }
-
-    public Box next() {
-        if (lookahead != null && lookahead != EOF) {
-            Box b = lookahead;
-            lookahead = null;
-            return b;
-        } else {
-            LOG.logDebug("Parsing next() box");
-            if (byteChannel == null) {
-                throw new NoSuchElementException();
-            }
-            try {
-                synchronized (SYNCER) {
-                    if (byteChannel instanceof FileChannel) {
-                        ((FileChannel) byteChannel).position(position);
-                    }
-                    Box b = boxParser.parseBox(byteChannel, this);
-
-                    if (byteChannel instanceof FileChannel) {
-                        position = ((FileChannel) byteChannel).position();
-                    }
-                    return b;
-                }
-            } catch (EOFException e) {
-                throw new NoSuchElementException();
-            } catch (IOException e) {
-                throw new NoSuchElementException();
-            }
-        }
-
-    }
-
-    @DoNotParseDetail
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("IsoFile[").append(byteChannel).append("]");
+        buffer.append("IsoFile[").append(fileChannel.toString()).append("]");
         return buffer.toString();
     }
 
-    @DoNotParseDetail
     public static byte[] fourCCtoBytes(String fourCC) {
         byte[] result = new byte[4];
         if (fourCC != null) {
@@ -196,7 +80,6 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
         return result;
     }
 
-    @DoNotParseDetail
     public static String bytesToFourCC(byte[] type) {
         byte[] result = new byte[]{0, 0, 0, 0};
         if (type != null) {
@@ -211,15 +94,7 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
 
 
     public long getSize() {
-        long size = 0;
-        for (Box box : boxes) {
-            size += box.getSize();
-        }
-        return size;
-    }
-
-    public IsoFile getIsoFile() {
-        return this;
+        return getContainerSize();
     }
 
 
@@ -229,7 +104,6 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
      *
      * @return the MovieBox or <code>null</code>
      */
-    @DoNotParseDetail
     public MovieBox getMovieBox() {
         for (Box box : getBoxes()) {
             if (box instanceof MovieBox) {
@@ -240,70 +114,10 @@ public class IsoFile implements Closeable, Iterator<Box>, ContainerBox {
     }
 
     public void getBox(WritableByteChannel os) throws IOException {
-        for (Box box : getBoxes()) {
-
-            if (os instanceof FileChannel) {
-                long startPos = ((FileChannel) os).position();
-                box.getBox(os);
-                long size = ((FileChannel) os).position() - startPos;
-                assert size == box.getSize() : box.getType() + " Size: " + size + " box.getSize(): " + box.getSize();
-            } else {
-                box.getBox(os);
-            }
-
-        }
+        writeContainer(os);
     }
 
     public void close() throws IOException {
-        this.byteChannel.close();
-    }
-
-    public void setBoxes(List<Box> boxes) {
-        this.boxes = boxes;
-    }
-
-    public <T extends Box> List<T> getBoxes(Class<T> clazz) {
-        return getBoxes(clazz, false);
-    }
-
-    public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
-        List<T> boxesToBeReturned = new ArrayList<T>(2);
-        for (Box boxe : getBoxes()) {
-            //clazz.isInstance(boxe) / clazz == boxe.getClass()?
-            // I hereby finally decide to use isInstance
-
-            if (clazz.isInstance(boxe)) {
-                boxesToBeReturned.add((T) boxe);
-            }
-
-            if (recursive && boxe instanceof ContainerBox) {
-                boxesToBeReturned.addAll(((ContainerBox) boxe).getBoxes(clazz, recursive));
-            }
-        }
-        return boxesToBeReturned;
-    }
-
-    public ContainerBox getParent() {
-        return null;
-    }
-
-    public void setParent(ContainerBox parent) {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getType() {
-        return null;
-    }
-
-    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public void addBox(Box box) {
-        while (hasNext()) {
-            boxes.add(next());
-        }
-        boxes.add(box);
-        box.setParent(this);
+        this.fileChannel.close();
     }
 }

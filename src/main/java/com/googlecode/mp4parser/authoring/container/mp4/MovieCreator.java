@@ -20,9 +20,9 @@ import com.coremedia.iso.boxes.TrackBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Mp4TrackImpl;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.util.List;
 
 /**
@@ -30,18 +30,9 @@ import java.util.List;
  */
 public class MovieCreator {
 
-    /**
-     * Creates <code>Movie</code> object from a <code>FileChannel</code>.
-     *
-     * @param channel input channel
-     * @return a representation of the movie
-     * @throws IOException in case of I/O error during IsoFile creation
-     */
-
-    public static Movie build(FileChannel channel) throws IOException {
-        return build((ReadableByteChannel) channel);
+    public static Movie build(String file) throws IOException {
+        return build(new FileInputStream(file).getChannel());
     }
-
 
     /**
      * Creates <code>Movie</code> object from a <code>ReadableByteChannel</code>.
@@ -49,9 +40,8 @@ public class MovieCreator {
      * @param channel input channel
      * @return a representation of the movie
      * @throws IOException in case of I/O error during IsoFile creation
-     * @deprecated use {@link MovieCreator#build(FileChannel)} for memory efficient movie representation
      */
-    public static Movie build(ReadableByteChannel channel) throws IOException {
+    public static Movie build(FileChannel channel) throws IOException {
         IsoFile isoFile = new IsoFile(channel);
         Movie m = new Movie();
         List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);

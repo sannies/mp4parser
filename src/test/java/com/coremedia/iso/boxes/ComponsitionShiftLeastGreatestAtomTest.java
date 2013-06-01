@@ -1,13 +1,13 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,14 +27,15 @@ public class ComponsitionShiftLeastGreatestAtomTest extends TestCase {
         clsg.setGreatestDisplayOffset(-2);
         clsg.setLeastDisplayOffset(-4);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        clsg.getBox(Channels.newChannel(baos));
-        byte[] content = baos.toByteArray();
+        File f = File.createTempFile("ComponsitionShiftLeastGreatestAtomTest", "");
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        clsg.getBox(fc);
+        fc.close();
 
-        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(content)));
+        IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
 
         CompositionShiftLeastGreatestAtom clsg2 = isoFile.getBoxes(CompositionShiftLeastGreatestAtom.class).get(0);
-        Assert.assertEquals(content.length, clsg2.getSize());
+        Assert.assertEquals(f.length(), clsg2.getSize());
         Assert.assertEquals(clsg.getCompositionOffsetToDisplayOffsetShift(), clsg2.getCompositionOffsetToDisplayOffsetShift());
         Assert.assertEquals(clsg.getGreatestDisplayOffset(), clsg2.getGreatestDisplayOffset());
         Assert.assertEquals(clsg.getDisplayEndTime(), clsg2.getDisplayEndTime());

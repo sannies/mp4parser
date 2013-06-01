@@ -16,18 +16,13 @@
 package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.UserBox;
-import com.googlecode.mp4parser.util.Path;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -38,8 +33,6 @@ public abstract class AbstractBoxParser implements BoxParser {
     private static Logger LOG = Logger.getLogger(AbstractBoxParser.class.getName());
 
     public abstract Box createBox(String type, byte[] userType, String parent);
-
-    Map<String, Long> boxPositions = new HashMap<String, Long>();
 
     ThreadLocal<ByteBuffer> header = new ThreadLocal<ByteBuffer>() {
         @Override
@@ -57,11 +50,7 @@ public abstract class AbstractBoxParser implements BoxParser {
      * @return the box just parsed
      * @throws java.io.IOException if reading from <code>in</code> fails
      */
-    public Box parseBox(ReadableByteChannel byteChannel, ContainerBox parent) throws IOException {
-        long pos = -1;
-        if (byteChannel instanceof FileChannel) {
-            pos = ((FileChannel) byteChannel).position();
-        }
+    public Box parseBox(FileChannel byteChannel, Container parent) throws IOException {
         header.get().rewind().limit(8);
         int bytesRead = 0;
 
@@ -93,12 +82,9 @@ public abstract class AbstractBoxParser implements BoxParser {
             size = IsoTypeReader.readUInt64(header.get());
             contentSize = size - 16;
         } else if (size == 0) {
-            if (byteChannel instanceof FileChannel) {
-                size = ((FileChannel) byteChannel).size() - ((FileChannel) byteChannel).position() - 8;
-            } else {
-                throw new RuntimeException("Only FileChannel inputs may use size == 0 (box reaches to the end of file)");
-            }
+            size = byteChannel.size() - byteChannel.position() - 8;
             contentSize = size - 8;
+            throw new RuntimeException("not supported");
         } else {
             contentSize = size - 8;
         }
@@ -111,30 +97,13 @@ public abstract class AbstractBoxParser implements BoxParser {
             }
             contentSize -= 16;
         }
-        Box box = createBox(type, usertype, parent.getType());
+        Box box = createBox(type, usertype, (parent instanceof Box) ? ((Box) parent).getType() : "");
         box.setParent(parent);
         //LOG.finest("Parsing " + box.getType());
         // System.out.println("parsing " + Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
         header.get().rewind();
 
         box.parse(byteChannel, header.get(), contentSize, this);
-//        System.out.println("box = " + box.getType());
-        if (true) {
-            int index = 0;
-            List<Box> boxes;
-            if (box.getParent() instanceof IsoFile) {
-                boxes = ((IsoFile) box.getParent()).boxes;
-            } else {
-                boxes = box.getParent().getBoxes();
-            }
-            for (Box siblings : boxes) {
-                if (siblings.getType().equals(box.getType())) {
-                    index++;
-                }
-            }
-            boxPositions.put(Path.createPath(box.getParent()) + "/" + type + "[" + index + "]", pos);
-        }
-
         return box;
     }
 

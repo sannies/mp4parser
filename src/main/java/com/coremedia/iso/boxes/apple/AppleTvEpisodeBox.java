@@ -10,7 +10,6 @@ public class AppleTvEpisodeBox extends AbstractAppleMetaDataBox {
 
     public AppleTvEpisodeBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getUint32AppleDataBox();
     }
 
 }

@@ -9,7 +9,6 @@ public final class ApplePurchaseDateBox extends AbstractAppleMetaDataBox {
 
     public ApplePurchaseDateBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
 }

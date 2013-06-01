@@ -17,146 +17,78 @@
 package com.googlecode.mp4parser;
 
 import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.coremedia.iso.boxes.Container;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Logger;
 
 
 /**
  * Abstract base class suitable for most boxes acting purely as container for other boxes.
  */
-public abstract class AbstractContainerBox extends AbstractBox implements ContainerBox {
-    private static Logger LOG = Logger.getLogger(AbstractContainerBox.class.getName());
+public class AbstractContainerBox extends BasicContainer implements Box {
 
-    private List<Box> boxes = Collections.emptyList();
-    protected BoxParser boxParser;
+    Container parent;
+    protected String type;
+    ByteBuffer header;
+    protected boolean largeBox;
+    private long offset;
 
-    @Override
-    protected long getContentSize() {
-        long contentSize = 0;
-        for (int i = 0; i < boxes.size(); i++) {
-            // it's quicker to iterate an array list like that since no iterator
-            // needs to be instantiated
-            contentSize += boxes.get(i).getSize();
-        }
-        return contentSize;
-    }
 
     public AbstractContainerBox(String type) {
-        super(type);
+        this.type = type;
     }
 
-    public List<Box> getBoxes() {
-        return Collections.unmodifiableList(boxes);
+    public Container getParent() {
+        return parent;
     }
 
-    public void setBoxes(List<Box> boxes) {
-        this.boxes = new ArrayList<Box>(boxes);
+    public long getOffset() {
+        return offset;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends Box> List<T> getBoxes(Class<T> clazz) {
-        return getBoxes(clazz, false);
+    public void setParent(Container parent) {
+        this.parent = parent;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
-        List<T> boxesToBeReturned = new ArrayList<T>(2);
-        for (Box boxe : boxes) {
-            //clazz.isInstance(boxe) / clazz == boxe.getClass()?
-            // I hereby finally decide to use isInstance
+    public long getSize() {
+        long s = getContainerSize();
+        return s + ((largeBox || (s + 8) >= (1L << 32)) ? 16 : 8);
+    }
 
-            if (clazz.isInstance(boxe)) {
-                boxesToBeReturned.add((T) boxe);
-            }
+    public String getType() {
+        return type;
+    }
 
-            if (recursive && boxe instanceof ContainerBox) {
-                boxesToBeReturned.addAll(((ContainerBox) boxe).getBoxes(clazz, recursive));
-            }
+    protected ByteBuffer getHeader() {
+        ByteBuffer header;
+        if (largeBox || getSize() >= (1L << 32)) {
+            header = ByteBuffer.wrap(new byte[]{0, 0, 0, 1, type.getBytes()[0], type.getBytes()[1], type.getBytes()[2], type.getBytes()[3], 0, 0, 0, 0, 0, 0, 0, 0});
+            header.position(8);
+            IsoTypeWriter.writeUInt64(header, getSize());
+        } else {
+            header = ByteBuffer.wrap(new byte[]{0, 0, 0, 0, type.getBytes()[0], type.getBytes()[1], type.getBytes()[2], type.getBytes()[3]});
+            IsoTypeWriter.writeUInt32(header, getSize());
         }
-        return boxesToBeReturned;
+        header.rewind();
+        return header;
     }
 
-    /**
-     * Add <code>b</code> to the container and sets the parent correctly.
-     *
-     * @param b will be added to the container
-     */
-    public void addBox(Box b) {
-        if (boxes.isEmpty()) {
-            boxes = new ArrayList<Box>();
-        }
-        b.setParent(this);
-        boxes.add(b);
-    }
-
-    @Override
-    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        super.parse(readableByteChannel, header, contentSize, boxParser);
-        this.boxParser = boxParser;
-    }
-
-    @Override
-    public void _parseDetails(ByteBuffer content) {
-        parseChildBoxes(content);
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        this.offset = fileChannel.position() - header.remaining();
+        this.largeBox = header.remaining() == 16; // sometime people use large boxes without requiring them
+        parseContainer(fileChannel, contentSize, boxParser);
     }
 
 
-    public String toString() {
-        StringBuilder buffer = new StringBuilder();
-
-        buffer.append(this.getClass().getSimpleName()).append("[");
-        for (int i = 0; i < boxes.size(); i++) {
-            if (i > 0) {
-                buffer.append(";");
-            }
-            buffer.append(boxes.get(i).toString());
-        }
-        buffer.append("]");
-        return buffer.toString();
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(getHeader());
+        writeContainer(writableByteChannel);
     }
 
-
-    @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        writeChildBoxes(byteBuffer);
-    }
-
-    protected final void parseChildBoxes(ByteBuffer content) {
-        boxes = new ArrayList<Box>();
-        try {
-            while (content.remaining() >= 8) { //  8 is the minimal size for a sane box
-                boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));
-            }
-
-            if (content.remaining() != 0) {
-                setDeadBytes(content.slice());
-                LOG.warning("Something's wrong with the sizes. There are dead bytes in a container box.");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    protected final void writeChildBoxes(ByteBuffer bb) {
-        WritableByteChannel wbc = new ByteBufferByteChannel(bb);
-        for (Box box : boxes) {
-            try {
-                box.getBox(wbc);
-            } catch (IOException e) {
-                // My WritableByteChannel won't throw any exception
-                throw new RuntimeException("Cannot happen to me", e);
-            }
-        }
-    }
 
 }

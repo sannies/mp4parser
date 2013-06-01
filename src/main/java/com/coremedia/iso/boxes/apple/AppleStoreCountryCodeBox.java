@@ -40,16 +40,6 @@ public class AppleStoreCountryCodeBox extends AbstractAppleMetaDataBox {
 
     public AppleStoreCountryCodeBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getUint32AppleDataBox();
     }
 
-
-    public String getReadableValue() {
-        if (countryCodes.containsKey(getValue())) {
-            return countryCodes.get(getValue());
-        } else {
-            return "unknown country code " + getValue();
-        }
-
-    }
 }

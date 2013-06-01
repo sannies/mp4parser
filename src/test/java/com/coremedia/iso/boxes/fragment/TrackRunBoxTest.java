@@ -1,16 +1,16 @@
 package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.List;
-
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 public class TrackRunBoxTest {
 
@@ -54,10 +54,14 @@ public class TrackRunBoxTest {
         entries.add(new TrackRunBox.Entry(1000, 2000, new SampleFlags(), 3000));
         entries.add(new TrackRunBox.Entry(1001, 2001, new SampleFlags(), 3001));
         trun.setEntries(entries);
-        ByteBuffer b = ByteBuffer.allocate(l2i(trun.getSize()));
-        trun.getBox(new ByteBufferByteChannel(b));
-        b.rewind();
-        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(b));
+
+        File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        trun.getBox(fc);
+        fc.close();
+
+
+        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
         TrackRunBox trun2 = (TrackRunBox) isoFile.getBoxes().get(0);
 
         Assert.assertEquals(trun.isDataOffsetPresent(), trun2.isDataOffsetPresent());

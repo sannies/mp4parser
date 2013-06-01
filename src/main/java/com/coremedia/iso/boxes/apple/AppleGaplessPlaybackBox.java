@@ -10,7 +10,6 @@ public final class AppleGaplessPlaybackBox extends AbstractAppleMetaDataBox {
 
     public AppleGaplessPlaybackBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
 }

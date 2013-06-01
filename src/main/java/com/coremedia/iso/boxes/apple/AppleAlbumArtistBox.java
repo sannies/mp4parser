@@ -10,7 +10,6 @@ public class AppleAlbumArtistBox extends AbstractAppleMetaDataBox {
 
     public AppleAlbumArtistBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
 

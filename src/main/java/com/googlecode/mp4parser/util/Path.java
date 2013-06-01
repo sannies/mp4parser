@@ -16,9 +16,9 @@
 package com.googlecode.mp4parser.util;
 
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.Container;
+import com.googlecode.mp4parser.AbstractContainerBox;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -35,30 +35,27 @@ public class Path {
     static Pattern component = Pattern.compile("(....|\\.\\.)(\\[(.*)\\])?");
 
     public static String createPath(Box box) {
-        if (box instanceof IsoFile) {
-            return "";
-        }
         return createPath(box, "");
     }
 
     private static String createPath(Box box, String path) {
-        if (box instanceof IsoFile) {
-            return path;
-        } else {
-            ContainerBox parent = box.getParent();
-            int index = 0;
-            List<Box> siblings = parent.getBoxes();
-            for (Box sibling : siblings) {
-                if (sibling.getType().equals(box.getType())) {
-                    if (sibling == box) {
-                        break;
-                    }
-                    index++;
-                }
-            }
-            path = String.format("/%s[%d]", box.getType(), index) + path;
 
-            return createPath(box.getParent(), path);
+        Container parent = box.getParent();
+        int index = 0;
+        List<Box> siblings = parent.getBoxes();
+        for (Box sibling : siblings) {
+            if (sibling.getType().equals(box.getType())) {
+                if (sibling == box) {
+                    break;
+                }
+                index++;
+            }
+        }
+        path = String.format("/%s[%d]", box.getType(), index) + path;
+        if (parent instanceof Box) {
+            return createPath((Box) parent, path);
+        } else {
+            return path;
         }
     }
 
@@ -67,20 +64,54 @@ public class Path {
         return all.isEmpty() ? null : all.get(0);
     }
 
+    public static Box getPath(Container container, String path) {
+        List<? extends Box> all = getPaths(container, path, true);
+        return all.isEmpty() ? null : all.get(0);
+    }
+
+    public static Box getPath(AbstractContainerBox containerBox, String path) {
+        List<? extends Box> all = getPaths(containerBox, path, true);
+        return all.isEmpty() ? null : all.get(0);
+    }
+
+    public static List<Box> getPaths(AbstractContainerBox containerBox, String path) {
+        return getPaths(containerBox, path, false);
+    }
+
     public static List<Box> getPaths(Box box, String path) {
         return getPaths(box, path, false);
     }
 
-    public static List<Box> getPaths(Box box, String path, boolean singleResult) {
+    public static List<Box> getPaths(Container container, String path) {
+        return getPaths(container, path, false);
+    }
+
+    private static List<Box> getPaths(AbstractContainerBox container, String path, boolean singleResult) {
+        return getPaths((Object) container, path, singleResult);
+    }
+
+    private static List<Box> getPaths(Container container, String path, boolean singleResult) {
+        return getPaths((Object) container, path, singleResult);
+    }
+
+    private static List<Box> getPaths(Box box, String path, boolean singleResult) {
+        return getPaths((Object) box, path, singleResult);
+    }
+
+    private static List<Box> getPaths(Object thing, String path, boolean singleResult) {
         if (path.startsWith("/")) {
-            Box isoFile = box;
-            while (isoFile.getParent() != null) {
-                isoFile = isoFile.getParent();
+            path = path.substring(1);
+            while (thing instanceof Box) {
+                thing = ((Box) thing).getParent();
             }
-            assert isoFile instanceof IsoFile : isoFile.getType() + " has no parent";
-            return getPaths(isoFile, path.substring(1), singleResult);
-        } else if (path.length() == 0) {
-            return Collections.singletonList(box);
+        }
+
+        if (path.length() == 0) {
+            if (thing instanceof Box) {
+                return Collections.singletonList((Box) thing);
+            } else {
+                throw new RuntimeException("Result of path expression seems to be the root container. This is not allowed!");
+            }
         } else {
             String later;
             String now;
@@ -96,37 +127,46 @@ public class Path {
             if (m.matches()) {
                 String type = m.group(1);
                 if ("..".equals(type)) {
-                    return getPaths(box.getParent(), later, singleResult);
+                    if (thing instanceof Box) {
+                        return getPaths(((Box) thing).getParent(), later, singleResult);
+                    } else {
+                        return Collections.emptyList();
+                    }
                 } else {
-                    int index = -1;
-                    if (m.group(2) != null) {
-                        // we have a specific index
-                        String indexString = m.group(3);
-                        index = Integer.parseInt(indexString);
-                    }
-                    List<Box> children = new LinkedList<Box>();
-                    int currentIndex = 0;
-                    // I'm suspecting some Dalvik VM to create indexed loops from for-each loops
-                    // using the iterator instead makes sure that this doesn't happen
-                    // (and yes - it could be completely useless)
-                    Iterator<Box> iterator = ((ContainerBox) box).getBoxes().iterator();
-                    while (iterator.hasNext()) {
-                        Box box1 = iterator.next();
-                        if (box1.getType().matches(type)) {
-                            if (index == -1 || index == currentIndex) {
-                                children.addAll(getPaths(box1, later, singleResult));
+                    if (thing instanceof Container) {
+                        int index = -1;
+                        if (m.group(2) != null) {
+                            // we have a specific index
+                            String indexString = m.group(3);
+                            index = Integer.parseInt(indexString);
+                        }
+                        List<Box> children = new LinkedList<Box>();
+                        int currentIndex = 0;
+                        // I'm suspecting some Dalvik VM to create indexed loops from for-each loops
+                        // using the iterator instead makes sure that this doesn't happen
+                        // (and yes - it could be completely useless)
+                        Iterator<Box> iterator = ((Container) thing).getBoxes().iterator();
+                        while (iterator.hasNext()) {
+                            Box box1 = iterator.next();
+                            if (box1.getType().matches(type)) {
+                                if (index == -1 || index == currentIndex) {
+                                    children.addAll(getPaths(box1, later, singleResult));
+                                }
+                                currentIndex++;
                             }
-                            currentIndex++;
+                            if ((singleResult || index >= 0) && !children.isEmpty()) {
+                                return children;
+                            }
                         }
-                        if ((singleResult || index >= 0) && !children.isEmpty()) {
-                            return children;
-                        }
+                        return children;
+                    } else {
+                        return Collections.emptyList();
                     }
-                    return children;
                 }
             } else {
                 throw new RuntimeException(now + " is invalid path.");
             }
+
         }
 
     }

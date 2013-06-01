@@ -2,7 +2,7 @@ package com.googlecode.mp4parser.authoring.adaptivestreaming;
 
 import com.coremedia.iso.boxes.OriginalFormatBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.sampleentry.SampleEntry;
+import com.coremedia.iso.boxes.sampleentry.AbstractSampleEntry;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
@@ -108,7 +108,7 @@ public abstract class AbstractManifestWriter implements ManifestWriter {
         }
     }
 
-    protected String getFormat(SampleEntry se) {
+    protected String getFormat(AbstractSampleEntry se) {
         String type = se.getType();
         if (type.equals("encv") || type.equals("enca") || type.equals("encv")) {
             OriginalFormatBox frma = se.getBoxes(OriginalFormatBox.class, true).get(0);

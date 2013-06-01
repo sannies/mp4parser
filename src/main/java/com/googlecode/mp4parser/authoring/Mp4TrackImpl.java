@@ -15,8 +15,25 @@
  */
 package com.googlecode.mp4parser.authoring;
 
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.*;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.MediaHeaderBox;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SampleTableBox;
+import com.coremedia.iso.boxes.SubSampleInformationBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.coremedia.iso.boxes.fragment.SampleFlags;
+import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
+import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
 import com.googlecode.mp4parser.util.DateHelper;
 
@@ -42,9 +59,16 @@ public class Mp4TrackImpl extends AbstractTrack {
     private String handler;
     private AbstractMediaHeaderBox mihd;
 
-    public Mp4TrackImpl(TrackBox trackBox) {
+    /**
+     * Creates a track from a TrackBox and potentially fragments. Use fragements parameter
+     * only to supply additional fragments that are not located in the main file.
+     *
+     * @param trackBox
+     * @param fragments
+     */
+    public Mp4TrackImpl(TrackBox trackBox, IsoFile... fragments) {
         final long trackId = trackBox.getTrackHeaderBox().getTrackId();
-        samples = new SampleList(trackBox);
+        samples = new SampleList(trackBox, fragments);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
         handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
 
@@ -75,7 +99,7 @@ public class Mp4TrackImpl extends AbstractTrack {
                         List<Long> syncSampleList = new LinkedList<Long>();
 
                         long sampleNumber = 1;
-                        for (MovieFragmentBox movieFragmentBox : trackBox.getIsoFile().getBoxes(MovieFragmentBox.class)) {
+                        for (MovieFragmentBox movieFragmentBox : ((Box) trackBox.getParent()).getParent().getBoxes(MovieFragmentBox.class)) {
                             List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
                             for (TrackFragmentBox traf : trafs) {
                                 if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {

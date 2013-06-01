@@ -1,43 +1,51 @@
 package com.googlecode.mp4parser.boxes.apple;
 
 import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.googlecode.mp4parser.boxes.BoxWriteReadBase;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.util.Map;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
-/**
- * Created with IntelliJ IDEA.
- * User: sannies
- * Date: 3/28/12
- * Time: 10:29 AM
- * To change this template use File | Settings | File Templates.
- */
-public class TimeCodeBoxTest {
-    byte[] box;
-
-    public TimeCodeBoxTest() throws DecoderException {
-        box = Hex.decodeHex((
-                "00000031746d63640000000000000001" +
-                "000000000000000000000bb50000007d" +
-                "188c0000000f6e616d65000300003030" +
-                "31").toCharArray());
-    }
+public class TimeCodeBoxTest extends BoxWriteReadBase<TimeCodeBox> {
+    String tcmd = "00000026746D6364000000000000" +
+            "0001000000000000000000005DC00000" +
+            "03E918B200000000";
 
     @Test
-    public void testParse() throws IOException {
-        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(box)));
-        TimeCodeBox tmcd = (TimeCodeBox) isoFile.getBoxes().get(0);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(l2i(tmcd.getSize()));
-        tmcd.getDataReferenceIndex();
-        Assert.assertTrue(tmcd.isParsed());
-        tmcd.getBox(new ByteBufferByteChannel(byteBuffer));
-        Assert.assertArrayEquals(box, byteBuffer.array());
+    public void checkRealLifeBox() throws IOException, DecoderException {
+        File f = File.createTempFile("TimeCodeBoxTest", "checkRealLifeBox");
+        FileOutputStream fos = new FileOutputStream(f);
+        fos.write(Hex.decodeHex(tcmd.toCharArray()));
+        fos.close();
+
+        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
+        TimeCodeBox tcmd = (TimeCodeBox) isoFile.getBoxes().get(0);
+        System.err.println(tcmd);
+        isoFile.close();
+        f.delete();
     }
+
+
+    @Override
+    public Class<TimeCodeBox> getBoxUnderTest() {
+        return TimeCodeBox.class;
+    }
+
+    @Override
+    public void setupProperties(Map<String, Object> addPropsHere, TimeCodeBox box) {
+        addPropsHere.put("dataReferenceIndex", 666);
+        addPropsHere.put("frameDuration", (int) 1001);
+        addPropsHere.put("numberOfFrames", (int) 24);
+        addPropsHere.put("reserved1", (int) 0);
+        addPropsHere.put("reserved2", (int) 0);
+        addPropsHere.put("timeScale", (int) 24000);
+        addPropsHere.put("rest", new byte[]{4, 5});
+    }
+
 }

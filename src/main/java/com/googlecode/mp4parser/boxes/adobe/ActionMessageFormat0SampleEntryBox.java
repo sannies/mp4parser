@@ -1,15 +1,20 @@
 package com.googlecode.mp4parser.boxes.adobe;
 
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.sampleentry.SampleEntry;
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.boxes.sampleentry.AbstractSampleEntry;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
  * Sample Entry as used for Action Message Format tracks.
  */
-public class ActionMessageFormat0SampleEntryBox extends SampleEntry {
+public class ActionMessageFormat0SampleEntryBox extends AbstractSampleEntry {
     public static final String TYPE = "amf0";
 
     public ActionMessageFormat0SampleEntryBox() {
@@ -17,25 +22,30 @@ public class ActionMessageFormat0SampleEntryBox extends SampleEntry {
     }
 
     @Override
-    protected long getContentSize() {
-        long size = 8;
-        for (Box box : boxes) {
-            size += box.getSize();
-        }
-
-        return size;
-    }
-
-
-    @Override
-    public void _parseDetails(ByteBuffer content) {
-        _parseReservedAndDataReferenceIndex(content);
-        _parseChildBoxes(content);
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        fileChannel.read(bb);
+        bb.position(6);// ignore 6 reserved bytes;
+        dataReferenceIndex = IsoTypeReader.readUInt16(bb);
+        parseContainer(fileChannel, contentSize, boxParser);
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        _writeReservedAndDataReferenceIndex(byteBuffer);
-        _writeChildBoxes(byteBuffer);
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(getHeader());
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        bb.position(6);
+        IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
+        writableByteChannel.write((ByteBuffer) bb.rewind());
+        writeContainer(writableByteChannel);
     }
+
+    @Override
+    public long getSize() {
+        long s = getContainerSize();
+        long t = 8; // bytes to container start
+        return s + t + ((largeBox || (s + t) >= (1L << 32)) ? 16 : 8);
+    }
+
+
 }

@@ -15,7 +15,7 @@
  */
 package com.googlecode.mp4parser.authoring.builder;
 
-import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.authoring.Movie;
 
 /**
@@ -30,6 +30,6 @@ public interface Mp4Builder {
      * @param movie data source
      * @return the freshly built IsoFile
      */
-    public IsoFile build(Movie movie);
+    public Container build(Movie movie);
 
 }

@@ -16,11 +16,15 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.googlecode.mp4parser.FullContainerBox;
+import com.googlecode.mp4parser.AbstractContainerBox;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
@@ -28,12 +32,31 @@ import java.nio.ByteBuffer;
  *
  * @see com.coremedia.iso.boxes.ItemProtectionBox
  */
-public class ItemProtectionBox extends FullContainerBox {
+public class ItemProtectionBox extends AbstractContainerBox implements FullBox {
 
     public static final String TYPE = "ipro";
 
     public ItemProtectionBox() {
         super(TYPE);
+    }
+
+    private int version;
+    private int flags;
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public void setFlags(int flags) {
+        this.flags = flags;
     }
 
     public SchemeInformationBox getItemProtectionScheme() {
@@ -44,19 +67,35 @@ public class ItemProtectionBox extends FullContainerBox {
         }
     }
 
+
     @Override
-    public void _parseDetails(ByteBuffer content) {
-        parseVersionAndFlags(content);
-        IsoTypeReader.readUInt16(content);
-        parseChildBoxes(content);
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+
+        ByteBuffer versionFlagNumOfChildBoxes = ByteBuffer.allocate(6);
+        fileChannel.read(versionFlagNumOfChildBoxes);
+        versionFlagNumOfChildBoxes.rewind();
+        version = IsoTypeReader.readUInt8(versionFlagNumOfChildBoxes);
+        flags = IsoTypeReader.readUInt24(versionFlagNumOfChildBoxes);
+        // number of child boxes is not required
+        parseContainer(fileChannel, contentSize, boxParser);
+    }
+
+    @Override
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(getHeader());
+        ByteBuffer versionFlagNumOfChildBoxes = ByteBuffer.allocate(6);
+        IsoTypeWriter.writeUInt8(versionFlagNumOfChildBoxes, version);
+        IsoTypeWriter.writeUInt24(versionFlagNumOfChildBoxes, flags);
+        IsoTypeWriter.writeUInt16(versionFlagNumOfChildBoxes, getBoxes().size());
+        writableByteChannel.write((ByteBuffer) versionFlagNumOfChildBoxes.rewind());
+        writeContainer(writableByteChannel);
     }
 
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        writeVersionAndFlags(byteBuffer);
-        IsoTypeWriter.writeUInt16(byteBuffer, getBoxes().size());
-        writeChildBoxes(byteBuffer);
+    public long getSize() {
+        long s = getContainerSize();
+        long t = 6; // bytes to container start
+        return s + t + ((largeBox || (s + t) >= (1L << 32)) ? 16 : 8);
     }
-
 }

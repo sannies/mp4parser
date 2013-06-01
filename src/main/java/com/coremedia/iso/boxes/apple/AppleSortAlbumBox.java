@@ -9,6 +9,5 @@ public final class AppleSortAlbumBox extends AbstractAppleMetaDataBox {
 
     public AppleSortAlbumBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 }

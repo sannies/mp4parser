@@ -26,15 +26,6 @@ public class AppleMediaTypeBox extends AbstractAppleMetaDataBox {
 
     public AppleMediaTypeBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getUint8AppleDataBox();
     }
 
-    public String getReadableValue() {
-        if (mediaTypes.containsKey(getValue())) {
-            return mediaTypes.get(getValue());
-        } else {
-            return "unknown media type " + getValue();
-        }
-
-    }
 }

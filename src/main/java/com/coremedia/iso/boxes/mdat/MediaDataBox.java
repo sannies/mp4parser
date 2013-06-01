@@ -17,22 +17,14 @@
 package com.coremedia.iso.boxes.mdat;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
-import com.googlecode.mp4parser.annotations.DoNotParseDetail;
-import com.googlecode.mp4parser.util.ChannelHelper;
-import com.googlecode.mp4parser.util.LazyList;
-import com.googlecode.mp4parser.util.Path;
+import com.coremedia.iso.boxes.Container;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.logging.Logger;
-
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
@@ -50,28 +42,21 @@ public final class MediaDataBox implements Box {
     private static Logger LOG = Logger.getLogger(MediaDataBox.class.getName());
 
     public static final String TYPE = "mdat";
-    public static final int BUFFER_SIZE = 10 * 1024 * 1024;
-    ContainerBox parent;
 
+    Container parent;
     boolean largeBox = false;
 
     // These fields are for the special case of a FileChannel as input.
     private FileChannel fileChannel;
-    private long startPosition;
-    private long contentSize;
+    private long offset;
+    private long size;
 
 
-    /**
-     * If the whole content is just in one mapped buffer keep a strong reference to it so it is
-     * not evicted from the cache.
-     */
-    private ByteBuffer content;
-
-    public ContainerBox getParent() {
+    public Container getParent() {
         return parent;
     }
 
-    public void setParent(ContainerBox parent) {
+    public void setParent(Container parent) {
         this.parent = parent;
     }
 
@@ -91,101 +76,32 @@ public final class MediaDataBox implements Box {
     }
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        if (fileChannel != null) {
-            transfer(fileChannel, startPosition - (largeBox ? 16 : 8), contentSize + (largeBox ? 16 : 8), writableByteChannel);
-        } else {
-            ByteBuffer header;
-            if (largeBox) {
-                header = ByteBuffer.wrap(new byte[]{0, 0, 0, 1, 'm', 'd', 'a', 't', 0, 0, 0, 0, 0, 0, 0, 0});
-                header.position(8);
-                IsoTypeWriter.writeUInt64(header, contentSize + 16);
-            } else {
-                header = ByteBuffer.wrap(new byte[]{0, 0, 0, 0, 'm', 'd', 'a', 't'});
-                IsoTypeWriter.writeUInt32(header, contentSize + 8);
-            }
-            header.rewind();
-            writableByteChannel.write(header);
-            writableByteChannel.write(content);
-        }
+        transfer(fileChannel, offset, size, writableByteChannel);
     }
 
 
     public long getSize() {
-
-        return (largeBox ? 16 : 8) + contentSize;
+        return size;
     }
 
-    public long getDataStartPosition() {
-        return startPosition;
+    public long getOffset() {
+        return offset;
     }
 
-    public long getDataEndPosition() {
-        return startPosition + contentSize;
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        this.offset = fileChannel.position() - header.remaining();
+        this.fileChannel = fileChannel;
+        this.size = contentSize + header.remaining();
+        fileChannel.position(fileChannel.position() + contentSize);
+
     }
 
-    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        this.largeBox = header.remaining() == 16;
-        this.contentSize = contentSize;
-
-        if (readableByteChannel instanceof FileChannel) {
-            this.fileChannel = ((FileChannel) readableByteChannel);
-            this.startPosition = ((FileChannel) readableByteChannel).position();
-            ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
-        } else {
-            content = ChannelHelper.readFully(readableByteChannel, l2i(contentSize));
-            startPosition = 0;
-            // this sucks I don't want to rely on these detailed knowledge of implementation details here.
-            for (Box box : ((LazyList<Box>) this.getParent().getBoxes()).getUnderlying()) {
-                startPosition += box.getSize();
-            }
-            startPosition += header.remaining();
-            cacheSliceCurrentlyInUse = content;
-            cacheSliceCurrentlyInUseStart = 0;
-        }
-    }
-
-    ByteBuffer cacheSliceCurrentlyInUse = null;
-    long cacheSliceCurrentlyInUseStart = Long.MAX_VALUE;
-
-    public synchronized ByteBuffer getContent(long offset, int length) {
-        // most likely the last used cache slice will be used again
-        if (cacheSliceCurrentlyInUseStart <= offset && cacheSliceCurrentlyInUse != null && offset + length <= cacheSliceCurrentlyInUseStart + cacheSliceCurrentlyInUse.limit()) {
-            ByteBuffer cachedSample = cacheSliceCurrentlyInUse.asReadOnlyBuffer();
-            cachedSample.position((int) (offset - cacheSliceCurrentlyInUseStart));
-            cachedSample.mark();
-            cachedSample.limit((int) (offset - cacheSliceCurrentlyInUseStart) + length);
-            return cachedSample;
-        }
-
-        // CACHE MISS
-
-        try {
-            // Just mapping 10MB at a time. Seems reasonable.
-            cacheSliceCurrentlyInUse = fileChannel.map(FileChannel.MapMode.READ_ONLY, startPosition + offset, Math.min(BUFFER_SIZE, contentSize - offset));
-        } catch (IOException e1) {
-            LOG.fine("Even mapping just 10MB of the source file into the memory failed. " + e1);
-            throw new RuntimeException(
-                    "Delayed reading of mdat content failed. Make sure not to close " +
-                            "the FileChannel that has been used to create the IsoFile!", e1);
-        }
-        cacheSliceCurrentlyInUseStart = offset;
-        ByteBuffer cachedSample = cacheSliceCurrentlyInUse.asReadOnlyBuffer();
-        cachedSample.position(0);
-        cachedSample.mark();
-        cachedSample.limit(length);
-        return cachedSample;
-    }
 
     @Override
     public String toString() {
         return "MediaDataBox{" +
-                "contentSize=" + contentSize +
+                "size=" + size +
                 '}';
-    }
-
-    @DoNotParseDetail
-    public String getPath() {
-        return Path.createPath(this);
     }
 
 }

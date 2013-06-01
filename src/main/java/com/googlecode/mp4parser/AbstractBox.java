@@ -16,19 +16,20 @@
 
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.Hex;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.UserBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
-import com.googlecode.mp4parser.util.ChannelHelper;
 import com.googlecode.mp4parser.util.Logger;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -48,7 +49,7 @@ public abstract class AbstractBox implements Box {
 
     protected String type;
     private byte[] userType;
-    private ContainerBox parent;
+    private Container parent;
     boolean isParsed;
     boolean isRead;
 
@@ -56,15 +57,16 @@ public abstract class AbstractBox implements Box {
     private ByteBuffer content;
 
 
-    long memMapStartPosition = -1;
+    long contentStartPosition;
+    long offset;
     long memMapSize = -1;
-    FileChannel memMapFileChannel;
+    FileChannel fileChannel;
 
     private synchronized void readContent() {
         if (!isRead) {
             try {
                 LOG.logDebug("mem mapping " + this.getType());
-                content = memMapFileChannel.map(FileChannel.MapMode.READ_ONLY, memMapStartPosition, memMapSize);
+                content = fileChannel.map(FileChannel.MapMode.READ_ONLY, contentStartPosition, memMapSize);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -74,6 +76,9 @@ public abstract class AbstractBox implements Box {
 
     private ByteBuffer deadBytes = null;
 
+    public long getOffset() {
+        return offset;
+    }
 
     protected AbstractBox(String type) {
         this.type = type;
@@ -116,28 +121,23 @@ public abstract class AbstractBox implements Box {
     /**
      * Read the box's content from a byte channel without parsing it. Parsing is done on-demand.
      *
-     * @param readableByteChannel the (part of the) iso file to parse
-     * @param contentSize         expected contentSize of the box
-     * @param boxParser           creates inner boxes
+     * @param fileChannel
+     * @param contentSize expected contentSize of the box
+     * @param boxParser   creates inner boxes
      * @throws IOException in case of an I/O error.
      */
     @DoNotParseDetail
-    public void parse(ReadableByteChannel readableByteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        if (readableByteChannel instanceof FileChannel) {
-            this.memMapStartPosition = ((FileChannel) readableByteChannel).position();
-            this.memMapSize = contentSize;
-            this.memMapFileChannel = (FileChannel) readableByteChannel;
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
 
-            ((FileChannel) readableByteChannel).position(((FileChannel) readableByteChannel).position() + contentSize);
-            isRead = false;
-            isParsed = false;
-        } else {
-            assert contentSize < Integer.MAX_VALUE;
-            LOG.logDebug("reading content of " + this.getType());
-            content = ChannelHelper.readFully(readableByteChannel, contentSize);
-            isRead = true;
-            isParsed = false;
-        }
+        this.contentStartPosition = fileChannel.position();
+        this.offset = contentStartPosition - header.remaining();
+        this.memMapSize = contentSize;
+        this.fileChannel = fileChannel;
+
+        fileChannel.position(fileChannel.position() + contentSize);
+        isRead = false;
+        isParsed = false;
+
     }
 
     public void getBox(WritableByteChannel os) throws IOException {
@@ -164,7 +164,7 @@ public abstract class AbstractBox implements Box {
             ByteBuffer header = ByteBuffer.allocate(isSmallBox() ? 8 : 16);
             getHeader(header);
             os.write((ByteBuffer) header.rewind());
-            memMapFileChannel.transferTo(memMapStartPosition, memMapSize, os);
+            fileChannel.transferTo(contentStartPosition, memMapSize, os);
         }
     }
 
@@ -225,18 +225,13 @@ public abstract class AbstractBox implements Box {
     }
 
     @DoNotParseDetail
-    public ContainerBox getParent() {
+    public Container getParent() {
         return parent;
     }
 
     @DoNotParseDetail
-    public void setParent(ContainerBox parent) {
+    public void setParent(Container parent) {
         this.parent = parent;
-    }
-
-    @DoNotParseDetail
-    public IsoFile getIsoFile() {
-        return parent.getIsoFile();
     }
 
     /**

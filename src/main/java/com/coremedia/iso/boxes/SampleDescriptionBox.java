@@ -16,11 +16,16 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.sampleentry.SampleEntry;
-import com.googlecode.mp4parser.FullContainerBox;
+import com.coremedia.iso.boxes.sampleentry.AbstractSampleEntry;
+import com.googlecode.mp4parser.AbstractContainerBox;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
@@ -45,38 +50,66 @@ import java.nio.ByteBuffer;
  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry
  */
-public class SampleDescriptionBox extends FullContainerBox {
+public class SampleDescriptionBox extends AbstractContainerBox implements FullBox {
     public static final String TYPE = "stsd";
 
     public SampleDescriptionBox() {
         super(TYPE);
     }
 
-    @Override
-    protected long getContentSize() {
-        return super.getContentSize() + 4;
+    private int version;
+    private int flags;
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public void setFlags(int flags) {
+        this.flags = flags;
     }
 
     @Override
-    public void _parseDetails(ByteBuffer content) {
-        parseVersionAndFlags(content);
-        content.get(new byte[4]);
-        parseChildBoxes(content);
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        ByteBuffer versionFlagNumOfChildBoxes = ByteBuffer.allocate(8);
+        fileChannel.read(versionFlagNumOfChildBoxes);
+        versionFlagNumOfChildBoxes.rewind();
+        version = IsoTypeReader.readUInt8(versionFlagNumOfChildBoxes);
+        flags = IsoTypeReader.readUInt24(versionFlagNumOfChildBoxes);
+        // number of child boxes is not required
+        parseContainer(fileChannel, contentSize - 8, boxParser);
     }
 
     @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        writeVersionAndFlags(byteBuffer);
-        IsoTypeWriter.writeUInt32(byteBuffer, boxes.size());
-        writeChildBoxes(byteBuffer);
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(getHeader());
+        ByteBuffer versionFlagNumOfChildBoxes = ByteBuffer.allocate(8);
+        IsoTypeWriter.writeUInt8(versionFlagNumOfChildBoxes, version);
+        IsoTypeWriter.writeUInt24(versionFlagNumOfChildBoxes, flags);
+        IsoTypeWriter.writeUInt32(versionFlagNumOfChildBoxes, getBoxes().size());
+        writableByteChannel.write((ByteBuffer) versionFlagNumOfChildBoxes.rewind());
+        writeContainer(writableByteChannel);
     }
 
-    public SampleEntry getSampleEntry() {
-        for (Box box : boxes) {
-            if (box instanceof SampleEntry) {
-                return (SampleEntry) box;
-            }
+    public AbstractSampleEntry getSampleEntry() {
+        for (AbstractSampleEntry box : getBoxes(AbstractSampleEntry.class)) {
+            return box;
         }
         return null;
+    }
+
+    @Override
+    public long getSize() {
+        long s = getContainerSize();
+        long t = 8;
+        return s + t + ((largeBox || (s + t + 8) >= (1L << 32)) ? 16 : 8);
+
     }
 }

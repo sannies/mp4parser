@@ -10,7 +10,6 @@ public final class AppleEncoderBox extends AbstractAppleMetaDataBox {
 
     public AppleEncoderBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
 }

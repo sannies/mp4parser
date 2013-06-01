@@ -1,17 +1,17 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 public class ItemLocationBoxTest {
 
@@ -38,12 +38,14 @@ public class ItemLocationBoxTest {
         ilocOrig.setIndexSize(indexSize);
         ilocOrig.setLengthSize(lengthSize);
         ilocOrig.setOffsetSize(offsetSize);
-        ByteBuffer bb = ByteBuffer.allocate(l2i(ilocOrig.getSize()));
-        ilocOrig.getBox(new ByteBufferByteChannel(bb));
-        Assert.assertTrue(bb.remaining() == 0);
-        bb.rewind();
 
-        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(bb));
+        File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        ilocOrig.getBox(fc);
+        fc.close();
+
+
+        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
 
         ItemLocationBox iloc = (ItemLocationBox) isoFile.getBoxes().get(0);
 
@@ -80,12 +82,13 @@ public class ItemLocationBoxTest {
         ilocOrig.setOffsetSize(offsetSize);
         ItemLocationBox.Item item = ilocOrig.createItem(12, 0, 13, 123, Collections.<ItemLocationBox.Extent>emptyList());
         ilocOrig.setItems(Collections.singletonList(item));
-        ByteBuffer bb = ByteBuffer.allocate(l2i(ilocOrig.getSize()));
-        ilocOrig.getBox(new ByteBufferByteChannel(bb));
+        File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        ilocOrig.getBox(fc);
+        fc.close();
 
-        bb.rewind();
 
-        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(bb));
+        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
 
         ItemLocationBox iloc = (ItemLocationBox) isoFile.getBoxes().get(0);
 
@@ -124,12 +127,13 @@ public class ItemLocationBoxTest {
         extents.add(extent);
         ItemLocationBox.Item item = ilocOrig.createItem(12, 0, 13, 123, extents);
         ilocOrig.setItems(Collections.singletonList(item));
-        ByteBuffer bb = ByteBuffer.allocate(l2i(ilocOrig.getSize()));
-        ilocOrig.getBox(new ByteBufferByteChannel(bb));
+        File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        FileChannel fc = new FileOutputStream(f).getChannel();
+        ilocOrig.getBox(fc);
+        fc.close();
 
-        bb.rewind();
 
-        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(bb));
+        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
 
         ItemLocationBox iloc = (ItemLocationBox) isoFile.getBoxes().get(0);
 

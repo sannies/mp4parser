@@ -1,7 +1,5 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.Utf8;
-
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
  */
@@ -11,18 +9,7 @@ public final class AppleCustomGenreBox extends AbstractAppleMetaDataBox {
 
     public AppleCustomGenreBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getStringAppleDataBox();
     }
 
-    public void setGenre(String genre) {
-        appleDataBox = new AppleDataBox();
-        appleDataBox.setVersion(0);
-        appleDataBox.setFlags(1);
-        appleDataBox.setFourBytes(new byte[4]);
-        appleDataBox.setData(Utf8.convert(genre));
-    }
 
-    public String getGenre() {
-        return Utf8.convert(appleDataBox.getData());
-    }
 }

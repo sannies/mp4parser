@@ -15,17 +15,25 @@
  */
 package com.googlecode.mp4parser.boxes.apple;
 
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.sampleentry.SampleEntry;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.sampleentry.AbstractSampleEntry;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.List;
+
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
  * Entry type for timed text samples defined in the timed text specification (ISO/IEC 14496-17).
  */
-public class QuicktimeTextSampleEntry extends SampleEntry {
+public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
 
     public static final String TYPE = "text";
 
@@ -49,15 +57,18 @@ public class QuicktimeTextSampleEntry extends SampleEntry {
     int foregroundB = 65535;
 
     String fontName = "";
+    int dataReferenceIndex;
 
     public QuicktimeTextSampleEntry() {
         super(TYPE);
     }
 
     @Override
-    public void _parseDetails(ByteBuffer content) {
-        _parseReservedAndDataReferenceIndex(content);
-
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        ByteBuffer content = ByteBuffer.allocate(l2i(contentSize));
+        fileChannel.read(content);
+        content.position(6);
+        dataReferenceIndex = IsoTypeReader.readUInt16(content);
         displayFlags = content.getInt();
         textJustification = content.getInt();
         backgroundR = IsoTypeReader.readUInt16(content);
@@ -72,7 +83,6 @@ public class QuicktimeTextSampleEntry extends SampleEntry {
         foregroundR = IsoTypeReader.readUInt16(content);
         foregroundG = IsoTypeReader.readUInt16(content);
         foregroundB = IsoTypeReader.readUInt16(content);
-
         if (content.remaining() > 0) {
             int length = IsoTypeReader.readUInt8(content);
             byte[] myFontName = new byte[length];
@@ -81,13 +91,55 @@ public class QuicktimeTextSampleEntry extends SampleEntry {
         } else {
             fontName = null;
         }
+        // parseContainer(); there are no child boxes!?
     }
 
-
-    protected long getContentSize() {
-        return 52 + (fontName != null ? fontName.length() : 0);
+    @Override
+    public void setBoxes(List<Box> boxes) {
+        throw new RuntimeException("QuicktimeTextSampleEntries may not have child boxes");
     }
 
+    @Override
+    public void addBox(Box b) {
+        throw new RuntimeException("QuicktimeTextSampleEntries may not have child boxes");
+    }
+
+    @Override
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(getHeader());
+
+        ByteBuffer byteBuffer = ByteBuffer.allocate(52 + (fontName != null ? fontName.length() : 0));
+        byteBuffer.position(6);
+        IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
+        byteBuffer.putInt(displayFlags);
+        byteBuffer.putInt(textJustification);
+        IsoTypeWriter.writeUInt16(byteBuffer, backgroundR);
+        IsoTypeWriter.writeUInt16(byteBuffer, backgroundG);
+        IsoTypeWriter.writeUInt16(byteBuffer, backgroundB);
+        IsoTypeWriter.writeUInt64(byteBuffer, defaultTextBox);
+        IsoTypeWriter.writeUInt64(byteBuffer, reserved1);
+        byteBuffer.putShort(fontNumber);
+        byteBuffer.putShort(fontFace);
+        byteBuffer.put(reserved2);
+        byteBuffer.putShort(reserved3);
+
+        IsoTypeWriter.writeUInt16(byteBuffer, foregroundR);
+        IsoTypeWriter.writeUInt16(byteBuffer, foregroundG);
+        IsoTypeWriter.writeUInt16(byteBuffer, foregroundB);
+        if (fontName != null) {
+            IsoTypeWriter.writeUInt8(byteBuffer, fontName.length());
+            byteBuffer.put(fontName.getBytes());
+        }
+        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        // writeContainer(writableByteChannel); there are no child boxes!?
+    }
+
+    @Override
+    public long getSize() {
+        long s = getContainerSize() + 52 + (fontName != null ? fontName.length() : 0);
+        s += ((largeBox || (s + 8) >= (1L << 32)) ? 16 : 8);
+        return s;
+    }
 
     public int getDisplayFlags() {
         return displayFlags;
@@ -207,31 +259,6 @@ public class QuicktimeTextSampleEntry extends SampleEntry {
 
     public void setFontName(String fontName) {
         this.fontName = fontName;
-    }
-
-    @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        _writeReservedAndDataReferenceIndex(byteBuffer);
-        byteBuffer.putInt(displayFlags);
-        byteBuffer.putInt(textJustification);
-        IsoTypeWriter.writeUInt16(byteBuffer, backgroundR);
-        IsoTypeWriter.writeUInt16(byteBuffer, backgroundG);
-        IsoTypeWriter.writeUInt16(byteBuffer, backgroundB);
-        IsoTypeWriter.writeUInt64(byteBuffer, defaultTextBox);
-        IsoTypeWriter.writeUInt64(byteBuffer, reserved1);
-        byteBuffer.putShort(fontNumber);
-        byteBuffer.putShort(fontFace);
-        byteBuffer.put(reserved2);
-        byteBuffer.putShort(reserved3);
-
-        IsoTypeWriter.writeUInt16(byteBuffer, foregroundR);
-        IsoTypeWriter.writeUInt16(byteBuffer, foregroundG);
-        IsoTypeWriter.writeUInt16(byteBuffer, foregroundB);
-        if (fontName != null) {
-            IsoTypeWriter.writeUInt8(byteBuffer, fontName.length());
-            byteBuffer.put(fontName.getBytes());
-        }
-
     }
 
 

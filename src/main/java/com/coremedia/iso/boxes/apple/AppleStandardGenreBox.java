@@ -9,6 +9,5 @@ public final class AppleStandardGenreBox extends AbstractAppleMetaDataBox {
 
     public AppleStandardGenreBox() {
         super(TYPE);
-        appleDataBox = AppleDataBox.getUint16AppleDataBox();
     }
 }

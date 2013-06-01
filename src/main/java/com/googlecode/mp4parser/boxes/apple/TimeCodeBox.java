@@ -15,45 +15,143 @@
  */
 package com.googlecode.mp4parser.boxes.apple;
 
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
+import com.googlecode.mp4parser.AbstractBox;
 
 import java.nio.ByteBuffer;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
  */
-public class TimeCodeBox extends SampleEntry {
+public class TimeCodeBox extends AbstractBox implements SampleEntry {
     public static final String TYPE = "tmcd";
 
-    byte[] data;
-
+    int timeScale;
+    int frameDuration;
+    int numberOfFrames;
+    int reserved1;
+    int reserved2;
+    long flags;
+    int dataReferenceIndex;
+    byte[] rest = new byte[0];
 
     public TimeCodeBox() {
         super(TYPE);
     }
 
+
     @Override
     protected long getContentSize() {
-        long size = 26;
-        for (Box box : boxes) {
-            size += box.getSize();
-        }
-        return size;
+        return 8 + 4 + 4 + 4 + 4 + 1 + 3 + rest.length;
+
     }
 
     @Override
-    public void _parseDetails(ByteBuffer content) {
-        _parseReservedAndDataReferenceIndex(content);
-        data = new byte[18];
-        content.get(data);
-        _parseChildBoxes(content);
+    protected void getContent(ByteBuffer bb) {
+        bb.put(new byte[]{0, 0, 0, 0, 0, 0});
+        IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
+        bb.putInt(reserved1);
+        IsoTypeWriter.writeUInt32(bb, flags);
+        bb.putInt(timeScale);
+        bb.putInt(frameDuration);
+        IsoTypeWriter.writeUInt8(bb, numberOfFrames);
+        IsoTypeWriter.writeUInt24(bb, reserved2);
+        bb.put(rest);
+
     }
 
+
     @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        _writeReservedAndDataReferenceIndex(byteBuffer);
-        byteBuffer.put(data);
-        _writeChildBoxes(byteBuffer);
+    protected void _parseDetails(ByteBuffer content) {
+        content.position(6);// ignore 6 reserved bytes;
+        dataReferenceIndex = IsoTypeReader.readUInt16(content);   // 8
+        reserved1 = content.getInt();
+        flags = IsoTypeReader.readUInt32(content);
+
+        timeScale = content.getInt();
+        frameDuration = content.getInt();
+        numberOfFrames = IsoTypeReader.readUInt8(content);
+        reserved2 = IsoTypeReader.readUInt24(content);
+        rest = new byte[content.remaining()];
+        content.get(rest);
+    }
+
+    public int getDataReferenceIndex() {
+        return dataReferenceIndex;
+    }
+
+    public void setDataReferenceIndex(int dataReferenceIndex) {
+        this.dataReferenceIndex = dataReferenceIndex;
+    }
+
+
+    @Override
+    public String toString() {
+        return "TimeCodeBox{" +
+                "timeScale=" + timeScale +
+                ", frameDuration=" + frameDuration +
+                ", numberOfFrames=" + numberOfFrames +
+                ", reserved1=" + reserved1 +
+                ", reserved2=" + reserved2 +
+                ", flags=" + flags +
+                '}';
+    }
+
+    public int getTimeScale() {
+        return timeScale;
+    }
+
+    public void setTimeScale(int timeScale) {
+        this.timeScale = timeScale;
+    }
+
+    public int getFrameDuration() {
+        return frameDuration;
+    }
+
+    public void setFrameDuration(int frameDuration) {
+        this.frameDuration = frameDuration;
+    }
+
+    public int getNumberOfFrames() {
+        return numberOfFrames;
+    }
+
+    public void setNumberOfFrames(int numberOfFrames) {
+        this.numberOfFrames = numberOfFrames;
+    }
+
+    public int getReserved1() {
+        return reserved1;
+    }
+
+    public void setReserved1(int reserved1) {
+        this.reserved1 = reserved1;
+    }
+
+    public int getReserved2() {
+        return reserved2;
+    }
+
+    public void setReserved2(int reserved2) {
+        this.reserved2 = reserved2;
+    }
+
+    public long getFlags() {
+        return flags;
+    }
+
+    public void setFlags(long flags) {
+        this.flags = flags;
+    }
+
+    public byte[] getRest() {
+        return rest;
+    }
+
+    public void setRest(byte[] rest) {
+        this.rest = rest;
     }
 }

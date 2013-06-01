@@ -95,6 +95,19 @@ public final class IsoTypeWriter {
         writeUInt16(bb, bits);
     }
 
+    public static void writePascalUtfString(ByteBuffer bb, String string) {
+        byte[] b = Utf8.convert(string);
+        assert b.length < 255;
+        writeUInt8(bb, b.length);
+        bb.put(b);
+    }
+
+    public static void writeZeroTermUtf8String(ByteBuffer bb, String string) {
+        byte[] b = Utf8.convert(string);
+        bb.put(b);
+        writeUInt8(bb, 0);
+    }
+
     public static void writeUtf8String(ByteBuffer bb, String string) {
 
         bb.put(Utf8.convert(string));

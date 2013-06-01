@@ -16,11 +16,7 @@ import java.util.Map;
 public class BoxReplacer {
     public static void replace(Map<String, Box> replacements, File file) throws IOException {
         final AbstractBoxParser abstractBoxParser = new PropertyBoxParserImpl();
-        IsoFile isoFile = new IsoFile(new RandomAccessFile(file, "r").getChannel()) {
-            protected BoxParser createBoxParser() {
-                return abstractBoxParser;
-            }
-        };
+        IsoFile isoFile = new IsoFile(new RandomAccessFile(file, "r").getChannel(), abstractBoxParser);
         Map<String, Box> replacementSanitised = new HashMap<String, Box>();
         for (Map.Entry<String, Box> e : replacements.entrySet()) {
             Box b = Path.getPath(isoFile, e.getKey());
@@ -31,9 +27,7 @@ public class BoxReplacer {
         FileChannel fileChannel = new RandomAccessFile(file, "rw").getChannel();
         for (Map.Entry<String, Box> e : replacementSanitised.entrySet()) {
             String path = e.getKey();
-            long pos = abstractBoxParser.boxPositions.get(path);
-            fileChannel.position(pos);
-            e.getValue().getBox(fileChannel);
+            throw new RuntimeException("ddd");
         }
         fileChannel.close();
     }

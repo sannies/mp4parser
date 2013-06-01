@@ -15,11 +15,11 @@ public class MovieHeaderBoxTest extends BoxWriteReadBase<MovieHeaderBox> {
 
     @Override
     public void setupProperties(Map<String, Object> addPropsHere, MovieHeaderBox box) {
-        addPropsHere.put("creationTime", new Date());
+        addPropsHere.put("creationTime", new Date(1369296286000L));
         addPropsHere.put("currentTime", (int) 2342);
         addPropsHere.put("duration", (long) 243423);
         addPropsHere.put("matrix", Matrix.ROTATE_270);
-        addPropsHere.put("modificationTime", new Date());
+        addPropsHere.put("modificationTime", new Date(1369296286000L));
         addPropsHere.put("nextTrackId", (long) 5543);
         addPropsHere.put("posterTime", 5433);
         addPropsHere.put("previewDuration", 5343);
