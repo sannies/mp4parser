@@ -677,7 +677,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     protected Box createMdhd(Movie movie, Track track) {
         MediaHeaderBox mdhd = new MediaHeaderBox();
-        mdhd.setCreationTime(DateHelper.convert(track.getTrackMetaData().getCreationTime()));
+        mdhd.setCreationTime(track.getTrackMetaData().getCreationTime());
         mdhd.setDuration(getDuration(track));
         mdhd.setTimescale(track.getTrackMetaData().getTimescale());
         mdhd.setLanguage(track.getTrackMetaData().getLanguage());

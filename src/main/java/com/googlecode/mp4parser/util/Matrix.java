@@ -69,6 +69,34 @@ public class Matrix {
         return result;
     }
 
+
+    @Override
+    public String toString() {
+        if (this.equals(ROTATE_0)) {
+            return "Rotate 0°";
+        }
+        if (this.equals(ROTATE_90)) {
+            return "Rotate 90°";
+        }
+        if (this.equals(ROTATE_180)) {
+            return "Rotate 180°";
+        }
+        if (this.equals(ROTATE_270)) {
+            return "Rotate 270°";
+        }
+        return "Matrix{" +
+                "u=" + u +
+                ", v=" + v +
+                ", w=" + w +
+                ", a=" + a +
+                ", b=" + b +
+                ", c=" + c +
+                ", d=" + d +
+                ", tx=" + tx +
+                ", ty=" + ty +
+                '}';
+    }
+
     public static final Matrix ROTATE_0 = new Matrix(1, 0, 0, 1, 0, 0, 1, 0, 0);
     public static final Matrix ROTATE_90 = new Matrix(0, 1, -1, 0, 0, 0, 1, 0, 0);
     public static final Matrix ROTATE_180 = new Matrix(-1, 0, 0, -1, 0, 0, 1, 0, 0);

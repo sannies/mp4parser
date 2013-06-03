@@ -19,8 +19,10 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
+import com.googlecode.mp4parser.util.DateHelper;
 
 import java.nio.ByteBuffer;
+import java.util.Date;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
@@ -31,21 +33,21 @@ public class MediaHeaderBox extends AbstractFullBox {
     public static final String TYPE = "mdhd";
 
 
-    private long creationTime;
-    private long modificationTime;
+    private Date creationTime = new Date();
+    private Date modificationTime = new Date();
     private long timescale;
     private long duration;
-    private String language;
+    private String language = "eng";
 
     public MediaHeaderBox() {
         super(TYPE);
     }
 
-    public long getCreationTime() {
+    public Date getCreationTime() {
         return creationTime;
     }
 
-    public long getModificationTime() {
+    public Date getModificationTime() {
         return modificationTime;
     }
 
@@ -74,11 +76,11 @@ public class MediaHeaderBox extends AbstractFullBox {
 
     }
 
-    public void setCreationTime(long creationTime) {
+    public void setCreationTime(Date creationTime) {
         this.creationTime = creationTime;
     }
 
-    public void setModificationTime(long modificationTime) {
+    public void setModificationTime(Date modificationTime) {
         this.modificationTime = modificationTime;
     }
 
@@ -98,13 +100,13 @@ public class MediaHeaderBox extends AbstractFullBox {
     public void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
         if (getVersion() == 1) {
-            creationTime = IsoTypeReader.readUInt64(content);
-            modificationTime = IsoTypeReader.readUInt64(content);
+            creationTime = DateHelper.convert(IsoTypeReader.readUInt64(content));
+            modificationTime = DateHelper.convert(IsoTypeReader.readUInt64(content));
             timescale = IsoTypeReader.readUInt32(content);
             duration = IsoTypeReader.readUInt64(content);
         } else {
-            creationTime = IsoTypeReader.readUInt32(content);
-            modificationTime = IsoTypeReader.readUInt32(content);
+            creationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
+            modificationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             timescale = IsoTypeReader.readUInt32(content);
             duration = IsoTypeReader.readUInt32(content);
         }
@@ -132,13 +134,13 @@ public class MediaHeaderBox extends AbstractFullBox {
     protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         if (getVersion() == 1) {
-            IsoTypeWriter.writeUInt64(byteBuffer, creationTime);
-            IsoTypeWriter.writeUInt64(byteBuffer, modificationTime);
+            IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(creationTime));
+            IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, timescale);
             IsoTypeWriter.writeUInt64(byteBuffer, duration);
         } else {
-            IsoTypeWriter.writeUInt32(byteBuffer, creationTime);
-            IsoTypeWriter.writeUInt32(byteBuffer, modificationTime);
+            IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(creationTime));
+            IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, timescale);
             IsoTypeWriter.writeUInt32(byteBuffer, duration);
         }

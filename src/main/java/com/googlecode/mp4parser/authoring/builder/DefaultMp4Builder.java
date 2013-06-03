@@ -237,7 +237,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         MediaBox mdia = new MediaBox();
         trackBox.addBox(mdia);
         MediaHeaderBox mdhd = new MediaHeaderBox();
-        mdhd.setCreationTime(DateHelper.convert(track.getTrackMetaData().getCreationTime()));
+        mdhd.setCreationTime(track.getTrackMetaData().getCreationTime());
         mdhd.setDuration(getDuration(track));
         mdhd.setTimescale(track.getTrackMetaData().getTimescale());
         mdhd.setLanguage(track.getTrackMetaData().getLanguage());
