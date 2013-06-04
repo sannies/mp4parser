@@ -36,7 +36,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     Pattern constuctorPattern = Pattern.compile("(.*)\\((.*?)\\)");
 
     public PropertyBoxParserImpl(String... customProperties) {
-        InputStream is = new BufferedInputStream(getClass().getResourceAsStream("/isoparser-default.properties"));
+        InputStream is = getClass().getResourceAsStream("/isoparser-default.properties");
         try {
             mapping = new Properties();
             try {
@@ -45,7 +45,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
 
                 while (enumeration.hasMoreElements()) {
                     URL url = enumeration.nextElement();
-                    InputStream customIS = new BufferedInputStream(url.openStream());
+                    InputStream customIS = url.openStream();
                     try {
                         mapping.load(customIS);
                     } finally {
@@ -53,7 +53,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
                     }
                 }
                 for (String customProperty : customProperties) {
-                    mapping.load(new BufferedInputStream(getClass().getResourceAsStream(customProperty)));
+                    mapping.load(getClass().getResourceAsStream(customProperty));
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
