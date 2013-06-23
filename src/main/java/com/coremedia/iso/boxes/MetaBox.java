@@ -17,6 +17,7 @@
 package com.coremedia.iso.boxes;
 
 import com.googlecode.mp4parser.AbstractBox;
+import com.googlecode.mp4parser.AbstractContainerBox;
 
 import java.nio.ByteBuffer;
 
@@ -25,35 +26,10 @@ import java.nio.ByteBuffer;
  * <h1>4cc = "{@value #TYPE}"</h1>
  * A common base structure to contain general metadata. See ISO/IEC 14496-12 Ch. 8.44.1.
  */
-public class MetaBox extends AbstractBox {
+public class MetaBox extends AbstractContainerBox {
     public static final String TYPE = "meta";
-
-    byte[] data;
-
-    protected long getContentSize() {
-        return data.length;
-    }
 
     public MetaBox() {
         super(TYPE);
-    }
-
-    public void setData(byte[] data) {
-        this.data = data;
-    }
-
-    public byte[] getData() {
-        return data;
-    }
-
-    @Override
-    public void _parseDetails(ByteBuffer content) {
-        data = new byte[content.remaining()];
-        content.get(data);
-    }
-
-    @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        byteBuffer.put(data);
     }
 }
