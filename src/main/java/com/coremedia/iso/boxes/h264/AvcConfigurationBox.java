@@ -35,12 +35,11 @@ import java.util.List;
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
  * Defined in ISO/IEC 14496-15:2004.
- * <p/>
- * <p>Possible paths
+ * <p>Possible paths</p>
  * <ul>
  * <li>/moov/trak/mdia/minf/stbl/stsd/avc1/avcC</li>
  * <li>/moov/trak/mdia/minf/stbl/stsd/drmi/avcC</li>
- * </ul></p>
+ * </ul>
  */
 public final class AvcConfigurationBox extends AbstractBox {
     public static final String TYPE = "avcC";

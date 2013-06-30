@@ -77,7 +77,13 @@ public class SampleFlags {
     }
 
     /**
-     * @see #setSampleDependsOn(int)
+     * sample_depends_on takes one of the following four values:
+     * <pre>
+     * 0: the dependency of this sample is unknown;
+     * 1: this sample does depend on others (not an I picture);
+     * 2: this sample does not depend on others (I picture);
+     * 3: reserved
+     * </pre>
      */
     public int getSampleDependsOn() {
         return sampleDependsOn;
@@ -98,7 +104,13 @@ public class SampleFlags {
     }
 
     /**
-     * @see #setSampleIsDependedOn(int)
+     * sample_is_depended_on takes one of the following four values:
+     * <pre>
+     * 0: the dependency of other samples on this sample is unknown;
+     * 1: other samples may depend on this one (not disposable);
+     * 2: no other sample depends on this one (disposable);
+     * 3: reserved
+     * </pre>
      */
     public int getSampleIsDependedOn() {
         return sampleIsDependedOn;
@@ -119,7 +131,13 @@ public class SampleFlags {
     }
 
     /**
-     * @see #setSampleHasRedundancy(int)
+     * sample_has_redundancy takes one of the following four values:
+     * <pre>
+     * 0: it is unknown whether there is redundant coding in this sample;
+     * 1: there is redundant coding in this sample;
+     * 2: there is no redundant coding in this sample;
+     * 3: reserved
+     * </pre>
      */
     public int getSampleHasRedundancy() {
         return sampleHasRedundancy;

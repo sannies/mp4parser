@@ -48,7 +48,7 @@ import java.nio.channels.WritableByteChannel;
  * }<br>
  * </pre>
  * </code>
- * <p/>
+ *
  * Format-specific information is appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */
 public class VisualSampleEntry extends AbstractSampleEntry implements Container {

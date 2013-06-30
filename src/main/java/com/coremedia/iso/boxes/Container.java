@@ -44,6 +44,7 @@ public interface Container {
      * Gets all child boxes of the given type. May not return <code>null</code>.
      *
      * @param clazz child box's type
+     * @param <T> type of boxes to get
      * @return an array of boxes, empty array in case of no children.
      */
     <T extends Box> List<T> getBoxes(Class<T> clazz);
@@ -53,6 +54,7 @@ public interface Container {
      *
      * @param clazz     child box's type
      * @param recursive step down the tree
+     * @param <T> type of boxes to get
      * @return an array of boxes, empty array in case of no children.
      */
     <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive);

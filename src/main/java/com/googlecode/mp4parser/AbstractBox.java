@@ -119,12 +119,7 @@ public abstract class AbstractBox implements Box {
     protected abstract void _parseDetails(ByteBuffer content);
 
     /**
-     * Read the box's content from a byte channel without parsing it. Parsing is done on-demand.
-     *
-     * @param fileChannel
-     * @param contentSize expected contentSize of the box
-     * @param boxParser   creates inner boxes
-     * @throws IOException in case of an I/O error.
+     * {@inheritDoc}
      */
     @DoNotParseDetail
     public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {

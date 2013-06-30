@@ -36,7 +36,7 @@ public interface Box {
     /**
      * Returns the position of the box in the original file.
      *
-     * @return
+     * @return the start offset in the source file
      */
     long getOffset();
 
@@ -61,7 +61,7 @@ public interface Box {
      * number of bytes should be read from the box source (<code>readableByteChannel</code>).
      * If you need the <code>header</code> buffer at a later stage you have to create a copy.
      *
-     * @param fileChannel
+     * @param fileChannel the source for this box
      * @param header      the box' already parsed header (create copy if you need it
      *                    later as it will be overwritten)
      * @param contentSize remaining bytes of this box

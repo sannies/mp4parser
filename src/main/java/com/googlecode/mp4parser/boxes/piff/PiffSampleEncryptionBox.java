@@ -6,7 +6,7 @@ import com.googlecode.mp4parser.boxes.AbstractSampleEncryptionBox;
  * <pre>
  * aligned(8) class SampleEncryptionBox extends FullBox(‘uuid’, extended_type= 0xA2394F52-5A9B-4f14-A244-6C427C648DF4, version=0, flags=0)
  * {
- *  if (flags & 0x000001)
+ *  if (flags &amp; 0x000001)
  *  {
  *   unsigned int(24) AlgorithmID;
  *   unsigned int(8) IV_size;
@@ -15,7 +15,7 @@ import com.googlecode.mp4parser.boxes.AbstractSampleEncryptionBox;
  *  unsigned int (32) sample_count;
  *  {
  *   unsigned int(IV_size) InitializationVector;
- *   if (flags & 0x000002)
+ *   if (flags &amp; 0x000002)
  *   {
  *    unsigned int(16) NumberOfEntries;
  *    {
