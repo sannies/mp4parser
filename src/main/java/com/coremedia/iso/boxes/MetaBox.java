@@ -16,10 +16,16 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.AbstractContainerBox;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 
 
 /**
@@ -29,7 +35,61 @@ import java.nio.ByteBuffer;
 public class MetaBox extends AbstractContainerBox {
     public static final String TYPE = "meta";
 
+    private int version;
+    private int flags;
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public void setFlags(int flags) {
+        this.flags = flags;
+    }
+
+    protected final long parseVersionAndFlags(ByteBuffer content) {
+        version = IsoTypeReader.readUInt8(content);
+        flags = IsoTypeReader.readUInt24(content);
+        return 4;
+    }
+
+    protected final void writeVersionAndFlags(ByteBuffer bb) {
+        IsoTypeWriter.writeUInt8(bb, version);
+        IsoTypeWriter.writeUInt24(bb, flags);
+    }
+
     public MetaBox() {
         super(TYPE);
+    }
+
+    @Override
+    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(4);
+        fileChannel.read(bb);
+        parseVersionAndFlags((ByteBuffer) bb.rewind());
+        parseContainer(fileChannel, contentSize - 4, boxParser);
+    }
+
+    @Override
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(getHeader());
+        ByteBuffer bb = ByteBuffer.allocate(4);
+        writeVersionAndFlags(bb);
+        writableByteChannel.write((ByteBuffer) bb.rewind());
+        writeContainer(writableByteChannel);
+    }
+    @Override
+    public long getSize() {
+        long s = getContainerSize();
+        long t = 4; // bytes to container start
+        return s + t + ((largeBox || (s + t) >= (1L << 32)) ? 16 : 8);
+
     }
 }

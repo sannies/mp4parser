@@ -17,10 +17,12 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.IsoFile;
+import com.googlecode.mp4parser.authoring.tracks.BoxComparator;
 import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -85,24 +88,29 @@ public class RoundTripTest extends TestCase {
     public void testRoundTrip_1(String resource) throws Exception {
 
         long start1 = System.currentTimeMillis();
-        File originalFile = File.createTempFile("RoundTripTest", "testRoundTrip_1");
-        FileOutputStream fos = new FileOutputStream(originalFile);
-        IOUtils.copy(getClass().getResourceAsStream(resource), fos);
-        fos.close();
+        String originalFile = this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + resource;
+
+
         long start2 = System.currentTimeMillis();
 
+        IsoFile isoFile = new IsoFile(originalFile);
 
-        IsoFile isoFile = new IsoFile(new FileInputStream(originalFile).getChannel());
         long start3 = System.currentTimeMillis();
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        WritableByteChannel wbc = Channels.newChannel(baos);
+
         long start4 = System.currentTimeMillis();
         Walk.through(isoFile);
         long start5 = System.currentTimeMillis();
 
-        isoFile.getBox(wbc);
-        wbc.close();
+        File result = File.createTempFile(this.getName(), resource.replace("/", "_"));
+
+        FileOutputStream fos = new FileOutputStream(result);
+        FileChannel fcOut = fos.getChannel();
+        isoFile.getBox(fcOut);
+        fcOut.close();
+        fos.close();
+
+
         long start6 = System.currentTimeMillis();
 
      /*   System.err.println("Preparing tmp copy took: " + (start2 - start1) + "ms");
@@ -110,13 +118,15 @@ public class RoundTripTest extends TestCase {
         System.err.println("Writing took           : " + (start6 - start3) + "ms");
         System.err.println("Walking took           : " + (start5 - start4) + "ms");*/
 
-        //    BoxComparator.check(isoFile, new IsoFile(Channels.newChannel(new ByteArrayInputStream(baos.toByteArray()))), "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]");
 
-        byte[] a = IOUtils.toByteArray(getClass().getResourceAsStream(resource));
-        byte[] b = baos.toByteArray();
-        new FileOutputStream("a.mp4").write(a);
-        new FileOutputStream("b.mp4").write(b);
-        Assert.assertArrayEquals(a, b);
+        IsoFile copyViaIsoFileReparsed = new IsoFile(result.getAbsolutePath());
+        BoxComparator.check(isoFile, copyViaIsoFileReparsed, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]");
+        isoFile.close();
+        copyViaIsoFileReparsed.close();
+        result.deleteOnExit();
+        // as windows cannot delete file when something is memory mapped and the garbage collector
+        // doesn't necessarily free the Buffers quickly enough we cannot delete the file here (we could but only for linux)
+
 
     }
 
