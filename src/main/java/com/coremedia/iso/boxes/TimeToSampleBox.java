@@ -127,6 +127,7 @@ public class TimeToSampleBox extends AbstractFullBox {
     /**
      * Decompresses the list of entries and returns the list of decoding times.
      *
+     * @param entries compressed entries
      * @return decoding time per sample
      */
     public static long[] blowupTimeToSamples(List<TimeToSampleBox.Entry> entries) {

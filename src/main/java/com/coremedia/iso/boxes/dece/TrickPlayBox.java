@@ -10,14 +10,15 @@ import java.util.List;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * aligned(8) class TrickPlayBox
- * extends FullBox(‘trik’, version=0, flags=0)
+ * <pre>
+ * aligned(8) class TrickPlayBox extends FullBox(‘trik’, version=0, flags=0)
  * {
- * for (i=0; I < sample_count; i++) {
- * unsigned int(2) pic_type;
- * unsigned int(6) dependency_level;
+ *  for (i=0; I &lt; sample_count; i++) {
+ *   unsigned int(2) pic_type;
+ *   unsigned int(6) dependency_level;
+ *  }
  * }
- * }
+ * </pre>
  */
 public class TrickPlayBox extends AbstractFullBox {
     public static final String TYPE = "trik";

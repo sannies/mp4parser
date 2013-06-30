@@ -28,7 +28,7 @@ import java.util.List;
  *  }
  *  unsigned int(16) reserved = 0;
  *  unsigned int(16) reference_count;
- *  for(i=1; i <= reference_count; i++)
+ *  for(i=1; i &lt;= reference_count; i++)
  *  {
  *   bit (1)            reference_type;
  *   unsigned int(31)   referenced_size;

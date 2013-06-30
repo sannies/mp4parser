@@ -28,22 +28,20 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * Each sample of a track may be associated to (zero or) one of a number of sample group descriptions, each of
+ * <p>Each sample of a track may be associated to (zero or) one of a number of sample group descriptions, each of
  * which defines a record of rate-share information. Typically the same rate-share information applies to many
  * consecutive samples and it may therefore be enough to define two or three sample group descriptions that
- * can be used at different time intervals.
- * <p/>
- * The grouping type 'rash' (short for rate share) is defined as the grouping criterion for rate share information.
+ * can be used at different time intervals.</p>
+ * <p>The grouping type 'rash' (short for rate share) is defined as the grouping criterion for rate share information.
  * Zero or one sample-to-group box ('sbgp') for the grouping type 'rash' can be contained in the sample
- * table box ('stbl') of a track. It shall reside in a hint track, if a hint track is used, otherwise in a media track.
- * <p/>
- * Target rate share may be specified for several operation points that are defined in terms of the total available
+ * table box ('stbl') of a track. It shall reside in a hint track, if a hint track is used, otherwise in a media track.</p>
+ * <p>Target rate share may be specified for several operation points that are defined in terms of the total available
  * bitrate, i.e., the bitrate that should be shared. If only one operation point is defined, the target rate share
  * applies to all available bitrates. If several operation points are defined, then each operation point specifies a
  * target rate share. Target rate share values specified for the first and the last operation points also specify the
  * target rate share values at lower and higher available bitrates, respectively. The target rate share between two
  * operation points is specified to be in the range between the target rate shares of those operation points. One
- * possibility is to estimate with linear interpolation.
+ * possibility is to estimate with linear interpolation.</p>
  */
 public class RateShareEntry extends GroupEntry {
     public static final String TYPE = "rash";

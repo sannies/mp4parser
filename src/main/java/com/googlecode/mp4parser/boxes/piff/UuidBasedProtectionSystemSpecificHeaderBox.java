@@ -11,7 +11,7 @@ import java.util.UUID;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
- * <h1>4cc = "{@value #TYPE}"</h1>
+ * <h1>4cc = "uuid", d08a4f18-10f3-4a82-b6c8-32d8aba183d3</h1>
  * aligned(8) class UuidBasedProtectionSystemSpecificHeaderBox extends FullBox(‘uuid’,
  * extended_type=0xd08a4f18-10f3-4a82-b6c8-32d8aba183d3,
  * version=0, flags=0)

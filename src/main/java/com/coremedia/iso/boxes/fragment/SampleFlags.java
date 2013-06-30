@@ -84,6 +84,8 @@ public class SampleFlags {
      * 2: this sample does not depend on others (I picture);
      * 3: reserved
      * </pre>
+     *
+     * @return current depends_on level
      */
     public int getSampleDependsOn() {
         return sampleDependsOn;
@@ -98,6 +100,7 @@ public class SampleFlags {
      * 3: reserved
      * </pre>
      *
+     * @param sampleDependsOn new depends on value
      */
     public void setSampleDependsOn(int sampleDependsOn) {
         this.sampleDependsOn = sampleDependsOn;
@@ -111,6 +114,8 @@ public class SampleFlags {
      * 2: no other sample depends on this one (disposable);
      * 3: reserved
      * </pre>
+     *
+     * @return current is_dependend_on level
      */
     public int getSampleIsDependedOn() {
         return sampleIsDependedOn;
@@ -125,6 +130,7 @@ public class SampleFlags {
      * 3: reserved
      * </pre>
      *
+     * @param sampleIsDependedOn new is_depends on value
      */
     public void setSampleIsDependedOn(int sampleIsDependedOn) {
         this.sampleIsDependedOn = sampleIsDependedOn;
@@ -138,6 +144,8 @@ public class SampleFlags {
      * 2: there is no redundant coding in this sample;
      * 3: reserved
      * </pre>
+     *
+     * @return current redundancy level
      */
     public int getSampleHasRedundancy() {
         return sampleHasRedundancy;
@@ -151,6 +159,8 @@ public class SampleFlags {
      * 2: there is no redundant coding in this sample;
      * 3: reserved
      * </pre>
+     *
+     * @param sampleHasRedundancy new redundancy level
      */
     public void setSampleHasRedundancy(int sampleHasRedundancy) {
         this.sampleHasRedundancy = sampleHasRedundancy;

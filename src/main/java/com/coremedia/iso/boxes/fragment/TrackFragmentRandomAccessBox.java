@@ -29,27 +29,28 @@ import java.util.List;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * aligned(8) class TrackFragmentRandomAccessBox
- * extends FullBox('tfra', version, 0) {
- * unsigned int(32) track_ID;
- * const unsigned int(26) reserved = 0;
- * unsigned int(2) length_size_of_traf_num;
- * unsigned int(2) length_size_of_trun_num;
- * unsigned int(2) length_size_of_sample_num;
- * unsigned int(32) number_of_entry;
- * for(i=1; i <= number_of_entry; i++){
- * if(version==1){
- * unsigned int(64) time;
- * unsigned int(64) moof_offset;
- * }else{
- * unsigned int(32) time;
- * unsigned int(32) moof_offset;
+ * <pre>
+ * aligned(8) class TrackFragmentRandomAccessBox extends FullBox('tfra', version, 0) {
+ *  unsigned int(32) track_ID;
+ *  const unsigned int(26) reserved = 0;
+ *  unsigned int(2) length_size_of_traf_num;
+ *  unsigned int(2) length_size_of_trun_num;
+ *  unsigned int(2) length_size_of_sample_num;
+ *  unsigned int(32) number_of_entry;
+ *  for(i=1; i &lt;= number_of_entry; i++){
+ *   if(version==1){
+ *    unsigned int(64) time;
+ *    unsigned int(64) moof_offset;
+ *   }else{
+ *    unsigned int(32) time;
+ *    unsigned int(32) moof_offset;
+ *   }
+ *  unsigned int((length_size_of_traf_num+1) * 8) traf_number;
+ *  unsigned int((length_size_of_trun_num+1) * 8) trun_number;
+ *  unsigned int((length_size_of_sample_num+1) * 8) sample_number;
+ *  }
  * }
- * unsigned int((length_size_of_traf_num+1) * 8) traf_number;
- * unsigned int((length_size_of_trun_num+1) * 8) trun_number;
- * unsigned int((length_size_of_sample_num+1) * 8) sample_number;
- * }
- * }
+ * </pre>
  */
 public class TrackFragmentRandomAccessBox extends AbstractFullBox {
     public static final String TYPE = "tfra";

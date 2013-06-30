@@ -6,13 +6,13 @@ import java.nio.ByteBuffer;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * <p/>
+ * <p>
  * The optional composition shift least greatest atom summarizes the calculated
  * minimum and maximum offsets between decode and composition time, as well as
  * the start and end times, for all samples. This allows a reader to determine
  * the minimum required time for decode to obtain proper presentation order without
  * needing to scan the sample table for the range of offsets. The type of the
- * composition shift least greatest atom is ‘cslg’.
+ * composition shift least greatest atom is ‘cslg’.</p>
  */
 public class CompositionShiftLeastGreatestAtom extends AbstractFullBox {
     public static final String TYPE = "cslg";

@@ -18,7 +18,7 @@ package com.coremedia.iso;
 import java.io.UnsupportedEncodingException;
 
 /**
- * Converts <code>byte[]</code> -> <code>String</code> and vice versa.
+ * Converts <code>byte[]</code> -&gt; <code>String</code> and vice versa.
  */
 public final class Ascii {
   public static byte[] convert(String s) {

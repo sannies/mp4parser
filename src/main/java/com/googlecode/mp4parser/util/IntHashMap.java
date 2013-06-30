@@ -22,7 +22,6 @@ package com.googlecode.mp4parser.util;/*
 
 /**
  * <p>A hash map that uses primitive ints for the key rather than objects.</p>
- * <p/>
  * <p>Note that this class is for internal optimization purposes only, and may
  * not be supported in future releases of Apache Commons Lang.  Utilities of
  * this sort may be included in future releases of Apache Commons Collections.</p>
@@ -156,7 +155,6 @@ public class IntHashMap {
      * <p>Tests if some key maps into the specified value in this hashtable.
      * This operation is more expensive than the <code>containsKey</code>
      * method.</p>
-     * <p/>
      * <p>Note that this method is identical in functionality to containsValue,
      * (which is part of the Map interface in the collections framework).</p>
      *
@@ -189,7 +187,6 @@ public class IntHashMap {
     /**
      * <p>Returns <code>true</code> if this HashMap maps one or more keys
      * to this value.</p>
-     * <p/>
      * <p>Note that this method is identical in functionality to contains
      * (which predates the Map interface).</p>
      *
@@ -248,7 +245,6 @@ public class IntHashMap {
      * <p>Increases the capacity of and internally reorganizes this
      * hashtable, in order to accommodate and access its entries more
      * efficiently.</p>
-     * <p/>
      * <p>This method is called automatically when the number of keys
      * in the hashtable exceeds this hashtable's capacity and load
      * factor.</p>
@@ -279,7 +275,6 @@ public class IntHashMap {
      * <p>Maps the specified <code>key</code> to the specified
      * <code>value</code> in this hashtable. The key cannot be
      * <code>null</code>. </p>
-     * <p/>
      * <p>The value can be retrieved by calling the <code>get</code> method
      * with a key that is equal to the original key.</p>
      *
@@ -321,7 +316,6 @@ public class IntHashMap {
     /**
      * <p>Removes the key (and its corresponding value) from this
      * hashtable.</p>
-     * <p/>
      * <p>This method does nothing if the key is not present in the
      * hashtable.</p>
      *

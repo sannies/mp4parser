@@ -28,17 +28,15 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * This table can be used to find the group that a sample belongs to and the associated description of that
+ * <p>This table can be used to find the group that a sample belongs to and the associated description of that
  * sample group. The table is compactly coded with each entry giving the index of the first sample of a run of
  * samples with the same sample group descriptor. The sample group description ID is an index that refers to a
- * SampleGroupDescription box, which contains entries describing the characteristics of each sample group.
- * <p/>
- * There may be multiple instances of this box if there is more than one sample grouping for the samples in a
+ * SampleGroupDescription box, which contains entries describing the characteristics of each sample group.</p>
+ * <p>There may be multiple instances of this box if there is more than one sample grouping for the samples in a
  * track. Each instance of the SampleToGroup box has a type code that distinguishes different sample
  * groupings. Within a track, there shall be at most one instance of this box with a particular grouping type. The
- * associated SampleGroupDescription shall indicate the same value for the grouping type.
- * <p/>
- * Version 1 of this box should only be used if a grouping type parameter is needed.
+ * associated SampleGroupDescription shall indicate the same value for the grouping type.</p>
+ * <p>Version 1 of this box should only be used if a grouping type parameter is needed.</p>
  */
 public class SampleToGroupBox extends AbstractFullBox {
     public static final String TYPE = "sbgp";

@@ -29,22 +29,24 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * <code>
- * Box Type  : 'elst'<br>
- * Container: {@link EditBox}('edts')<br>
- * Mandatory: No<br>
- * Quantity  : Zero or one</code><br><br>
- * This box contains an explicit timeline map. Each entry defines part of the track time-line: by mapping part of
+ * <pre>
+ * Box Type  : 'elst'
+ * Container: {@link EditBox}('edts')
+ * Mandatory: No
+ * Quantity  : Zero or one</pre>
+ *
+ * <p>This box contains an explicit timeline map. Each entry defines part of the track time-line: by mapping part of
  * the media time-line, or by indicating 'empty' time, or by defining a 'dwell', where a single time-point in the
- * media is held for a period.<br>
- * Note that edits are not restricted to fall on sample times. This means that when entering an edit, it can be
+ * media is held for a period.</p>
+ * <p>Note that edits are not restricted to fall on sample times. This means that when entering an edit, it can be
  * necessary to (a) back up to a sync point, and pre-roll from there and then (b) be careful about the duration of
  * the first sample - it might have been truncated if the edit enters it during its normal duration. If this is audio,
  * that frame might need to be decoded, and then the final slicing done. Likewise, the duration of the last sample
- * in an edit might need slicing. <br>
- * Starting offsets for tracks (streams) are represented by an initial empty edit. For example, to play a track from
- * its start for 30 seconds, but at 10 seconds into the presentation, we have the following edit list:<br>
- * <p/>
+ * in an edit might need slicing. </p>
+ * <p>Starting offsets for tracks (streams) are represented by an initial empty edit. For example, to play a track from
+ * its start for 30 seconds, but at 10 seconds into the presentation, we have the following edit list:</p>
+ *
+ * <ul>
  * <li>Entry-count = 2</li>
  * <li>Segment-duration = 10 seconds</li>
  * <li>Media-Time = -1</li>
@@ -52,6 +54,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * <li>Segment-duration = 30 seconds (could be the length of the whole track)</li>
  * <li>Media-Time = 0 seconds</li>
  * <li>Media-Rate = 1</li>
+ * </ul>
  */
 public class EditListBox extends AbstractFullBox {
     private List<Entry> entries = new LinkedList<Entry>();
@@ -117,6 +120,7 @@ public class EditListBox extends AbstractFullBox {
         /**
          * Creates a new <code>Entry</code> with all values set.
          *
+         * @param editListBox parent <code>EditListBox</code>
          * @param segmentDuration duration in movie timescale
          * @param mediaTime       starting time
          * @param mediaRate       relative play rate

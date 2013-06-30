@@ -24,8 +24,7 @@ import java.nio.ByteBuffer;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * <p/>
- * AssetInformationBox as defined Common File Format Spec.
+ * AssetInformationBox as defined the UltraViolet Common File Format Spec.
  */
 public class AssetInformationBox extends AbstractFullBox {
     public static final String TYPE = "ainf";

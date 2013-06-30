@@ -22,8 +22,8 @@ package com.googlecode.mp4parser.h264.model;
 
 /**
  * Aspect ratio
- * <p/>
- * dynamic enum
+ * <p>
+ * dynamic enum</p>
  *
  * @author Stanislav Vitvitskiy
  */

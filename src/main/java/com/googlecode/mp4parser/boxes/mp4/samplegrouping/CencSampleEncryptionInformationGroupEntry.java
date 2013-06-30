@@ -25,12 +25,11 @@ import java.util.Arrays;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * Each sample in a protected track shall be associated with an IsEncrypted flag, IV_Size, and KID.
+ * <p>Each sample in a protected track shall be associated with an IsEncrypted flag, IV_Size, and KID.
  * This can be accomplished by (a) relying on the default values in the TrackEncryptionBox
- * (see 8.2), or (b) specifying the parameters by sample group, or (c) using a combination of these two techniques.
- * <p/>
- * When specifying the parameters by sample group, the SampleToGroupBox in the sample table or track
- * fragment specifies which samples use which sample group description from the SampleGroupDescriptionBox.
+ * (see 8.2), or (b) specifying the parameters by sample group, or (c) using a combination of these two techniques.</p>
+ * <p>When specifying the parameters by sample group, the SampleToGroupBox in the sample table or track
+ * fragment specifies which samples use which sample group description from the SampleGroupDescriptionBox.</p>
  */
 public class CencSampleEncryptionInformationGroupEntry extends GroupEntry {
     public static final String TYPE = "seig";

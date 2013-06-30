@@ -25,13 +25,12 @@ import java.nio.ByteBuffer;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * <code>
- * Box Type: 'titl'<br>
- * Container: {@link UserDataBox} ('udta')<br>
- * Mandatory: No<br>
- * Quantity: Zero or one<br><br>
- * </code>
- * <p/>
+ * <pre>
+ * Box Type: 'titl'
+ * Container: {@link UserDataBox} ('udta')
+ * Mandatory: No
+ * Quantity: Zero or one
+ * </pre>
  * Title for the media.
  */
 public class TitleBox extends AbstractFullBox {

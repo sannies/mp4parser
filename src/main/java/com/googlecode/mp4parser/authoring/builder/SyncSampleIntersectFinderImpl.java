@@ -155,9 +155,9 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
     /**
      * Calculates the timestamp of all tracks' sync samples.
      *
-     * @param movie
-     * @param track
-     * @return
+     * @param movie <code>track</code> is located in this movie
+     * @param track get this track's samples timestamps
+     * @return a list of timestamps
      */
     public static List<long[]> getSyncSamplesTimestamps(Movie movie, Track track) {
         List<long[]> times = new LinkedList<long[]>();

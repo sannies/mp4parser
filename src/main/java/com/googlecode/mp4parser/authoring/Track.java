@@ -21,11 +21,11 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
- * Represents a Track. A track is a timed sequence of related samples.
- * <p/>
- * <b>NOTE: </b><br/
- * For media data, a track corresponds to a sequence of images or sampled audio; for hint tracks, a track
- * corresponds to a streaming channel.
+ * <p>Represents a Track. A track is a timed sequence of related samples.</p>
+ *
+ * <b>NOTE: </b>
+ * <p>For media data, a track corresponds to a sequence of images or sampled audio; for hint tracks, a track
+ * corresponds to a streaming channel.</p>
  */
 public interface Track {
 

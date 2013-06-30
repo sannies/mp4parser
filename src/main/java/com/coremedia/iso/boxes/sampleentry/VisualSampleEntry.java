@@ -30,24 +30,22 @@ import java.nio.channels.WritableByteChannel;
 /**
  * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2}" || "{@value #TYPE3}" || "{@value #TYPE4}"</h1>
  * Contains information common to all visual tracks.
- * <code>
  * <pre>
  * class VisualSampleEntry(codingname) extends AbstractSampleEntry (codingname){
- * unsigned int(16) pre_defined = 0;
- * const unsigned int(16) reserved = 0;
- * unsigned int(32)[3] pre_defined = 0;
- * unsigned int(16) width;
- * unsigned int(16) height;
- * template unsigned int(32) horizresolution = 0x00480000; // 72 dpi
- * template unsigned int(32) vertresolution = 0x00480000; // 72 dpi
- * const unsigned int(32) reserved = 0;
- * template unsigned int(16) frame_count = 1;
- * string[32] compressorname;
- * template unsigned int(16) depth = 0x0018;
- * int(16) pre_defined = -1;
- * }<br>
+ *  unsigned int(16) pre_defined = 0;
+ *  const unsigned int(16) reserved = 0;
+ *  unsigned int(32)[3] pre_defined = 0;
+ *  unsigned int(16) width;
+ *  unsigned int(16) height;
+ *  template unsigned int(32) horizresolution = 0x00480000; // 72 dpi
+ *  template unsigned int(32) vertresolution = 0x00480000; // 72 dpi
+ *  const unsigned int(32) reserved = 0;
+ *  template unsigned int(16) frame_count = 1;
+ *  string[32] compressorname;
+ *  template unsigned int(16) depth = 0x0018;
+ *  int(16) pre_defined = -1;
+ * }
  * </pre>
- * </code>
  *
  * Format-specific information is appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */

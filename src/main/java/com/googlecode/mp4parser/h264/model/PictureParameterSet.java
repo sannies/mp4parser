@@ -31,8 +31,8 @@ import java.util.Arrays;
 
 /**
  * Picture Parameter Set entity of H264 bitstream
- * <p/>
- * capable to serialize / deserialize with CAVLC bitstream
+ * <p>
+ * capable to serialize / deserialize with CAVLC bitstream</p>
  *
  * @author Stanislav Vitvitskiy
  */

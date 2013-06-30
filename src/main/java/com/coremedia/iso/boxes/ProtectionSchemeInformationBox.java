@@ -27,7 +27,6 @@ import com.googlecode.mp4parser.AbstractContainerBox;
  * is a container box. It is mandatory in a sample entry that uses a code idicating a
  * protected stream.
  *
- * @see com.coremedia.iso.boxes.odf.OmaDrmKeyManagenentSystemBox
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry#TYPE_ENCRYPTED
  * @see com.coremedia.iso.boxes.sampleentry.VisualSampleEntry#TYPE_ENCRYPTED
  */

@@ -23,7 +23,7 @@ import com.googlecode.mp4parser.AbstractBox;
 import java.nio.ByteBuffer;
 
 /**
- * <h1>4cc = "{@value #TYPE}"</h1>
+ * <h1>4cc = "{@value #TYPE1} or {@value #TYPE2}"</h1>
  * Contains a reference to a track. The type of the box gives the kind of reference.
  */
 public class TrackReferenceTypeBox extends AbstractBox {

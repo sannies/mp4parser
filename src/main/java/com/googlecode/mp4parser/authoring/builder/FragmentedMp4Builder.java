@@ -272,14 +272,14 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
 
     /**
-     * Gets the all samples starting with <code>startSample</code> (one based -> one is the first) and
+     * Gets all samples starting with <code>startSample</code> (one based -&gt; one is the first) and
      * ending with <code>endSample</code> (exclusive).
      *
      * @param startSample    low endpoint (inclusive) of the sample sequence
      * @param endSample      high endpoint (exclusive) of the sample sequence
      * @param track          source of the samples
      * @param sequenceNumber the fragment index of the requested list of samples
-     * @return a <code>List&lt;ByteBuffer></code> of raw samples
+     * @return a <code>List&lt;ByteBuffer&gt;</code> of raw samples
      */
     protected List<ByteBuffer> getSamples(long startSample, long endSample, Track track, int sequenceNumber) {
         // since startSample and endSample are one-based substract 1 before addressing list elements
@@ -287,13 +287,13 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     /**
-     * Gets the sizes of a sequence of samples-
+     * Gets the sizes of a sequence of samples.
      *
      * @param startSample    low endpoint (inclusive) of the sample sequence
      * @param endSample      high endpoint (exclusive) of the sample sequence
      * @param track          source of the samples
      * @param sequenceNumber the fragment index of the requested list of samples
-     * @return
+     * @return the sample sizes in the given interval
      */
     protected long[] getSampleSizes(long startSample, long endSample, Track track, int sequenceNumber) {
         List<ByteBuffer> samples = getSamples(startSample, endSample, track, sequenceNumber);

@@ -20,7 +20,7 @@ import com.googlecode.mp4parser.AbstractFullBox;
 
 /**
  * A common superclass for all MediaInformationHeaderBoxes. E.g.
- * VideoMediaHeaderBox, SoundMediaHeaderBox & HintMediaHeaderBox
+ * VideoMediaHeaderBox, SoundMediaHeaderBox &amp; HintMediaHeaderBox
  */
 public abstract class AbstractMediaHeaderBox extends AbstractFullBox {
     protected AbstractMediaHeaderBox(String type) {

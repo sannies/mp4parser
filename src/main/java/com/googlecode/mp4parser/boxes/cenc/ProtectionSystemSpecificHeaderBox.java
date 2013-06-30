@@ -11,21 +11,19 @@ import java.util.UUID;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * This box contains information needed by a Content Protection System to play back the content. The
+ * <p>This box contains information needed by a Content Protection System to play back the content. The
  * data format is specified by the system identified by the ‘pssh’ parameter SystemID, and is considered
- * opaque for the purposes of this specification.
- * <p/>
- * The data encapsulated in the Data field may be read by the identified Content Protection System to
+ * opaque for the purposes of this specification.</p>
+ * <p>The data encapsulated in the Data field may be read by the identified Content Protection System to
  * enable decryption key acquisition and decryption of media data. For license/rights-based systems, the
  * header information may include data such as the URL of license server(s) or rights issuer(s) used,
- * embedded licenses/rights, and/or other protection system specific metadata.
- * <p/>
- * A single file may be constructed to be playable by multiple key and digital rights management (DRM)
+ * embedded licenses/rights, and/or other protection system specific metadata.</p>
+ * <p>A single file may be constructed to be playable by multiple key and digital rights management (DRM)
  * systems, by including one Protection System-Specific Header box for each system supported. Readers
  * that process such presentations must match the SystemID field in this box to the SystemID(s) of the
  * DRM System(s) they support, and select or create the matching Protection System-Specific Header
  * box(es) for storage and retrieval of Protection-Specific information interpreted or created by that DRM
- * system.
+ * system.</p>
  */
 public class ProtectionSystemSpecificHeaderBox extends AbstractFullBox {
     public static final String TYPE = "pssh";

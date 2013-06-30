@@ -27,8 +27,8 @@ import java.io.IOException;
 
 /**
  * Scaling list entity
- * <p/>
- * capable to serialize / deserialize with CAVLC bitstream
+ * <p>
+ * capable to serialize / deserialize with CAVLC bitstream</p>
  *
  * @author Stanislav Vitvitskiy
  */

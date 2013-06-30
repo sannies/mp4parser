@@ -54,6 +54,12 @@ public class MetaBox extends AbstractContainerBox {
         this.flags = flags;
     }
 
+    /**
+     * Parses the version/flags header and returns the remaining box size.
+     *
+     * @param content the <code>ByteBuffer</code> that contains the version &amp; flag
+     * @return number of bytes read
+     */
     protected final long parseVersionAndFlags(ByteBuffer content) {
         version = IsoTypeReader.readUInt8(content);
         flags = IsoTypeReader.readUInt24(content);

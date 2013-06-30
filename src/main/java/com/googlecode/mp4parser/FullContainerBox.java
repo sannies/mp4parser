@@ -70,15 +70,13 @@ public abstract class FullContainerBox extends AbstractContainerBox implements F
     }
 
     public String toString() {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(this.getClass().getSimpleName()).append("[childBoxes]");
-        return buffer.toString();
+        return this.getClass().getSimpleName() + "[childBoxes]";
     }
 
     /**
      * Parses the version/flags header and returns the remaining box size.
      *
-     * @param content
+     * @param content the <code>ByteBuffer</code> that contains the version &amp; flag
      * @return number of bytes read
      */
     protected final long parseVersionAndFlags(ByteBuffer content) {

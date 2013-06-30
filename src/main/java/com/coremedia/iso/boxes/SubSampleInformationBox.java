@@ -12,30 +12,31 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * aligned(8) class SubSampleInformationBox
- * extends FullBox('subs', version, 0) {
- * unsigned int(32) entry_count;
- * int i,j;
- * for (i=0; i < entry_count; i++) {
- * unsigned int(32) sample_delta;
- * unsigned int(16) subsample_count;
- * if (subsample_count > 0) {
- * for (j=0; j < subsample_count; j++) {
- * if(version == 1)
- * {
- * unsigned int(32) subsample_size;
+ * <pre>
+ * aligned(8) class SubSampleInformationBox extends FullBox('subs', version, 0) {
+ *  unsigned int(32) entry_count;
+ *  int i,j;
+ *  for (i=0; i &lt; entry_count; i++) {
+ *   unsigned int(32) sample_delta;
+ *   unsigned int(16) subsample_count;
+ *   if (subsample_count &gt; 0) {
+ *    for (j=0; j &lt; subsample_count; j++) {
+ *     if(version == 1)
+ *     {
+ *      unsigned int(32) subsample_size;
+ *     }
+ *     else
+ *     {
+ *      unsigned int(16) subsample_size;
+ *     }
+ *     unsigned int(8) subsample_priority;
+ *     unsigned int(8) discardable;
+ *     unsigned int(32) reserved = 0;
+ *    }
+ *   }
+ *  }
  * }
- * else
- * {
- * unsigned int(16) subsample_size;
- * }
- * unsigned int(8) subsample_priority;
- * unsigned int(8) discardable;
- * unsigned int(32) reserved = 0;
- * }
- * }
- * }
- * }
+ * </pre>
  */
 public class SubSampleInformationBox extends AbstractFullBox {
     public static final String TYPE = "subs";

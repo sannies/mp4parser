@@ -31,12 +31,7 @@ public class BTree {
     private BTree one;
     private Object value;
 
-    /**
-     * Adds a leaf value to a binary path specified by path
-     *
-     * @param str
-     * @param value
-     */
+
     public void addString(String path, Object value) {
         if (path.length() == 0) {
             this.value = value;

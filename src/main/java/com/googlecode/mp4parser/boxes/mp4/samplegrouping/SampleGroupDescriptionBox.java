@@ -28,17 +28,15 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * This description table gives information about the characteristics of sample groups. The descriptive
- * information is any other information needed to define or characterize the sample group.
- * <p/>
- * There may be multiple instances of this box if there is more than one sample grouping for the samples in a
+ * <p>This description table gives information about the characteristics of sample groups. The descriptive
+ * information is any other information needed to define or characterize the sample group.</p>
+ * <p>There may be multiple instances of this box if there is more than one sample grouping for the samples in a
  * track. Each instance of the SampleGroupDescription box has a type code that distinguishes different
  * sample groupings. Within a track, there shall be at most one instance of this box with a particular grouping
- * type. The associated SampleToGroup shall indicate the same value for the grouping type.
- * <p/>
- * The information is stored in the sample group description box after the entry-count. An abstract entry type is
+ * type. The associated SampleToGroup shall indicate the same value for the grouping type.</p>
+ * <p>The information is stored in the sample group description box after the entry-count. An abstract entry type is
  * defined and sample groupings shall define derived types to represent the description of each sample group.
- * For video tracks, an abstract VisualSampleGroupEntry is used with similar types for audio and hint tracks.
+ * For video tracks, an abstract VisualSampleGroupEntry is used with similar types for audio and hint tracks.</p>
  */
 public class SampleGroupDescriptionBox extends AbstractFullBox {
     public static final String TYPE = "sgpd";

@@ -29,33 +29,35 @@ import java.util.List;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * aligned(8) class ItemLocationBox extends FullBox(‘iloc’, version, 0) {
- * unsigned int(4) offset_size;
- * unsigned int(4) length_size;
- * unsigned int(4) base_offset_size;
- * if (version == 1)
- * unsigned int(4) index_size;
- * else
- * unsigned int(4) reserved;
- * unsigned int(16) item_count;
- * for (i=0; i<item_count; i++) {
- * unsigned int(16) item_ID;
- * if (version == 1) {
- * unsigned int(12) reserved = 0;
- * unsigned int(4) construction_method;
+ * <pre>
+ * aligned(8) class ItemLocationBox extends FullBox('iloc', version, 0) {
+ *  unsigned int(4) offset_size;
+ *  unsigned int(4) length_size;
+ *  unsigned int(4) base_offset_size;
+ *  if (version == 1)
+ *   unsigned int(4) index_size;
+ *  else
+ *   unsigned int(4) reserved;
+ *  unsigned int(16) item_count;
+ *  for (i=0; i&lt;item_count; i++) {
+ *   unsigned int(16) item_ID;
+ *   if (version == 1) {
+ *    unsigned int(12) reserved = 0;
+ *    unsigned int(4) construction_method;
+ *   }
+ *   unsigned int(16) data_reference_index;
+ *   unsigned int(base_offset_size*8) base_offset;
+ *   unsigned int(16) extent_count;
+ *   for (j=0; j&lt;extent_count; j++) {
+ *    if ((version == 1) &amp;&amp; (index_size &gt; 0)) {
+ *     unsigned int(index_size*8) extent_index;
+ *    }
+ *    unsigned int(offset_size*8) extent_offset;
+ *    unsigned int(length_size*8) extent_length;
+ *   }
+ *  }
  * }
- * unsigned int(16) data_reference_index;
- * unsigned int(base_offset_size*8) base_offset;
- * unsigned int(16) extent_count;
- * for (j=0; j<extent_count; j++) {
- * if ((version == 1) && (index_size > 0)) {
- * unsigned int(index_size*8) extent_index;
- * }
- * unsigned int(offset_size*8) extent_offset;
- * unsigned int(length_size*8) extent_length;
- * }
- * }
- * }
+ * </pre>
  */
 public class ItemLocationBox extends AbstractFullBox {
     public int offsetSize = 8;

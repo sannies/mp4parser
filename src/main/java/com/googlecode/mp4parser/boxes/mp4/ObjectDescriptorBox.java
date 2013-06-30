@@ -27,14 +27,14 @@ package com.googlecode.mp4parser.boxes.mp4;
  * <li>Free-form file, referenced by MP4 data references (free-format);</li>
  * <li>Sub-part of a presentation, referenced by an ES URL.</li>
  * </ul>
- * NOTE: <br/>
- * The first three are MP4 files, a file referenced by a data reference is not necessarily an MP4 file, as it is
+ * <p><b>NOTE:</b></p>
+ * <p>The first three are MP4 files, a file referenced by a data reference is not necessarily an MP4 file, as it is
  * free-format. Files referenced by ES URLs, by data references, or intended as input to an editing process, need not have
- * an Object Descriptor Box. <br/>
- * An OD URL may point to an MP4 file. Implicitly, the target of such a URL is the OD/IOD located in the 'iods'
- * atom in that file.</br/>
- * If an MP4 file contains several object descriptors, only the OD/IOD in the 'iods' atom can be addressed using
- * an OD URL from a remote MPEG-4 presentation.
+ * an Object Descriptor Box.</p>
+ * <p>An OD URL may point to an MP4 file. Implicitly, the target of such a URL is the OD/IOD located in the 'iods'
+ * atom in that file.</p>
+ * <p>If an MP4 file contains several object descriptors, only the OD/IOD in the 'iods' atom can be addressed using
+ * an OD URL from a remote MPEG-4 presentation.</p>
  */
 public class ObjectDescriptorBox extends AbstractDescriptorBox {
     public static final String TYPE = "iods";

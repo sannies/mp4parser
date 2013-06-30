@@ -24,17 +24,18 @@ import java.nio.ByteBuffer;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * <code>class BitRateBox extends Box('btrt') {<br/>
- * unsigned int(32) bufferSizeDB;<br/>
- * // gives the size of the decoding buffer for<br/>
- * // the elementary stream in bytes.<br/>
- * unsigned int(32) maxBitrate;<br/>
- * // gives the maximum rate in bits/second <br/>
- * // over any window of one second.<br/>
- * unsigned int(32) avgBitrate;<br/>
- * // avgBitrate gives the average rate in <br/>
- * // bits/second over the entire presentation.<br/>
- * }</code>
+ * <pre>
+ * class BitRateBox extends Box('btrt') {
+ *  unsigned int(32) bufferSizeDB;
+ *  // gives the size of the decoding buffer for
+ *  // the elementary stream in bytes.
+ *  unsigned int(32) maxBitrate;
+ *  // gives the maximum rate in bits/second
+ *  // over any window of one second.
+ *  unsigned int(32) avgBitrate;
+ *  // avgBitrate gives the average rate in
+ *  // bits/second over the entire presentation.
+ * }</pre>
  */
 
 public final class BitRateBox extends AbstractBox {

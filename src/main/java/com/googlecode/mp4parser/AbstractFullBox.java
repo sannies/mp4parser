@@ -69,7 +69,7 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
     /**
      * Parses the version/flags header and returns the remaining box size.
      *
-     * @param content the ByteBuffer that contains the version & flag
+     * @param content the <code>ByteBuffer</code> that contains the version &amp; flag
      * @return number of bytes read
      */
     protected final long parseVersionAndFlags(ByteBuffer content) {

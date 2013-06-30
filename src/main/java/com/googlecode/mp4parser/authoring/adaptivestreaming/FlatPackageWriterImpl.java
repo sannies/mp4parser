@@ -90,7 +90,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
      * <code>outputDirectory</code>.
      *
      * @param source the source movie with all qualities
-     * @throws IOException
+     * @throws IOException in case file I/O fails
      */
     public void write(Movie source) throws IOException {
 
@@ -184,10 +184,10 @@ public class FlatPackageWriterImpl implements PackageWriter {
 
 
     /**
-     * Returns a new <code>Movie</code> in that all tracks have the timescale 10000000. CTS & DTS are modified
+     * Returns a new <code>Movie</code> in that all tracks have the timescale 10000000. CTS &amp; DTS are modified
      * in a way that even with more than one framerate the fragments exactly begin at the same time.
      *
-     * @param movie
+     * @param movie original movie
      * @return a movie with timescales suitable for smooth streaming manifests
      */
     public Movie correctTimescale(Movie movie) {

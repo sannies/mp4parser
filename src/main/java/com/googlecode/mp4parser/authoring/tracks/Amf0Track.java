@@ -39,7 +39,7 @@ public class Amf0Track extends AbstractTrack {
     /**
      * Creates a new AMF0 track from
      *
-     * @param rawSamples
+     * @param rawSamples raw samples of the track
      */
     public Amf0Track(Map<Long, byte[]> rawSamples) {
         this.rawSamples = new TreeMap<Long, byte[]>(rawSamples);

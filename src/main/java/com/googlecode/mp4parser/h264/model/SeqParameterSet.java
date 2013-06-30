@@ -29,8 +29,8 @@ import java.io.OutputStream;
 
 /**
  * Sequence Parameter Set structure of h264 bitstream
- * <p/>
- * capable to serialize and deserialize with CAVLC bitstream
+ * <p>
+ * capable to serialize and deserialize with CAVLC bitstream</p>
  *
  * @author Stanislav Vitvitskiy
  */

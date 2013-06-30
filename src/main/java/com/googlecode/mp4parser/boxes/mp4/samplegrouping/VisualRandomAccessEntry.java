@@ -20,9 +20,20 @@ import java.nio.ByteBuffer;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * For some coding systems a sync sample is specified to be a random access point after which all samples in decoding order can be correctly decoded. However, it may be possible to encode an “open” random access point, after which all samples in output order can be correctly decoded, but some samples following the random access point in decoding order and preceding the random access point in output order need not be correctly decodable. For example, an intra picture starting an open group of pictures can be followed in decoding order by (bi-)predicted pictures that however precede the intra picture in output order; though they possibly cannot be correctly decoded if the decoding starts from the intra picture, they are not needed.
- * <p/>
- * Such “open” random-access samples can be marked by being a member of this group. Samples marked by this group must be random access points, and may also be sync points (i.e. it is not required that samples marked by the sync sample table be excluded).
+ * <p>
+ * For some coding systems a sync sample is specified to be a random access point after which all samples in decoding
+ * order can be correctly decoded. However, it may be possible to encode an “open” random access point, after which all
+ * samples in output order can be correctly decoded, but some samples following the random access point in decoding
+ * order and preceding the random access point in output order need not be correctly decodable. For example, an intra
+ * picture starting an open group of pictures can be followed in decoding order by (bi-)predicted pictures that however
+ * precede the intra picture in output order; though they possibly cannot be correctly decoded if the decoding starts
+ * from the intra picture, they are not needed.
+ * </p>
+ * <p>
+ * Such "open" random-access samples can be marked by being a member of this group. Samples marked by this group must
+ * be random access points, and may also be sync points (i.e. it is not required that samples marked by the sync sample
+ * table be excluded).
+ * </p>
  */
 public class VisualRandomAccessEntry extends GroupEntry {
     public static final String TYPE = "rap ";

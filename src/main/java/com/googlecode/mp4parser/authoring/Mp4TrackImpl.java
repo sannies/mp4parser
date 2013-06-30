@@ -60,11 +60,11 @@ public class Mp4TrackImpl extends AbstractTrack {
     private AbstractMediaHeaderBox mihd;
 
     /**
-     * Creates a track from a TrackBox and potentially fragments. Use fragements parameter
-     * only to supply additional fragments that are not located in the main file.
+     * Creates a track from a TrackBox and potentially fragments. Use <b>fragements parameter
+     * only</b> to supply additional fragments that are not located in the main file.
      *
-     * @param trackBox
-     * @param fragments
+     * @param trackBox the <code>TrackBox</code> describing the track.
+     * @param fragments additional fragments if located in more than a single file
      */
     public Mp4TrackImpl(TrackBox trackBox, IsoFile... fragments) {
         final long trackId = trackBox.getTrackHeaderBox().getTrackId();
@@ -183,10 +183,6 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setTrackId(tkhd.getTrackId());
         trackMetaData.setCreationTime(mdhd.getCreationTime());
         trackMetaData.setLanguage(mdhd.getLanguage());
-/*        System.err.println(mdhd.getModificationTime());
-        System.err.println(DateHelper.convert(mdhd.getModificationTime()));
-        System.err.println(DateHelper.convert(DateHelper.convert(mdhd.getModificationTime())));
-        System.err.println(DateHelper.convert(DateHelper.convert(DateHelper.convert(mdhd.getModificationTime()))));*/
 
         trackMetaData.setModificationTime(mdhd.getModificationTime());
         trackMetaData.setTimescale(mdhd.getTimescale());

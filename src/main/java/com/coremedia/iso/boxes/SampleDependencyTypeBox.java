@@ -26,15 +26,16 @@ import java.util.List;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
- * aligned(8) class SampleDependencyTypeBox
- * extends FullBox('sdtp', version = 0, 0) {
- * for (i=0; i < sample_count; i++){
- * unsigned int(2) reserved = 0;
- * unsigned int(2) sample_depends_on;
- * unsigned int(2) sample_is_depended_on;
- * unsigned int(2) sample_has_redundancy;
+ * <pre>
+ * aligned(8) class SampleDependencyTypeBox extends FullBox('sdtp', version = 0, 0) {
+ *  for (i=0; i &lt; sample_count; i++){
+ *   unsigned int(2) reserved = 0;
+ *   unsigned int(2) sample_depends_on;
+ *   unsigned int(2) sample_is_depended_on;
+ *   unsigned int(2) sample_has_redundancy;
+ *  }
  * }
- * }
+ * </pre>
  */
 public class SampleDependencyTypeBox extends AbstractFullBox {
     public static final String TYPE = "sdtp";

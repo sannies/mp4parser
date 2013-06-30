@@ -14,34 +14,32 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
  * <pre>
- * aligned(8) class CompositionOffsetBox
- * extends FullBox(‘ctts’, version = 0, 0) {
+ * aligned(8) class CompositionOffsetBox extends FullBox(‘ctts’, version = 0, 0) {
  *  unsigned int(32) entry_count;
  *  int i;
  *  if (version==0) {
- *   for (i=0; i < entry_count; i++) {
+ *   for (i=0; i &lt; entry_count; i++) {
  *    unsigned int(32) sample_count;
  *    unsigned int(32) sample_offset;
  *   }
  *  }
  *  else if (version == 1) {
- *   for (i=0; i < entry_count; i++) {
+ *   for (i=0; i &lt; entry_count; i++) {
  *    unsigned int(32) sample_count;
  *    signed int(32) sample_offset;
  *   }
  *  }
  * }
  * </pre>
- * <p/>
+ * <p>
  * This box provides the offset between decoding time and composition time.
  * In version 0 of this box the decoding time must be less than the composition time, and
- * the offsets are expressed as unsigned numbers such that
- * CT(n) = DT(n) + CTTS(n) where CTTS(n) is the (uncompressed) table entry for sample n.
- * <p/>
- * In version 1 of this box, the composition timeline and the decoding timeline are
+ * the offsets are expressed as unsigned numbers such that</p>
+ * <p>CT(n) = DT(n) + CTTS(n) where CTTS(n) is the (uncompressed) table entry for sample n.</p>
+ * <p>In version 1 of this box, the composition timeline and the decoding timeline are
  * still derived from each other, but the offsets are signed.
  * It is recommended that for the computed composition timestamps, there is
- * exactly one with the value 0 (zero).
+ * exactly one with the value 0 (zero).</p>
  */
 public class CompositionTimeToSample extends AbstractFullBox {
     public static final String TYPE = "ctts";
@@ -125,7 +123,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
 
     /**
      * Decompresses the list of entries and returns the list of composition times.
-     *
+     * @param entries composition time to sample entries in compressed form
      * @return decoding time per sample
      */
     public static int[] blowupCompositionTimes(List<CompositionTimeToSample.Entry> entries) {

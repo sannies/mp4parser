@@ -18,14 +18,6 @@ package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
 import java.lang.annotation.*;
 
-/**
- * <h1>4cc = "{@value #TYPE}"</h1>
- * Created by IntelliJ IDEA.
- * User: mstattma
- * Date: 06.08.2010
- * Time: 06:54:58
- * To change this template use File | Settings | File Templates.
- */
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
