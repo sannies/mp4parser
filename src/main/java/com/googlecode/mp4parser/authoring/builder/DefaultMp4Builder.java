@@ -266,9 +266,9 @@ public class DefaultMp4Builder implements Mp4Builder {
         stbl.addBox(track.getSampleDescriptionBox());
 
         List<TimeToSampleBox.Entry> decodingTimeToSampleEntries = track.getDecodingTimeEntries();
-        if (decodingTimeToSampleEntries != null && !track.getDecodingTimeEntries().isEmpty()) {
+        if (decodingTimeToSampleEntries != null && !decodingTimeToSampleEntries.isEmpty()) {
             TimeToSampleBox stts = new TimeToSampleBox();
-            stts.setEntries(track.getDecodingTimeEntries());
+            stts.setEntries(decodingTimeToSampleEntries);
             stbl.addBox(stts);
         }
 
