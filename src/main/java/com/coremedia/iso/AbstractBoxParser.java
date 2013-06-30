@@ -84,7 +84,7 @@ public abstract class AbstractBoxParser implements BoxParser {
         } else if (size == 0) {
             size = byteChannel.size() - byteChannel.position() - 8;
             contentSize = size - 8;
-            throw new RuntimeException("not supported");
+            throw new RuntimeException( "'" + type + "' with '" + (parent instanceof Box?((Box) parent).getType():"IsoFile") + "' as parent has length == 0. That's not supported");
         } else {
             contentSize = size - 8;
         }
