@@ -82,6 +82,10 @@ public class VisualSampleEntry extends AbstractSampleEntry implements Container 
         super(type);
     }
 
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public int getWidth() {
         return width;
     }

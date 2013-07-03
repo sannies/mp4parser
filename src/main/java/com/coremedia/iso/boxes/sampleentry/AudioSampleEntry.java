@@ -72,6 +72,10 @@ public class AudioSampleEntry extends AbstractSampleEntry {
         super(type);
     }
 
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public int getChannelCount() {
         return channelCount;
     }
