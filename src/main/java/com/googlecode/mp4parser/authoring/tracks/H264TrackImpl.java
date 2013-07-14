@@ -58,20 +58,20 @@ public class H264TrackImpl extends AbstractTrack {
 
     /**
      * Creates a new <code>Track</code> object from a raw H264 source (<code>FileChannel fc</code>).
-     *
+     * <p/>
      * Whenever the timescale and frametick are set to negative value (e.g. -1) the H264TrackImpl
      * tries to detect the frame rate.
-     *
+     * <p/>
      * Typically values for <code>timescale</code> and <code>frametick</code> are:
      * <ul>
-     *     <li>23.976 FPS: timescale = 24000; frametick = 1001</li>
-     *     <li>25 FPS: timescale = 25; frametick = 1</li>
-     *     <li>29.97 FPS: timescale = 30000; frametick = 1001</li>
-     *     <li>30 FPS: timescale = 30; frametick = 1</li>
+     * <li>23.976 FPS: timescale = 24000; frametick = 1001</li>
+     * <li>25 FPS: timescale = 25; frametick = 1</li>
+     * <li>29.97 FPS: timescale = 30000; frametick = 1001</li>
+     * <li>30 FPS: timescale = 30; frametick = 1</li>
      * </ul>
      *
-     * @param fc the source file of the H264 samples
-     * @param lang language of the movie (in doubt: use "eng")
+     * @param fc        the source file of the H264 samples
+     * @param lang      language of the movie (in doubt: use "eng")
      * @param timescale number of time units (ticks) in one second
      * @param frametick number of time units (ticks) that pass while showing exactly one frame
      * @throws IOException in case of problems whiel reading from the <code>FileChannel</code>
@@ -530,47 +530,62 @@ public class H264TrackImpl extends AbstractTrack {
 
     private class ReaderWrapper {
         private FileChannel fc;
+        long bufferStart = -1;
+        int bufferLength = -1;
+        byte[] buffer = new byte[65536];
+        long position;
 
 
         private long markPos = 0;
 
 
-        private ReaderWrapper(FileChannel fc) {
+        private ReaderWrapper(FileChannel fc) throws IOException {
             this.fc = fc;
+            this.position = fc.position();
         }
 
-        ByteBuffer oneByte = ByteBuffer.allocate(1);
-
-        int read() throws IOException {
-
-            if (fc.read((ByteBuffer) oneByte.rewind()) == 1) {
-                return oneByte.get(0) < 0 ? oneByte.get(0) + 256 : oneByte.get(0);
+        synchronized int read() throws IOException {
+            if ((position >= bufferStart) && (position < bufferStart + bufferLength)) {
+                byte b = buffer[((int) (position - bufferStart))];
+                position += 1;
+                return b < 0 ? b + 256 : b;
             } else {
-                return -1;
+                fc.position(position);
+                bufferStart = position;
+                bufferLength = fc.read(ByteBuffer.wrap(buffer));
+                if (bufferLength == -1) {
+                    return -1;
+                }
+                //fc.position(bufferStart);
+                return read();
             }
+
         }
 
         long read(byte[] data) throws IOException {
-            return fc.read(ByteBuffer.wrap(data));
+            fc.position(position);
+            long dataRead = fc.read(ByteBuffer.wrap(data));
+            position += dataRead;
+            return dataRead;
         }
 
         void seek(int dist) throws IOException {
-            fc.position(fc.position() + dist);
+            position += dist;
         }
 
         public long getPos() throws IOException {
-            return fc.position();
+            return position;
         }
 
         public void mark() throws IOException {
             int i = 1048576;
-            LOG.fine("Marking with " + i + " at " + fc.position());
-            markPos = fc.position();
+            LOG.fine("Marking with " + i + " at " + position);
+            markPos = position;
         }
 
 
         public void reset() throws IOException {
-            fc.position(markPos);
+            position = markPos;
         }
     }
 
