@@ -344,8 +344,8 @@ public class H264TrackImpl extends AbstractTrack {
         byte[] output = new byte[data.length];
         int inPos = 0;
         int outPos = 0;
-        while ((inPos + 2) < data.length) {
-            if (data[inPos] == 0 && data[inPos + 1] == 0 && data[inPos + 2] == 3) {
+        while (inPos < data.length) {
+            if ((inPos-2) < data.length && data[inPos] == 0 && data[inPos + 1] == 0 && data[inPos + 2] == 3) {
                 output[outPos] = 0;
                 output[outPos + 1] = 0;
                 inPos += 3;
