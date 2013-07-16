@@ -58,10 +58,8 @@ public class H264TrackImpl extends AbstractTrack {
 
     /**
      * Creates a new <code>Track</code> object from a raw H264 source (<code>FileChannel fc</code>).
-     * <p/>
      * Whenever the timescale and frametick are set to negative value (e.g. -1) the H264TrackImpl
      * tries to detect the frame rate.
-     * <p/>
      * Typically values for <code>timescale</code> and <code>frametick</code> are:
      * <ul>
      * <li>23.976 FPS: timescale = 24000; frametick = 1001</li>
