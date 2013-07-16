@@ -59,6 +59,10 @@ public class AbstractDescriptorBox extends AbstractFullBox {
         return descriptor.toString();
     }
 
+    public void setDescriptor(BaseDescriptor descriptor) {
+        this.descriptor = descriptor;
+    }
+
     public void setData(ByteBuffer data) {
         this.data = data;
     }

@@ -25,6 +25,7 @@ import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ESDescriptor;
 public class ESDescriptorBox extends AbstractDescriptorBox {
     public static final String TYPE = "esds";
 
+
     public ESDescriptorBox() {
         super(TYPE);
     }
@@ -33,5 +34,19 @@ public class ESDescriptorBox extends AbstractDescriptorBox {
         return (ESDescriptor) super.getDescriptor();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
+        ESDescriptorBox that = (ESDescriptorBox) o;
+
+        if (data != null ? !data.equals(that.data) : that.data != null) return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return data != null ? data.hashCode() : 0;
+    }
 }

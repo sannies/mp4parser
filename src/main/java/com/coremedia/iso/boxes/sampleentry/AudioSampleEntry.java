@@ -30,7 +30,7 @@ import java.nio.channels.WritableByteChannel;
  * Contains basic information about the audio samples in this track. Format-specific information
  * is appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */
-public class AudioSampleEntry extends AbstractSampleEntry {
+public final class AudioSampleEntry extends AbstractSampleEntry {
 
     public static final String TYPE1 = "samr";
     public static final String TYPE2 = "sawb";

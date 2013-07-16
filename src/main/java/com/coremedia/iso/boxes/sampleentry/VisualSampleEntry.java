@@ -49,7 +49,7 @@ import java.nio.channels.WritableByteChannel;
  *
  * Format-specific information is appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */
-public class VisualSampleEntry extends AbstractSampleEntry implements Container {
+public final class VisualSampleEntry extends AbstractSampleEntry implements Container {
     public static final String TYPE1 = "mp4v";
     public static final String TYPE2 = "s263";
     public static final String TYPE3 = "avc1";
@@ -228,4 +228,6 @@ public class VisualSampleEntry extends AbstractSampleEntry implements Container 
         long t = 78;
         return s + t + ((largeBox || (s + t + 8) >= (1L << 32)) ? 16 : 8);
     }
+
 }
+
