@@ -49,7 +49,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * Represents a single track of an MP4 file.
  */
 public class Mp4TrackImpl extends AbstractTrack {
-    private List<ByteBuffer> samples;
+    private List<Sample> samples;
     private SampleDescriptionBox sampleDescriptionBox;
     private List<TimeToSampleBox.Entry> decodingTimeEntries;
     private List<CompositionTimeToSample.Entry> compositionTimeEntries;
@@ -192,7 +192,7 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setMatrix(tkhd.getMatrix());
     }
 
-    public List<ByteBuffer> getSamples() {
+    public List<Sample> getSamples() {
         return samples;
     }
 

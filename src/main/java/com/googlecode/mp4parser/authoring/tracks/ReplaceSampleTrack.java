@@ -17,12 +17,13 @@ package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
+import com.googlecode.mp4parser.authoring.Sample;
+import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -32,18 +33,18 @@ import java.util.List;
 public class ReplaceSampleTrack extends AbstractTrack {
     Track origTrack;
     private long sampleNumber;
-    private ByteBuffer sampleContent;
-    private List<ByteBuffer>  samples;
+    private Sample sampleContent;
+    private List<Sample>  samples;
 
     public ReplaceSampleTrack(Track origTrack, long sampleNumber, ByteBuffer content) {
         this.origTrack = origTrack;
         this.sampleNumber = sampleNumber;
-        this.sampleContent = content;
+        this.sampleContent = new SampleImpl(content);
         this.samples = new ReplaceASingleEntryList();
 
     }
 
-    public List<ByteBuffer> getSamples() {
+    public List<Sample> getSamples() {
         return samples;
     }
 
@@ -85,9 +86,9 @@ public class ReplaceSampleTrack extends AbstractTrack {
         return origTrack.getSubsampleInformationBox();
     }
 
-    private class ReplaceASingleEntryList extends AbstractList<ByteBuffer> {
+    private class ReplaceASingleEntryList extends AbstractList<Sample> {
         @Override
-        public ByteBuffer get(int index) {
+        public Sample get(int index) {
             if (ReplaceSampleTrack.this.sampleNumber == index) {
                 return ReplaceSampleTrack.this.sampleContent;
             } else {

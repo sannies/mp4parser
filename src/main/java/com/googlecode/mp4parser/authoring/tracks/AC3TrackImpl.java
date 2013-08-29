@@ -3,6 +3,8 @@ package com.googlecode.mp4parser.authoring.tracks;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
+import com.googlecode.mp4parser.authoring.Sample;
+import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.AC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
@@ -33,7 +35,7 @@ public class AC3TrackImpl extends AbstractTrack {
     int[][][][] bitRateAndFrameSizeTable;
 
     private InputStream inputStream;
-    private List<ByteBuffer> samples;
+    private List<Sample> samples;
     boolean readSamples = false;
     List<TimeToSampleBox.Entry> stts;
     private String lang = "und";
@@ -80,14 +82,14 @@ public class AC3TrackImpl extends AbstractTrack {
         trackMetaData.setLanguage(lang);
         trackMetaData.setTimescale(samplerate); // Audio tracks always use samplerate as timescale
         trackMetaData.setVolume(1);
-        samples = new LinkedList<ByteBuffer>();
+        samples = new LinkedList<Sample>();
         if (!readSamples()) {
             throw new IOException();
         }
     }
 
 
-    public List<ByteBuffer> getSamples() {
+    public List<Sample> getSamples() {
 
         return samples;
     }
@@ -266,7 +268,7 @@ public class AC3TrackImpl extends AbstractTrack {
             inputStream.reset();
             byte[] data = new byte[frameSize];
             inputStream.read(data);
-            samples.add(ByteBuffer.wrap(data));
+            samples.add(new SampleImpl(ByteBuffer.wrap(data)));
             stts.add(new TimeToSampleBox.Entry(1, 1536));
             inputStream.mark(5);
         }

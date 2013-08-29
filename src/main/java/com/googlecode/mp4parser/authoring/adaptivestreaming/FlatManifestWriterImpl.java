@@ -362,7 +362,8 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         l.samplingRate = ase.getSampleRate();
         l.channels = nfchans + lfechans;
         l.bitPerSample = 16;
-        l.packetSize = track.getSamples().get(0).limit(); //assuming all are same size
+        // TODO: was .limit() but .remaining() seems logical unless the position has moved
+        l.packetSize = (int) track.getSamples().get(0).remaining(); //assuming all are same size
         l.codecPrivateData = Hex.encodeHex(waveformatex.array()) + Hex.encodeHex(dec3Content.array()); //append EC3SpecificBox (big endian) at the end of waveformatex
         return l;
     }
@@ -420,7 +421,7 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         l.samplingRate = dtsSpecificBox.getDTSSamplingFrequency();
         l.channels = getNumChannelsAndMask(dtsSpecificBox)[0];
         l.bitPerSample = 16;
-        l.packetSize = track.getSamples().get(0).limit(); //assuming all are same size
+        l.packetSize = (int) track.getSamples().get(0).remaining(); //assuming all are same size
         l.codecPrivateData = Hex.encodeHex(waveformatex.array()) + Hex.encodeHex(dtsCodecPrivateData.array());
         return l;
 

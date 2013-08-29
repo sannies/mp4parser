@@ -42,13 +42,12 @@ import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.util.DateHelper;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
@@ -72,7 +71,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     Set<StaticChunkOffsetBox> chunkOffsetBoxes = new HashSet<StaticChunkOffsetBox>();
     private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
 
-    HashMap<Track, List<ByteBuffer>> track2Sample = new HashMap<Track, List<ByteBuffer>>();
+    HashMap<Track, List<Sample>> track2Sample = new HashMap<Track, List<Sample>>();
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
     private FragmentIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder();
 
@@ -87,12 +86,12 @@ public class DefaultMp4Builder implements Mp4Builder {
         LOG.fine("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
             // getting the samples may be a time consuming activity
-            List<ByteBuffer> samples = track.getSamples();
+            List<Sample> samples = track.getSamples();
             putSamples(track, samples);
             long[] sizes = new long[samples.size()];
             for (int i = 0; i < sizes.length; i++) {
-                ByteBuffer b = samples.get(i);
-                sizes[i] = b.limit() - b.position();
+                Sample b = samples.get(i);
+                sizes[i] = b.remaining();
             }
             track2SampleSizes.put(track, sizes);
 
@@ -135,7 +134,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         return isoFile;
     }
 
-    protected List<ByteBuffer> putSamples(Track track, List<ByteBuffer> samples) {
+    protected List<Sample> putSamples(Track track, List<Sample> samples) {
         return track2Sample.put(track, samples);
     }
 
@@ -361,7 +360,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     private class InterleaveChunkMdat implements Box {
         List<Track> tracks;
-        List<List<ByteBuffer>> chunkList = new ArrayList<List<ByteBuffer>>();
+        List<List<Sample>> chunkList = new ArrayList<List<Sample>>();
         Container parent;
 
         long contentSize;
@@ -393,7 +392,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                     for (int j = 0; j < i; j++) {
                         firstSampleOfChunk += chunkSizes[j];
                     }
-                    List<ByteBuffer> chunk = DefaultMp4Builder.this.track2Sample.get(track).subList(l2i(firstSampleOfChunk), l2i(firstSampleOfChunk + chunkSizes[i]));
+                    List<Sample> chunk = DefaultMp4Builder.this.track2Sample.get(track).subList(l2i(firstSampleOfChunk), l2i(firstSampleOfChunk + chunkSizes[i]));
                     chunkList.add(chunk);
                 }
 
@@ -446,12 +445,12 @@ public class DefaultMp4Builder implements Mp4Builder {
             }
             bb.rewind();
             writableByteChannel.write(bb);
-            for (List<ByteBuffer> samples : chunkList) {
-                samples = unifyAdjacentBuffers(samples);
-                for (ByteBuffer sample : samples) {
-                    writableByteChannel.write((ByteBuffer) sample.rewind());
+            for (List<Sample> samples : chunkList) {
+                for (Sample sample : samples) {
+                	sample.writeTo(writableByteChannel);
                 }
             }
+
         }
 
     }
@@ -525,29 +524,5 @@ public class DefaultMp4Builder implements Mp4Builder {
             return a;
         }
         return gcd(b, a % b);
-    }
-
-    public List<ByteBuffer> unifyAdjacentBuffers(List<ByteBuffer> samples) {
-        ArrayList<ByteBuffer> nuSamples = new ArrayList<ByteBuffer>(samples.size());
-        samples = new ArrayList<ByteBuffer>(samples);
-        for (ByteBuffer buffer : samples) {
-            int lastIndex = nuSamples.size() - 1;
-            if (lastIndex >= 0 && buffer.hasArray() && nuSamples.get(lastIndex).hasArray() && buffer.array() == nuSamples.get(lastIndex).array() &&
-                    nuSamples.get(lastIndex).arrayOffset() + nuSamples.get(lastIndex).limit() == buffer.arrayOffset()) {
-                ByteBuffer oldBuffer = nuSamples.remove(lastIndex);
-                ByteBuffer nu = ByteBuffer.wrap(buffer.array(), oldBuffer.arrayOffset(), oldBuffer.limit() + buffer.limit()).slice();
-                // We need to slice here since wrap([], offset, length) just sets position and not the arrayOffset.
-                nuSamples.add(nu);
-            } else if (lastIndex >= 0 &&
-                    buffer instanceof MappedByteBuffer && nuSamples.get(lastIndex) instanceof MappedByteBuffer &&
-                    nuSamples.get(lastIndex).limit() == nuSamples.get(lastIndex).capacity() - buffer.capacity()) {
-                // This can go wrong - but will it?
-                ByteBuffer oldBuffer = nuSamples.get(lastIndex);
-                oldBuffer.limit(buffer.limit() + oldBuffer.limit());
-            } else {
-                nuSamples.add(buffer);
-            }
-        }
-        return nuSamples;
     }
 }

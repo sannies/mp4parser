@@ -9,6 +9,8 @@ import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
+import com.googlecode.mp4parser.authoring.Sample;
+import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
@@ -22,7 +24,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 /**
  * Created by sannies on 25.05.13.
  */
-public class FragmentedMp4SampleList extends AbstractList<ByteBuffer> {
+public class FragmentedMp4SampleList extends AbstractList<Sample> {
     Container topLevel;
     IsoFile[] fragments;
     TrackBox trackBox = null;
@@ -78,7 +80,7 @@ public class FragmentedMp4SampleList extends AbstractList<ByteBuffer> {
     }
 
     @Override
-    public ByteBuffer get(int index) {
+    public Sample get(int index) {
         int currentIndex = 1;
         int targetIndex = index + 1;
         for (TrackFragmentBox trackFragmentBox : allFragments()) {
@@ -128,7 +130,7 @@ public class FragmentedMp4SampleList extends AbstractList<ByteBuffer> {
                     }
                 }
                 try {
-                    return ((IsoFile) moof.getParent()).getByteBuffer(offset, sampleSize);
+                    return new SampleImpl(((IsoFile) moof.getParent()).getByteBuffer(offset, sampleSize));
                 } catch (IOException e) {
                     return null;
                 }

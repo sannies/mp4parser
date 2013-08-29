@@ -20,6 +20,7 @@ import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
+import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.mp4.AbstractDescriptorBox;
@@ -350,8 +351,8 @@ public class AppendTrack extends AbstractTrack {
         }
     }
 
-    public List<ByteBuffer> getSamples() {
-        ArrayList<ByteBuffer> lists = new ArrayList<ByteBuffer>();
+    public List<Sample> getSamples() {
+        ArrayList<Sample> lists = new ArrayList<Sample>();
 
         for (Track track : tracks) {
             lists.addAll(track.getSamples());

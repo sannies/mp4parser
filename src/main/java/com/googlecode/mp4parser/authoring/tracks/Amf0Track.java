@@ -18,6 +18,8 @@ package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
+import com.googlecode.mp4parser.authoring.Sample;
+import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 
@@ -49,10 +51,10 @@ public class Amf0Track extends AbstractTrack {
         trackMetaData.setLanguage("eng");
     }
 
-    public List<ByteBuffer> getSamples() {
-        LinkedList<ByteBuffer> samples = new LinkedList<ByteBuffer>();
+    public List<Sample> getSamples() {
+        LinkedList<Sample> samples = new LinkedList<Sample>();
         for (byte[] bytes : rawSamples.values()) {
-            samples.add(ByteBuffer.wrap(bytes));
+            samples.add(new SampleImpl(ByteBuffer.wrap(bytes)));
         }
         return samples;
     }

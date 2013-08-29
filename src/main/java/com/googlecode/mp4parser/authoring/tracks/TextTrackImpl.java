@@ -18,6 +18,8 @@ package com.googlecode.mp4parser.authoring.tracks;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.TextSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
+import com.googlecode.mp4parser.authoring.Sample;
+import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.threegpp26245.FontTableBox;
 
@@ -64,13 +66,13 @@ public class TextTrackImpl extends AbstractTrack {
     }
 
 
-    public List<ByteBuffer> getSamples() {
-        List<ByteBuffer> samples = new LinkedList<ByteBuffer>();
+    public List<Sample> getSamples() {
+        List<Sample> samples = new LinkedList<Sample>();
         long lastEnd = 0;
         for (Line sub : subs) {
             long silentTime = sub.from - lastEnd;
             if (silentTime > 0) {
-                samples.add(ByteBuffer.wrap(new byte[]{0, 0}));
+                samples.add(new SampleImpl(ByteBuffer.wrap(new byte[]{0, 0})));
             } else if (silentTime < 0) {
                 throw new Error("Subtitle display times may not intersect");
             }
@@ -83,7 +85,7 @@ public class TextTrackImpl extends AbstractTrack {
             } catch (IOException e) {
                 throw new Error("VM is broken. Does not support UTF-8");
             }
-            samples.add(ByteBuffer.wrap(baos.toByteArray()));
+            samples.add(new SampleImpl(ByteBuffer.wrap(baos.toByteArray())));
             lastEnd = sub.to;
         }
         return samples;

@@ -19,6 +19,8 @@ import com.googlecode.mp4parser.util.ChannelHelper;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
+import com.googlecode.mp4parser.authoring.Sample;
+import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.*;
@@ -122,7 +124,7 @@ public class AACTrackImpl extends AbstractTrack {
     long maxBitRate;
     long avgBitRate;
 
-    private List<ByteBuffer> samples;
+    private List<Sample> samples;
     List<TimeToSampleBox.Entry> stts;
     private String lang = "und";
 
@@ -139,7 +141,7 @@ public class AACTrackImpl extends AbstractTrack {
     private void parse(ReadableByteChannel channel) throws IOException {
 
         stts = new LinkedList<TimeToSampleBox.Entry>();
-        samples = new LinkedList<ByteBuffer>();
+        samples = new LinkedList<Sample>();
         firstHeader = readSamples(channel);
 
         double packetsPerSecond = (double) firstHeader.sampleRate / 1024.0;
@@ -147,8 +149,8 @@ public class AACTrackImpl extends AbstractTrack {
 
         long dataSize = 0;
         LinkedList<Integer> queue = new LinkedList<Integer>();
-        for (ByteBuffer sample : samples) {
-            int size = sample.remaining();
+        for (Sample sample : samples) {
+            int size = (int) sample.remaining();
             dataSize += size;
             queue.add(size);
             while (queue.size() > packetsPerSecond) {
@@ -241,7 +243,7 @@ public class AACTrackImpl extends AbstractTrack {
         return "soun";
     }
 
-    public List<ByteBuffer> getSamples() {
+    public List<Sample> getSamples() {
         return samples;
     }
 
@@ -325,13 +327,13 @@ public class AACTrackImpl extends AbstractTrack {
             }
             if (channel instanceof FileChannel) {
                 ByteBuffer data = ((FileChannel) channel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) channel).position(), hdr.frameLength - hdr.getSize());
-                samples.add(data);
+                samples.add(new SampleImpl(data));
                 ((FileChannel) channel).position(((FileChannel) channel).position() + hdr.frameLength - hdr.getSize());
                 data.rewind();
             } else {
                 ByteBuffer data = ByteBuffer.allocate(hdr.frameLength - hdr.getSize());
                 channel.read(data);
-                samples.add(data);
+                samples.add(new SampleImpl(data));
                 data.rewind();
             }
             stts.add(new TimeToSampleBox.Entry(1, 1024));

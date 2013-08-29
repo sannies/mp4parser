@@ -5,9 +5,10 @@ import com.coremedia.iso.boxes.MovieBox;
 import com.coremedia.iso.boxes.SampleSizeBox;
 import com.coremedia.iso.boxes.SampleToChunkBox;
 import com.coremedia.iso.boxes.TrackBox;
+import com.googlecode.mp4parser.authoring.Sample;
+import com.googlecode.mp4parser.authoring.SampleImpl;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +18,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 /**
  * Created by sannies on 25.05.13.
  */
-public class DefaultMp4SampleList extends AbstractList<ByteBuffer> {
+public class DefaultMp4SampleList extends AbstractList<Sample> {
     Container topLevel;
     TrackBox trackBox = null;
 
@@ -38,7 +39,7 @@ public class DefaultMp4SampleList extends AbstractList<ByteBuffer> {
 
 
     @Override
-    public ByteBuffer get(int index) {
+    public Sample get(int index) {
         if (index >= trackBox.getSampleTableBox().getSampleSizeBox().getSampleCount()) {
             throw new IndexOutOfBoundsException();
         }
@@ -81,7 +82,7 @@ public class DefaultMp4SampleList extends AbstractList<ByteBuffer> {
             offset += ssb.getSampleSizeAtIndex((currentSampleNo++) - 1);
         }
         try {
-            return this.topLevel.getByteBuffer(offset, ssb.getSampleSizeAtIndex(currentSampleNo - 1));
+            return new SampleImpl(this.topLevel.getByteBuffer(offset, ssb.getSampleSizeAtIndex(currentSampleNo - 1)));
         } catch (IOException e) {
             return null;
         }

@@ -4,6 +4,7 @@ import com.coremedia.iso.boxes.OriginalFormatBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.coremedia.iso.boxes.sampleentry.AbstractSampleEntry;
 import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
 
@@ -57,7 +58,7 @@ public abstract class AbstractManifestWriter implements ManifestWriter {
 
     public long getBitrate(Track track) {
         long bitrate = 0;
-        for (ByteBuffer sample : track.getSamples()) {
+        for (Sample sample : track.getSamples()) {
             bitrate += sample.remaining();
         }
         bitrate *= 8; // from bytes to bits

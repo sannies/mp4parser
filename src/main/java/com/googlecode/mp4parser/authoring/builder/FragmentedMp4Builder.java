@@ -51,8 +51,8 @@ import com.coremedia.iso.boxes.fragment.TrackFragmentRandomAccessBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.util.DateHelper;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -211,7 +211,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
             public long getSize() {
                 long size = 8; // I don't expect 2gig fragments
-                for (ByteBuffer sample : getSamples(startSample, endSample, track, i)) {
+                for (Sample sample : getSamples(startSample, endSample, track, i)) {
                     size += sample.remaining();
                 }
                 return size;
@@ -228,9 +228,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 header.rewind();
                 writableByteChannel.write(header);
 
-                List<ByteBuffer> samples = getSamples(startSample, endSample, track, i);
-                for (ByteBuffer sample : samples) {
-                    writableByteChannel.write(sample);
+                List<Sample> samples = getSamples(startSample, endSample, track, i);
+                for (Sample sample : samples) {
+                	sample.writeTo(writableByteChannel);
                 }
 
 
@@ -281,7 +281,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
      * @param sequenceNumber the fragment index of the requested list of samples
      * @return a <code>List&lt;ByteBuffer&gt;</code> of raw samples
      */
-    protected List<ByteBuffer> getSamples(long startSample, long endSample, Track track, int sequenceNumber) {
+    protected List<Sample> getSamples(long startSample, long endSample, Track track, int sequenceNumber) {
         // since startSample and endSample are one-based substract 1 before addressing list elements
         return track.getSamples().subList(l2i(startSample) - 1, l2i(endSample) - 1);
     }
@@ -296,7 +296,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
      * @return the sample sizes in the given interval
      */
     protected long[] getSampleSizes(long startSample, long endSample, Track track, int sequenceNumber) {
-        List<ByteBuffer> samples = getSamples(startSample, endSample, track, sequenceNumber);
+        List<Sample> samples = getSamples(startSample, endSample, track, sequenceNumber);
 
         long[] sampleSizes = new long[samples.size()];
         for (int i = 0; i < sampleSizes.length; i++) {

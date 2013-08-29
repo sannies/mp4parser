@@ -16,6 +16,7 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
+import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
@@ -126,7 +127,7 @@ public class ChangeTimeScaleTrack implements Track {
         return source.isInPoster();
     }
 
-    public List<ByteBuffer> getSamples() {
+    public List<Sample> getSamples() {
         return source.getSamples();
     }
 

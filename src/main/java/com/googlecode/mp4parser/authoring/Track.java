@@ -17,7 +17,6 @@ package com.googlecode.mp4parser.authoring;
 
 import com.coremedia.iso.boxes.*;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
@@ -51,7 +50,7 @@ public interface Track {
 
     boolean isInPoster();
 
-    List<ByteBuffer> getSamples();
+    List<Sample> getSamples();
 
     public Box getMediaHeaderBox();
 

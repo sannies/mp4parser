@@ -2,6 +2,8 @@ package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.authoring.Mp4TrackImpl;
+import com.googlecode.mp4parser.authoring.Sample;
+import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
@@ -16,7 +18,7 @@ import java.util.List;
 public class SilenceTrackImpl implements Track {
     Track source;
 
-    List<ByteBuffer> samples = new LinkedList<ByteBuffer>();
+    List<Sample> samples = new LinkedList<Sample>();
     TimeToSampleBox.Entry entry;
 
     public SilenceTrackImpl(Track ofType, long ms) {
@@ -28,9 +30,9 @@ public class SilenceTrackImpl implements Track {
 
 
             while (numFrames-- > 0) {
-                samples.add((ByteBuffer) ByteBuffer.wrap(new byte[]{
+                samples.add(new SampleImpl((ByteBuffer) ByteBuffer.wrap(new byte[]{
                         0x21, 0x10, 0x04, 0x60, (byte) 0x8c, 0x1c,
-                }).rewind());
+                }).rewind()));
             }
 
         } else {
@@ -71,7 +73,7 @@ public class SilenceTrackImpl implements Track {
         return source.isInPoster();
     }
 
-    public List<ByteBuffer> getSamples() {
+    public List<Sample> getSamples() {
         return samples;
     }
 

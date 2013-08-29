@@ -17,6 +17,7 @@ package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
+import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
@@ -45,7 +46,7 @@ public class CroppedTrack extends AbstractTrack {
         this.toSample = (int) toSample;
     }
 
-    public List<ByteBuffer> getSamples() {
+    public List<Sample> getSamples() {
         return origTrack.getSamples().subList(fromSample, toSample);
     }
 

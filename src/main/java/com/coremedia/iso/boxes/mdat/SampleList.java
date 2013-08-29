@@ -5,6 +5,7 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
+import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.samples.DefaultMp4SampleList;
 import com.googlecode.mp4parser.authoring.samples.FragmentedMp4SampleList;
 
@@ -15,8 +16,8 @@ import java.util.List;
 /**
  * Creates a list of <code>ByteBuffer</code>s that represent the samples of a given track.
  */
-public class SampleList extends AbstractList<ByteBuffer> {
-    List<ByteBuffer> samples;
+public class SampleList extends AbstractList<Sample> {
+    List<Sample> samples;
 
     public SampleList(TrackBox trackBox, IsoFile... additionalFragments) {
         Container topLevel = ((Box) trackBox.getParent()).getParent();
@@ -31,7 +32,7 @@ public class SampleList extends AbstractList<ByteBuffer> {
     }
 
     @Override
-    public ByteBuffer get(int index) {
+    public Sample get(int index) {
         return samples.get(index);
     }
 
