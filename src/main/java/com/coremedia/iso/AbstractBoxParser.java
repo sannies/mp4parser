@@ -22,7 +22,9 @@ import com.coremedia.iso.boxes.UserBox;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+
+import com.googlecode.mp4parser.DataSource;
+
 import java.util.logging.Logger;
 
 /**
@@ -45,12 +47,12 @@ public abstract class AbstractBoxParser implements BoxParser {
     /**
      * Parses the next size and type, creates a box instance and parses the box's content.
      *
-     * @param byteChannel the FileChannel pointing to the ISO file
+     * @param byteChannel the DataSource pointing to the ISO file
      * @param parent      the current box's parent (null if no parent)
      * @return the box just parsed
      * @throws java.io.IOException if reading from <code>in</code> fails
      */
-    public Box parseBox(FileChannel byteChannel, Container parent) throws IOException {
+    public Box parseBox(DataSource byteChannel, Container parent) throws IOException {
         header.get().rewind().limit(8);
         int bytesRead = 0;
 

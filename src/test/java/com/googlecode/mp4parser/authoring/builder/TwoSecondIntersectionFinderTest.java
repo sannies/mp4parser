@@ -1,5 +1,6 @@
 package com.googlecode.mp4parser.authoring.builder;
 
+import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import org.junit.Assert;
@@ -15,7 +16,7 @@ public class TwoSecondIntersectionFinderTest {
 
     @Test
     public void testSampleNumbers() throws Exception {
-        Movie m = MovieCreator.build(new FileInputStream(TwoSecondIntersectionFinderTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/Beethoven - Bagatelle op.119 no.11 i.m4a").getChannel());
+        Movie m = MovieCreator.build(new FileDataSourceImpl(TwoSecondIntersectionFinderTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/Beethoven - Bagatelle op.119 no.11 i.m4a"));
         TwoSecondIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder();
         long[] s = intersectionFinder.sampleNumbers(m.getTracks().get(0), m);
         Assert.assertArrayEquals(samples, s);

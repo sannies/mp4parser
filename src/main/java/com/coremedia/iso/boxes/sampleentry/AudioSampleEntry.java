@@ -22,7 +22,7 @@ import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import com.googlecode.mp4parser.DataSource;
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -182,9 +182,9 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
     }
 
     @Override
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer content = ByteBuffer.allocate(28);
-        fileChannel.read(content);
+        dataSource.read(content);
         content.position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
 
@@ -212,7 +212,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
 
         if (soundVersion == 1) {
             ByteBuffer appleStuff = ByteBuffer.allocate(16);
-            fileChannel.read(appleStuff);
+            dataSource.read(appleStuff);
             appleStuff.rewind();
             samplesPerPacket = IsoTypeReader.readUInt32(appleStuff);
             bytesPerPacket = IsoTypeReader.readUInt32(appleStuff);
@@ -221,7 +221,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
         }
         if (soundVersion == 2) {
             ByteBuffer appleStuff = ByteBuffer.allocate(36);
-            fileChannel.read(appleStuff);
+            dataSource.read(appleStuff);
             appleStuff.rewind();
             samplesPerPacket = IsoTypeReader.readUInt32(appleStuff);
             bytesPerPacket = IsoTypeReader.readUInt32(appleStuff);
@@ -232,7 +232,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
         }
 
 
-        parseContainer(fileChannel,
+        parseContainer(dataSource,
                 contentSize - 28
                         - (soundVersion == 1 ? 16 : 0)
                         - (soundVersion == 2 ? 36 : 0), boxParser);

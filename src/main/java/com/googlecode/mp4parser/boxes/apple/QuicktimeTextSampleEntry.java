@@ -23,7 +23,7 @@ import com.coremedia.iso.boxes.sampleentry.AbstractSampleEntry;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import com.googlecode.mp4parser.DataSource;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
 
@@ -64,9 +64,9 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
     }
 
     @Override
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer content = ByteBuffer.allocate(l2i(contentSize));
-        fileChannel.read(content);
+        dataSource.read(content);
         content.position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
         displayFlags = content.getInt();

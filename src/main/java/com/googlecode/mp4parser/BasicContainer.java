@@ -9,7 +9,6 @@ import com.googlecode.mp4parser.util.Logger;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,7 +23,7 @@ public class BasicContainer implements Container, Iterator<Box> {
 
     private List<Box> boxes = new ArrayList<Box>();
     protected BoxParser boxParser;
-    protected FileChannel fileChannel;
+    protected DataSource dataSource;
     Box lookahead = null;
     long parsePosition = 0;
     long startPosition = 0;
@@ -47,7 +46,7 @@ public class BasicContainer implements Container, Iterator<Box> {
     };
 
     public List<Box> getBoxes() {
-        if (fileChannel != null && lookahead != EOF) {
+        if (dataSource != null && lookahead != EOF) {
             return new LazyList<Box>(boxes, this);
         } else {
             return boxes;
@@ -71,7 +70,7 @@ public class BasicContainer implements Container, Iterator<Box> {
     public void setBoxes(List<Box> boxes) {
         this.boxes = new ArrayList<Box>(boxes);
         this.lookahead = EOF;
-        this.fileChannel = null;
+        this.dataSource = null;
     }
 
     @SuppressWarnings("unchecked")
@@ -108,12 +107,12 @@ public class BasicContainer implements Container, Iterator<Box> {
         boxes.add(b);
     }
 
-    public void parseContainer(FileChannel fileChannel, long containerSize, BoxParser boxParser) throws IOException {
+    public void parseContainer(DataSource dataSource, long containerSize, BoxParser boxParser) throws IOException {
 
-        this.fileChannel = fileChannel;
-        this.parsePosition = this.startPosition = fileChannel.position();
-        fileChannel.position(fileChannel.position() + containerSize);
-        this.endPosition = fileChannel.position();
+        this.dataSource = dataSource;
+        this.parsePosition = this.startPosition = dataSource.position();
+        dataSource.position(dataSource.position() + containerSize);
+        this.endPosition = dataSource.position();
         this.boxParser = boxParser;
     }
 
@@ -145,17 +144,17 @@ public class BasicContainer implements Container, Iterator<Box> {
             return b;
         } else {
             LOG.logDebug("Parsing next() box");
-            if (fileChannel == null || parsePosition >= endPosition) {
+            if (dataSource == null || parsePosition >= endPosition) {
                 lookahead = EOF;
                 throw new NoSuchElementException();
             }
 
             try {
-                synchronized (fileChannel) {
-                    fileChannel.position(parsePosition);
-                    Box b = boxParser.parseBox(fileChannel, this);
+                synchronized (dataSource) {
+                    dataSource.position(parsePosition);
+                    Box b = boxParser.parseBox(dataSource, this);
                     //System.err.println(b.getType());
-                    parsePosition = fileChannel.position();
+                    parsePosition = dataSource.position();
                     return b;
                 }
             } catch (EOFException e) {
@@ -189,8 +188,8 @@ public class BasicContainer implements Container, Iterator<Box> {
     }
 
     public ByteBuffer getByteBuffer(long start, long size) throws IOException {
-        synchronized (this.fileChannel) {
-            return this.fileChannel.map(FileChannel.MapMode.READ_ONLY, this.startPosition + start, size);
+        synchronized (this.dataSource) {
+            return this.dataSource.map(this.startPosition + start, size);
         }
     }
 

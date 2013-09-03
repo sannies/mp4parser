@@ -19,7 +19,8 @@ package com.coremedia.iso.boxes.fragment;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.googlecode.mp4parser.AbstractContainerBox;
 
-import java.nio.channels.FileChannel;
+import com.googlecode.mp4parser.DataSource;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,7 +83,7 @@ public class MovieFragmentBox extends AbstractContainerBox {
         return getBoxes(TrackRunBox.class, true);
     }
 
-    public FileChannel getFileChannel() {
-        return this.fileChannel;
+    public DataSource getFileChannel() {
+        return this.dataSource;
     }
 }

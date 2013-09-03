@@ -4,6 +4,7 @@ package com.googlecode.mp4parser.util;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.TrackBox;
+import com.googlecode.mp4parser.FileDataSourceImpl;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +17,7 @@ public class PathTest {
 
     @Before
     public void setup() throws IOException {
-        isoFile = new IsoFile(new FileInputStream(PathTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/multiTrack.3gp").getChannel());
+        isoFile = new IsoFile(new FileDataSourceImpl(PathTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/multiTrack.3gp"));
     }
 
     @Test

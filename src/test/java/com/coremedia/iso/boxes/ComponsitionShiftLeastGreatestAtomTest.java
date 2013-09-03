@@ -1,6 +1,8 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
+import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.FileDataSourceImpl;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
@@ -32,7 +34,7 @@ public class ComponsitionShiftLeastGreatestAtomTest extends TestCase {
         clsg.getBox(fc);
         fc.close();
 
-        IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
+        IsoFile isoFile = new IsoFile(new FileDataSourceImpl(f));
 
         CompositionShiftLeastGreatestAtom clsg2 = isoFile.getBoxes(CompositionShiftLeastGreatestAtom.class).get(0);
         Assert.assertEquals(f.length(), clsg2.getSize());

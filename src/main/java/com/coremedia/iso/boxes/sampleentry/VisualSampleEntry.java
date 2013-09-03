@@ -24,7 +24,7 @@ import com.coremedia.iso.boxes.Container;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import com.googlecode.mp4parser.DataSource;
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -143,9 +143,9 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
     }
 
     @Override
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer content = ByteBuffer.allocate(78);
-        fileChannel.read(content);
+        dataSource.read(content);
         content.position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
 
@@ -180,7 +180,7 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
         tmp = IsoTypeReader.readUInt16(content);
         assert 0xFFFF == tmp;
 
-        parseContainer(fileChannel, contentSize - 78, boxParser);
+        parseContainer(dataSource, contentSize - 78, boxParser);
 
     }
 

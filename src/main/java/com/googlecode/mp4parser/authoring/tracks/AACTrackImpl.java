@@ -15,6 +15,7 @@
  */
 package com.googlecode.mp4parser.authoring.tracks;
 
+import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.util.ChannelHelper;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
@@ -28,7 +29,6 @@ import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.*;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
 
@@ -129,16 +129,16 @@ public class AACTrackImpl extends AbstractTrack {
     private String lang = "und";
 
 
-    public AACTrackImpl(ReadableByteChannel channel, String lang) throws IOException {
+    public AACTrackImpl(DataSource channel, String lang) throws IOException {
         this.lang = lang;
         parse(channel);
     }
 
-    public AACTrackImpl(ReadableByteChannel channel) throws IOException {
+    public AACTrackImpl(DataSource channel) throws IOException {
         parse(channel);
     }
 
-    private void parse(ReadableByteChannel channel) throws IOException {
+    private void parse(DataSource channel) throws IOException {
 
         stts = new LinkedList<TimeToSampleBox.Entry>();
         samples = new LinkedList<Sample>();
@@ -278,14 +278,13 @@ public class AACTrackImpl extends AbstractTrack {
         int numAacFramesPerAdtsFrame;
     }
 
-    private AdtsHeader readADTSHeader(ReadableByteChannel channel) throws IOException {
+    private AdtsHeader readADTSHeader(DataSource channel) throws IOException {
         AdtsHeader hdr = new AdtsHeader();
         ByteBuffer bb = ByteBuffer.allocate(7);
-        try {
-            ChannelHelper.readFully(channel, bb);
-        } catch (EOFException e) {
-            return null;
+        while (bb.position()<7) {
+            channel.read(bb);
         }
+
         BitReaderBuffer brb = new BitReaderBuffer((ByteBuffer) bb.rewind());
         int syncword = brb.readBits(12); // A
         if (syncword != 0xfff) {
@@ -317,7 +316,7 @@ public class AACTrackImpl extends AbstractTrack {
         return hdr;
     }
 
-    private AdtsHeader readSamples(ReadableByteChannel channel) throws IOException {
+    private AdtsHeader readSamples(DataSource channel) throws IOException {
         AdtsHeader first = null;
         AdtsHeader hdr;
 
@@ -325,10 +324,10 @@ public class AACTrackImpl extends AbstractTrack {
             if (first == null) {
                 first = hdr;
             }
-            if (channel instanceof FileChannel) {
-                ByteBuffer data = ((FileChannel) channel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) channel).position(), hdr.frameLength - hdr.getSize());
+            if (channel instanceof DataSource) {
+                ByteBuffer data = ((DataSource) channel).map(((DataSource) channel).position(), hdr.frameLength - hdr.getSize());
                 samples.add(new SampleImpl(data));
-                ((FileChannel) channel).position(((FileChannel) channel).position() + hdr.frameLength - hdr.getSize());
+                ((DataSource) channel).position(((DataSource) channel).position() + hdr.frameLength - hdr.getSize());
                 data.rewind();
             } else {
                 ByteBuffer data = ByteBuffer.allocate(hdr.frameLength - hdr.getSize());

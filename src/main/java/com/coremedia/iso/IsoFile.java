@@ -19,14 +19,15 @@ package com.coremedia.iso;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.MovieBox;
 import com.googlecode.mp4parser.BasicContainer;
+import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.util.Logger;
 
 import java.io.Closeable;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -38,35 +39,35 @@ public class IsoFile extends BasicContainer implements Closeable {
     private static Logger LOG = Logger.getLogger(IsoFile.class);
 
     /**
-     * Shortcut constructor that creates a <code>FileChannel</code> from the
-     * given filename and pass it to the {@link IsoFile#IsoFile(java.nio.channels.FileChannel)}
+     * Shortcut constructor that creates a <code>DataSource</code> from the
+     * given filename and pass it to the {@link IsoFile#IsoFile(DataSource)}
      * constructor.
      *
      * @param filename of the MP4 file to be parsed
      * @throws IOException in case I/O error
      */
     public IsoFile(String filename) throws IOException {
-        this(new FileInputStream(filename).getChannel());
+        this(new FileDataSourceImpl(new File(filename)));
     }
 
 
     /**
-     * @param fileChannel the data source
+     * @param dataSource the data source
      * @throws IOException in case I/O error
      */
-    public IsoFile(FileChannel fileChannel) throws IOException {
-        parseContainer(fileChannel, fileChannel.size(), new PropertyBoxParserImpl());
+    public IsoFile(DataSource dataSource) throws IOException {
+        parseContainer(dataSource, dataSource.size(), new PropertyBoxParserImpl());
 
     }
 
-    public IsoFile(FileChannel fileChannel, BoxParser boxParser) throws IOException {
-        this.fileChannel = fileChannel;
+    public IsoFile(DataSource dataSource, BoxParser boxParser) throws IOException {
+        this.dataSource = dataSource;
         this.boxParser = boxParser;
     }
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("IsoFile[").append(fileChannel.toString()).append("]");
+        buffer.append("IsoFile[").append(dataSource.toString()).append("]");
         return buffer.toString();
     }
 
@@ -118,6 +119,6 @@ public class IsoFile extends BasicContainer implements Closeable {
     }
 
     public void close() throws IOException {
-        this.fileChannel.close();
+        this.dataSource.close();
     }
 }

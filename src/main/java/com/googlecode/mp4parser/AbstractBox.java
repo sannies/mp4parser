@@ -29,7 +29,6 @@ import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -60,13 +59,13 @@ public abstract class AbstractBox implements Box {
     long contentStartPosition;
     long offset;
     long memMapSize = -1;
-    FileChannel fileChannel;
+    DataSource dataSource;
 
     private synchronized void readContent() {
         if (!isRead) {
             try {
                 LOG.logDebug("mem mapping " + this.getType());
-                content = fileChannel.map(FileChannel.MapMode.READ_ONLY, contentStartPosition, memMapSize);
+                content = dataSource.map( contentStartPosition, memMapSize);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -122,14 +121,14 @@ public abstract class AbstractBox implements Box {
      * {@inheritDoc}
      */
     @DoNotParseDetail
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
 
-        this.contentStartPosition = fileChannel.position();
+        this.contentStartPosition = dataSource.position();
         this.offset = contentStartPosition - header.remaining();
         this.memMapSize = contentSize;
-        this.fileChannel = fileChannel;
+        this.dataSource = dataSource;
 
-        fileChannel.position(fileChannel.position() + contentSize);
+        dataSource.position(dataSource.position() + contentSize);
         isRead = false;
         isParsed = false;
 
@@ -159,7 +158,7 @@ public abstract class AbstractBox implements Box {
             ByteBuffer header = ByteBuffer.allocate(isSmallBox() ? 8 : 16);
             getHeader(header);
             os.write((ByteBuffer) header.rewind());
-            fileChannel.transferTo(contentStartPosition, memMapSize, os);
+            dataSource.transferTo(contentStartPosition, memMapSize, os);
         }
     }
 

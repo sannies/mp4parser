@@ -6,7 +6,7 @@ import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import com.googlecode.mp4parser.DataSource;
 import java.nio.channels.WritableByteChannel;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -31,9 +31,9 @@ public class Ovc1VisualSampleEntryImpl extends AbstractSampleEntry {
     }
 
     @Override
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer byteBuffer = ByteBuffer.allocate(l2i(contentSize));
-        fileChannel.read(byteBuffer);
+        dataSource.read(byteBuffer);
         byteBuffer.position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(byteBuffer);
         vc1Content = new byte[byteBuffer.remaining()];

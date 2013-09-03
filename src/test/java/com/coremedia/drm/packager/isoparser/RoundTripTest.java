@@ -19,20 +19,15 @@ package com.coremedia.drm.packager.isoparser;
 import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.authoring.tracks.BoxComparator;
 import junit.framework.TestCase;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
-import java.nio.channels.WritableByteChannel;
+
+import com.googlecode.mp4parser.DataSource;
 
 /**
  * Tests ISO Roundtrip.

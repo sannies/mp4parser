@@ -153,6 +153,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
                         FileOutputStream fos = new FileOutputStream(new File(bitRateOutputDir, Long.toString(startTime)));
                         startTime += fragmentTimes[currentFragment++];
                         FileChannel fc = fos.getChannel();
+
                         Box mdat = boxIt.next();
                         assert mdat.getType().equals("mdat");
                         b.getBox(fc); // moof

@@ -16,14 +16,12 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
+
+import com.googlecode.mp4parser.DataSource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -63,7 +61,7 @@ public class H264TrackImpl extends AbstractTrack {
     private String lang = "eng";
 
     /**
-     * Creates a new <code>Track</code> object from a raw H264 source (<code>FileChannel fc</code>).
+     * Creates a new <code>Track</code> object from a raw H264 source (<code>DataSource fc</code>).
      * Whenever the timescale and frametick are set to negative value (e.g. -1) the H264TrackImpl
      * tries to detect the frame rate.
      * Typically values for <code>timescale</code> and <code>frametick</code> are:
@@ -78,9 +76,9 @@ public class H264TrackImpl extends AbstractTrack {
      * @param lang      language of the movie (in doubt: use "eng")
      * @param timescale number of time units (ticks) in one second
      * @param frametick number of time units (ticks) that pass while showing exactly one frame
-     * @throws IOException in case of problems whiel reading from the <code>FileChannel</code>
+     * @throws IOException in case of problems whiel reading from the <code>DataSource</code>
      */
-    public H264TrackImpl(FileChannel fc, String lang, long timescale, int frametick) throws IOException {
+    public H264TrackImpl(DataSource fc, String lang, long timescale, int frametick) throws IOException {
         this.lang = lang;
         this.timescale = timescale; //e.g. 23976
         this.frametick = frametick;
@@ -90,16 +88,16 @@ public class H264TrackImpl extends AbstractTrack {
         parse(fc);
     }
 
-    public H264TrackImpl(FileChannel fc, String lang) throws IOException {
+    public H264TrackImpl(DataSource fc, String lang) throws IOException {
         this.lang = lang;
         parse(fc);
     }
 
-    public H264TrackImpl(FileChannel fc) throws IOException {
+    public H264TrackImpl(DataSource fc) throws IOException {
         parse(fc);
     }
 
-    private void parse(FileChannel inputChannel) throws IOException {
+    private void parse(DataSource inputChannel) throws IOException {
         this.reader = new ReaderWrapper(inputChannel);
         stts = new LinkedList<TimeToSampleBox.Entry>();
         ctts = new LinkedList<CompositionTimeToSample.Entry>();
@@ -599,10 +597,10 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     private class ReaderWrapper {
-        final MappedByteBuffer buffer;
+        final ByteBuffer buffer;
 
-        private ReaderWrapper(FileChannel fc) throws IOException {
-            this.buffer = fc.map(MapMode.READ_ONLY, fc.position(), fc.size() - fc.position());
+        private ReaderWrapper(DataSource fc) throws IOException {
+            this.buffer = fc.map(fc.position(), fc.size() - fc.position());
         }
         
         boolean hasRemaining() {

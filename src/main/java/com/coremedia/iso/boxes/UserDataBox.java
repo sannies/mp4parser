@@ -21,7 +21,7 @@ import com.googlecode.mp4parser.AbstractContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import com.googlecode.mp4parser.DataSource;
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -39,8 +39,8 @@ public class UserDataBox extends AbstractContainerBox {
     }
 
     @Override
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        super.parse(fileChannel, header, contentSize, boxParser);
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        super.parse(dataSource, header, contentSize, boxParser);
     }
 
     @Override

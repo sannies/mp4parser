@@ -22,7 +22,9 @@ import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+
+import com.googlecode.mp4parser.DataSource;
+
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 
@@ -63,9 +65,9 @@ public class TextSampleEntry extends AbstractSampleEntry {
     }
 
     @Override
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer content = ByteBuffer.allocate(38);
-        fileChannel.read(content);
+        dataSource.read(content);
         content.position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
         displayFlags = IsoTypeReader.readUInt32(content);
@@ -81,7 +83,7 @@ public class TextSampleEntry extends AbstractSampleEntry {
 
         styleRecord = new StyleRecord();
         styleRecord.parse(content);
-        parseContainer(fileChannel, contentSize - 38, boxParser);
+        parseContainer(dataSource, contentSize - 38, boxParser);
     }
 
     @Override

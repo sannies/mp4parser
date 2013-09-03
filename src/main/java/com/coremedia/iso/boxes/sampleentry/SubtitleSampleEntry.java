@@ -6,7 +6,9 @@ import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+
+import com.googlecode.mp4parser.DataSource;
+
 import java.nio.channels.WritableByteChannel;
 
 public class SubtitleSampleEntry extends AbstractSampleEntry {
@@ -29,28 +31,28 @@ public class SubtitleSampleEntry extends AbstractSampleEntry {
     }
 
     @Override
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer byteBuffer = ByteBuffer.allocate(8);
-        fileChannel.read((ByteBuffer) byteBuffer.rewind());
+        dataSource.read((ByteBuffer) byteBuffer.rewind());
         byteBuffer.position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(byteBuffer);
 
-        long start = fileChannel.position();
+        long start = dataSource.position();
         ByteBuffer content = ByteBuffer.allocate(1024);
 
-        fileChannel.read((ByteBuffer) content.rewind());
+        dataSource.read((ByteBuffer) content.rewind());
         namespace = IsoTypeReader.readString((ByteBuffer) content.rewind());
-        fileChannel.position(start + namespace.length() + 1);
+        dataSource.position(start + namespace.length() + 1);
 
-        fileChannel.read((ByteBuffer) content.rewind());
+        dataSource.read((ByteBuffer) content.rewind());
         schemaLocation = IsoTypeReader.readString((ByteBuffer) content.rewind());
-        fileChannel.position(start + namespace.length() + schemaLocation.length() + 2);
+        dataSource.position(start + namespace.length() + schemaLocation.length() + 2);
 
-        fileChannel.read((ByteBuffer) content.rewind());
+        dataSource.read((ByteBuffer) content.rewind());
         imageMimeType = IsoTypeReader.readString((ByteBuffer) content.rewind());
-        fileChannel.position(start + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3);
+        dataSource.position(start + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3);
 
-        parseContainer(fileChannel, contentSize - (header.remaining() + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3), boxParser);
+        parseContainer(dataSource, contentSize - (header.remaining() + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3), boxParser);
     }
 
     @Override

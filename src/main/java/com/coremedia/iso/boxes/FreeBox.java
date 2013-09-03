@@ -23,7 +23,9 @@ import com.googlecode.mp4parser.util.ChannelHelper;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+
+import com.googlecode.mp4parser.DataSource;
+
 import java.nio.channels.WritableByteChannel;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,6 +44,7 @@ public class FreeBox implements Box {
     private long offset;
 
     public FreeBox() {
+        this.data = ByteBuffer.wrap(new byte[0]);
     }
 
     public FreeBox(int size) {
@@ -53,7 +56,11 @@ public class FreeBox implements Box {
     }
 
     public ByteBuffer getData() {
-        return data;
+        if (data != null) {
+            return (ByteBuffer) data.duplicate().rewind();
+        } else {
+            return null;
+        }
     }
 
     public void setData(ByteBuffer data) {
@@ -97,15 +104,16 @@ public class FreeBox implements Box {
         return TYPE;
     }
 
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        this.offset = fileChannel.position() - header.remaining();
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        this.offset = dataSource.position() - header.remaining();
         if (contentSize > 1024 * 1024) {
             // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
-            data = fileChannel.map(FileChannel.MapMode.READ_ONLY, fileChannel.position(), contentSize);
-            fileChannel.position(fileChannel.position() + contentSize);
+            data = dataSource.map(dataSource.position(), contentSize);
+            dataSource.position(dataSource.position() + contentSize);
         } else {
             assert contentSize < Integer.MAX_VALUE;
-            data = ChannelHelper.readFully(fileChannel, contentSize);
+            data = ByteBuffer.allocate(l2i(contentSize));
+            dataSource.read(data);
         }
     }
 
@@ -123,7 +131,7 @@ public class FreeBox implements Box {
 
         FreeBox freeBox = (FreeBox) o;
 
-        if (data != null ? !data.equals(freeBox.data) : freeBox.data != null) return false;
+        if (getData() != null ? !getData().equals(freeBox.getData()) : freeBox.getData() != null) return false;
 
         return true;
     }

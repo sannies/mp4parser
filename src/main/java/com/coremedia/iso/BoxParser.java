@@ -19,11 +19,11 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
 
 import java.io.IOException;
-import java.nio.channels.FileChannel;
+import com.googlecode.mp4parser.DataSource;
 
 /**
  * Basic interface to create boxes from a <code>IsoBufferWrapper</code> and its parent.
  */
 public interface BoxParser {
-    Box parseBox(FileChannel in, Container parent) throws IOException;
+    Box parseBox(DataSource in, Container parent) throws IOException;
 }

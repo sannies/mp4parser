@@ -18,41 +18,12 @@ package com.googlecode.mp4parser.util;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.WritableByteChannel;
-
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 
 public class ChannelHelper {
     private static ByteBuffer empty = ByteBuffer.allocate(0).asReadOnlyBuffer();
 
-    public static ByteBuffer readFully(final ReadableByteChannel channel, long size) throws IOException {
-        if (size == 0) {
-            return empty;
-        } else if (channel instanceof ByteBufferByteChannel) {
-            if (((ByteBufferByteChannel) channel).byteBuffer.remaining() < size) {
-                throw new IOException("Trying to read more data than available. The file might be corrupt");
-            }
-            ByteBuffer rbb = (ByteBuffer) ((ByteBufferByteChannel) channel).byteBuffer.slice().limit((int) size);
-            ((ByteBufferByteChannel) channel).byteBuffer.position((int) (((ByteBufferByteChannel) channel).byteBuffer.position() + size));
-            return rbb;
-        } else if (channel instanceof FileChannel && size > 1024 * 1024) {
-            ByteBuffer bb = ((FileChannel) channel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) channel).position(), size);
-            ((FileChannel) channel).position(((FileChannel) channel).position() + size);
-            return bb;
-        } else {
-            ByteBuffer buf = ByteBuffer.allocateDirect(l2i(size));
-            readFully(channel, buf, buf.limit());
-            buf.rewind();
-            assert buf.limit() == size;
-
-            return buf;
-        }
-
-    }
 
 
     public static void readFully(final ReadableByteChannel channel, final ByteBuffer buf)
@@ -75,26 +46,6 @@ public class ChannelHelper {
         return count;
     }
 
-
-    public static void writeFully(final WritableByteChannel channel, final ByteBuffer buf)
-            throws IOException {
-        do {
-            int written = channel.write(buf);
-            if (written < 0) {
-                throw new EOFException();
-            }
-        } while (buf.hasRemaining());
-    }
-
-
-    public static void close(SelectionKey key) {
-        try {
-            key.channel().close();
-        } catch (IOException e) {
-            // nop
-        }
-
-    }
 
 
 }

@@ -22,7 +22,9 @@ import com.coremedia.iso.boxes.Container;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+
+import com.googlecode.mp4parser.DataSource;
+
 import java.nio.channels.WritableByteChannel;
 import java.util.logging.Logger;
 
@@ -46,8 +48,8 @@ public final class MediaDataBox implements Box {
     Container parent;
     boolean largeBox = false;
 
-    // These fields are for the special case of a FileChannel as input.
-    private FileChannel fileChannel;
+    // These fields are for the special case of a DataSource as input.
+    private DataSource dataSource;
     private long offset;
     private long size;
 
@@ -64,7 +66,7 @@ public final class MediaDataBox implements Box {
         return TYPE;
     }
 
-    private static void transfer(FileChannel from, long position, long count, WritableByteChannel to) throws IOException {
+    private static void transfer(DataSource from, long position, long count, WritableByteChannel to) throws IOException {
         long maxCount = (64 * 1024 * 1024) - (32 * 1024);
         // Transfer data in chunks a bit less than 64MB
         // People state that this is a kind of magic number on Windows.
@@ -76,7 +78,7 @@ public final class MediaDataBox implements Box {
     }
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        transfer(fileChannel, offset, size, writableByteChannel);
+        transfer(dataSource, offset, size, writableByteChannel);
     }
 
 
@@ -88,11 +90,11 @@ public final class MediaDataBox implements Box {
         return offset;
     }
 
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        this.offset = fileChannel.position() - header.remaining();
-        this.fileChannel = fileChannel;
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        this.offset = dataSource.position() - header.remaining();
+        this.dataSource = dataSource;
         this.size = contentSize + header.remaining();
-        fileChannel.position(fileChannel.position() + contentSize);
+        dataSource.position(dataSource.position() + contentSize);
 
     }
 

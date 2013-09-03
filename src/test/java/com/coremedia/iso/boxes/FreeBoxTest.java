@@ -12,6 +12,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 
+import com.googlecode.mp4parser.DataSource;
+
 public class FreeBoxTest {
     @Test
     public void testInOutNoChange() throws IOException {

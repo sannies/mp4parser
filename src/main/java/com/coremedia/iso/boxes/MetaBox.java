@@ -19,12 +19,11 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.AbstractContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import com.googlecode.mp4parser.DataSource;
 import java.nio.channels.WritableByteChannel;
 
 
@@ -76,11 +75,11 @@ public class MetaBox extends AbstractContainerBox {
     }
 
     @Override
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer bb = ByteBuffer.allocate(4);
-        fileChannel.read(bb);
+        dataSource.read(bb);
         parseVersionAndFlags((ByteBuffer) bb.rewind());
-        parseContainer(fileChannel, contentSize - 4, boxParser);
+        parseContainer(dataSource, contentSize - 4, boxParser);
     }
 
     @Override

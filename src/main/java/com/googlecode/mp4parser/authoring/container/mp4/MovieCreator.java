@@ -17,12 +17,13 @@ package com.googlecode.mp4parser.authoring.container.mp4;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.TrackBox;
+import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Mp4TrackImpl;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
+import com.googlecode.mp4parser.DataSource;
 import java.util.List;
 
 /**
@@ -31,7 +32,7 @@ import java.util.List;
 public class MovieCreator {
 
     public static Movie build(String file) throws IOException {
-        return build(new FileInputStream(file).getChannel());
+        return build(new FileDataSourceImpl(new File(file)));
     }
 
     /**
@@ -41,7 +42,7 @@ public class MovieCreator {
      * @return a representation of the movie
      * @throws IOException in case of I/O error during IsoFile creation
      */
-    public static Movie build(FileChannel channel) throws IOException {
+    public static Movie build(DataSource channel) throws IOException {
         IsoFile isoFile = new IsoFile(channel);
         Movie m = new Movie();
         List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);

@@ -39,7 +39,7 @@ public class AACTrackImplTest {
 
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
         Container c = mp4Builder.build(m);
-//        FileChannel fc = new FileOutputStream("aac-sample.mp4").getChannel();
+//        DataSource fc = new FileOutputStream("aac-sample.mp4").getChannel();
 //        isoFile.getBox(fc);
 //        fc.close();
         IsoFile isoFileReference = new IsoFile(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.mp4");

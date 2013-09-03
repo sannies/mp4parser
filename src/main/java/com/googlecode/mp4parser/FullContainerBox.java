@@ -24,7 +24,6 @@ import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -62,11 +61,11 @@ public abstract class FullContainerBox extends AbstractContainerBox implements F
     }
 
     @Override
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer versionAndFlags = ByteBuffer.allocate(4);
-        fileChannel.read(versionAndFlags);
+        dataSource.read(versionAndFlags);
         parseVersionAndFlags((ByteBuffer) versionAndFlags.rewind());
-        super.parse(fileChannel, header, contentSize, boxParser);
+        super.parse(dataSource, header, contentSize, boxParser);
     }
 
     public String toString() {

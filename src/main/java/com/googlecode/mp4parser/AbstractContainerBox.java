@@ -23,7 +23,6 @@ import com.coremedia.iso.boxes.Container;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 
@@ -78,10 +77,10 @@ public class AbstractContainerBox extends BasicContainer implements Box {
         return header;
     }
 
-    public void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        this.offset = fileChannel.position() - header.remaining();
+    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        this.offset = dataSource.position() - header.remaining();
         this.largeBox = header.remaining() == 16; // sometime people use large boxes without requiring them
-        parseContainer(fileChannel, contentSize, boxParser);
+        parseContainer(dataSource, contentSize, boxParser);
     }
 
 

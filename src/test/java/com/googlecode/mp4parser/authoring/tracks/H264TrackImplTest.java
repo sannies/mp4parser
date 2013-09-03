@@ -17,6 +17,7 @@ package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Container;
+import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -24,7 +25,7 @@ import org.junit.Test;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
+import com.googlecode.mp4parser.DataSource;
 
 /**
  * Simple test to make sure nothing breaks.
@@ -33,7 +34,7 @@ public class H264TrackImplTest {
 
     @Test
     public void freeze() throws IOException {
-        FileChannel fc = new FileInputStream(getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/h264-sample.h264").getChannel();
+        DataSource fc = new FileDataSourceImpl(getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/h264-sample.h264");
         Track t = new H264TrackImpl(fc);
         Movie m = new Movie();
         m.addTrack(t);
@@ -41,7 +42,7 @@ public class H264TrackImplTest {
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
         Container isoFile = mp4Builder.build(m);
 
-       /* FileChannel fcOut = new FileOutputStream("h264-sample.mp4").getChannel();
+       /* DataSource fcOut = new FileOutputStream("h264-sample.mp4").getChannel();
         isoFile.getBox(fcOut);
         fcOut.close();
         */

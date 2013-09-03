@@ -20,7 +20,9 @@ import com.coremedia.iso.BoxParser;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+
+import com.googlecode.mp4parser.DataSource;
+
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -61,13 +63,13 @@ public interface Box {
      * number of bytes should be read from the box source (<code>readableByteChannel</code>).
      * If you need the <code>header</code> buffer at a later stage you have to create a copy.
      *
-     * @param fileChannel the source for this box
+     * @param dataSource the source for this box
      * @param header      the box' already parsed header (create copy if you need it
      *                    later as it will be overwritten)
      * @param contentSize remaining bytes of this box
      * @param boxParser   use it to parse sub-boxes.
      * @throws IOException in case of an error during a read operation
      */
-    void parse(FileChannel fileChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
+    void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
 
 }
