@@ -281,8 +281,10 @@ public class AACTrackImpl extends AbstractTrack {
     private AdtsHeader readADTSHeader(DataSource channel) throws IOException {
         AdtsHeader hdr = new AdtsHeader();
         ByteBuffer bb = ByteBuffer.allocate(7);
-        while (bb.position()<7) {
-            channel.read(bb);
+        while (bb.position() < 7) {
+            if (channel.read(bb) == -1) {
+                return null;
+            }
         }
 
         BitReaderBuffer brb = new BitReaderBuffer((ByteBuffer) bb.rewind());
@@ -324,17 +326,10 @@ public class AACTrackImpl extends AbstractTrack {
             if (first == null) {
                 first = hdr;
             }
-            if (channel instanceof DataSource) {
-                ByteBuffer data = ((DataSource) channel).map(((DataSource) channel).position(), hdr.frameLength - hdr.getSize());
-                samples.add(new SampleImpl(data));
-                ((DataSource) channel).position(((DataSource) channel).position() + hdr.frameLength - hdr.getSize());
-                data.rewind();
-            } else {
-                ByteBuffer data = ByteBuffer.allocate(hdr.frameLength - hdr.getSize());
-                channel.read(data);
-                samples.add(new SampleImpl(data));
-                data.rewind();
-            }
+            ByteBuffer data = channel.map(channel.position(), hdr.frameLength - hdr.getSize());
+            samples.add(new SampleImpl(data));
+            channel.position(channel.position() + hdr.frameLength - hdr.getSize());
+            data.rewind();
             stts.add(new TimeToSampleBox.Entry(1, 1024));
         }
         return first;

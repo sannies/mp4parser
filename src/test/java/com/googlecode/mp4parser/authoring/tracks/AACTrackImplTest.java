@@ -17,6 +17,7 @@ package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Container;
+import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -32,7 +33,7 @@ public class AACTrackImplTest {
 
     @Test
     public void freeze() throws IOException {
-        Track t = new AACTrackImpl(new FileInputStream(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.aac").getChannel());
+        Track t = new AACTrackImpl(new FileDataSourceImpl(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.aac"));
         //Track t = new AACTrackImpl2(new FileInputStream(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.aac"));
         Movie m = new Movie();
         m.addTrack(t);
