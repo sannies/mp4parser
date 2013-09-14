@@ -236,7 +236,13 @@ public class H264TrackImpl extends AbstractTrack {
                 return true;
             }
         }
-        return false;
+        if (test[0] == -1 && test[1] == -1 && test[2] == -1 && test[3] == -1) {
+            // we really at the end of the file and we have not read anymore data
+            return false;
+        }
+        prevScSize = 0;
+        currentScSize = 0;
+        return true;
     }
 
     private enum NALActions {
