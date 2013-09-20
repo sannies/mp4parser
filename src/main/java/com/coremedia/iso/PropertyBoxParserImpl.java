@@ -41,7 +41,11 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
             mapping = new Properties();
             try {
                 mapping.load(is);
-                Enumeration<URL> enumeration = Thread.currentThread().getContextClassLoader().getResources("isoparser-custom.properties");
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                if (cl == null) {
+                    cl = ClassLoader.getSystemClassLoader();
+                }
+                Enumeration<URL> enumeration = cl.getResources("isoparser-custom.properties");
 
                 while (enumeration.hasMoreElements()) {
                     URL url = enumeration.nextElement();
