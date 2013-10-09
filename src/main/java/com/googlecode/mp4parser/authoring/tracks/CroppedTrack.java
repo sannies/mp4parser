@@ -28,7 +28,7 @@ import java.util.*;
  * Generates a Track that starts at fromSample and ends at toSample (exclusive). The user of this class
  * has to make sure that the fromSample is a random access sample.
  * <ul>
- * <li>In AAC this is every single sample</li>
+ * <li>In AAC and most other audio formats this is every single sample</li>
  * <li>In H264 this is every sample that is marked in the SyncSampleBox</li>
  * </ul>
  */
@@ -38,6 +38,13 @@ public class CroppedTrack extends AbstractTrack {
     private int toSample;
     private long[] syncSampleArray;
 
+    /**
+     * Wraps an existing track and masks out a number of samples.
+     * Works like {@link java.util.List#subList(int, int)}.
+     * @param origTrack the original <code>Track</code>
+     * @param fromSample first sample in the new <code>Track</code> - beginning with 0
+     * @param toSample first sample not in the new <code>Track</code> - beginning with 0
+     */
     public CroppedTrack(Track origTrack, long fromSample, long toSample) {
         this.origTrack = origTrack;
         assert fromSample <= Integer.MAX_VALUE;
