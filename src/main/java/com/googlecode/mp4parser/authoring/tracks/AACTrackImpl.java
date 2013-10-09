@@ -126,7 +126,7 @@ public class AACTrackImpl extends AbstractTrack {
 
     private List<Sample> samples;
     List<TimeToSampleBox.Entry> stts;
-    private String lang = "und";
+    private String lang = "eng";
 
 
     public AACTrackImpl(DataSource channel, String lang) throws IOException {
