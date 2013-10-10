@@ -22,7 +22,7 @@ public class ProtectionSpecificHeader {
     ByteBuffer data;
 
     static {
-        uuidRegistry.put(UUID.fromString("9A04F079-9840-4286-AB92-E65BE0885F95"), PlayReadyHeader.class);
+        uuidRegistry.put(PlayReadyHeader.PROTECTION_SYSTEM_ID, PlayReadyHeader.class);
     }
 
     @Override
@@ -56,7 +56,6 @@ public class ProtectionSpecificHeader {
 
     public void parse(ByteBuffer buffer) {
         data = buffer;
-
     }
 
     public ByteBuffer getData() {

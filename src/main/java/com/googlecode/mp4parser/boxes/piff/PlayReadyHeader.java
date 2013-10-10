@@ -1,18 +1,14 @@
 package com.googlecode.mp4parser.boxes.piff;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.googlecode.mp4parser.util.Path;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Specifications &gt; Microsoft PlayReady Format Specification &gt; 2. PlayReady Media Format &gt; 2.7. ASF GUIDs
@@ -35,6 +31,8 @@ import java.util.List;
  * The sample ID is always stored in big-endian byte order.</p>
  */
 public class PlayReadyHeader extends ProtectionSpecificHeader {
+    public static UUID PROTECTION_SYSTEM_ID = UUID.fromString("9A04F079-9840-4286-AB92-E65BE0885F95");
+
     private long length;
     private List<PlayReadyRecord> records;
 
