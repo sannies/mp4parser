@@ -94,7 +94,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                 long[] syncSamples = new long[refSyncSamples.length];
                 long minSampleRate = 192000;
                 for (Track testTrack : movie.getTracks()) {
-                    if ("soun".equals(testTrack.getHandler())) {
+                    if (track.getSampleDescriptionBox().getSampleEntry().getType().equals(testTrack.getSampleDescriptionBox().getSampleEntry().getType())) {
                         AudioSampleEntry ase = (AudioSampleEntry) testTrack.getSampleDescriptionBox().getSampleEntry();
                         if (ase.getSampleRate() < minSampleRate) {
                             minSampleRate = ase.getSampleRate();
@@ -219,8 +219,6 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             LOG.finest("Common SyncSample positions vs. this tracks SyncSample positions: " + nuSyncSamples.size() + " vs. " + syncSamples.length);
         }
         // End: Warn user if samples are not matching!
-
-
 
 
         List<Long> finalSampleList = new LinkedList<Long>();
