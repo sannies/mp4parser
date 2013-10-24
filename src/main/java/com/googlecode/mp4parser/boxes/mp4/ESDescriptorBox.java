@@ -34,6 +34,10 @@ public class ESDescriptorBox extends AbstractDescriptorBox {
         return (ESDescriptor) super.getDescriptor();
     }
 
+    public void setEsDescriptor(ESDescriptor esDescriptor) {
+        super.setDescriptor(esDescriptor);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

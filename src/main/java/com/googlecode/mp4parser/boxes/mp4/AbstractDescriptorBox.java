@@ -32,11 +32,15 @@ public class AbstractDescriptorBox extends AbstractFullBox {
     private static Logger log = Logger.getLogger(AbstractDescriptorBox.class.getName());
 
 
-    public BaseDescriptor descriptor;
-    public ByteBuffer data;
+    protected BaseDescriptor descriptor;
+    protected ByteBuffer data;
 
     public AbstractDescriptorBox(String type) {
         super(type);
+    }
+
+    public ByteBuffer getData() {
+        return data;
     }
 
     @Override

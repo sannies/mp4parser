@@ -16,6 +16,10 @@ public class MemoryDataSourceImpl implements DataSource {
         this.data = ByteBuffer.wrap(data);
     }
 
+    public MemoryDataSourceImpl(ByteBuffer buffer) {
+        this.data = buffer;
+    }
+
     public int read(ByteBuffer byteBuffer) throws IOException {
         byte[] buf = new byte[Math.min(byteBuffer.remaining(), data.remaining())];
         data.get(buf);
