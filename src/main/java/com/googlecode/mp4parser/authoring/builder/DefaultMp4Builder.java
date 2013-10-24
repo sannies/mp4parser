@@ -261,57 +261,35 @@ public class DefaultMp4Builder implements Mp4Builder {
         minf.addBox(dinf);
         //
 
+        Box stbl = createStbl(track, movie, chunks);
+        minf.addBox(stbl);
+        mdia.addBox(minf);
+
+        return trackBox;
+    }
+
+    protected Box createStbl(Track track, Movie movie, Map<Track, int[]> chunks) {
         SampleTableBox stbl = new SampleTableBox();
 
+        createStsd(track, stbl);
+        createStts(track, stbl);
+        createCtts(track, stbl);
+        createStss(track, stbl);
+        createSdtp(track, stbl);
+        createStsc(track, chunks, stbl);
+        createStsz(track, stbl);
+        createStco(track, movie, chunks, stbl);
+
+        return stbl;
+    }
+
+    protected void createStsd(Track track, SampleTableBox stbl) {
         stbl.addBox(track.getSampleDescriptionBox());
+    }
 
-        List<TimeToSampleBox.Entry> decodingTimeToSampleEntries = track.getDecodingTimeEntries();
-        if (decodingTimeToSampleEntries != null && !decodingTimeToSampleEntries.isEmpty()) {
-            TimeToSampleBox stts = new TimeToSampleBox();
-            stts.setEntries(decodingTimeToSampleEntries);
-            stbl.addBox(stts);
-        }
-
-        List<CompositionTimeToSample.Entry> compositionTimeToSampleEntries = track.getCompositionTimeEntries();
-        if (compositionTimeToSampleEntries != null && !compositionTimeToSampleEntries.isEmpty()) {
-            CompositionTimeToSample ctts = new CompositionTimeToSample();
-            ctts.setEntries(compositionTimeToSampleEntries);
-            stbl.addBox(ctts);
-        }
-
-        long[] syncSamples = track.getSyncSamples();
-        if (syncSamples != null && syncSamples.length > 0) {
-            SyncSampleBox stss = new SyncSampleBox();
-            stss.setSampleNumber(syncSamples);
-            stbl.addBox(stss);
-        }
-
-        if (track.getSampleDependencies() != null && !track.getSampleDependencies().isEmpty()) {
-            SampleDependencyTypeBox sdtp = new SampleDependencyTypeBox();
-            sdtp.setEntries(track.getSampleDependencies());
-            stbl.addBox(sdtp);
-        }
+    protected void createStco(Track track, Movie movie, Map<Track, int[]> chunks, SampleTableBox stbl) {
         int[] tracksChunkSizes = chunks.get(track);
 
-        SampleToChunkBox stsc = new SampleToChunkBox();
-        stsc.setEntries(new LinkedList<SampleToChunkBox.Entry>());
-        long lastChunkSize = Integer.MIN_VALUE; // to be sure the first chunks hasn't got the same size
-        for (int i = 0; i < tracksChunkSizes.length; i++) {
-            // The sample description index references the sample description box
-            // that describes the samples of this chunk. My Tracks cannot have more
-            // than one sample description box. Therefore 1 is always right
-            // the first chunk has the number '1'
-            if (lastChunkSize != tracksChunkSizes[i]) {
-                stsc.getEntries().add(new SampleToChunkBox.Entry(i + 1, tracksChunkSizes[i], 1));
-                lastChunkSize = tracksChunkSizes[i];
-            }
-        }
-        stbl.addBox(stsc);
-
-        SampleSizeBox stsz = new SampleSizeBox();
-        stsz.setSampleSizes(track2SampleSizes.get(track));
-
-        stbl.addBox(stsz);
         // The ChunkOffsetBox we create here is just a stub
         // since we haven't created the whole structure we can't tell where the
         // first chunk starts (mdat box). So I just let the chunk offset
@@ -352,10 +330,67 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
         stco.setChunkOffsets(chunkOffset);
         stbl.addBox(stco);
-        minf.addBox(stbl);
-        mdia.addBox(minf);
+    }
 
-        return trackBox;
+    protected void createStsz(Track track, SampleTableBox stbl) {
+        SampleSizeBox stsz = new SampleSizeBox();
+        stsz.setSampleSizes(track2SampleSizes.get(track));
+
+        stbl.addBox(stsz);
+    }
+
+    protected void createStsc(Track track, Map<Track, int[]> chunks, SampleTableBox stbl) {
+        int[] tracksChunkSizes = chunks.get(track);
+
+        SampleToChunkBox stsc = new SampleToChunkBox();
+        stsc.setEntries(new LinkedList<SampleToChunkBox.Entry>());
+        long lastChunkSize = Integer.MIN_VALUE; // to be sure the first chunks hasn't got the same size
+        for (int i = 0; i < tracksChunkSizes.length; i++) {
+            // The sample description index references the sample description box
+            // that describes the samples of this chunk. My Tracks cannot have more
+            // than one sample description box. Therefore 1 is always right
+            // the first chunk has the number '1'
+            if (lastChunkSize != tracksChunkSizes[i]) {
+                stsc.getEntries().add(new SampleToChunkBox.Entry(i + 1, tracksChunkSizes[i], 1));
+                lastChunkSize = tracksChunkSizes[i];
+            }
+        }
+        stbl.addBox(stsc);
+    }
+
+    protected void createSdtp(Track track, SampleTableBox stbl) {
+        if (track.getSampleDependencies() != null && !track.getSampleDependencies().isEmpty()) {
+            SampleDependencyTypeBox sdtp = new SampleDependencyTypeBox();
+            sdtp.setEntries(track.getSampleDependencies());
+            stbl.addBox(sdtp);
+        }
+    }
+
+    protected void createStss(Track track, SampleTableBox stbl) {
+        long[] syncSamples = track.getSyncSamples();
+        if (syncSamples != null && syncSamples.length > 0) {
+            SyncSampleBox stss = new SyncSampleBox();
+            stss.setSampleNumber(syncSamples);
+            stbl.addBox(stss);
+        }
+    }
+
+    protected void createCtts(Track track, SampleTableBox stbl) {
+        List<CompositionTimeToSample.Entry> compositionTimeToSampleEntries = track.getCompositionTimeEntries();
+        if (compositionTimeToSampleEntries != null && !compositionTimeToSampleEntries.isEmpty()) {
+            CompositionTimeToSample ctts = new CompositionTimeToSample();
+            ctts.setEntries(compositionTimeToSampleEntries);
+            stbl.addBox(ctts);
+        }
+    }
+
+    protected void createStts(Track track, SampleTableBox stbl) {
+        List<TimeToSampleBox.Entry> decodingTimeToSampleEntries = track.getDecodingTimeEntries();
+        if (decodingTimeToSampleEntries != null && !decodingTimeToSampleEntries.isEmpty()) {
+            TimeToSampleBox stts = new TimeToSampleBox();
+            stts.setEntries(decodingTimeToSampleEntries);
+            stbl.addBox(stts);
+        }
     }
 
     private class InterleaveChunkMdat implements Box {
