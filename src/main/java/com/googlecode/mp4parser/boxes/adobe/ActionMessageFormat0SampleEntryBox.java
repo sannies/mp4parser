@@ -27,7 +27,7 @@ public class ActionMessageFormat0SampleEntryBox extends AbstractSampleEntry {
         dataSource.read(bb);
         bb.position(6);// ignore 6 reserved bytes;
         dataReferenceIndex = IsoTypeReader.readUInt16(bb);
-        parseContainer(dataSource, contentSize, boxParser);
+        parseContainer(dataSource, contentSize - 8, boxParser);
     }
 
     @Override

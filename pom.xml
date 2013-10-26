@@ -262,9 +262,9 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
+            <id>release</id>
             <name>Sonatype Nexus Snapshots</name>
-            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://repository.castlabs.com/content/repositories/snapshots/</url>
         </snapshotRepository>
         <repository>
             <id>sonatype-nexus-staging</id>

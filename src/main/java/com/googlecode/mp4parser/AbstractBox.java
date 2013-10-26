@@ -258,6 +258,7 @@ public abstract class AbstractBox implements Box {
 
 
         if (content.remaining() != bb.remaining()) {
+            System.err.print(this.getType() + ": remaining differs " + content.remaining() + " vs. " + bb.remaining());
             LOG.logError(this.getType() + ": remaining differs " + content.remaining() + " vs. " + bb.remaining());
             return false;
         }

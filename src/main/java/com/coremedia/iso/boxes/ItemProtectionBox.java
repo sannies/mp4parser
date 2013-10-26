@@ -79,7 +79,7 @@ public class ItemProtectionBox extends AbstractContainerBox implements FullBox {
         version = IsoTypeReader.readUInt8(versionFlagNumOfChildBoxes);
         flags = IsoTypeReader.readUInt24(versionFlagNumOfChildBoxes);
         // number of child boxes is not required
-        parseContainer(dataSource, contentSize, boxParser);
+        parseContainer(dataSource, contentSize - 6, boxParser);
     }
 
     @Override
