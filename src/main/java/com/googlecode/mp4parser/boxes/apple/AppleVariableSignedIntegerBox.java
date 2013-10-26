@@ -14,7 +14,15 @@ public abstract class AppleVariableSignedIntegerBox extends AppleDataBox {
     }
 
     long value;
-    int intLength = -1;
+    int intLength = 1;
+
+    public int getIntLength() {
+        return intLength;
+    }
+
+    public void setIntLength(int intLength) {
+        this.intLength = intLength;
+    }
 
     public long getValue() {
         return value;
@@ -22,8 +30,9 @@ public abstract class AppleVariableSignedIntegerBox extends AppleDataBox {
 
     public void setValue(long value) {
 
-
-        if (value <= 32767 && value > -32768 && intLength<2) {
+        if (value <= 127 && value > -128) {
+            intLength = 1;
+        } else if (value <= 32767 && value > -32768 && intLength<2) {
             intLength = 2;
         } else if (value <= 8388607 && value > -8388608&& intLength<3) {
             intLength = 3;
