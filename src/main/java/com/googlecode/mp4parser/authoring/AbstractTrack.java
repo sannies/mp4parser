@@ -16,6 +16,10 @@
 
 package com.googlecode.mp4parser.authoring;
 
+import com.coremedia.iso.boxes.*;
+
+import java.util.List;
+
 /**
  *
  */
@@ -57,4 +61,23 @@ public abstract class AbstractTrack implements Track {
         this.inPoster = inPoster;
     }
 
+    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
+        return null;
+    }
+
+    public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
+        return null;
+    }
+
+    public long[] getSyncSamples() {
+        return null;
+    }
+
+    public List<SampleDependencyTypeBox.Entry> getSampleDependencies() {
+        return null;
+    }
+
+    public SubSampleInformationBox getSubsampleInformationBox() {
+        return null;
+    }
 }

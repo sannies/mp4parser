@@ -188,10 +188,6 @@ public class H264TrackImpl extends AbstractTrack {
         return new VideoMediaHeaderBox();
     }
 
-    public SubSampleInformationBox getSubsampleInformationBox() {
-        return null;
-    }
-
     private boolean readVariables() {
         width = (seqParameterSet.pic_width_in_mbs_minus1 + 1) * 16;
         int mult = 2;
@@ -201,7 +197,7 @@ public class H264TrackImpl extends AbstractTrack {
         height = 16 * (seqParameterSet.pic_height_in_map_units_minus1 + 1) * mult;
         if (seqParameterSet.frame_cropping_flag) {
             int chromaArrayType = 0;
-            if (seqParameterSet.residual_color_transform_flag == false) {
+            if (!seqParameterSet.residual_color_transform_flag) {
                 chromaArrayType = seqParameterSet.chroma_format_idc.getId();
             }
             int cropUnitX = 1;
@@ -414,12 +410,6 @@ public class H264TrackImpl extends AbstractTrack {
 	    }
     	
     }
-    
-
-    protected InputStream cleanBuffer(byte[] data) {
-    	ByteArrayInputStream is = new ByteArrayInputStream(data);
-    	return cleanBuffer(is);
-    }
 
     protected InputStream cleanBuffer(InputStream is) {
     	return new CleanInputStream(is);
@@ -508,10 +498,6 @@ public class H264TrackImpl extends AbstractTrack {
                 frametick = 3600;
             }
         }
-    }
-
-    public void printAccessUnitDelimiter(byte[] data) {
-        LOG.fine("Access unit delimiter: " + (data[1] >> 5));
     }
 
     public static class SliceHeader {

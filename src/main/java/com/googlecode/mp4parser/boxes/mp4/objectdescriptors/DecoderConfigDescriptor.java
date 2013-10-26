@@ -106,7 +106,7 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
         }
     }
     public int serializedSize() {
-        return 15 + audioSpecificInfo.serializedSize();
+        return 15 + (audioSpecificInfo == null ? 0 : audioSpecificInfo.serializedSize());
     }
 
     public ByteBuffer serialize() {
@@ -119,7 +119,8 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
         IsoTypeWriter.writeUInt24(out, bufferSizeDB);
         IsoTypeWriter.writeUInt32(out, maxBitRate);
         IsoTypeWriter.writeUInt32(out, avgBitRate);
-        out.put(audioSpecificInfo.serialize().array());
+        if (audioSpecificInfo != null)
+            out.put(audioSpecificInfo.serialize().array());
         return out;
     }
 
