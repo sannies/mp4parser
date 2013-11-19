@@ -28,7 +28,7 @@ public abstract class AppleDataBox extends AbstractBox {
             ByteBuffer b = ByteBuffer.wrap(new byte[2]);
             IsoTypeWriter.writeUInt16(b, dataLanguage);
             b.reset();
-            return new Locale.Builder().setLanguage(IsoTypeReader.readIso639(b)).build().getDisplayLanguage();
+            return new Locale(IsoTypeReader.readIso639(b)).getDisplayLanguage();
         } else {
             return lang;
         }
