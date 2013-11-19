@@ -23,7 +23,8 @@ public class AppleRecordingYearBoxTest extends BoxWriteReadBase<AppleRecordingYe
     @Test
     public void testDateFormat() throws Exception {
         System.err.println(new AppleRecordingYearBox().df.format(new Date()));
-        new AppleRecordingYearBox().df.parse("2013-09-29T07:00:00Z");
+        new AppleRecordingYearBox().df.parse( AppleRecordingYearBox.iso8601toRfc822Date("2013-09-29T07:00:00Z"));
+        new AppleRecordingYearBox().df.parse( AppleRecordingYearBox.iso8601toRfc822Date("2013-09-29T07:00:00+04:30"));
 
     }
 }

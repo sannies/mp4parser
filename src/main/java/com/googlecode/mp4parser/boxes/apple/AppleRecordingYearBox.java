@@ -20,7 +20,7 @@ public class AppleRecordingYearBox extends AppleDataBox {
 
     public AppleRecordingYearBox() {
         super("©day", 1);
-        df  = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ssX");
+        df  = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ssZ");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
@@ -35,21 +35,31 @@ public class AppleRecordingYearBox extends AppleDataBox {
     @Override
     protected byte[] writeData() {
 
-        return Utf8.convert(df.format(date));
+        return Utf8.convert(rfc822toIso8601Date(df.format(date)));
     }
 
     @Override
     protected void parseData(ByteBuffer data) {
         String dateString = IsoTypeReader.readString(data, data.remaining());
         try {
-            date = df.parse(dateString);
+            date = df.parse(iso8601toRfc822Date(dateString));
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
     }
 
+    protected static String iso8601toRfc822Date(String iso8601) {
+        iso8601 = iso8601.replaceAll("Z$", "+0000");
+        iso8601 = iso8601.replaceAll("([0-9][0-9]):([0-9][0-9])$", "$1$2");
+        return iso8601;
+    }
+    protected static String rfc822toIso8601Date(String rfc622) {
+        rfc622 = rfc622.replaceAll("\\+0000$", "Z");
+        return rfc622;
+    }
+
     @Override
     protected int getDataLength() {
-        return Utf8.convert(df.format(date)).length;
+        return Utf8.convert(rfc822toIso8601Date(df.format(date))).length;
     }
 }
