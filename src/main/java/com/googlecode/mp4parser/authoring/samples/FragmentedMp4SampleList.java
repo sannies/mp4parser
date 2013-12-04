@@ -130,7 +130,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                     }
                 }
                 try {
-                    return new SampleImpl(((IsoFile) moof.getParent()).getByteBuffer(offset, sampleSize));
+                    return new SampleImpl(offset, moof.getParent().getByteBuffer(offset, sampleSize));
                 } catch (IOException e) {
                     return null;
                 }

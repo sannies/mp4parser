@@ -82,7 +82,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             offset += ssb.getSampleSizeAtIndex((currentSampleNo++) - 1);
         }
         try {
-            return new SampleImpl(this.topLevel.getByteBuffer(offset, ssb.getSampleSizeAtIndex(currentSampleNo - 1)));
+            return new SampleImpl(offset, this.topLevel.getByteBuffer(offset, ssb.getSampleSizeAtIndex(currentSampleNo - 1)));
         } catch (IOException e) {
             return null;
         }

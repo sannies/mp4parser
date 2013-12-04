@@ -687,11 +687,15 @@ public class FragmentedMp4Builder implements Mp4Builder {
     protected Box createStbl(Movie movie, Track track) {
         SampleTableBox stbl = new SampleTableBox();
 
-        stbl.addBox(track.getSampleDescriptionBox());
+        createStsd(track, stbl);
         stbl.addBox(new TimeToSampleBox());
         //stbl.addBox(new SampleToChunkBox());
         stbl.addBox(new StaticChunkOffsetBox());
         return stbl;
+    }
+
+    protected void createStsd(Track track, SampleTableBox stbl) {
+        stbl.addBox(track.getSampleDescriptionBox());
     }
 
     protected Box createMinf(Track track, Movie movie) {

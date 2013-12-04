@@ -2,6 +2,7 @@ package com.googlecode.mp4parser.boxes.piff;
 
 
 import com.coremedia.iso.Hex;
+import com.googlecode.mp4parser.contentprotection.GenericHeader;
 
 import java.lang.Class;
 import java.lang.IllegalAccessException;
@@ -17,28 +18,20 @@ import java.util.Map;
 import java.util.UUID;
 
 
-public class ProtectionSpecificHeader {
+public abstract class ProtectionSpecificHeader {
     protected static Map<UUID, Class<? extends ProtectionSpecificHeader>> uuidRegistry = new HashMap<UUID, Class<? extends ProtectionSpecificHeader>>();
-    ByteBuffer data;
 
-    static {
-        uuidRegistry.put(PlayReadyHeader.PROTECTION_SYSTEM_ID, PlayReadyHeader.class);
-    }
+    public abstract UUID getSystemId();
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ProtectionSpecificHeader) {
-            if (this.getClass().equals(obj.getClass())) {
-                return data.equals(((ProtectionSpecificHeader) obj).data);
-            }
-        }
-        return false;
+        throw new RuntimeException("somebody called equals on me but that's not supposed to happen.");
     }
 
     public static ProtectionSpecificHeader createFor(UUID systemId, ByteBuffer bufferWrapper) {
         final Class<? extends ProtectionSpecificHeader> aClass = uuidRegistry.get(systemId);
 
-        ProtectionSpecificHeader protectionSpecificHeader = new ProtectionSpecificHeader();
+        ProtectionSpecificHeader protectionSpecificHeader = null;
         if (aClass != null) {
             try {
                 protectionSpecificHeader = aClass.newInstance();
@@ -49,18 +42,18 @@ public class ProtectionSpecificHeader {
                 throw new RuntimeException(e);
             }
         }
+
+        if (protectionSpecificHeader == null) {
+            protectionSpecificHeader = new GenericHeader();
+        }
         protectionSpecificHeader.parse(bufferWrapper);
         return protectionSpecificHeader;
 
     }
 
-    public void parse(ByteBuffer buffer) {
-        data = buffer;
-    }
+    public abstract void parse(ByteBuffer byteBuffer);
 
-    public ByteBuffer getData() {
-        return data;
-    }
+    public abstract ByteBuffer getData();
 
     @Override
     public String toString() {

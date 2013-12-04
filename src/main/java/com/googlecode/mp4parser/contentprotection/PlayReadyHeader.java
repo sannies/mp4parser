@@ -1,7 +1,8 @@
-package com.googlecode.mp4parser.boxes.piff;
+package com.googlecode.mp4parser.contentprotection;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.boxes.piff.ProtectionSpecificHeader;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -36,8 +37,13 @@ public class PlayReadyHeader extends ProtectionSpecificHeader {
     private long length;
     private List<PlayReadyRecord> records;
 
-    public PlayReadyHeader() {
+    static {
+        uuidRegistry.put(PROTECTION_SYSTEM_ID, PlayReadyHeader.class);
+    }
 
+    @Override
+    public UUID getSystemId() {
+        return PROTECTION_SYSTEM_ID;
     }
 
     @Override
