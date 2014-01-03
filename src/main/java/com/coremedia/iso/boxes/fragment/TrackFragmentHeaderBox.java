@@ -45,11 +45,13 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
     private long defaultSampleSize = -1;
     private SampleFlags defaultSampleFlags;
     private boolean durationIsEmpty;
+    private boolean defaultBaseIsMoof;
 
     public TrackFragmentHeaderBox() {
         super(TYPE);
     }
 
+    @Override
     protected long getContentSize() {
         long size = 8;
         int flags = getFlags();
@@ -72,6 +74,7 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
     }
 
 
+    @Override
     protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         IsoTypeWriter.writeUInt32(byteBuffer, trackId);
@@ -114,6 +117,9 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         }
         if ((getFlags() & 0x10000) == 0x10000) { //durationIsEmpty
             durationIsEmpty = true;
+        }
+        if ((getFlags() & 0x20000) == 0x20000) { //defaultBaseIsMoof
+            defaultBaseIsMoof = true;
         }
     }
 
@@ -165,6 +171,10 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         return durationIsEmpty;
     }
 
+    public boolean isDefaultBaseIsMoof() {
+        return defaultBaseIsMoof;
+    }
+
     public void setTrackId(long trackId) {
         this.trackId = trackId;
     }
@@ -207,6 +217,11 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         this.durationIsEmpty = durationIsEmpty;
     }
 
+    public void setDefaultBaseIsMoof(boolean defaultBaseIsMoof) {
+        setFlags(getFlags() | 0x20000); // activate the field
+        this.defaultBaseIsMoof = defaultBaseIsMoof;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -218,6 +233,7 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         sb.append(", defaultSampleSize=").append(defaultSampleSize);
         sb.append(", defaultSampleFlags=").append(defaultSampleFlags);
         sb.append(", durationIsEmpty=").append(durationIsEmpty);
+        sb.append(", defaultBaseIsMoof=").append(defaultBaseIsMoof);
         sb.append('}');
         return sb.toString();
     }
