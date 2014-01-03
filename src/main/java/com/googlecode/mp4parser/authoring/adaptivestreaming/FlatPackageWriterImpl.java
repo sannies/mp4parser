@@ -194,7 +194,7 @@ public class FlatPackageWriterImpl implements PackageWriter {
     public Movie correctTimescale(Movie movie) {
         Movie nuMovie = new Movie();
         for (Track track : movie.getTracks()) {
-            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, ismvBuilder.getFragmentIntersectionFinder().sampleNumbers(track, movie)));
+            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, ismvBuilder.getFragmentIntersectionFinder().sampleNumbers(track, movie, null)));
         }
         return nuMovie;
 

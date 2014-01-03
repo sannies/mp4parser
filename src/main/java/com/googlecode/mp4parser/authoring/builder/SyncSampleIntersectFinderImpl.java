@@ -61,7 +61,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
      * @param movie the context of the track
      * @return an array containing the ordinal of each fragment's first sample
      */
-    public long[] sampleNumbers(Track track, Movie movie) {
+    public long[] sampleNumbers(Track track, Movie movie, Track referenceTrack) {
         final CacheTuple key = new CacheTuple(track, movie);
         final long[] result = getSampleNumbersCache.get(key);
         if (result != null) {
@@ -78,16 +78,17 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                 throw new RuntimeException("Video Tracks need sync samples. Only tracks other than video may have no sync samples.");
             }
         } else if ("soun".equals(track.getHandler())) {
-            Track referenceTrack = null;
-            for (Track candidate : movie.getTracks()) {
-                if (candidate.getSyncSamples() != null && "vide".equals(candidate.getHandler()) && candidate.getSyncSamples().length > 0) {
-                    referenceTrack = candidate;
+            if (referenceTrack == null) {
+                for (Track candidate : movie.getTracks()) {
+                    if (candidate.getSyncSamples() != null && "vide".equals(candidate.getHandler()) && candidate.getSyncSamples().length > 0) {
+                        referenceTrack = candidate;
+                    }
                 }
             }
             if (referenceTrack != null) {
 
                 // Gets the reference track's fra
-                long[] refSyncSamples = sampleNumbers(referenceTrack, movie);
+                long[] refSyncSamples = sampleNumbers(referenceTrack, movie, referenceTrack);
 
                 int refSampleCount = referenceTrack.getSamples().size();
 
@@ -130,7 +131,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             // Ok, my track has no sync samples - let's find one with sync samples.
             for (Track candidate : movie.getTracks()) {
                 if (candidate.getSyncSamples() != null && candidate.getSyncSamples().length > 0) {
-                    long[] refSyncSamples = sampleNumbers(candidate, movie);
+                    long[] refSyncSamples = sampleNumbers(candidate, movie, candidate);
                     int refSampleCount = candidate.getSamples().size();
 
                     long[] syncSamples = new long[refSyncSamples.length];

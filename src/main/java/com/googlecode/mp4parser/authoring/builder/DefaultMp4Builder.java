@@ -499,7 +499,7 @@ public class DefaultMp4Builder implements Mp4Builder {
      */
     int[] getChunkSizes(Track track, Movie movie) {
 
-        long[] referenceChunkStarts = intersectionFinder.sampleNumbers(track, movie);
+        long[] referenceChunkStarts = intersectionFinder.sampleNumbers(track, movie, null);
         int[] chunkSizes = new int[referenceChunkStarts.length];
 
 
