@@ -16,17 +16,7 @@
 package com.googlecode.mp4parser.authoring;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SubSampleInformationBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.coremedia.iso.boxes.fragment.SampleFlags;
@@ -35,7 +25,7 @@ import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
-import com.googlecode.mp4parser.util.DateHelper;
+import com.googlecode.mp4parser.util.Path;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -190,6 +180,7 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setWidth(tkhd.getWidth());
         trackMetaData.setLayer(tkhd.getLayer());
         trackMetaData.setMatrix(tkhd.getMatrix());
+        trackMetaData.setEditList((EditListBox) Path.getPath(trackBox, "edts/elst"));
     }
 
     public List<Sample> getSamples() {

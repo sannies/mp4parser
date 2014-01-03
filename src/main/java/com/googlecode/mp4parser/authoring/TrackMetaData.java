@@ -15,6 +15,7 @@
  */
 package com.googlecode.mp4parser.authoring;
 
+import com.coremedia.iso.boxes.EditListBox;
 import com.googlecode.mp4parser.util.Matrix;
 
 import java.util.Date;
@@ -41,6 +42,7 @@ public class TrackMetaData implements Cloneable {
      * in front of track 0, and so on.
      */
     int layer;
+    private EditListBox editList;
 
     public String getLanguage() {
         return language;
@@ -128,6 +130,14 @@ public class TrackMetaData implements Cloneable {
 
     public void setMatrix(Matrix matrix) {
         this.matrix = matrix;
+    }
+
+    public void setEditList(EditListBox editList) {
+        this.editList = editList;
+    }
+
+    public EditListBox getEditList() {
+        return editList;
     }
 
     public Object clone() {
