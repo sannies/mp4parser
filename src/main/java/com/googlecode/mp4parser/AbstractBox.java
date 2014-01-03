@@ -155,7 +155,7 @@ public abstract class AbstractBox implements Box {
             }
 
         } else {
-            ByteBuffer header = ByteBuffer.allocate(isSmallBox() ? 8 : 16);
+            ByteBuffer header = ByteBuffer.allocate((isSmallBox() ? 8 : 16) + (UserBox.TYPE.equals(getType()) ? 16 : 0));
             getHeader(header);
             os.write((ByteBuffer) header.rewind());
             dataSource.transferTo(contentStartPosition, memMapSize, os);
