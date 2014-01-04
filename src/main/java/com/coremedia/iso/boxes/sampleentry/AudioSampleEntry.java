@@ -22,8 +22,13 @@ import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.DataSource;
 import java.nio.channels.WritableByteChannel;
+
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2} || "{@value #TYPE3} || "{@value #TYPE4} || "{@value #TYPE5} || "{@value #TYPE7} || "{@value #TYPE8} || "{@value #TYPE9} || "{@value #TYPE10} || "{@value #TYPE11} || "{@value #TYPE12} || "{@value #TYPE13}"</h1>
@@ -231,11 +236,50 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
             appleStuff.get(soundVersion2Data);
         }
 
+        if ("owma".equals(type)) {
+            System.err.println("owma");
+            final long remaining = contentSize - 28
+                    - (soundVersion == 1 ? 16 : 0)
+                    - (soundVersion == 2 ? 36 : 0);
+            final ByteBuffer owmaSpecifics = ByteBuffer.allocate(l2i(remaining));
+            dataSource.read(owmaSpecifics);
 
-        parseContainer(dataSource,
-                contentSize - 28
+            addBox(new Box() {
+                public Container getParent() {
+                    return AudioSampleEntry.this;
+                }
+
+                public void setParent(Container parent) {
+                    assert parent == AudioSampleEntry.this : "you cannot diswown this special box";
+                }
+
+                public long getSize() {
+                    return remaining;
+                }
+
+                public long getOffset() {
+                    return 0;
+                }
+
+                public String getType() {
+                    return "----";
+                }
+
+                public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+                    owmaSpecifics.rewind();
+                    writableByteChannel.write(owmaSpecifics);
+                }
+
+                public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+                    throw new RuntimeException("NotImplemented");
+                }
+            });
+        } else {
+            parseContainer(dataSource,
+                    contentSize - 28
                         - (soundVersion == 1 ? 16 : 0)
                         - (soundVersion == 2 ? 36 : 0), boxParser);
+        }
     }
 
     @Override
