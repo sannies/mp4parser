@@ -24,7 +24,7 @@ public class SyncSampleIntersectFinderImplTest {
         long[] fragmentStartSamplesRef = null;
         Assert.assertTrue(m.getTracks().size() > 1);
         for (Track track : m.getTracks()) {
-            long[] fragmentStartSamples = syncSampleIntersectFinder.sampleNumbers(track, m);
+            long[] fragmentStartSamples = syncSampleIntersectFinder.sampleNumbers(track, m, track);
             Assert.assertNotNull(fragmentStartSamples);
             if (fragmentStartSamplesRef == null) {
                 fragmentStartSamplesRef = fragmentStartSamples;
@@ -82,7 +82,7 @@ public class SyncSampleIntersectFinderImplTest {
         SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl();
         long[] fragmentStartSamplesRef = null;
         for (Track track : m.getTracks()) {
-            long[] fragmentStartSamples = syncSampleIntersectFinder.sampleNumbers(track, m);
+            long[] fragmentStartSamples = syncSampleIntersectFinder.sampleNumbers(track, m, track);
             Assert.assertNotNull(fragmentStartSamples);
             if (fragmentStartSamplesRef == null) {
                 fragmentStartSamplesRef = fragmentStartSamples;

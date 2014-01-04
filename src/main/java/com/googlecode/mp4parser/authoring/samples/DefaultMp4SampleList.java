@@ -9,6 +9,8 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.SampleImpl;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
+import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +23,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 public class DefaultMp4SampleList extends AbstractList<Sample> {
     Container topLevel;
     TrackBox trackBox = null;
+    SoftReference<Sample>[] cache = null;
 
     public DefaultMp4SampleList(long track, Container topLevel) {
         this.topLevel = topLevel;
@@ -35,13 +38,17 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         if (trackBox == null) {
             throw new RuntimeException("This MP4 does not contain track " + track);
         }
+        cache = (SoftReference<Sample>[]) Array.newInstance(SoftReference.class, size());
     }
 
 
     @Override
     public Sample get(int index) {
-        if (index >= trackBox.getSampleTableBox().getSampleSizeBox().getSampleCount()) {
+        if (index >= cache.length) {
             throw new IndexOutOfBoundsException();
+        }
+        if ((cache[index] != null) && (cache[index].get() != null)) {
+            return cache[index].get();
         }
 
         List<SampleToChunkBox.Entry> entries = trackBox.getSampleTableBox().getSampleToChunkBox().getEntries();
@@ -75,15 +82,17 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         } while ((currentSampleNo += currentSamplePerChunk) <= targetSampleNo);
         currentSampleNo -= currentSamplePerChunk;
 
-        long chunkStart = trackBox.getSampleTableBox().getChunkOffsetBox().getChunkOffsets()[l2i(currentChunkNo - 1)];
-        long offset = chunkStart;
+        long offset = trackBox.getSampleTableBox().getChunkOffsetBox().getChunkOffsets()[l2i(currentChunkNo - 1)];
         SampleSizeBox ssb = trackBox.getSampleTableBox().getSampleSizeBox();
         while (currentSampleNo < targetSampleNo) {
             offset += ssb.getSampleSizeAtIndex((currentSampleNo++) - 1);
         }
         try {
-            return new SampleImpl(offset, this.topLevel.getByteBuffer(offset, ssb.getSampleSizeAtIndex(currentSampleNo - 1)));
+            SampleImpl sampleImpl = new SampleImpl(offset, this.topLevel.getByteBuffer(offset, ssb.getSampleSizeAtIndex(currentSampleNo - 1)));
+            cache[index] = new SoftReference<Sample>(sampleImpl);
+            return sampleImpl;
         } catch (IOException e) {
+            e.printStackTrace();
             return null;
         }
     }
