@@ -240,9 +240,9 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         for (EC3SpecificBox.Entry entry : ec3SpecificBox.getEntries()) {
             /*
             Table 4.3: Audio coding mode
-            acmod Audio coding mode Nfchans Channel array ordering
-            000 1 + 1 2 Ch1, Ch2
-            001 1/0 1 C
+            acmod   Audio coding mode   Nfchans Channel array ordering
+            000     1 + 1               2       Ch1, Ch2
+            001     1/0                 1       C
             010 2/0 2 L, R
             011 3/0 3 L, C, R
             100 2/1 3 L, R, S

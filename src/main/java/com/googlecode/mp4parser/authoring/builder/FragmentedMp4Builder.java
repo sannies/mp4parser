@@ -173,6 +173,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         class Mdat implements Box {
             Container parent;
+            long size_ = -1;
 
             public Container getParent() {
                 return parent;
@@ -187,10 +188,12 @@ public class FragmentedMp4Builder implements Mp4Builder {
             }
 
             public long getSize() {
+                if (size_ != -1) return size_;
                 long size = 8; // I don't expect 2gig fragments
                 for (Sample sample : getSamples(startSample, endSample, track, i)) {
                     size += sample.remaining();
                 }
+                size_ = size;
                 return size;
             }
 
@@ -207,7 +210,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
                 List<Sample> samples = getSamples(startSample, endSample, track, i);
                 for (Sample sample : samples) {
-                	sample.writeTo(writableByteChannel);
+                    sample.writeTo(writableByteChannel);
                 }
 
 
@@ -488,12 +491,15 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         long offset = 0;
         long duration = 0;
+
         for (Box box : isoFile.getBoxes()) {
             if (box instanceof MovieFragmentBox) {
                 List<TrackFragmentBox> trafs = ((MovieFragmentBox) box).getBoxes(TrackFragmentBox.class);
                 for (int i = 0; i < trafs.size(); i++) {
                     TrackFragmentBox traf = trafs.get(i);
+
                     if (traf.getTrackFragmentHeaderBox().getTrackId() == track.getTrackMetaData().getTrackId()) {
+
                         // here we are at the offset required for the current entry.
                         List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
                         for (int j = 0; j < truns.size(); j++) {
@@ -509,10 +515,10 @@ public class FragmentedMp4Builder implements Mp4Builder {
                                 } else {
                                     sf = trex.getDefaultSampleFlags();
                                 }
-                                if (sf == null) {
-                                    throw new RuntimeException("Could not find any SampleFlags to indicate random access or not");
+                                if (sf == null && track.getHandler().equals("vide")) {
+                                    throw new RuntimeException("Cannot find SampleFlags for video track but it's required to build tfra");
                                 }
-                                if (sf.getSampleDependsOn() == 2) {
+                                if (sf == null || sf.getSampleDependsOn() == 2) {
                                     offset2timeEntriesThisTrun.add(new TrackFragmentRandomAccessBox.Entry(
                                             duration,
                                             offset,

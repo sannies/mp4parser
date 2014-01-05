@@ -61,8 +61,8 @@ public abstract class AbstractManifestWriter implements ManifestWriter {
         for (Sample sample : track.getSamples()) {
             bitrate += sample.remaining();
         }
-        bitrate *= 8; // from bytes to bits
         bitrate /= ((double) getDuration(track)) / track.getTrackMetaData().getTimescale(); // per second
+        bitrate *= (long) 8; // from bytes to bits
         return bitrate;
     }
 
