@@ -193,10 +193,22 @@ public class SegmentIndexBox extends AbstractFullBox {
             this.sapDeltaTime = sapDeltaTime;
         }
 
+        /**
+         * When set to 1 indicates that the reference is to a segment index ('sidx') box;
+         * otherwise the reference is to media content (e.g., in the case of files based on this specification, to a
+         * movie fragment box); if a separate index segment is used, then entries with reference t
+         * @return the reference type
+         */
         public byte getReferenceType() {
             return referenceType;
         }
 
+        /**
+         * When set to 1 indicates that the reference is to a segment index ('sidx') box;
+         * otherwise the reference is to media content (e.g., in the case of files based on this specification, to a
+         * movie fragment box); if a separate index segment is used, then entries with reference t
+         * @param referenceType the new reference type
+         */
         public void setReferenceType(byte referenceType) {
             this.referenceType = referenceType;
         }
