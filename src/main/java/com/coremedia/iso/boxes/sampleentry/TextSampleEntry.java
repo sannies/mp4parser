@@ -64,6 +64,10 @@ public class TextSampleEntry extends AbstractSampleEntry {
         super(type);
     }
 
+    public void setType(String type) {
+        this.type = type;
+    }
+
     @Override
     public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer content = ByteBuffer.allocate(38);
