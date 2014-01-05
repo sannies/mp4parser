@@ -21,6 +21,7 @@ public class SampleList extends AbstractList<Sample> {
 
     public SampleList(TrackBox trackBox, IsoFile... additionalFragments) {
         Container topLevel = ((Box) trackBox.getParent()).getParent();
+
         if (trackBox.getParent().getBoxes(MovieExtendsBox.class).isEmpty()) {
             if (additionalFragments.length > 0) {
                 throw new RuntimeException("The TrackBox comes from a standard MP4 file. Only use the additionalFragments param if you are dealing with ( fragmented MP4 files AND additional fragments in standalone files )");

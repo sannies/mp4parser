@@ -26,6 +26,13 @@ import java.util.List;
 public class Movie {
     Matrix matrix = Matrix.ROTATE_0;
 
+    public Movie() {
+    }
+
+    public Movie(List<Track> tracks) {
+        this.tracks = tracks;
+    }
+
     List<Track> tracks = new LinkedList<Track>();
 
     public List<Track> getTracks() {
