@@ -67,26 +67,50 @@ public final class BitRateBox extends AbstractBox {
         IsoTypeWriter.writeUInt32(byteBuffer, avgBitrate);
     }
 
+    /**
+     * Get the size of the decoding buffer for the elementary stream in bytes.
+     * @return decoding buffer size
+     */
     public long getBufferSizeDb() {
         return bufferSizeDb;
     }
 
+    /**
+     * Sets the size of the decoding buffer for the elementary stream in bytes
+     * @param bufferSizeDb decoding buffer size
+     */
     public void setBufferSizeDb(long bufferSizeDb) {
         this.bufferSizeDb = bufferSizeDb;
     }
 
+    /**
+     * gets the maximum rate in bits/second over any window of one second.
+     * @return max bit rate
+     */
     public long getMaxBitrate() {
         return maxBitrate;
     }
 
+    /**
+     * Sets the maximum rate in bits/second over any window of one second.
+     * @param maxBitrate max bit rate
+     */
     public void setMaxBitrate(long maxBitrate) {
         this.maxBitrate = maxBitrate;
     }
 
+    /**
+     * Gets the average rate in bits/second over the entire presentation.
+     * @return average bit rate
+     */
     public long getAvgBitrate() {
         return avgBitrate;
     }
 
+    /**
+     * Sets the average rate in bits/second over the entire presentation.
+     * @param avgBitrate the track's average bit rate
+     */
     public void setAvgBitrate(long avgBitrate) {
         this.avgBitrate = avgBitrate;
     }
