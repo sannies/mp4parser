@@ -21,10 +21,9 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
 
+import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -124,6 +123,10 @@ public class TimeToSampleBox extends AbstractFullBox {
         }
     }
 
+
+    static Map<List<Entry>, SoftReference<long[]>> cache =
+            Collections.synchronizedMap(new WeakHashMap<List<Entry>, SoftReference<long[]>>());
+
     /**
      * Decompresses the list of entries and returns the list of decoding times.
      *
@@ -131,6 +134,12 @@ public class TimeToSampleBox extends AbstractFullBox {
      * @return decoding time per sample
      */
     public static long[] blowupTimeToSamples(List<TimeToSampleBox.Entry> entries) {
+        if (cache.containsKey(entries)) {
+            long[] cacheVal = cache.get(entries).get();
+           if (cacheVal != null) {
+               return cacheVal;
+           }
+        }
         long numOfSamples = 0;
         for (TimeToSampleBox.Entry entry : entries) {
             numOfSamples += entry.getCount();
@@ -146,7 +155,7 @@ public class TimeToSampleBox extends AbstractFullBox {
                 decodingTime[current++] = entry.getDelta();
             }
         }
-
+        cache.put(entries, new SoftReference<long[]>(decodingTime));
         return decodingTime;
     }
 
