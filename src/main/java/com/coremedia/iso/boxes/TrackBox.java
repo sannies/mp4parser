@@ -18,6 +18,8 @@ package com.coremedia.iso.boxes;
 
 import com.googlecode.mp4parser.AbstractContainerBox;
 
+import java.util.List;
+
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
  * Tracks are used for two purposes: (a) to contain media data (media tracks) and (b) to contain packetization
@@ -72,6 +74,12 @@ public class TrackBox extends AbstractContainerBox {
             }
         }
         return null;
+    }
+
+    @Override
+    public void setBoxes(List<Box> boxes) {
+        super.setBoxes(boxes);
+        sampleTableBox = null;
     }
 
 }
