@@ -16,6 +16,7 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
@@ -53,8 +54,8 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
     public static final String TYPE = "saio";
 
     private List<Long> offsets = new LinkedList<Long>();
-    private long auxInfoType;
-    private long auxInfoTypeParameter;
+    private String auxInfoType;
+    private String auxInfoTypeParameter;
 
     public SampleAuxiliaryInformationOffsetsBox() {
         super(TYPE);
@@ -69,8 +70,8 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
     protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         if ((getFlags() & 1) == 1) {
-            IsoTypeWriter.writeUInt32(byteBuffer, auxInfoType);
-            IsoTypeWriter.writeUInt32(byteBuffer, auxInfoTypeParameter);
+            byteBuffer.put(IsoFile.fourCCtoBytes(auxInfoType));
+            byteBuffer.put(IsoFile.fourCCtoBytes(auxInfoTypeParameter));
         }
 
         IsoTypeWriter.writeUInt32(byteBuffer, offsets.size());
@@ -88,8 +89,8 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
         parseVersionAndFlags(content);
 
         if ((getFlags() & 1) == 1) {
-            auxInfoType = IsoTypeReader.readUInt32(content);
-            auxInfoTypeParameter = IsoTypeReader.readUInt32(content);
+            auxInfoType = IsoTypeReader.read4cc(content);
+            auxInfoTypeParameter = IsoTypeReader.read4cc(content);
         }
 
         int entryCount = l2i(IsoTypeReader.readUInt32(content));
@@ -105,19 +106,19 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
     }
 
 
-    public long getAuxInfoType() {
+    public String getAuxInfoType() {
         return auxInfoType;
     }
 
-    public void setAuxInfoType(long auxInfoType) {
+    public void setAuxInfoType(String auxInfoType) {
         this.auxInfoType = auxInfoType;
     }
 
-    public long getAuxInfoTypeParameter() {
+    public String getAuxInfoTypeParameter() {
         return auxInfoTypeParameter;
     }
 
-    public void setAuxInfoTypeParameter(long auxInfoTypeParameter) {
+    public void setAuxInfoTypeParameter(String auxInfoTypeParameter) {
         this.auxInfoTypeParameter = auxInfoTypeParameter;
     }
 
