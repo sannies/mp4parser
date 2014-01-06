@@ -9,6 +9,8 @@ public interface Sample {
 	void writeTo(WritableByteChannel channel) throws IOException;
 
 	long remaining();
+
+    long getSize();
 	
 	ByteBuffer asByteBuffer();
 

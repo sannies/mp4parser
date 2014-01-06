@@ -28,6 +28,7 @@ import com.googlecode.mp4parser.AbstractContainerBox;
  */
 public class TrackBox extends AbstractContainerBox {
     public static final String TYPE = "trak";
+    private SampleTableBox sampleTableBox;
 
     public TrackBox() {
         super(TYPE);
@@ -48,11 +49,15 @@ public class TrackBox extends AbstractContainerBox {
      * @return the SampleTableBox or <code>null</code>
      */
     public SampleTableBox getSampleTableBox() {
+        if (sampleTableBox != null) {
+            return sampleTableBox;
+        }
         MediaBox mdia = getMediaBox();
         if (mdia != null) {
             MediaInformationBox minf = mdia.getMediaInformationBox();
             if (minf != null) {
-                return minf.getSampleTableBox();
+                sampleTableBox = minf.getSampleTableBox();
+                return sampleTableBox;
             }
         }
         return null;

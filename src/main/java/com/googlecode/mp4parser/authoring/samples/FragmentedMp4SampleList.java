@@ -13,8 +13,8 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.util.Path;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.lang.ref.SoftReference;
+import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +29,9 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
     IsoFile[] fragments;
     TrackBox trackBox = null;
     TrackExtendsBox trex = null;
+    private SoftReference<Sample> sampleCache[];
+    private List<TrackFragmentBox> allTrafs;
+    private int size_ = -1;
 
     public FragmentedMp4SampleList(long track, Container topLevel, IsoFile... fragments) {
         this.topLevel = topLevel;
@@ -49,10 +52,13 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                 trex = ((TrackExtendsBox) box);
             }
         }
-
+        sampleCache = (SoftReference<Sample>[]) Array.newInstance(SoftReference.class, size());
     }
 
     private List<TrackFragmentBox> allFragments() {
+        if (allTrafs != null) {
+            return allTrafs;
+        }
         List<TrackFragmentBox> trafs = new LinkedList<TrackFragmentBox>();
         for (MovieFragmentBox moof : topLevel.getBoxes(MovieFragmentBox.class)) {
             for (TrackFragmentBox trackFragmentBox : moof.getBoxes(TrackFragmentBox.class)) {
@@ -72,6 +78,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                 }
             }
         }
+        allTrafs = trafs;
         return trafs;
     }
 
@@ -81,6 +88,10 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
 
     @Override
     public Sample get(int index) {
+        final Sample cachedSample = sampleCache[index].get();
+        if (cachedSample != null && cachedSample.asByteBuffer() != null) {
+            return cachedSample;
+        }
         int currentIndex = 1;
         int targetIndex = index + 1;
         for (TrackFragmentBox trackFragmentBox : allFragments()) {
@@ -129,11 +140,9 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                         sampleSize = trex.getDefaultSampleSize();
                     }
                 }
-                try {
-                    return new SampleImpl(offset, moof.getParent().getByteBuffer(offset, sampleSize));
-                } catch (IOException e) {
-                    return null;
-                }
+                final SampleImpl sample = new SampleImpl(offset, sampleSize, moof.getParent());
+                sampleCache[index] = new SoftReference<Sample>(sample);
+                return sample;
             }
             currentIndex += trafSize;
         }
@@ -142,6 +151,9 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
 
     @Override
     public int size() {
+        if (size_ != -1) {
+            return size_;
+        }
         int i = 0;
         for (MovieFragmentBox moof : topLevel.getBoxes(MovieFragmentBox.class)) {
             for (TrackFragmentBox trackFragmentBox : moof.getBoxes(TrackFragmentBox.class)) {
@@ -159,6 +171,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                 }
             }
         }
+        size_ = i;
         return i;
     }
 

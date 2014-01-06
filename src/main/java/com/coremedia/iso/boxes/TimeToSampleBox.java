@@ -46,7 +46,6 @@ public class TimeToSampleBox extends AbstractFullBox {
 
     List<Entry> entries = Collections.emptyList();
 
-
     public TimeToSampleBox() {
         super(TYPE);
     }

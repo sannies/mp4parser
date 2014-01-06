@@ -1,14 +1,9 @@
 package com.googlecode.mp4parser.authoring.samples;
 
-import com.coremedia.iso.boxes.Container;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.SampleImpl;
 
-import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
@@ -87,14 +82,10 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         while (currentSampleNo < targetSampleNo) {
             offset += ssb.getSampleSizeAtIndex((currentSampleNo++) - 1);
         }
-        try {
-            SampleImpl sampleImpl = new SampleImpl(offset, this.topLevel.getByteBuffer(offset, ssb.getSampleSizeAtIndex(currentSampleNo - 1)));
-            cache[index] = new SoftReference<Sample>(sampleImpl);
-            return sampleImpl;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        final long sampleSize = ssb.getSampleSizeAtIndex(currentSampleNo - 1);
+        SampleImpl sampleImpl = new SampleImpl(offset, sampleSize, topLevel);
+        cache[index] = new SoftReference<Sample>(sampleImpl);
+        return sampleImpl;
     }
 
     @Override

@@ -36,6 +36,7 @@ import com.googlecode.mp4parser.AbstractContainerBox;
  */
 public class SampleTableBox extends AbstractContainerBox {
     public static final String TYPE = "stbl";
+    private SampleToChunkBox sampleToChunkBox;
 
     public SampleTableBox() {
         super(TYPE);
@@ -60,9 +61,13 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public SampleToChunkBox getSampleToChunkBox() {
+        if (sampleToChunkBox != null) {
+            return sampleToChunkBox;
+        }
         for (Box box : getBoxes()) {
             if (box instanceof SampleToChunkBox) {
-                return (SampleToChunkBox) box;
+                sampleToChunkBox = (SampleToChunkBox) box;
+                return sampleToChunkBox;
             }
         }
         return null;

@@ -742,11 +742,62 @@ public class FragmentedMp4Builder implements Mp4Builder {
         this.intersectionFinder = intersectionFinder;
     }
 
-    protected long getDuration(Track track) {
+    /**
+     * Calculates the length of each fragment in the given <code>track</code> (as part of <code>movie</code>).
+     *
+     * @param track target of calculation
+     * @param movie the <code>track</code> must be part of this <code>movie</code>
+     * @return the duration of each fragment in track timescale
+     */
+    public long[] calculateFragmentDurations(Track track, Movie movie) {
+        long[] startSamples = intersectionFinder.sampleNumbers(track, movie, null);
+        long[] durations = new long[startSamples.length];
+        int currentFragment = 0;
+        int currentSample = 1; // sync samples start with 1 !
+
+        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
+            for (int max = currentSample + l2i(entry.getCount()); currentSample < max; currentSample++) {
+                // in this loop we go through the entry.getCount() samples starting from current sample.
+                // the next entry.getCount() samples have the same decoding time.
+                if (currentFragment != startSamples.length - 1 && currentSample == startSamples[currentFragment + 1]) {
+                    // we are not in the last fragment && the current sample is the start sample of the next fragment
+                    currentFragment++;
+                }
+                durations[currentFragment] += entry.getDelta();
+            }
+        }
+        return durations;
+
+    }
+
+    public static long getDuration(Track track) {
         long duration = 0;
         for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
             duration += entry.getCount() * entry.getDelta();
         }
         return duration;
+    }
+
+    public static long getBitrate(Track track) {
+        final List<Sample> samples = track.getSamples();
+        final long timescale = track.getTrackMetaData().getTimescale();
+        return getBitrate(samples, getDuration(track), timescale);
+    }
+
+    public static long getBitrate(List<Sample> sampleList, long duration, long timescale) {
+        long sampleSizes = 0;
+        for (Sample sample : sampleList) {
+            sampleSizes += sample.getSize();
+        }
+        double bitrate = sampleSizes / (((double) duration) / timescale); // per second
+        return Math.round(bitrate) * 8; //byte to bit
+    }
+
+    public static long getFragmentedDuration(TrackBox trackBox) {
+        final MovieExtendsHeaderBox mehd = (MovieExtendsHeaderBox) Path.getPath(trackBox, "/moov/mvex/mehd");
+        if (mehd == null) {
+            throw new RuntimeException("No MovieExtendsHeaderBox found.");
+        }
+        return mehd.getFragmentDuration();
     }
 }
