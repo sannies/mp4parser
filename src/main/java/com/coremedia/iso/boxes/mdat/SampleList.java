@@ -9,6 +9,8 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.samples.DefaultMp4SampleList;
 import com.googlecode.mp4parser.authoring.samples.FragmentedMp4SampleList;
 
+import java.lang.ref.SoftReference;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.AbstractList;
 import java.util.List;
@@ -18,6 +20,8 @@ import java.util.List;
  */
 public class SampleList extends AbstractList<Sample> {
     List<Sample> samples;
+
+
 
     public SampleList(TrackBox trackBox, IsoFile... additionalFragments) {
         Container topLevel = ((Box) trackBox.getParent()).getParent();

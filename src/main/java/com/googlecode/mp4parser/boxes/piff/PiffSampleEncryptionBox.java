@@ -1,5 +1,6 @@
 package com.googlecode.mp4parser.boxes.piff;
 
+import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.boxes.AbstractSampleEncryptionBox;
 
 /**
@@ -40,6 +41,45 @@ public class PiffSampleEncryptionBox extends AbstractSampleEncryptionBox {
     @Override
     public byte[] getUserType() {
         return new byte[]{(byte) 0xA2, 0x39, 0x4F, 0x52, 0x5A, (byte) 0x9B, 0x4f, 0x14, (byte) 0xA2, 0x44, 0x6C, 0x42, 0x7C, 0x64, (byte) 0x8D, (byte) 0xF4};
+    }
+
+    public int getAlgorithmId() {
+        return algorithmId;
+    }
+
+    public void setAlgorithmId(int algorithmId) {
+        this.algorithmId = algorithmId;
+    }
+
+    public int getIvSize() {
+        return ivSize;
+    }
+
+    public void setIvSize(int ivSize) {
+        this.ivSize = ivSize;
+    }
+
+    public byte[] getKid() {
+        return kid;
+    }
+
+    public void setKid(byte[] kid) {
+        this.kid = kid;
+    }
+
+    @DoNotParseDetail
+    public boolean isOverrideTrackEncryptionBoxParameters() {
+        return (getFlags() & 0x1) > 0;
+    }
+
+
+    @DoNotParseDetail
+    public void setOverrideTrackEncryptionBoxParameters(boolean b) {
+        if (b) {
+            setFlags(getFlags() | 0x1);
+        } else {
+            setFlags(getFlags() & (0xffffff ^ 0x1));
+        }
     }
 
 }

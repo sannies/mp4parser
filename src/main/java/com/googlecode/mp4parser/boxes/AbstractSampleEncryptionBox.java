@@ -1,6 +1,5 @@
 package com.googlecode.mp4parser.boxes;
 
-import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
@@ -8,10 +7,11 @@ import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
 import com.googlecode.mp4parser.AbstractFullBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
+import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
-import java.math.BigInteger;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
@@ -21,10 +21,10 @@ import java.util.List;
 
 
 public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
-    int algorithmId = -1;
-    int ivSize = -1;
-    byte[] kid = new byte[]{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-    List<Entry> entries = new LinkedList<Entry>();
+    protected int algorithmId = -1;
+    protected int ivSize = -1;
+    protected byte[] kid = new byte[]{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+    List<CencSampleAuxiliaryDataFormat> entries = new LinkedList<CencSampleAuxiliaryDataFormat>();
 
     protected AbstractSampleEncryptionBox(String type) {
         super(type);
@@ -32,7 +32,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
     public int getOffsetToFirstIV() {
         int offset = (getSize() > (1l << 32) ? 16 : 8);
-        offset += isOverrideTrackEncryptionBoxParameters() ? 20 : 0;
+        offset += isOverrideTrackEncryptionBoxParameters() ? (4 + kid.length) : 0;
         offset += 4; //num entries
         return offset;
     }
@@ -40,80 +40,62 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     @Override
     public void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
-        int useThisIvSize = -1;
+
         if ((getFlags() & 0x1) > 0) {
             algorithmId = IsoTypeReader.readUInt24(content);
             ivSize = IsoTypeReader.readUInt8(content);
-            useThisIvSize = ivSize;
             kid = new byte[16];
             content.get(kid);
-        } else {
-            List<Box> tkhds = Path.getPaths(this, "/moov[0]/trak/tkhd");
-            for (Box tkhd : tkhds) {
-                if (((TrackHeaderBox) tkhd).getTrackId() == this.getParent().getBoxes(TrackFragmentHeaderBox.class).get(0).getTrackId()) {
-                    AbstractTrackEncryptionBox tenc = (AbstractTrackEncryptionBox) Path.getPath(tkhd, "../mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/tenc[0]");
-                    if (tenc == null) {
-                        tenc = (AbstractTrackEncryptionBox) Path.getPath(tkhd, "../mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/uuid[0]");
-                    }
-                    useThisIvSize = tenc.getDefaultIvSize();
-                }
-            }
         }
+
         long numOfEntries = IsoTypeReader.readUInt32(content);
+        ByteBuffer parseEight = content.duplicate();
+        ByteBuffer parseSixteen = content.duplicate();
 
-        while (numOfEntries-- > 0) {
-            Entry e = new Entry();
-            e.iv = new byte[useThisIvSize < 0 ? 8 : useThisIvSize];  // default to 8
-            content.get(e.iv);
-            if ((getFlags() & 0x2) > 0) {
-                int numOfPairs = IsoTypeReader.readUInt16(content);
-                e.pairs = new LinkedList<Entry.Pair>();
-                while (numOfPairs-- > 0) {
-                    e.pairs.add(e.createPair(IsoTypeReader.readUInt16(content), IsoTypeReader.readUInt32(content)));
-                }
-            }
-            entries.add(e);
-
+        entries = parseEntries(parseEight, numOfEntries, 8);
+        if (entries == null) {
+            entries = parseEntries(parseSixteen, numOfEntries, 16);
+            content.position(content.position() + content.remaining() - parseSixteen.remaining());
+        } else {
+            content.position(content.position() + content.remaining() - parseEight.remaining());
         }
+        if (entries == null) {
+            throw new RuntimeException("Cannot parse SampleEncryptionBox");
+        }
+
     }
 
+    private List<CencSampleAuxiliaryDataFormat> parseEntries(ByteBuffer content, final long numOfEntries, int ivSize) {
+        List<CencSampleAuxiliaryDataFormat> _entries = new LinkedList<CencSampleAuxiliaryDataFormat>();
+        try {
+            long remainingNumOfEntries = numOfEntries;
+            while (remainingNumOfEntries-- > 0) {
+                CencSampleAuxiliaryDataFormat e = new CencSampleAuxiliaryDataFormat();
+                e.iv = new byte[ivSize];
+                content.get(e.iv);
+                if ((getFlags() & 0x2) > 0) {
+                    int numOfPairs = IsoTypeReader.readUInt16(content);
+                    e.pairs = new LinkedList<CencSampleAuxiliaryDataFormat.Pair>();
+                    while (numOfPairs-- > 0) {
+                        e.pairs.add(e.createPair(IsoTypeReader.readUInt16(content), IsoTypeReader.readUInt32(content)));
+                    }
+                }
+                _entries.add(e);
+            }
+        } catch (BufferUnderflowException bue) {
+            return null;
+        }
+        return _entries;
 
-    public int getSampleCount() {
-        return entries.size();
     }
 
-    public List<Entry> getEntries() {
+    public List<CencSampleAuxiliaryDataFormat> getEntries() {
         return entries;
     }
 
-    public void setEntries(List<Entry> entries) {
+    public void setEntries(List<CencSampleAuxiliaryDataFormat> entries) {
         this.entries = entries;
     }
-
-    public int getAlgorithmId() {
-        return algorithmId;
-    }
-
-    public void setAlgorithmId(int algorithmId) {
-        this.algorithmId = algorithmId;
-    }
-
-    public int getIvSize() {
-        return ivSize;
-    }
-
-    public void setIvSize(int ivSize) {
-        this.ivSize = ivSize;
-    }
-
-    public byte[] getKid() {
-        return kid;
-    }
-
-    public void setKid(byte[] kid) {
-        this.kid = kid;
-    }
-
 
     @DoNotParseDetail
     public boolean isSubSampleEncryption() {
@@ -121,7 +103,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     }
 
     @DoNotParseDetail
-    public boolean isOverrideTrackEncryptionBoxParameters() {
+    protected boolean isOverrideTrackEncryptionBoxParameters() {
         return (getFlags() & 0x1) > 0;
     }
 
@@ -131,15 +113,6 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
             setFlags(getFlags() | 0x2);
         } else {
             setFlags(getFlags() & (0xffffff ^ 0x2));
-        }
-    }
-
-    @DoNotParseDetail
-    public void setOverrideTrackEncryptionBoxParameters(boolean b) {
-        if (b) {
-            setFlags(getFlags() | 0x1);
-        } else {
-            setFlags(getFlags() & (0xffffff ^ 0x1));
         }
     }
 
@@ -153,18 +126,14 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
             byteBuffer.put(kid);
         }
         IsoTypeWriter.writeUInt32(byteBuffer, entries.size());
-        for (Entry entry : entries) {
-            if (isOverrideTrackEncryptionBoxParameters()) {
-                byte[] ivFull = new byte[ivSize];
-                System.arraycopy(entry.iv, 0, ivFull, ivSize - entry.iv.length, entry.iv.length);
-                byteBuffer.put(ivFull);
-            } else {
-                // just put the iv - i don't know any better
-                byteBuffer.put(entry.iv);
+        for (CencSampleAuxiliaryDataFormat entry : entries) {
+            if (entry.iv.length != 8 && entry.iv.length != 16) {
+                throw new RuntimeException("IV must be either 8 or 16 bytes");
             }
+            byteBuffer.put(entry.iv);
             if (isSubSampleEncryption()) {
                 IsoTypeWriter.writeUInt16(byteBuffer, entry.pairs.size());
-                for (Entry.Pair pair : entry.pairs) {
+                for (CencSampleAuxiliaryDataFormat.Pair pair : entry.pairs) {
                     IsoTypeWriter.writeUInt16(byteBuffer, pair.clear);
                     IsoTypeWriter.writeUInt32(byteBuffer, pair.encrypted);
                 }
@@ -180,7 +149,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
             contentSize += kid.length;
         }
         contentSize += 4;
-        for (Entry entry : entries) {
+        for (CencSampleAuxiliaryDataFormat entry : entries) {
             contentSize += entry.getSize();
         }
         return contentSize;
@@ -189,118 +158,6 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     @Override
     public void getBox(WritableByteChannel os) throws IOException {
         super.getBox(os);
-    }
-
-    public Entry createEntry() {
-        return new Entry();
-    }
-
-    public class Entry {
-        public byte[] iv;
-        public List<Pair> pairs = new LinkedList<Pair>();
-
-        public int getSize() {
-            int size = 0;
-            if (isOverrideTrackEncryptionBoxParameters()) {
-                size = ivSize;
-            } else {
-                size = iv.length;
-            }
-
-
-            if (isSubSampleEncryption()) {
-                size += 2;
-                for (Entry.Pair pair : pairs) {
-                    size += 6;
-                }
-            }
-            return size;
-        }
-
-        public Pair createPair(int clear, long encrypted) {
-            return new Pair(clear, encrypted);
-        }
-
-
-        public class Pair {
-            public int clear;
-            public long encrypted;
-
-            public Pair(int clear, long encrypted) {
-                this.clear = clear;
-                this.encrypted = encrypted;
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                if (this == o) {
-                    return true;
-                }
-                if (o == null || getClass() != o.getClass()) {
-                    return false;
-                }
-
-                Pair pair = (Pair) o;
-
-                if (clear != pair.clear) {
-                    return false;
-                }
-                if (encrypted != pair.encrypted) {
-                    return false;
-                }
-
-                return true;
-            }
-
-            @Override
-            public int hashCode() {
-                int result = clear;
-                result = 31 * result + (int) (encrypted ^ (encrypted >>> 32));
-                return result;
-            }
-
-            @Override
-            public String toString() {
-                return "clr:" + clear + " enc:" + encrypted;
-            }
-        }
-
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            Entry entry = (Entry) o;
-
-            if (!new BigInteger(iv).equals(new BigInteger(entry.iv))) {
-                return false;
-            }
-            if (pairs != null ? !pairs.equals(entry.pairs) : entry.pairs != null) {
-                return false;
-            }
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = iv != null ? Arrays.hashCode(iv) : 0;
-            result = 31 * result + (pairs != null ? pairs.hashCode() : 0);
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "Entry{" +
-                    "iv=" + Hex.encodeHex(iv) +
-                    ", pairs=" + pairs +
-                    '}';
-        }
     }
 
     @Override
@@ -341,7 +198,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
     public List<Short> getEntrySizes() {
         List<Short> entrySizes = new ArrayList<Short>(entries.size());
-        for (Entry entry : entries) {
+        for (CencSampleAuxiliaryDataFormat entry : entries) {
             short size = (short) entry.iv.length;
             if (isSubSampleEncryption()) {
                 size += 2; //numPairs
