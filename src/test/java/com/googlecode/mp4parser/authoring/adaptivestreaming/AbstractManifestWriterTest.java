@@ -26,6 +26,6 @@ public class AbstractManifestWriterTest {
                 return null;
             }
         };
-        Assert.assertEquals(127931, amw.getBitrate(t));
+        Assert.assertEquals(127928, amw.getBitrate(t));
     }
 }
