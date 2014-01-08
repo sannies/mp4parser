@@ -28,11 +28,11 @@ import java.util.List;
  */
 public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
     private int fragmentLength = 2;
+    private Movie movie;
 
-    public TwoSecondIntersectionFinder() {
-    }
 
-    public TwoSecondIntersectionFinder(int fragmentLength) {
+    public TwoSecondIntersectionFinder(Movie movie, int fragmentLength) {
+        this.movie = movie;
         this.fragmentLength = fragmentLength;
     }
 
@@ -47,7 +47,7 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
     /**
      * {@inheritDoc}
      */
-    public long[] sampleNumbers(Track track, Movie movie, Track referenceTrack) {
+    public long[] sampleNumbers(Track track) {
         List<TimeToSampleBox.Entry> entries = track.getDecodingTimeEntries();
 
         double trackLength = 0;

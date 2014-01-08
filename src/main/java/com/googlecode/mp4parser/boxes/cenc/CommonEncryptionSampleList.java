@@ -24,6 +24,7 @@ public class CommonEncryptionSampleList extends AbstractList<Sample> {
     List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats;
     SecretKey secretKey;
     List<Sample> parent;
+    Cipher cipher;
 
     public CommonEncryptionSampleList(
             SecretKey secretKey,
@@ -32,29 +33,13 @@ public class CommonEncryptionSampleList extends AbstractList<Sample> {
         this.auxiliaryDataFormats = auxiliaryDataFormats;
         this.secretKey = secretKey;
         this.parent = parent;
-
-    }
-
-
-    Cipher getCipher(SecretKey sk, byte[] iv) {
-        byte[] fullIv = new byte[16];
-        System.arraycopy(iv, 0, fullIv, 0, iv.length);
-        // The IV
         try {
-            Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
-            cipher.init(Cipher.ENCRYPT_MODE, sk, new IvParameterSpec(fullIv));
-            return cipher;
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
+            this.cipher = Cipher.getInstance("AES/CTR/NoPadding");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         } catch (NoSuchPaddingException e) {
             throw new RuntimeException(e);
         }
-
-
     }
 
     @Override
@@ -64,7 +49,7 @@ public class CommonEncryptionSampleList extends AbstractList<Sample> {
         ByteBuffer encSample = ByteBuffer.allocate(sample.limit());
 
         CencSampleAuxiliaryDataFormat entry =  auxiliaryDataFormats.get(index);
-        Cipher cipher = getCipher(secretKey, entry.iv);
+        initCipher(auxiliaryDataFormats.get(index).iv);
         try {
             if (entry.pairs != null) {
                 for (CencSampleAuxiliaryDataFormat.Pair pair : entry.pairs) {
@@ -96,6 +81,18 @@ public class CommonEncryptionSampleList extends AbstractList<Sample> {
         return new SampleImpl(encSample);
     }
 
+    protected void initCipher(byte[] iv) {
+        try {
+            byte[] fullIv = new byte[16];
+            System.arraycopy(iv, 0, fullIv, 0, iv.length);
+            // The IV
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(fullIv));
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public int size() {

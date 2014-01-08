@@ -34,7 +34,7 @@ public abstract class AbstractManifestWriter implements ManifestWriter {
      * @return the duration of each fragment in track timescale
      */
     public long[] calculateFragmentDurations(Track track, Movie movie) {
-        long[] startSamples = intersectionFinder.sampleNumbers(track, movie, null);
+        long[] startSamples = intersectionFinder.sampleNumbers(track);
         long[] durations = new long[startSamples.length];
         int currentFragment = 0;
         int currentSample = 1; // sync samples start with 1 !

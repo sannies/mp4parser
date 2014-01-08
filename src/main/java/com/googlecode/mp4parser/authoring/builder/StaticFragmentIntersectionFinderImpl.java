@@ -16,7 +16,7 @@ public class StaticFragmentIntersectionFinderImpl implements FragmentIntersectio
         this.sampleNumbers = sampleNumbers;
     }
 
-    public long[] sampleNumbers(Track track, Movie movie, Track refTrack) {
+    public long[] sampleNumbers(Track track) {
         return sampleNumbers.get(track);
     }
 }

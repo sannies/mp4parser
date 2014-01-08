@@ -17,8 +17,8 @@ public class TwoSecondIntersectionFinderTest {
     @Test
     public void testSampleNumbers() throws Exception {
         Movie m = MovieCreator.build(new FileDataSourceImpl(TwoSecondIntersectionFinderTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/Beethoven - Bagatelle op.119 no.11 i.m4a"));
-        TwoSecondIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder();
-        long[] s = intersectionFinder.sampleNumbers(m.getTracks().get(0), m, m.getTracks().get(0));
+        TwoSecondIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder(m, 2);
+        long[] s = intersectionFinder.sampleNumbers(m.getTracks().get(0));
         Assert.assertArrayEquals(samples, s);
     }
 }

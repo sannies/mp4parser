@@ -38,10 +38,8 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
     private static Map<CacheTuple, long[]> getSampleNumbersCache = new ConcurrentHashMap<CacheTuple, long[]>();
 
     private final int minFragmentDurationSeconds;
-
-    public SyncSampleIntersectFinderImpl() {
-        minFragmentDurationSeconds = 0;
-    }
+    private Movie movie;
+    private Track referenceTrack;
 
     /**
      * Creates a <code>SyncSampleIntersectFinderImpl</code> that will not create any fragment
@@ -49,19 +47,21 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
      *
      * @param minFragmentDurationSeconds the smallest allowable duration of a fragment.
      */
-    public SyncSampleIntersectFinderImpl(int minFragmentDurationSeconds) {
+    public SyncSampleIntersectFinderImpl(Movie movie, Track referenceTrack, int minFragmentDurationSeconds) {
+        this.movie = movie;
+        this.referenceTrack = referenceTrack;
         this.minFragmentDurationSeconds = minFragmentDurationSeconds;
     }
+
 
     /**
      * Gets an array of sample numbers that are meant to be the first sample of each
      * chunk or fragment.
      *
      * @param track concerned track
-     * @param movie the context of the track
      * @return an array containing the ordinal of each fragment's first sample
      */
-    public long[] sampleNumbers(Track track, Movie movie, Track referenceTrack) {
+    public long[] sampleNumbers(Track track) {
         final CacheTuple key = new CacheTuple(track, movie);
         final long[] result = getSampleNumbersCache.get(key);
         if (result != null) {
@@ -88,7 +88,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             if (referenceTrack != null) {
 
                 // Gets the reference track's fra
-                long[] refSyncSamples = sampleNumbers(referenceTrack, movie, referenceTrack);
+                long[] refSyncSamples = sampleNumbers(referenceTrack);
 
                 int refSampleCount = referenceTrack.getSamples().size();
 
@@ -131,7 +131,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             // Ok, my track has no sync samples - let's find one with sync samples.
             for (Track candidate : movie.getTracks()) {
                 if (candidate.getSyncSamples() != null && candidate.getSyncSamples().length > 0) {
-                    long[] refSyncSamples = sampleNumbers(candidate, movie, candidate);
+                    long[] refSyncSamples = sampleNumbers(candidate);
                     int refSampleCount = candidate.getSamples().size();
 
                     long[] syncSamples = new long[refSyncSamples.length];

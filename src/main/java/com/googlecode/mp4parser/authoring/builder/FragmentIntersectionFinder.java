@@ -27,8 +27,7 @@ public interface FragmentIntersectionFinder {
      * in each fragment.
      *
      * @param track concerned track
-     * @param movie the context of the track
      * @return an array containing the ordinal of each fragment's first sample
      */
-    public long[] sampleNumbers(Track track, Movie movie, Track referenceTrack);
+    public long[] sampleNumbers(Track track);
 }

@@ -34,6 +34,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class FlatPackageWriterImpl implements PackageWriter {
@@ -45,25 +47,19 @@ public class FlatPackageWriterImpl implements PackageWriter {
     private FragmentedMp4Builder ismvBuilder;
     ManifestWriter manifestWriter;
 
-    public FlatPackageWriterImpl() {
-        ismvBuilder = new FragmentedMp4Builder();
-        FragmentIntersectionFinder intersectionFinder = new SyncSampleIntersectFinderImpl();
-        ismvBuilder.setIntersectionFinder(intersectionFinder);
-        manifestWriter = new FlatManifestWriterImpl(intersectionFinder);
+    public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
+        this.intersectionFinder = intersectionFinder;
     }
+
+    FragmentIntersectionFinder intersectionFinder;
 
     /**
      * Creates a factory for a smooth streaming package. A smooth streaming package is
      * a collection of files that can be served by a webserver as a smooth streaming
      * stream.
-     *
-     * @param minFragmentDuration the smallest allowable duration of a fragment (0 == no restriction).
      */
     public FlatPackageWriterImpl(int minFragmentDuration) {
-        ismvBuilder = new FragmentedMp4Builder();
-        FragmentIntersectionFinder intersectionFinder = new SyncSampleIntersectFinderImpl(minFragmentDuration);
-        ismvBuilder.setIntersectionFinder(intersectionFinder);
-        manifestWriter = new FlatManifestWriterImpl(intersectionFinder);
+
     }
 
     public void setOutputDirectory(File outputDirectory) {
@@ -93,6 +89,21 @@ public class FlatPackageWriterImpl implements PackageWriter {
      * @throws IOException in case file I/O fails
      */
     public void write(Movie source) throws IOException {
+        if (intersectionFinder == null) {
+            Track refTrack = null;
+            for (Track track : source.getTracks()) {
+                if (track.getHandler().equals("vide")) {
+                    refTrack = track;
+                    break;
+                }
+            }
+            intersectionFinder = new SyncSampleIntersectFinderImpl(source, refTrack, -1);
+        }
+        if (ismvBuilder == null) {
+            ismvBuilder = new FragmentedMp4Builder();
+        }
+        ismvBuilder.setIntersectionFinder(intersectionFinder);
+        manifestWriter = new FlatManifestWriterImpl(intersectionFinder);
 
         if (debugOutput) {
             outputDirectory.mkdirs();
@@ -172,15 +183,16 @@ public class FlatPackageWriterImpl implements PackageWriter {
     }
 
     private Movie removeUnknownTracks(Movie source) {
-        Movie nuMovie = new Movie();
+        List<Track> tracks = new LinkedList<Track>();
         for (Track track : source.getTracks()) {
             if ("vide".equals(track.getHandler()) || "soun".equals(track.getHandler())) {
-                nuMovie.addTrack(track);
+                tracks.add(track);
             } else {
                 LOG.fine("Removed track " + track);
             }
         }
-        return nuMovie;
+        source.setTracks(tracks);
+        return source;
     }
 
 
@@ -192,11 +204,12 @@ public class FlatPackageWriterImpl implements PackageWriter {
      * @return a movie with timescales suitable for smooth streaming manifests
      */
     public Movie correctTimescale(Movie movie) {
-        Movie nuMovie = new Movie();
+        List<Track> tracks = new LinkedList<Track>();
         for (Track track : movie.getTracks()) {
-            nuMovie.addTrack(new ChangeTimeScaleTrack(track, timeScale, ismvBuilder.getFragmentIntersectionFinder().sampleNumbers(track, movie, null)));
+            tracks.add(new ChangeTimeScaleTrack(track, timeScale, ismvBuilder.getFragmentIntersectionFinder().sampleNumbers(track)));
         }
-        return nuMovie;
+        movie.setTracks(tracks);
+        return movie;
 
     }
 

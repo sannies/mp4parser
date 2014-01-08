@@ -73,7 +73,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     HashMap<Track, List<Sample>> track2Sample = new HashMap<Track, List<Sample>>();
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
-    private FragmentIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder();
+    private FragmentIntersectionFinder intersectionFinder;
 
     public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
         this.intersectionFinder = intersectionFinder;
@@ -83,6 +83,9 @@ public class DefaultMp4Builder implements Mp4Builder {
      * {@inheritDoc}
      */
     public Container build(Movie movie) {
+        if (intersectionFinder == null) {
+            intersectionFinder = new TwoSecondIntersectionFinder(movie, 2);
+        }
         LOG.fine("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
             // getting the samples may be a time consuming activity
@@ -499,7 +502,7 @@ public class DefaultMp4Builder implements Mp4Builder {
      */
     int[] getChunkSizes(Track track, Movie movie) {
 
-        long[] referenceChunkStarts = intersectionFinder.sampleNumbers(track, movie, null);
+        long[] referenceChunkStarts = intersectionFinder.sampleNumbers(track);
         int[] chunkSizes = new int[referenceChunkStarts.length];
 
 

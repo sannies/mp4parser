@@ -53,7 +53,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
     protected FragmentIntersectionFinder intersectionFinder;
 
     public FragmentedMp4Builder() {
-        this.intersectionFinder = new SyncSampleIntersectFinderImpl();
     }
 
     public List<String> getAllowedHandlers() {
@@ -156,7 +155,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         HashMap<Track, long[]> intersectionMap = new HashMap<Track, long[]>();
         int maxNumberOfFragments = 0;
         for (Track track : movie.getTracks()) {
-            long[] intersects = intersectionFinder.sampleNumbers(track, movie, null);
+            long[] intersects = intersectionFinder.sampleNumbers(track);
             intersectionMap.put(track, intersects);
             maxNumberOfFragments = Math.max(maxNumberOfFragments, intersects.length);
         }
@@ -201,6 +200,16 @@ public class FragmentedMp4Builder implements Mp4Builder {
      */
     public Container build(Movie movie) {
         LOG.fine("Creating movie " + movie);
+        if (intersectionFinder == null) {
+            Track refTrack = null;
+            for (Track track : movie.getTracks()) {
+                if (track.getHandler().equals("vide")) {
+                    refTrack = track;
+                    break;
+                }
+            }
+          intersectionFinder = new SyncSampleIntersectFinderImpl(movie, refTrack, -1);
+        }
         BasicContainer isoFile = new BasicContainer();
 
 
@@ -797,7 +806,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
      * @return the duration of each fragment in track timescale
      */
     public long[] calculateFragmentDurations(Track track, Movie movie) {
-        long[] startSamples = intersectionFinder.sampleNumbers(track, movie, null);
+        long[] startSamples = intersectionFinder.sampleNumbers(track);
         long[] durations = new long[startSamples.length];
         int currentFragment = 0;
         int currentSample = 1; // sync samples start with 1 !

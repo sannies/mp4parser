@@ -20,11 +20,11 @@ public class SyncSampleIntersectFinderImplTest {
                 "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_200.mp4"
         );
 
-        SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl();
+        SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl(m, null, -1);
         long[] fragmentStartSamplesRef = null;
         Assert.assertTrue(m.getTracks().size() > 1);
         for (Track track : m.getTracks()) {
-            long[] fragmentStartSamples = syncSampleIntersectFinder.sampleNumbers(track, m, track);
+            long[] fragmentStartSamples = syncSampleIntersectFinder.sampleNumbers(track);
             Assert.assertNotNull(fragmentStartSamples);
             if (fragmentStartSamplesRef == null) {
                 fragmentStartSamplesRef = fragmentStartSamples;
@@ -37,7 +37,7 @@ public class SyncSampleIntersectFinderImplTest {
 
     @Test
     public void testGetIndicesToBeRemoved() {
-        SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl();
+        SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl(null,null,-1);
         long[] a_sample = new long[]{20, 40, 48, 60, 80, 82};
         long[] a_times = new long[]{10, 20, 24, 30, 40, 41};
         long[] b_1 = new long[]{10, 20, 26, 30, 40};
@@ -53,7 +53,7 @@ public class SyncSampleIntersectFinderImplTest {
 
     @Test
     public void testGetIndicesToBeRemovedMinTwoSecondsFragments() {
-        SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl(2);
+        SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl(null,null,2);
         long[] a_sample = new long[]{20, 40, 48, 60, 80, 82, 90, 100};
         long[] a_times = new long[]{10, 20, 24, 30, 60, 61, 80, 81};
         long[] b_1 = new long[]{10, 20, 26, 30, 40, 80, 81, 100};
@@ -79,10 +79,10 @@ public class SyncSampleIntersectFinderImplTest {
                 "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_150.mp4",
                 "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_200.mp4"
         );
-        SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl();
+        SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl(m, null, -1);
         long[] fragmentStartSamplesRef = null;
         for (Track track : m.getTracks()) {
-            long[] fragmentStartSamples = syncSampleIntersectFinder.sampleNumbers(track, m, track);
+            long[] fragmentStartSamples = syncSampleIntersectFinder.sampleNumbers(track);
             Assert.assertNotNull(fragmentStartSamples);
             if (fragmentStartSamplesRef == null) {
                 fragmentStartSamplesRef = fragmentStartSamples;
