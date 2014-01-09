@@ -54,7 +54,7 @@ public class SampleImpl implements Sample {
     public void writeTo(WritableByteChannel channel) throws IOException {
         ensureData();
 		for(ByteBuffer b : data) {
-    		channel.write(b);
+    		channel.write(b.duplicate());
 		}
 	}
 	
