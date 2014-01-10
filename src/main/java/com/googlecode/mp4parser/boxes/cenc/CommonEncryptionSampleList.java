@@ -6,7 +6,6 @@ package com.googlecode.mp4parser.boxes.cenc;
 
 
 import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.SampleImpl;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -47,7 +46,7 @@ public class CommonEncryptionSampleList extends AbstractList<Sample> {
     @Override
     public Sample get(int index) {
         Sample clearSample = parent.get(index);
-        CencSampleAuxiliaryDataFormat entry =  auxiliaryDataFormats.get(index);
+        CencSampleAuxiliaryDataFormat entry = auxiliaryDataFormats.get(index);
         return new EncryptedSampleImpl(clearSample, entry, cipher);
 
     }
@@ -100,10 +99,6 @@ public class CommonEncryptionSampleList extends AbstractList<Sample> {
 
         }
 
-        public long remaining() {
-            return clearSample.remaining();
-        }
-
         public long getSize() {
             return clearSample.getSize();
         }
@@ -113,7 +108,7 @@ public class CommonEncryptionSampleList extends AbstractList<Sample> {
             ByteBuffer sample = (ByteBuffer) clearSample.asByteBuffer().rewind();
             ByteBuffer encSample = ByteBuffer.allocate(sample.limit());
 
-            CencSampleAuxiliaryDataFormat entry =  cencSampleAuxiliaryDataFormat;
+            CencSampleAuxiliaryDataFormat entry = cencSampleAuxiliaryDataFormat;
             initCipher(cencSampleAuxiliaryDataFormat.iv);
             try {
                 if (entry.pairs != null) {

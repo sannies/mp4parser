@@ -94,7 +94,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             long[] sizes = new long[samples.size()];
             for (int i = 0; i < sizes.length; i++) {
                 Sample b = samples.get(i);
-                sizes[i] = b.remaining();
+                sizes[i] = b.getSize();
             }
             track2SampleSizes.put(track, sizes);
 
@@ -485,7 +485,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             writableByteChannel.write(bb);
             for (List<Sample> samples : chunkList) {
                 for (Sample sample : samples) {
-                	sample.writeTo(writableByteChannel);
+                    sample.writeTo(writableByteChannel);
                 }
             }
 

@@ -6,30 +6,36 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
+
 public class SampleImpl implements Sample {
-	private final long offset;
+    private final long offset;
     private final long size;
-	private ByteBuffer[] data;
+    private ByteBuffer[] data;
     private final Container parent;
 
     public SampleImpl(ByteBuffer buf) {
         this.offset = -1;
         this.size = buf.limit();
-		this.data = new ByteBuffer[] { buf };
+        this.data = new ByteBuffer[]{buf};
         this.parent = null;
-	}
+    }
 
-	public SampleImpl(ByteBuffer[] data) {
+    public SampleImpl(ByteBuffer[] data) {
         this.offset = -1;
-        this.size = data.length;
+        int _size = 0;
+        for (ByteBuffer byteBuffer : data) {
+            _size += byteBuffer.remaining();
+        }
+        this.size = _size;
         this.data = data;
         this.parent = null;
-	}
+    }
 
     public SampleImpl(long offset, long sampleSize, ByteBuffer data) {
         this.offset = offset;
         this.size = sampleSize;
-        this.data = new ByteBuffer[] { data };
+        this.data = new ByteBuffer[]{data};
         this.parent = null;
     }
 
@@ -46,26 +52,18 @@ public class SampleImpl implements Sample {
             throw new RuntimeException("Missing parent container, can't read sample " + this);
         }
         try {
-            data = new ByteBuffer[] { parent.getByteBuffer(offset, size) };
+            data = new ByteBuffer[]{parent.getByteBuffer(offset, size)};
         } catch (IOException e) {
             throw new RuntimeException("couldn't read sample " + this, e);
         }
     }
+
     public void writeTo(WritableByteChannel channel) throws IOException {
         ensureData();
-		for(ByteBuffer b : data) {
-    		channel.write(b.duplicate());
-		}
-	}
-	
-	public long remaining() {
-        ensureData();
-        long r = 0;
-		for(ByteBuffer b : data) {
-			r += b.remaining();
-		}
-		return r;
-	}
+        for (ByteBuffer b : data) {
+            channel.write(b.duplicate());
+        }
+    }
 
     public long getSize() {
         return size;
@@ -73,14 +71,14 @@ public class SampleImpl implements Sample {
 
     public ByteBuffer asByteBuffer() {
         ensureData();
-		byte[] bCopy = new byte[(int) remaining()];
-		ByteBuffer copy = ByteBuffer.wrap(bCopy);
-		for(ByteBuffer b : data) {
-			copy.put(b.duplicate());
-		}
+        byte[] bCopy = new byte[l2i(size)];
+        ByteBuffer copy = ByteBuffer.wrap(bCopy);
+        for (ByteBuffer b : data) {
+            copy.put(b.duplicate());
+        }
         copy.rewind();
-		return copy;
-	}
+        return copy;
+    }
 
     @Override
     public String toString() {

@@ -46,9 +46,11 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             return cache[index].get();
         }
 
-        List<SampleToChunkBox.Entry> entries = trackBox.getSampleTableBox().getSampleToChunkBox().getEntries();
-        Iterator<SampleToChunkBox.Entry> iterator = entries.iterator();
-        SampleToChunkBox.Entry next = iterator.next();
+        List<SampleToChunkBox.Entry> s2chunkEntries = trackBox.getSampleTableBox().getSampleToChunkBox().getEntries();
+        SampleToChunkBox.Entry[] entries = s2chunkEntries.toArray(new SampleToChunkBox.Entry[s2chunkEntries.size()]);
+
+        int s2cIndex = 0;
+        SampleToChunkBox.Entry next = entries[s2cIndex++];
         long currentChunkNo = 0;
         long currentSamplePerChunk = 0;
 
@@ -64,8 +66,8 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             currentChunkNo++;
             if (currentChunkNo == nextFirstChunk) {
                 currentSamplePerChunk = nextSamplePerChunk;
-                if (iterator.hasNext()) {
-                    next = iterator.next();
+                if (entries.length > s2cIndex) {
+                    next = entries[s2cIndex++];
                     nextSamplePerChunk = next.getSamplesPerChunk();
                     nextFirstChunk = next.getFirstChunk();
                 } else {

@@ -55,6 +55,10 @@ public class FragmentedMp4Builder implements Mp4Builder {
     public FragmentedMp4Builder() {
     }
 
+    public Date getDate() {
+        return new Date();
+    }
+
     public List<String> getAllowedHandlers() {
         return Arrays.asList("soun", "vide");
     }
@@ -247,7 +251,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 if (size_ != -1) return size_;
                 long size = 8; // I don't expect 2gig fragments
                 for (Sample sample : getSamples(startSample, endSample, track, i)) {
-                    size += sample.remaining();
+                    size += sample.getSize();
                 }
                 size_ = size;
                 return size;
@@ -335,7 +339,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         long[] sampleSizes = new long[samples.size()];
         for (int i = 0; i < sampleSizes.length; i++) {
-            sampleSizes[i] = samples.get(i).remaining();
+            sampleSizes[i] = samples.get(i).getSize();
         }
         return sampleSizes;
     }
@@ -370,14 +374,15 @@ public class FragmentedMp4Builder implements Mp4Builder {
         trun.setSampleSizePresent(true);
         List<TrackRunBox.Entry> entries = new ArrayList<TrackRunBox.Entry>(l2i(endSample - startSample));
 
-
-        Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
+        List<TimeToSampleBox.Entry> t2SEntries = track.getDecodingTimeEntries();
+        TimeToSampleBox.Entry[] timeQueue = t2SEntries.toArray(new TimeToSampleBox.Entry[t2SEntries.size()]);
+        int timeQueueIndex = 0;
         long left = startSample - 1;
-        long curEntryLeft = timeQueue.peek().getCount();
+        long curEntryLeft = timeQueue[timeQueueIndex].getCount();
         while (left > curEntryLeft) {
             left -= curEntryLeft;
-            timeQueue.remove();
-            curEntryLeft = timeQueue.peek().getCount();
+            timeQueueIndex++;
+            curEntryLeft = timeQueue[timeQueueIndex].getCount();
         }
         curEntryLeft -= left;
 
@@ -434,10 +439,10 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
             }
 
-            entry.setSampleDuration(timeQueue.peek().getDelta());
-            if (--curEntryLeft == 0 && timeQueue.size() > 1) {
-                timeQueue.remove();
-                curEntryLeft = timeQueue.peek().getCount();
+            entry.setSampleDuration(timeQueue[timeQueueIndex].getDelta());
+            if (--curEntryLeft == 0 && (timeQueue.length - timeQueueIndex) > 1) {
+                timeQueueIndex++;
+                curEntryLeft = timeQueue[timeQueueIndex].getCount();
             }
 
             if (compositionTimeQueue != null) {
@@ -485,8 +490,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
     protected Box createMvhd(Movie movie) {
         MovieHeaderBox mvhd = new MovieHeaderBox();
         mvhd.setVersion(1);
-        mvhd.setCreationTime(new Date());
-        mvhd.setModificationTime(new Date());
+        mvhd.setCreationTime(getDate());
+        mvhd.setModificationTime(getDate());
         mvhd.setDuration(0);//no duration in moov for fragmented movies
         long movieTimeScale = movie.getTimescale();
         mvhd.setTimescale(movieTimeScale);
@@ -698,7 +703,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         tkhd.setHeight(track.getTrackMetaData().getHeight());
         tkhd.setWidth(track.getTrackMetaData().getWidth());
         tkhd.setLayer(track.getTrackMetaData().getLayer());
-        tkhd.setModificationTime(new Date());
+        tkhd.setModificationTime(getDate());
         tkhd.setTrackId(track.getTrackMetaData().getTrackId());
         tkhd.setVolume(track.getTrackMetaData().getVolume());
         return tkhd;
@@ -711,6 +716,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     protected Box createMdhd(Movie movie, Track track) {
         MediaHeaderBox mdhd = new MediaHeaderBox();
         mdhd.setCreationTime(track.getTrackMetaData().getCreationTime());
+        mdhd.setModificationTime(getDate());
         mdhd.setDuration(0);//no duration in moov for fragmented movies
         mdhd.setTimescale(track.getTrackMetaData().getTimescale());
         mdhd.setLanguage(track.getTrackMetaData().getLanguage());

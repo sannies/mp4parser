@@ -340,7 +340,7 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
                     break;
             }
             if (entry.lfeon == 1) {
-                lfechans ++;
+                lfechans++;
                 dWChannelMaskFirstByte |= 0x10;
             }
         }
@@ -350,7 +350,7 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         waveformatex.put(dWChannelMaskFirstByte);
         waveformatex.put(dWChannelMaskSecondByte);
         waveformatex.put(new byte[]{0x00, 0x00}); //pad dwChannelMask to 32bit
-        waveformatex.put(new byte[]{(byte)0xAF, (byte)0x87, (byte)0xFB, (byte)0xA7, 0x02, 0x2D, (byte)0xFB, 0x42, (byte)0xA4, (byte)0xD4, 0x05, (byte)0xCD, (byte)0x93, (byte)0x84, 0x3B, (byte)0xDD}); //SubFormat - Dolby Digital Plus GUID
+        waveformatex.put(new byte[]{(byte) 0xAF, (byte) 0x87, (byte) 0xFB, (byte) 0xA7, 0x02, 0x2D, (byte) 0xFB, 0x42, (byte) 0xA4, (byte) 0xD4, 0x05, (byte) 0xCD, (byte) 0x93, (byte) 0x84, 0x3B, (byte) 0xDD}); //SubFormat - Dolby Digital Plus GUID
 
         final ByteBuffer dec3Content = ByteBuffer.allocate((int) ec3SpecificBox.getContentSize());
         ec3SpecificBox.getContent(dec3Content);
@@ -363,7 +363,7 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         l.channels = nfchans + lfechans;
         l.bitPerSample = 16;
         // TODO: was .limit() but .remaining() seems logical unless the position has moved
-        l.packetSize = (int) track.getSamples().get(0).remaining(); //assuming all are same size
+        l.packetSize = (int) track.getSamples().get(0).getSize(); //assuming all are same size
         l.codecPrivateData = Hex.encodeHex(waveformatex.array()) + Hex.encodeHex(dec3Content.array()); //append EC3SpecificBox (big endian) at the end of waveformatex
         return l;
     }
@@ -398,7 +398,7 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         waveformatex.put((byte) (dwChannelMask >>> 8));
         waveformatex.put((byte) (dwChannelMask >>> 16));
         waveformatex.put((byte) (dwChannelMask >>> 24));
-        waveformatex.put(new byte[]{(byte)0xAE, (byte)0xE4, (byte)0xBF, (byte)0x5E, (byte)0x61, (byte)0x5E, (byte)0x41, (byte)0x87, (byte)0x92, (byte)0xFC, (byte)0xA4, (byte)0x81, (byte)0x26, (byte)0x99, (byte)0x02, (byte)0x11}); //DTS-HD GUID
+        waveformatex.put(new byte[]{(byte) 0xAE, (byte) 0xE4, (byte) 0xBF, (byte) 0x5E, (byte) 0x61, (byte) 0x5E, (byte) 0x41, (byte) 0x87, (byte) 0x92, (byte) 0xFC, (byte) 0xA4, (byte) 0x81, (byte) 0x26, (byte) 0x99, (byte) 0x02, (byte) 0x11}); //DTS-HD GUID
 
         final ByteBuffer dtsCodecPrivateData = ByteBuffer.allocate(8);
         dtsCodecPrivateData.put((byte) dtsSpecificBox.getStreamConstruction());
@@ -421,7 +421,7 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         l.samplingRate = dtsSpecificBox.getDTSSamplingFrequency();
         l.channels = getNumChannelsAndMask(dtsSpecificBox)[0];
         l.bitPerSample = 16;
-        l.packetSize = (int) track.getSamples().get(0).remaining(); //assuming all are same size
+        l.packetSize = (int) track.getSamples().get(0).getSize(); //assuming all are same size
         l.codecPrivateData = Hex.encodeHex(waveformatex.array()) + Hex.encodeHex(dtsCodecPrivateData.array());
         return l;
 

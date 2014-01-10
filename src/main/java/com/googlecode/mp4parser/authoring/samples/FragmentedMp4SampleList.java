@@ -88,10 +88,12 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
 
     @Override
     public Sample get(int index) {
-        final Sample cachedSample = sampleCache[index].get();
-        if (cachedSample != null && cachedSample.asByteBuffer() != null) {
+
+        Sample cachedSample;
+        if (sampleCache[index] != null && (cachedSample = sampleCache[index].get()) != null) {
             return cachedSample;
         }
+
         int currentIndex = 1;
         int targetIndex = index + 1;
         for (TrackFragmentBox trackFragmentBox : allFragments()) {

@@ -67,7 +67,7 @@ public class MP3TrackImpl extends AbstractTrack {
         long dataSize = 0;
         LinkedList<Integer> queue = new LinkedList<Integer>();
         for (Sample sample : samples) {
-            int size = (int) sample.remaining();
+            int size = (int) sample.getSize();
             dataSize += size;
             queue.add(size);
             while (queue.size() > packetsPerSecond) {
