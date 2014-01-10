@@ -387,10 +387,12 @@ public class FragmentedMp4Builder implements Mp4Builder {
         curEntryLeft -= left;
 
 
-        Queue<CompositionTimeToSample.Entry> compositionTimeQueue =
-                track.getCompositionTimeEntries() != null && track.getCompositionTimeEntries().size() > 0 ?
-                        new LinkedList<CompositionTimeToSample.Entry>(track.getCompositionTimeEntries()) : null;
-        long compositionTimeEntriesLeft = compositionTimeQueue != null ? compositionTimeQueue.peek().getCount() : -1;
+        List<CompositionTimeToSample.Entry> compositionTimeEntries = track.getCompositionTimeEntries();
+        int compositionTimeQueueIndex = 0;
+        CompositionTimeToSample.Entry[] compositionTimeQueue =
+                compositionTimeEntries != null && compositionTimeEntries.size() > 0 ?
+                        compositionTimeEntries.toArray(new CompositionTimeToSample.Entry[compositionTimeEntries.size()]) : null;
+        long compositionTimeEntriesLeft = compositionTimeQueue != null ? compositionTimeQueue[compositionTimeQueueIndex].getCount() : -1;
 
 
         trun.setSampleCompositionTimeOffsetPresent(compositionTimeEntriesLeft > 0);
@@ -399,9 +401,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
         for (long i = 1; i < startSample; i++) {
             if (compositionTimeQueue != null) {
                 //trun.setSampleCompositionTimeOffsetPresent(true);
-                if (--compositionTimeEntriesLeft == 0 && compositionTimeQueue.size() > 1) {
-                    compositionTimeQueue.remove();
-                    compositionTimeEntriesLeft = compositionTimeQueue.element().getCount();
+                if (--compositionTimeEntriesLeft == 0 && (compositionTimeQueue.length - compositionTimeQueueIndex) > 1) {
+                    compositionTimeQueueIndex++;
+                    compositionTimeEntriesLeft = compositionTimeQueue[compositionTimeQueueIndex].getCount();
                 }
             }
         }
@@ -446,10 +448,10 @@ public class FragmentedMp4Builder implements Mp4Builder {
             }
 
             if (compositionTimeQueue != null) {
-                entry.setSampleCompositionTimeOffset(compositionTimeQueue.peek().getOffset());
-                if (--compositionTimeEntriesLeft == 0 && compositionTimeQueue.size() > 1) {
-                    compositionTimeQueue.remove();
-                    compositionTimeEntriesLeft = compositionTimeQueue.element().getCount();
+                entry.setSampleCompositionTimeOffset(compositionTimeQueue[compositionTimeQueueIndex].getOffset());
+                if (--compositionTimeEntriesLeft == 0 && (compositionTimeQueue.length - compositionTimeQueueIndex) > 1) {
+                    compositionTimeQueueIndex++;
+                    compositionTimeEntriesLeft = compositionTimeQueue[compositionTimeQueueIndex].getCount();
                 }
             }
             entries.add(entry);
