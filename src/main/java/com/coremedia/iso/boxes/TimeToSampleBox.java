@@ -123,8 +123,7 @@ public class TimeToSampleBox extends AbstractFullBox {
     }
 
 
-    static Map<List<Entry>, SoftReference<long[]>> cache =
-            Collections.synchronizedMap(new WeakHashMap<List<Entry>, SoftReference<long[]>>());
+    static Map<List<Entry>, SoftReference<long[]>> cache = new WeakHashMap<List<Entry>, SoftReference<long[]>>();
 
     /**
      * Decompresses the list of entries and returns the list of decoding times.
@@ -132,12 +131,13 @@ public class TimeToSampleBox extends AbstractFullBox {
      * @param entries compressed entries
      * @return decoding time per sample
      */
-    public static long[] blowupTimeToSamples(List<TimeToSampleBox.Entry> entries) {
-        if (cache.containsKey(entries)) {
-            long[] cacheVal = cache.get(entries).get();
-           if (cacheVal != null) {
-               return cacheVal;
-           }
+    public static synchronized long[] blowupTimeToSamples(List<TimeToSampleBox.Entry> entries) {
+        SoftReference<long[]> cacheEntry;
+        if ((cacheEntry = cache.get(entries)) != null) {
+            long[] cacheVal;
+            if ((cacheVal = cacheEntry.get()) != null) {
+                return cacheVal;
+            }
         }
         long numOfSamples = 0;
         for (TimeToSampleBox.Entry entry : entries) {
