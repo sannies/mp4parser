@@ -36,14 +36,14 @@ public class CroppedTrack extends AbstractTrack {
     Track origTrack;
     private int fromSample;
     private int toSample;
-    private long[] syncSampleArray;
 
     /**
      * Wraps an existing track and masks out a number of samples.
      * Works like {@link java.util.List#subList(int, int)}.
-     * @param origTrack the original <code>Track</code>
+     *
+     * @param origTrack  the original <code>Track</code>
      * @param fromSample first sample in the new <code>Track</code> - beginning with 0
-     * @param toSample first sample not in the new <code>Track</code> - beginning with 0
+     * @param toSample   first sample not in the new <code>Track</code> - beginning with 0
      */
     public CroppedTrack(Track origTrack, long fromSample, long toSample) {
         this.origTrack = origTrack;
@@ -62,7 +62,14 @@ public class CroppedTrack extends AbstractTrack {
     }
 
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return getDecodingTimeEntries(origTrack.getDecodingTimeEntries(), fromSample, toSample);
+        throw new RuntimeException("Don#t use me. Use getDecodingTimes");
+    }
+
+    @Override
+    public synchronized long[] getDecodingTimes() {
+        long[] decodingTimes = new long[toSample - fromSample];
+        System.arraycopy(origTrack.getDecodingTimes(), fromSample, decodingTimes, 0, decodingTimes.length);
+        return decodingTimes;
     }
 
     static List<TimeToSampleBox.Entry> getDecodingTimeEntries(List<TimeToSampleBox.Entry> origSamples, long fromSample, long toSample) {
@@ -145,7 +152,7 @@ public class CroppedTrack extends AbstractTrack {
             while (j > 0 && toSample < origSyncSamples[j - 1]) {
                 j--;
             }
-            syncSampleArray = Arrays.copyOfRange(origTrack.getSyncSamples(), i, j);
+            long[] syncSampleArray = Arrays.copyOfRange(origTrack.getSyncSamples(), i, j);
             for (int k = 0; k < syncSampleArray.length; k++) {
                 syncSampleArray[k] -= fromSample;
             }

@@ -187,10 +187,8 @@ public class BasicContainer implements Container, Iterator<Box> {
         }
     }
 
-    public ByteBuffer getByteBuffer(long start, long size) throws IOException {
-        synchronized (this.dataSource) {
-            return this.dataSource.map(this.startPosition + start, size);
-        }
+    public DataSource getBackingDataSource() throws IOException {
+        return dataSource;
     }
 
 }

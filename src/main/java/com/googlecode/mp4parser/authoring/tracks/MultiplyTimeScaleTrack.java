@@ -47,9 +47,6 @@ public class MultiplyTimeScaleTrack implements Track {
         return source.getSampleDescriptionBox();
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return adjustTts(source.getDecodingTimeEntries(), timeScaleFactor);
-    }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
         return adjustCtts(source.getCompositionTimeEntries(), timeScaleFactor);
@@ -106,12 +103,14 @@ public class MultiplyTimeScaleTrack implements Track {
         }
     }
 
-    static List<TimeToSampleBox.Entry> adjustTts(List<TimeToSampleBox.Entry> source, int timeScaleFactor) {
+    public long[] getDecodingTimes() {
+        long[] scaled = new long[source.getDecodingTimes().length];
+
         LinkedList<TimeToSampleBox.Entry> entries2 = new LinkedList<TimeToSampleBox.Entry>();
-        for (TimeToSampleBox.Entry e : source) {
-            entries2.add(new TimeToSampleBox.Entry(e.getCount(), timeScaleFactor * e.getDelta()));
+        for (int i = 0; i < source.getDecodingTimes().length; i++) {
+            scaled[i] = source.getDecodingTimes()[i] * timeScaleFactor;
         }
-        return entries2;
+        return scaled;
     }
 
     public Box getMediaHeaderBox() {
@@ -120,6 +119,10 @@ public class MultiplyTimeScaleTrack implements Track {
 
     public SubSampleInformationBox getSubsampleInformationBox() {
         return source.getSubsampleInformationBox();
+    }
+
+    public long getDuration() {
+        return source.getDuration() * timeScaleFactor;
     }
 
     @Override

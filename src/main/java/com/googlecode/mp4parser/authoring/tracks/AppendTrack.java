@@ -365,29 +365,26 @@ public class AppendTrack extends AbstractTrack {
         return stsd;
     }
 
+    @Override
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        if (tracks[0].getDecodingTimeEntries() != null && !tracks[0].getDecodingTimeEntries().isEmpty()) {
-            List<long[]> lists = new LinkedList<long[]>();
-            for (Track track : tracks) {
-                lists.add(TimeToSampleBox.blowupTimeToSamples(track.getDecodingTimeEntries()));
-            }
+        throw new RuntimeException("Don't use me. Use getDecodingTimes");
+    }
 
-            LinkedList<TimeToSampleBox.Entry> returnDecodingEntries = new LinkedList<TimeToSampleBox.Entry>();
-            for (long[] list : lists) {
-                for (long nuDecodingTime : list) {
-                    if (returnDecodingEntries.isEmpty() || returnDecodingEntries.getLast().getDelta() != nuDecodingTime) {
-                        TimeToSampleBox.Entry e = new TimeToSampleBox.Entry(1, nuDecodingTime);
-                        returnDecodingEntries.add(e);
-                    } else {
-                        TimeToSampleBox.Entry e = returnDecodingEntries.getLast();
-                        e.setCount(e.getCount() + 1);
-                    }
-                }
-            }
-            return returnDecodingEntries;
-        } else {
-            return null;
+    @Override
+    public synchronized long[] getDecodingTimes() {
+        int numSamples = 0;
+        for (Track track : tracks) {
+            numSamples += track.getDecodingTimes().length;
         }
+        long[] decodingTimes = new long[numSamples];
+        int index = 0;
+        // should use system arraycopy but this works too (yes it's slow ...)
+        for (Track track : tracks) {
+            for (long l : track.getDecodingTimes()) {
+                decodingTimes[index] = l;
+            }
+        }
+        return decodingTimes;
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {

@@ -34,7 +34,7 @@ public class ReplaceSampleTrack extends AbstractTrack {
     Track origTrack;
     private long sampleNumber;
     private Sample sampleContent;
-    private List<Sample>  samples;
+    private List<Sample> samples;
 
     public ReplaceSampleTrack(Track origTrack, long sampleNumber, ByteBuffer content) {
         this.origTrack = origTrack;
@@ -52,9 +52,14 @@ public class ReplaceSampleTrack extends AbstractTrack {
         return origTrack.getSampleDescriptionBox();
     }
 
+    @Override
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return origTrack.getDecodingTimeEntries();
+        throw new RuntimeException("Please use getDecodingTimes");
+    }
 
+    @Override
+    public synchronized long[] getDecodingTimes() {
+        return origTrack.getDecodingTimes();
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {

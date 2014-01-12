@@ -8,7 +8,9 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import org.junit.Test;
 
 import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.WritableByteChannel;
 
 public class AC3TrackImplTest {
     @Test
@@ -19,7 +21,7 @@ public class AC3TrackImplTest {
 
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
         Container isoFile = mp4Builder.build(m);
-        //DataSource fc = new FileOutputStream("c:/dev/mp4parser/isoparser/src/test/resources/com/googlecode/mp4parser/authoring/tracks/ac3-sample-new.mp4").getChannel();
+        //WritableByteChannel fc = new FileOutputStream("ac3-sample.mp4").getChannel();
         //isoFile.writeContainer(fc);
         //fc.close();
         IsoFile isoFileReference = new IsoFile(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/ac3-sample.mp4");

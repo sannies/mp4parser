@@ -36,23 +36,14 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
         this.fragmentLength = fragmentLength;
     }
 
-    protected long getDuration(Track track) {
-        long duration = 0;
-        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
-            duration += entry.getCount() * entry.getDelta();
-        }
-        return duration;
-    }
 
     /**
      * {@inheritDoc}
      */
     public long[] sampleNumbers(Track track) {
-        List<TimeToSampleBox.Entry> entries = track.getDecodingTimeEntries();
-
         double trackLength = 0;
         for (Track thisTrack : movie.getTracks()) {
-            double thisTracksLength = getDuration(thisTrack) / thisTrack.getTrackMetaData().getTimescale();
+            double thisTracksLength = thisTrack.getDuration() / thisTrack.getTrackMetaData().getTimescale();
             if (trackLength < thisTracksLength) {
                 trackLength = thisTracksLength;
             }
@@ -69,15 +60,13 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
 
         long time = 0;
         int samples = 0;
-        for (TimeToSampleBox.Entry entry : entries) {
-            for (int i = 0; i < entry.getCount(); i++) {
-                int currentFragment = (int) (time / track.getTrackMetaData().getTimescale() / fragmentLength) + 1;
-                if (currentFragment >= fragments.length) {
-                    break;
-                }
-                fragments[currentFragment] = samples++ + 1;
-                time += entry.getDelta();
+        for (long delta : track.getDecodingTimes()) {
+            int currentFragment = (int) (time / track.getTrackMetaData().getTimescale() / fragmentLength) + 1;
+            if (currentFragment >= fragments.length) {
+                break;
             }
+            fragments[currentFragment] = samples++ + 1;
+            time += delta;
         }
         long last = samples + 1;
         // fill all -1 ones.

@@ -28,6 +28,7 @@ public abstract class AbstractTrack implements Track {
     private boolean inMovie = true;
     private boolean inPreview = true;
     private boolean inPoster = true;
+    private long[] decodingTimes = null;
 
     public boolean isEnabled() {
         return enabled;
@@ -61,8 +62,13 @@ public abstract class AbstractTrack implements Track {
         this.inPoster = inPoster;
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return null;
+    public abstract List<TimeToSampleBox.Entry> getDecodingTimeEntries();
+
+    public synchronized long[] getDecodingTimes() {
+        if (decodingTimes == null) {
+            decodingTimes = TimeToSampleBox.blowupTimeToSamples(this.getDecodingTimeEntries());
+        }
+        return decodingTimes;
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
@@ -80,4 +86,13 @@ public abstract class AbstractTrack implements Track {
     public SubSampleInformationBox getSubsampleInformationBox() {
         return null;
     }
+
+    public long getDuration() {
+        long duration = 0;
+        for (long delta : getDecodingTimes()) {
+            duration += delta;
+        }
+        return duration;
+    }
+
 }

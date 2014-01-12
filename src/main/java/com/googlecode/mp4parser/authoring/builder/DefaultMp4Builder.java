@@ -162,7 +162,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         long duration = 0;
 
         for (Track track : movie.getTracks()) {
-            long tracksDuration = getDuration(track) * movieTimeScale / track.getTrackMetaData().getTimescale();
+            long tracksDuration = track.getDuration() * movieTimeScale / track.getTrackMetaData().getTimescale();
             if (tracksDuration > duration) {
                 duration = tracksDuration;
             }
@@ -218,7 +218,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         // We need to take edit list box into account in trackheader duration
         // but as long as I don't support edit list boxes it is sufficient to
         // just translate media duration to movie timescale
-        tkhd.setDuration(getDuration(track) * getTimescale(movie) / track.getTrackMetaData().getTimescale());
+        tkhd.setDuration(track.getDuration() * getTimescale(movie) / track.getTrackMetaData().getTimescale());
         tkhd.setHeight(track.getTrackMetaData().getHeight());
         tkhd.setWidth(track.getTrackMetaData().getWidth());
         tkhd.setLayer(track.getTrackMetaData().getLayer());
@@ -241,7 +241,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         trackBox.addBox(mdia);
         MediaHeaderBox mdhd = new MediaHeaderBox();
         mdhd.setCreationTime(track.getTrackMetaData().getCreationTime());
-        mdhd.setDuration(getDuration(track));
+        mdhd.setDuration(track.getDuration());
         mdhd.setTimescale(track.getTrackMetaData().getTimescale());
         mdhd.setLanguage(track.getTrackMetaData().getLanguage());
         mdia.addBox(mdhd);
@@ -388,12 +388,21 @@ public class DefaultMp4Builder implements Mp4Builder {
     }
 
     protected void createStts(Track track, SampleTableBox stbl) {
-        List<TimeToSampleBox.Entry> decodingTimeToSampleEntries = track.getDecodingTimeEntries();
-        if (decodingTimeToSampleEntries != null && !decodingTimeToSampleEntries.isEmpty()) {
-            TimeToSampleBox stts = new TimeToSampleBox();
-            stts.setEntries(decodingTimeToSampleEntries);
-            stbl.addBox(stts);
+        TimeToSampleBox.Entry lastEntry = null;
+        List<TimeToSampleBox.Entry> entries = new ArrayList<TimeToSampleBox.Entry>();
+
+        for (long delta : track.getDecodingTimes()) {
+            if (lastEntry != null && lastEntry.getDelta() == delta) {
+                lastEntry.setCount(lastEntry.getCount() + 1);
+            } else {
+                lastEntry = new TimeToSampleBox.Entry(1, delta);
+                entries.add(lastEntry);
+            }
+
         }
+        TimeToSampleBox stts = new TimeToSampleBox();
+        stts.setEntries(entries);
+        stbl.addBox(stts);
     }
 
     private class InterleaveChunkMdat implements Box {
@@ -539,14 +548,6 @@ public class DefaultMp4Builder implements Mp4Builder {
             rc += l;
         }
         return rc;
-    }
-
-    protected static long getDuration(Track track) {
-        long duration = 0;
-        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
-            duration += entry.getCount() * entry.getDelta();
-        }
-        return duration;
     }
 
     public long getTimescale(Movie movie) {

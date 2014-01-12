@@ -101,8 +101,8 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                             minSampleRate = ase.getSampleRate();
                             long sc = testTrack.getSamples().size();
                             double stretch = (double) sc / refSampleCount;
-                            TimeToSampleBox.Entry sttsEntry = testTrack.getDecodingTimeEntries().get(0);
-                            long samplesPerFrame = sttsEntry.getDelta(); // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
+
+                            long samplesPerFrame = testTrack.getDecodingTimes()[0]; // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
 
                             for (int i = 0; i < syncSamples.length; i++) {
                                 long start = (long) Math.ceil(stretch * (refSyncSamples[i] - 1) * samplesPerFrame);
@@ -114,8 +114,8 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                     }
                 }
                 AudioSampleEntry ase = (AudioSampleEntry) track.getSampleDescriptionBox().getSampleEntry();
-                TimeToSampleBox.Entry sttsEntry = track.getDecodingTimeEntries().get(0);
-                long samplesPerFrame = sttsEntry.getDelta(); // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
+
+                long samplesPerFrame = track.getDecodingTimes()[0]; // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
                 double factor = (double) ase.getSampleRate() / (double) minSampleRate;
                 if (factor != Math.rint(factor)) { // Not an integer
                     throw new RuntimeException("Sample rates must be a multiple of the lowest sample rate to create a correct file!");
@@ -256,36 +256,21 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
 
 
     private static long[] getTimes(Track track, Movie m) {
-        final CacheTuple key = new CacheTuple(track, m);
-        final long[] result = getTimesCache.get(key);
-        if (result != null) {
-            return result;
-        }
-
         long[] syncSamples = track.getSyncSamples();
         long[] syncSampleTimes = new long[syncSamples.length];
-        Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
 
         int currentSample = 1;  // first syncsample is 1
         long currentDuration = 0;
-        long currentDelta = 0;
         int currentSyncSampleIndex = 0;
-        long left = 0;
 
         final long scalingFactor = calculateTracktimesScalingFactor(m, track);
 
         while (currentSample <= syncSamples[syncSamples.length - 1]) {
-            if (currentSample++ == syncSamples[currentSyncSampleIndex]) {
+            if (currentSample == syncSamples[currentSyncSampleIndex]) {
                 syncSampleTimes[currentSyncSampleIndex++] = currentDuration * scalingFactor;
             }
-            if (left-- == 0) {
-                TimeToSampleBox.Entry entry = timeQueue.poll();
-                left = entry.getCount() - 1;
-                currentDelta = entry.getDelta();
-            }
-            currentDuration += currentDelta;
+            currentDuration += track.getDecodingTimes()[currentSample++];
         }
-        getTimesCache.put(key, syncSampleTimes);
         return syncSampleTimes;
     }
 

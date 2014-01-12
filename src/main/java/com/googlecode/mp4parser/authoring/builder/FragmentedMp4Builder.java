@@ -89,8 +89,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 // one based sample numbers - the first sample is 1
 
                 // now let's get the start times
-                long[] decTimes1 = TimeToSampleBox.blowupTimeToSamples(o1.getDecodingTimeEntries());
-                long[] decTimes2 = TimeToSampleBox.blowupTimeToSamples(o2.getDecodingTimeEntries());
+                long[] decTimes1 = o1.getDecodingTimes();
+                long[] decTimes2 = o2.getDecodingTimes();
                 long startTime1 = 0;
                 long startTime2 = 0;
 
@@ -118,17 +118,17 @@ public class FragmentedMp4Builder implements Mp4Builder {
         double size = 0;
         long durationInSeconds = 0;
         for (Track track : movie.getTracks()) {
-            long tracksDuration = getDuration(track) / track.getTrackMetaData().getTimescale();
+            long tracksDuration = track.getDuration() / track.getTrackMetaData().getTimescale();
             if (tracksDuration > durationInSeconds) {
                 durationInSeconds = tracksDuration;
             }
-            List<Sample> samples =  track.getSamples();
+            List<Sample> samples = track.getSamples();
             if (samples.size() < 10000) {
                 for (Sample sample : samples) {
                     size += sample.getSize();
                 }
             } else {
-                long _size  = 0;
+                long _size = 0;
                 for (int i = 0; i < 10000; i++) {
                     _size += samples.get(i).getSize();
                 }
@@ -212,7 +212,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
                     break;
                 }
             }
-          intersectionFinder = new SyncSampleIntersectFinderImpl(movie, refTrack, -1);
+            intersectionFinder = new SyncSampleIntersectFinderImpl(movie, refTrack, -1);
         }
         BasicContainer isoFile = new BasicContainer();
 
@@ -348,8 +348,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         TrackFragmentBaseMediaDecodeTimeBox tfdt = new TrackFragmentBaseMediaDecodeTimeBox();
         tfdt.setVersion(1);
         long startTime = 0;
-        List<TimeToSampleBox.Entry> entries = track.getDecodingTimeEntries();
-        long[] times = TimeToSampleBox.blowupTimeToSamples(entries);
+        long[] times = track.getDecodingTimes();
         for (int i = 1; i < startSample; i++) {
             startTime += times[i];
         }
@@ -373,18 +372,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
         trun.setSampleDurationPresent(true);
         trun.setSampleSizePresent(true);
         List<TrackRunBox.Entry> entries = new ArrayList<TrackRunBox.Entry>(l2i(endSample - startSample));
-
-        List<TimeToSampleBox.Entry> t2SEntries = track.getDecodingTimeEntries();
-        TimeToSampleBox.Entry[] timeQueue = t2SEntries.toArray(new TimeToSampleBox.Entry[t2SEntries.size()]);
-        int timeQueueIndex = 0;
-        long left = startSample - 1;
-        long curEntryLeft = timeQueue[timeQueueIndex].getCount();
-        while (left > curEntryLeft) {
-            left -= curEntryLeft;
-            timeQueueIndex++;
-            curEntryLeft = timeQueue[timeQueueIndex].getCount();
-        }
-        curEntryLeft -= left;
 
 
         List<CompositionTimeToSample.Entry> compositionTimeEntries = track.getCompositionTimeEntries();
@@ -441,11 +428,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
             }
 
-            entry.setSampleDuration(timeQueue[timeQueueIndex].getDelta());
-            if (--curEntryLeft == 0 && (timeQueue.length - timeQueueIndex) > 1) {
-                timeQueueIndex++;
-                curEntryLeft = timeQueue[timeQueueIndex].getCount();
-            }
+            entry.setSampleDuration(track.getDecodingTimes()[l2i(startSample + i - 1)]);
 
             if (compositionTimeQueue != null) {
                 entry.setSampleCompositionTimeOffset(compositionTimeQueue[compositionTimeQueueIndex].getOffset());
@@ -712,7 +695,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     private long getTrackDuration(Movie movie, Track track) {
-        return getDuration(track) * (movie.getTimescale() / track.getTrackMetaData().getTimescale());
+        return track.getDuration() * (movie.getTimescale() / track.getTrackMetaData().getTimescale());
     }
 
     protected Box createMdhd(Movie movie, Track track) {
@@ -806,62 +789,5 @@ public class FragmentedMp4Builder implements Mp4Builder {
         this.intersectionFinder = intersectionFinder;
     }
 
-    /**
-     * Calculates the length of each fragment in the given <code>track</code> (as part of <code>movie</code>).
-     *
-     * @param track target of calculation
-     * @param movie the <code>track</code> must be part of this <code>movie</code>
-     * @return the duration of each fragment in track timescale
-     */
-    public long[] calculateFragmentDurations(Track track, Movie movie) {
-        long[] startSamples = intersectionFinder.sampleNumbers(track);
-        long[] durations = new long[startSamples.length];
-        int currentFragment = 0;
-        int currentSample = 1; // sync samples start with 1 !
 
-        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
-            for (int max = currentSample + l2i(entry.getCount()); currentSample < max; currentSample++) {
-                // in this loop we go through the entry.getCount() samples starting from current sample.
-                // the next entry.getCount() samples have the same decoding time.
-                if (currentFragment != startSamples.length - 1 && currentSample == startSamples[currentFragment + 1]) {
-                    // we are not in the last fragment && the current sample is the start sample of the next fragment
-                    currentFragment++;
-                }
-                durations[currentFragment] += entry.getDelta();
-            }
-        }
-        return durations;
-
-    }
-
-    public static long getDuration(Track track) {
-        long duration = 0;
-        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
-            duration += entry.getCount() * entry.getDelta();
-        }
-        return duration;
-    }
-
-    public static long getBitrate(Track track) {
-        final List<Sample> samples = track.getSamples();
-        final long timescale = track.getTrackMetaData().getTimescale();
-        return getBitrate(samples, getDuration(track), timescale);
-    }
-
-    public static long getBitrate(List<Sample> sampleList, long duration, long timescale) {
-        long sampleSizes = 0;
-        for (Sample sample : sampleList) {
-            sampleSizes += sample.getSize();
-        }
-        double bitrate = sampleSizes / (((double) duration) / timescale); // per second
-        return Math.round(bitrate) * 8; //byte to bit
-    }
-
-    public static long getFragmentedDuration(TrackBox trackBox) {
-        final MovieExtendsHeaderBox mehd = (MovieExtendsHeaderBox) Path.getPath(trackBox, "/moov/mvex/mehd");
-        if (mehd == null) {
-            throw new RuntimeException("No MovieExtendsHeaderBox found.");
-        }
-        return mehd.getFragmentDuration();
-    }
 }

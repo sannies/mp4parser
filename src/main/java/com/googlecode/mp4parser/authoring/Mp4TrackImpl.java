@@ -41,7 +41,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 public class Mp4TrackImpl extends AbstractTrack {
     private List<Sample> samples;
     private SampleDescriptionBox sampleDescriptionBox;
-    private List<TimeToSampleBox.Entry> decodingTimeEntries;
+    private long[] decodingTimes;
     private List<CompositionTimeToSample.Entry> compositionTimeEntries;
     private long[] syncSamples = new long[0];
     private List<SampleDependencyTypeBox.Entry> sampleDependencies;
@@ -53,7 +53,7 @@ public class Mp4TrackImpl extends AbstractTrack {
      * Creates a track from a TrackBox and potentially fragments. Use <b>fragements parameter
      * only</b> to supply additional fragments that are not located in the main file.
      *
-     * @param trackBox the <code>TrackBox</code> describing the track.
+     * @param trackBox  the <code>TrackBox</code> describing the track.
      * @param fragments additional fragments if located in more than a single file
      */
     public Mp4TrackImpl(TrackBox trackBox, IsoFile... fragments) {
@@ -63,7 +63,7 @@ public class Mp4TrackImpl extends AbstractTrack {
         handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
 
         mihd = trackBox.getMediaBox().getMediaInformationBox().getMediaHeaderBox();
-        decodingTimeEntries = new ArrayList<TimeToSampleBox.Entry>();
+        List<TimeToSampleBox.Entry> decodingTimeEntries = new ArrayList<TimeToSampleBox.Entry>();
         compositionTimeEntries = new ArrayList<CompositionTimeToSample.Entry>();
         sampleDependencies = new ArrayList<SampleDependencyTypeBox.Entry>();
 
@@ -162,6 +162,8 @@ public class Mp4TrackImpl extends AbstractTrack {
                 }
             }
         }
+        decodingTimes = TimeToSampleBox.blowupTimeToSamples(decodingTimeEntries);
+
         MediaHeaderBox mdhd = trackBox.getMediaBox().getMediaHeaderBox();
         TrackHeaderBox tkhd = trackBox.getTrackHeaderBox();
 
@@ -187,13 +189,17 @@ public class Mp4TrackImpl extends AbstractTrack {
         return samples;
     }
 
+    @Override
+    public synchronized long[] getDecodingTimes() {
+        return decodingTimes;
+    }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
         return sampleDescriptionBox;
     }
 
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return decodingTimeEntries;
+        throw new RuntimeException("Don't use me, use getDecodingTimes");
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {

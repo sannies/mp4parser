@@ -8,9 +8,12 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * This is just a basic idea how things could work but they don't.
@@ -19,15 +22,14 @@ public class SilenceTrackImpl implements Track {
     Track source;
 
     List<Sample> samples = new LinkedList<Sample>();
-    TimeToSampleBox.Entry entry;
+    long[] decodingTimes;
 
     public SilenceTrackImpl(Track ofType, long ms) {
         source = ofType;
         if ("mp4a".equals(ofType.getSampleDescriptionBox().getSampleEntry().getType())) {
-            long numFrames = getTrackMetaData().getTimescale() * ms / 1000 / 1024;
-            long standZeit = getTrackMetaData().getTimescale() * ms / numFrames / 1000;
-            entry = new TimeToSampleBox.Entry(numFrames, standZeit);
-
+            int numFrames = l2i(getTrackMetaData().getTimescale() * ms / 1000 / 1024);
+            decodingTimes = new long[numFrames];
+            Arrays.fill(decodingTimes, getTrackMetaData().getTimescale() * ms / numFrames / 1000);
 
             while (numFrames-- > 0) {
                 samples.add(new SampleImpl((ByteBuffer) ByteBuffer.wrap(new byte[]{
@@ -40,13 +42,21 @@ public class SilenceTrackImpl implements Track {
         }
     }
 
+
     public SampleDescriptionBox getSampleDescriptionBox() {
         return source.getSampleDescriptionBox();
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return Collections.singletonList(entry);
+    public long[] getDecodingTimes() {
+        return decodingTimes;
+    }
 
+    public long getDuration() {
+        long duration = 0;
+        for (long delta : decodingTimes) {
+            duration += delta;
+        }
+        return duration;
     }
 
     public TrackMetaData getTrackMetaData() {

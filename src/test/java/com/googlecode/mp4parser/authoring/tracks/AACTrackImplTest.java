@@ -24,7 +24,10 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import org.junit.Test;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.Channel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Simple test to make sure nothing breaks.
@@ -40,9 +43,9 @@ public class AACTrackImplTest {
 
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
         Container c = mp4Builder.build(m);
-//        DataSource fc = new FileOutputStream("aac-sample.mp4").getChannel();
-//        isoFile.getBox(fc);
-//        fc.close();
+        //WritableByteChannel fc  = new FileOutputStream("aac-sample.mp4").getChannel();
+        //c.writeContainer(fc);
+        //fc.close();
         IsoFile isoFileReference = new IsoFile(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.mp4");
         BoxComparator.check(c, isoFileReference, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]", "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stco[0]");
     }

@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * <p>Represents a Track. A track is a timed sequence of related samples.</p>
- *
+ * <p/>
  * <b>NOTE: </b>
  * <p>For media data, a track corresponds to a sequence of images or sampled audio; for hint tracks, a track
  * corresponds to a streaming channel.</p>
@@ -30,7 +30,9 @@ public interface Track {
 
     SampleDescriptionBox getSampleDescriptionBox();
 
-    List<TimeToSampleBox.Entry> getDecodingTimeEntries();
+    long[] getDecodingTimes();
+
+    long getDuration();
 
     List<CompositionTimeToSample.Entry> getCompositionTimeEntries();
 

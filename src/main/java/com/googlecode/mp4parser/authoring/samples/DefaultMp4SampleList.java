@@ -7,8 +7,6 @@ import com.googlecode.mp4parser.authoring.SampleImpl;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -20,7 +18,9 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
     Container topLevel;
     TrackBox trackBox = null;
     SoftReference<Sample>[] cache = null;
-    int[] chunkNumsStartSample;
+    int[] chunkNumsStartSampleNum;
+    long[] chunkOffsets;
+    SampleSizeBox ssb;
 
     public DefaultMp4SampleList(long track, Container topLevel) {
         this.topLevel = topLevel;
@@ -35,8 +35,9 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         if (trackBox == null) {
             throw new RuntimeException("This MP4 does not contain track " + track);
         }
+        chunkOffsets = trackBox.getSampleTableBox().getChunkOffsetBox().getChunkOffsets();
         cache = (SoftReference<Sample>[]) Array.newInstance(SoftReference.class, size());
-
+        ssb = trackBox.getSampleTableBox().getSampleSizeBox();
         List<SampleToChunkBox.Entry> s2chunkEntries = trackBox.getSampleTableBox().getSampleToChunkBox().getEntries();
         SampleToChunkBox.Entry[] entries = s2chunkEntries.toArray(new SampleToChunkBox.Entry[s2chunkEntries.size()]);
 
@@ -68,7 +69,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             }
 
         } while ((currentSampleNo += currentSamplePerChunk) <= lastSampleNo);
-        chunkNumsStartSample = new int[currentChunkNo + 1];
+        chunkNumsStartSampleNum = new int[currentChunkNo + 1];
         // reset of algorithm
         s2cIndex = 0;
         next = entries[s2cIndex++];
@@ -80,7 +81,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
 
         currentSampleNo = 1;
         do {
-            chunkNumsStartSample[currentChunkNo++] = currentSampleNo;
+            chunkNumsStartSampleNum[currentChunkNo++] = currentSampleNo;
             if (currentChunkNo == nextFirstChunk) {
                 currentSamplePerChunk = nextSamplePerChunk;
                 if (entries.length > s2cIndex) {
@@ -94,10 +95,38 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             }
 
         } while ((currentSampleNo += currentSamplePerChunk) <= lastSampleNo);
-        chunkNumsStartSample[currentChunkNo++] = Integer.MAX_VALUE;
+        chunkNumsStartSampleNum[currentChunkNo] = Integer.MAX_VALUE;
 
     }
 
+
+    int lastChunk = 0;
+
+    synchronized int getChunkForSample(int index) {
+        int sampleNum = index + 1;
+        // we always look for the next chunk in the last one to make linear access fast
+        if (sampleNum >= chunkNumsStartSampleNum[lastChunk] && sampleNum < chunkNumsStartSampleNum[lastChunk + 1]) {
+            return lastChunk;
+        } else if (sampleNum < chunkNumsStartSampleNum[lastChunk]) {
+            // we could search backwards but i don't believe there is much backward linear access
+            // I'd then rather suspect a start from scratch
+            lastChunk = 0;
+
+            while (chunkNumsStartSampleNum[lastChunk + 1] <= sampleNum) {
+                lastChunk++;
+            }
+            return lastChunk;
+
+        } else {
+            lastChunk += 1;
+
+            while (chunkNumsStartSampleNum[lastChunk + 1] <= sampleNum) {
+                lastChunk++;
+            }
+            return lastChunk;
+        }
+
+    }
 
     @Override
     public Sample get(int index) {
@@ -108,14 +137,12 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             return cache[index].get();
         }
 
-        int currentChunkNoZeroBased = 0;
-        while (chunkNumsStartSample[currentChunkNoZeroBased + 1] <= (index + 1)) {
-            currentChunkNoZeroBased++;
-        }
-        int currentSampleNo = chunkNumsStartSample[currentChunkNoZeroBased];
+        int currentChunkNoZeroBased = getChunkForSample(index);
 
-        long offset = trackBox.getSampleTableBox().getChunkOffsetBox().getChunkOffsets()[l2i(currentChunkNoZeroBased)];
-        SampleSizeBox ssb = trackBox.getSampleTableBox().getSampleSizeBox();
+        int currentSampleNo = chunkNumsStartSampleNum[currentChunkNoZeroBased];
+
+        long offset = chunkOffsets[l2i(currentChunkNoZeroBased)];
+
         while (currentSampleNo < index + 1) {
             offset += ssb.getSampleSizeAtIndex((currentSampleNo++) - 1);
         }

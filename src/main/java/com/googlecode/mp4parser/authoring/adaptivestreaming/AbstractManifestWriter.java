@@ -39,15 +39,15 @@ public abstract class AbstractManifestWriter implements ManifestWriter {
         int currentFragment = 0;
         int currentSample = 1; // sync samples start with 1 !
 
-        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
-            for (int max = currentSample + l2i(entry.getCount()); currentSample < max; currentSample++) {
+        for (long delta : track.getDecodingTimes()) {
+            for (int max = currentSample + 1; currentSample < max; currentSample++) {
                 // in this loop we go through the entry.getCount() samples starting from current sample.
                 // the next entry.getCount() samples have the same decoding time.
                 if (currentFragment != startSamples.length - 1 && currentSample == startSamples[currentFragment + 1]) {
                     // we are not in the last fragment && the current sample is the start sample of the next fragment
                     currentFragment++;
                 }
-                durations[currentFragment] += entry.getDelta();
+                durations[currentFragment] += delta;
 
 
             }
@@ -61,18 +61,11 @@ public abstract class AbstractManifestWriter implements ManifestWriter {
         for (Sample sample : track.getSamples()) {
             bitrate += sample.getSize();
         }
-        bitrate /= ((double) getDuration(track)) / track.getTrackMetaData().getTimescale(); // per second
+        bitrate /= ((double) track.getDuration()) / track.getTrackMetaData().getTimescale(); // per second
         bitrate *= (long) 8; // from bytes to bits
         return bitrate;
     }
 
-    protected static long getDuration(Track track) {
-        long duration = 0;
-        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
-            duration += entry.getCount() * entry.getDelta();
-        }
-        return duration;
-    }
 
     protected long[] checkFragmentsAlign(long[] referenceTimes, long[] checkTimes) throws IOException {
 

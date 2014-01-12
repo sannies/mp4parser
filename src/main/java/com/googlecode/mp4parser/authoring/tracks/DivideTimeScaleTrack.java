@@ -41,8 +41,14 @@ public class DivideTimeScaleTrack implements Track {
         return source.getSampleDescriptionBox();
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return adjustTts();
+    public long[] getDecodingTimes() {
+        long[] scaled = new long[source.getDecodingTimes().length];
+
+        LinkedList<TimeToSampleBox.Entry> entries2 = new LinkedList<TimeToSampleBox.Entry>();
+        for (int i = 0; i < source.getDecodingTimes().length; i++) {
+            scaled[i] = source.getDecodingTimes()[i] / timeScaleDivisor;
+        }
+        return scaled;
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
@@ -101,21 +107,20 @@ public class DivideTimeScaleTrack implements Track {
         }
     }
 
-    List<TimeToSampleBox.Entry> adjustTts() {
-        List<TimeToSampleBox.Entry> origTts = source.getDecodingTimeEntries();
-        LinkedList<TimeToSampleBox.Entry> entries2 = new LinkedList<TimeToSampleBox.Entry>();
-        for (TimeToSampleBox.Entry e : origTts) {
-            entries2.add(new TimeToSampleBox.Entry(e.getCount(), e.getDelta() / timeScaleDivisor));
-        }
-        return entries2;
-    }
-
     public Box getMediaHeaderBox() {
         return source.getMediaHeaderBox();
     }
 
     public SubSampleInformationBox getSubsampleInformationBox() {
         return source.getSubsampleInformationBox();
+    }
+
+    public long getDuration() {
+        long duration = 0;
+        for (long delta : getDecodingTimes()) {
+            duration += delta;
+        }
+        return duration;
     }
 
     @Override

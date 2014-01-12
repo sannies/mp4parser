@@ -36,7 +36,7 @@ public class ChangeTimeScaleTrack implements Track {
 
     Track source;
     List<CompositionTimeToSample.Entry> ctts;
-    List<TimeToSampleBox.Entry> tts;
+    long[] decodingTimes;
     long timeScale;
 
     /**
@@ -52,30 +52,23 @@ public class ChangeTimeScaleTrack implements Track {
         this.timeScale = targetTimeScale;
         double timeScaleFactor = (double) targetTimeScale / source.getTrackMetaData().getTimescale();
         ctts = adjustCtts(source.getCompositionTimeEntries(), timeScaleFactor);
-        tts = adjustTts(source.getDecodingTimeEntries(), timeScaleFactor, syncSamples, getTimes(source, syncSamples, targetTimeScale));
+        decodingTimes = adjustTts(source.getDecodingTimes(), timeScaleFactor, syncSamples, getTimes(source, syncSamples, targetTimeScale));
     }
 
     private static long[] getTimes(Track track, long[] syncSamples, long targetTimeScale) {
         long[] syncSampleTimes = new long[syncSamples.length];
-        Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
 
         int currentSample = 1;  // first syncsample is 1
         long currentDuration = 0;
-        long currentDelta = 0;
         int currentSyncSampleIndex = 0;
-        long left = 0;
 
 
         while (currentSample <= syncSamples[syncSamples.length - 1]) {
-            if (currentSample++ == syncSamples[currentSyncSampleIndex]) {
+            if (currentSample == syncSamples[currentSyncSampleIndex]) {
                 syncSampleTimes[currentSyncSampleIndex++] = (currentDuration * targetTimeScale) / track.getTrackMetaData().getTimescale();
             }
-            if (left-- == 0) {
-                TimeToSampleBox.Entry entry = timeQueue.poll();
-                left = entry.getCount() - 1;
-                currentDelta = entry.getDelta();
-            }
-            currentDuration += currentDelta;
+            currentDuration += track.getDecodingTimes()[currentSample - 1];
+            currentSample++;
         }
         return syncSampleTimes;
 
@@ -86,7 +79,11 @@ public class ChangeTimeScaleTrack implements Track {
     }
 
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return tts;
+        throw new RuntimeException("Don't needed - use getDecodingTimes");
+    }
+
+    public long[] getDecodingTimes() {
+        return decodingTimes;
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
@@ -152,19 +149,18 @@ public class ChangeTimeScaleTrack implements Track {
         }
     }
 
-    static List<TimeToSampleBox.Entry> adjustTts(List<TimeToSampleBox.Entry> source, double timeScaleFactor, long[] syncSample, long[] syncSampleTimes) {
+    static long[] adjustTts(long[] sourceArray, double timeScaleFactor, long[] syncSample, long[] syncSampleTimes) {
 
-        long[] sourceArray = TimeToSampleBox.blowupTimeToSamples(source);
+
         long summedDurations = 0;
 
-        LinkedList<TimeToSampleBox.Entry> entries2 = new LinkedList<TimeToSampleBox.Entry>();
+        long[] scaledArray = new long[sourceArray.length];
+
         for (int i = 1; i <= sourceArray.length; i++) {
             long duration = sourceArray[i - 1];
 
             long x = Math.round(timeScaleFactor * duration);
 
-
-            TimeToSampleBox.Entry last = entries2.peekLast();
             int ssIndex;
             if ((ssIndex = Arrays.binarySearch(syncSample, i + 1)) >= 0) {
                 // we are at the sample before sync point
@@ -175,16 +171,9 @@ public class ChangeTimeScaleTrack implements Track {
                 }
             }
             summedDurations += x;
-            if (last == null) {
-                entries2.add(new TimeToSampleBox.Entry(1, x));
-            } else if (last.getDelta() != x) {
-                entries2.add(new TimeToSampleBox.Entry(1, x));
-            } else {
-                last.setCount(last.getCount() + 1);
-            }
-
+            scaledArray[i - 1] = x;
         }
-        return entries2;
+        return scaledArray;
     }
 
     public Box getMediaHeaderBox() {
@@ -193,6 +182,14 @@ public class ChangeTimeScaleTrack implements Track {
 
     public SubSampleInformationBox getSubsampleInformationBox() {
         return source.getSubsampleInformationBox();
+    }
+
+    public long getDuration() {
+        long duration = 0;
+        for (long delta : decodingTimes) {
+            duration += delta;
+        }
+        return duration;
     }
 
     @Override
