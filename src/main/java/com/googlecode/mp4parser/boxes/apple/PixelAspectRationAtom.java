@@ -1,5 +1,6 @@
 package com.googlecode.mp4parser.boxes.apple;
 
+import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.nio.ByteBuffer;
@@ -11,7 +12,7 @@ import java.nio.ByteBuffer;
  * uncompressed Y ́CbCr video formats when non-square pixels are used. It
  * is optional when square pixels are used.
  */
-public class PixelAspectRationAtom extends AbstractFullBox {
+public class PixelAspectRationAtom extends AbstractBox {
     public static final String TYPE = "pasp";
 
 
@@ -49,12 +50,11 @@ public class PixelAspectRationAtom extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 12;
+        return 8;
     }
 
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
-        writeVersionAndFlags(byteBuffer);
         byteBuffer.putInt(hSpacing);
         byteBuffer.putInt(vSpacing);
 
@@ -62,7 +62,6 @@ public class PixelAspectRationAtom extends AbstractFullBox {
 
     @Override
     protected void _parseDetails(ByteBuffer content) {
-        parseVersionAndFlags(content);
         hSpacing = content.getInt();
         vSpacing = content.getInt();
 
