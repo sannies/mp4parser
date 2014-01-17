@@ -117,7 +117,7 @@ public class AACTrackImpl extends AbstractTrack {
 
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
-
+    long[] decTimes;
     AdtsHeader firstHeader;
 
     int bufferSizeDB;
@@ -125,7 +125,6 @@ public class AACTrackImpl extends AbstractTrack {
     long avgBitRate;
 
     private List<Sample> samples;
-    List<TimeToSampleBox.Entry> stts;
     private String lang = "eng";
 
 
@@ -140,8 +139,7 @@ public class AACTrackImpl extends AbstractTrack {
 
     private void parse(DataSource channel) throws IOException {
 
-        stts = new LinkedList<TimeToSampleBox.Entry>();
-        samples = new LinkedList<Sample>();
+        samples = new ArrayList<Sample>();
         firstHeader = readSamples(channel);
 
         double packetsPerSecond = (double) firstHeader.sampleRate / 1024.0;
@@ -204,6 +202,7 @@ public class AACTrackImpl extends AbstractTrack {
         descriptor.setDecoderConfigDescriptor(decoderConfigDescriptor);
 
         ByteBuffer data = descriptor.serialize();
+        esds.setEsDescriptor(descriptor);
         esds.setData(data);
         audioSampleEntry.addBox(esds);
         sampleDescriptionBox.addBox(audioSampleEntry);
@@ -220,7 +219,16 @@ public class AACTrackImpl extends AbstractTrack {
     }
 
     public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return stts;
+        throw new RuntimeException("Do not use me");
+    }
+
+    @Override
+    public synchronized long[] getDecodingTimes() {
+        if (decTimes == null) {
+            decTimes = new long[samples.size()];
+            Arrays.fill(decTimes, 1024);
+        }
+        return decTimes;
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
@@ -330,7 +338,6 @@ public class AACTrackImpl extends AbstractTrack {
             samples.add(new SampleImpl(data));
             channel.position(channel.position() + hdr.frameLength - hdr.getSize());
             data.rewind();
-            stts.add(new TimeToSampleBox.Entry(1, 1024));
         }
         return first;
     }
