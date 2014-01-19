@@ -21,7 +21,6 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
@@ -61,14 +60,9 @@ public class CroppedTrack extends AbstractTrack {
         return origTrack.getSampleDescriptionBox();
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        throw new RuntimeException("Don#t use me. Use getDecodingTimes");
-    }
-
-    @Override
-    public synchronized long[] getDecodingTimes() {
+    public synchronized long[] getSampleDurations() {
         long[] decodingTimes = new long[toSample - fromSample];
-        System.arraycopy(origTrack.getDecodingTimes(), fromSample, decodingTimes, 0, decodingTimes.length);
+        System.arraycopy(origTrack.getSampleDurations(), fromSample, decodingTimes, 0, decodingTimes.length);
         return decodingTimes;
     }
 

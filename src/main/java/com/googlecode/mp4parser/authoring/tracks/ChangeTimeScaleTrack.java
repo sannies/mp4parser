@@ -20,12 +20,9 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.logging.Logger;
 
 /**
@@ -52,7 +49,7 @@ public class ChangeTimeScaleTrack implements Track {
         this.timeScale = targetTimeScale;
         double timeScaleFactor = (double) targetTimeScale / source.getTrackMetaData().getTimescale();
         ctts = adjustCtts(source.getCompositionTimeEntries(), timeScaleFactor);
-        decodingTimes = adjustTts(source.getDecodingTimes(), timeScaleFactor, syncSamples, getTimes(source, syncSamples, targetTimeScale));
+        decodingTimes = adjustTts(source.getSampleDurations(), timeScaleFactor, syncSamples, getTimes(source, syncSamples, targetTimeScale));
     }
 
     private static long[] getTimes(Track track, long[] syncSamples, long targetTimeScale) {
@@ -67,7 +64,7 @@ public class ChangeTimeScaleTrack implements Track {
             if (currentSample == syncSamples[currentSyncSampleIndex]) {
                 syncSampleTimes[currentSyncSampleIndex++] = (currentDuration * targetTimeScale) / track.getTrackMetaData().getTimescale();
             }
-            currentDuration += track.getDecodingTimes()[currentSample - 1];
+            currentDuration += track.getSampleDurations()[currentSample - 1];
             currentSample++;
         }
         return syncSampleTimes;
@@ -78,11 +75,7 @@ public class ChangeTimeScaleTrack implements Track {
         return source.getSampleDescriptionBox();
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        throw new RuntimeException("Don't needed - use getDecodingTimes");
-    }
-
-    public long[] getDecodingTimes() {
+    public long[] getSampleDurations() {
         return decodingTimes;
     }
 
@@ -108,21 +101,6 @@ public class ChangeTimeScaleTrack implements Track {
         return source.getHandler();
     }
 
-    public boolean isEnabled() {
-        return source.isEnabled();
-    }
-
-    public boolean isInMovie() {
-        return source.isInMovie();
-    }
-
-    public boolean isInPreview() {
-        return source.isInPreview();
-    }
-
-    public boolean isInPoster() {
-        return source.isInPoster();
-    }
 
     public List<Sample> getSamples() {
         return source.getSamples();

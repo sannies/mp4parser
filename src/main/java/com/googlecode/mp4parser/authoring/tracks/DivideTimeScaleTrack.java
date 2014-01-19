@@ -20,7 +20,6 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,12 +40,12 @@ public class DivideTimeScaleTrack implements Track {
         return source.getSampleDescriptionBox();
     }
 
-    public long[] getDecodingTimes() {
-        long[] scaled = new long[source.getDecodingTimes().length];
+    public long[] getSampleDurations() {
+        long[] scaled = new long[source.getSampleDurations().length];
 
         LinkedList<TimeToSampleBox.Entry> entries2 = new LinkedList<TimeToSampleBox.Entry>();
-        for (int i = 0; i < source.getDecodingTimes().length; i++) {
-            scaled[i] = source.getDecodingTimes()[i] / timeScaleDivisor;
+        for (int i = 0; i < source.getSampleDurations().length; i++) {
+            scaled[i] = source.getSampleDurations()[i] / timeScaleDivisor;
         }
         return scaled;
     }
@@ -73,21 +72,6 @@ public class DivideTimeScaleTrack implements Track {
         return source.getHandler();
     }
 
-    public boolean isEnabled() {
-        return source.isEnabled();
-    }
-
-    public boolean isInMovie() {
-        return source.isInMovie();
-    }
-
-    public boolean isInPreview() {
-        return source.isInPreview();
-    }
-
-    public boolean isInPoster() {
-        return source.isInPoster();
-    }
 
     public List<Sample> getSamples() {
         return source.getSamples();
@@ -117,7 +101,7 @@ public class DivideTimeScaleTrack implements Track {
 
     public long getDuration() {
         long duration = 0;
-        for (long delta : getDecodingTimes()) {
+        for (long delta : getSampleDurations()) {
             duration += delta;
         }
         return duration;

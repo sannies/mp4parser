@@ -207,10 +207,10 @@ public class DefaultMp4Builder implements Mp4Builder {
         TrackBox trackBox = new TrackBox();
         TrackHeaderBox tkhd = new TrackHeaderBox();
 
-        tkhd.setEnabled(track.isEnabled());
-        tkhd.setInMovie(track.isInMovie());
-        tkhd.setInPreview(track.isInPreview());
-        tkhd.setInPoster(track.isInPoster());
+        tkhd.setEnabled(true);
+        tkhd.setInMovie(true);
+        tkhd.setInPreview(true);
+        tkhd.setInPoster(true);
         tkhd.setMatrix(track.getTrackMetaData().getMatrix());
 
         tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
@@ -391,7 +391,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         TimeToSampleBox.Entry lastEntry = null;
         List<TimeToSampleBox.Entry> entries = new ArrayList<TimeToSampleBox.Entry>();
 
-        for (long delta : track.getDecodingTimes()) {
+        for (long delta : track.getSampleDurations()) {
             if (lastEntry != null && lastEntry.getDelta() == delta) {
                 lastEntry.setCount(lastEntry.getCount() + 1);
             } else {

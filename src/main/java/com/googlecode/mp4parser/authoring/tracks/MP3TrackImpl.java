@@ -15,6 +15,7 @@ import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.SLConfigDescriptor;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,7 +45,7 @@ public class MP3TrackImpl extends AbstractTrack {
     long avgBitRate;
 
     private List<Sample> samples;
-    List<TimeToSampleBox.Entry> stts;
+    private long[] durations;
     private String lang = "eng";
 
     public MP3TrackImpl(DataSource channel, String lang) throws IOException {
@@ -57,7 +58,6 @@ public class MP3TrackImpl extends AbstractTrack {
     }
 
     private void parse(DataSource channel) throws IOException {
-        stts = new LinkedList<TimeToSampleBox.Entry>();
         samples = new LinkedList<Sample>();
         firstHeader = readSamples(channel);
 
@@ -120,14 +120,16 @@ public class MP3TrackImpl extends AbstractTrack {
         trackMetaData.setLanguage(lang);
         trackMetaData.setVolume(1);
         trackMetaData.setTimescale(firstHeader.sampleRate); // Audio tracks always use sampleRate as timescale
+        durations = new long[samples.size()];
+        Arrays.fill(durations, SAMPLES_PER_FRAME);
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
         return sampleDescriptionBox;
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return stts;
+    public long[] getSampleDurations() {
+        return durations;
     }
 
     public TrackMetaData getTrackMetaData() {
@@ -181,7 +183,6 @@ public class MP3TrackImpl extends AbstractTrack {
             channel.read(data);
             data.rewind();
             samples.add(new SampleImpl(data));
-            stts.add(new TimeToSampleBox.Entry(1, SAMPLES_PER_FRAME));
         }
         return first;
     }

@@ -13,6 +13,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +39,7 @@ public class EC3TrackImpl extends AbstractTrack {
     private List<Sample> samples;
     List<TimeToSampleBox.Entry> stts = new LinkedList<TimeToSampleBox.Entry>();
     private String lang = "und";
+    private long[] decodingTimes;
 
     public EC3TrackImpl(InputStream fin, String lang) throws IOException {
         this.lang = lang;
@@ -121,10 +123,11 @@ public class EC3TrackImpl extends AbstractTrack {
         trackMetaData.setTimescale(samplerate); // Audio tracks always use samplerate as timescale
         trackMetaData.setVolume(1);
 
-        samples = new LinkedList<Sample>();
+        samples = new ArrayList<Sample>();
         if (!readSamples()) {
             throw new IOException();
         }
+        this.decodingTimes = new long[samples.size()];
     }
 
 
@@ -137,16 +140,16 @@ public class EC3TrackImpl extends AbstractTrack {
         return sampleDescriptionBox;
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return stts;
-    }
-
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
         return null;
     }
 
     public long[] getSyncSamples() {
         return null;
+    }
+
+    public long[] getSampleDurations() {
+        return decodingTimes;
     }
 
     public List<SampleDependencyTypeBox.Entry> getSampleDependencies() {

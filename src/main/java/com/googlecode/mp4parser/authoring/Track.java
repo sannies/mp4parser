@@ -30,8 +30,19 @@ public interface Track {
 
     SampleDescriptionBox getSampleDescriptionBox();
 
-    long[] getDecodingTimes();
+    /**
+     * Each samples is covers a small time span in a video. This method
+     * returns the duration for each sample in track timescale. The array
+     * must contain exactly as many samples as {@link #getSamples()} contains.
+     * @return an array of ticks
+     */
+    long[] getSampleDurations();
 
+    /**
+     * The duration of the track in track timescale. It's typically the
+     * sum of all samples' duration.
+     * @return the track's duration
+     */
     long getDuration();
 
     List<CompositionTimeToSample.Entry> getCompositionTimeEntries();
@@ -43,14 +54,6 @@ public interface Track {
     TrackMetaData getTrackMetaData();
 
     String getHandler();
-
-    boolean isEnabled();
-
-    boolean isInMovie();
-
-    boolean isInPreview();
-
-    boolean isInPoster();
 
     List<Sample> getSamples();
 

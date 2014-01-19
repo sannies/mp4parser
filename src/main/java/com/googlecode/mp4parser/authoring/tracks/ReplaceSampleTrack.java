@@ -52,14 +52,8 @@ public class ReplaceSampleTrack extends AbstractTrack {
         return origTrack.getSampleDescriptionBox();
     }
 
-    @Override
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        throw new RuntimeException("Please use getDecodingTimes");
-    }
-
-    @Override
-    public synchronized long[] getDecodingTimes() {
-        return origTrack.getDecodingTimes();
+    public synchronized long[] getSampleDurations() {
+        return origTrack.getSampleDurations();
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {

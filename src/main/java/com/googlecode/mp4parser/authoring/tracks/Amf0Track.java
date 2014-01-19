@@ -67,21 +67,17 @@ public class Amf0Track extends AbstractTrack {
         return stsd;
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        LinkedList<TimeToSampleBox.Entry> timesToSample = new LinkedList<TimeToSampleBox.Entry>();
+    public long[] getSampleDurations() {
         LinkedList<Long> keys = new LinkedList<Long>(rawSamples.keySet());
         Collections.sort(keys);
+        long[] rc = new long[keys.size()];
         long lastTimeStamp = 0;
-        for (Long key : keys) {
+        for (int i = 0; i < keys.size(); i++) {
+            long key = keys.get(i);
             long delta = key - lastTimeStamp;
-            if (timesToSample.size() > 0 && timesToSample.peek().getDelta() == delta) {
-                timesToSample.peek().setCount(timesToSample.peek().getCount() + 1);
-            } else {
-                timesToSample.add(new TimeToSampleBox.Entry(1, delta));
-            }
-            lastTimeStamp = key;
+            rc[i] = delta;
         }
-        return timesToSample;
+        return rc;
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {

@@ -15,12 +15,10 @@
  */
 package com.googlecode.mp4parser.authoring.builder;
 
-import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * This <code>FragmentIntersectionFinder</code> cuts the input movie in 2 second
@@ -60,7 +58,7 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
 
         long time = 0;
         int samples = 0;
-        for (long delta : track.getDecodingTimes()) {
+        for (long delta : track.getSampleDurations()) {
             int currentFragment = (int) (time / track.getTrackMetaData().getTimescale() / fragmentLength) + 1;
             if (currentFragment >= fragments.length) {
                 break;

@@ -15,7 +15,6 @@
  */
 package com.googlecode.mp4parser.authoring.builder;
 
-import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
@@ -102,7 +101,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                             long sc = testTrack.getSamples().size();
                             double stretch = (double) sc / refSampleCount;
 
-                            long samplesPerFrame = testTrack.getDecodingTimes()[0]; // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
+                            long samplesPerFrame = testTrack.getSampleDurations()[0]; // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
 
                             for (int i = 0; i < syncSamples.length; i++) {
                                 long start = (long) Math.ceil(stretch * (refSyncSamples[i] - 1) * samplesPerFrame);
@@ -115,7 +114,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                 }
                 AudioSampleEntry ase = (AudioSampleEntry) track.getSampleDescriptionBox().getSampleEntry();
 
-                long samplesPerFrame = track.getDecodingTimes()[0]; // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
+                long samplesPerFrame = track.getSampleDurations()[0]; // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
                 double factor = (double) ase.getSampleRate() / (double) minSampleRate;
                 if (factor != Math.rint(factor)) { // Not an integer
                     throw new RuntimeException("Sample rates must be a multiple of the lowest sample rate to create a correct file!");
@@ -269,7 +268,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             if (currentSample == syncSamples[currentSyncSampleIndex]) {
                 syncSampleTimes[currentSyncSampleIndex++] = currentDuration * scalingFactor;
             }
-            currentDuration += track.getDecodingTimes()[currentSample++];
+            currentDuration += track.getSampleDurations()[currentSample++];
         }
         return syncSampleTimes;
     }

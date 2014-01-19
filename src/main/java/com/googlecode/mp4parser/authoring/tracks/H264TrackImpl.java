@@ -3,6 +3,7 @@ package com.googlecode.mp4parser.authoring.tracks;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
+import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.SampleImpl;
@@ -16,12 +17,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-
-import com.googlecode.mp4parser.DataSource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -38,7 +34,6 @@ public class H264TrackImpl extends AbstractTrack {
     private List<Sample> samples;
     boolean readSamples = false;
 
-    List<TimeToSampleBox.Entry> stts;
     List<CompositionTimeToSample.Entry> ctts;
     List<SampleDependencyTypeBox.Entry> sdtp;
     List<Integer> stss;
@@ -59,6 +54,7 @@ public class H264TrackImpl extends AbstractTrack {
     int frameNrInGop = 0;
     private boolean determineFrameRate = true;
     private String lang = "eng";
+    private long[] decodingTimes;
 
     /**
      * Creates a new <code>Track</code> object from a raw H264 source (<code>DataSource fc</code>).
@@ -99,7 +95,6 @@ public class H264TrackImpl extends AbstractTrack {
 
     private void parse(DataSource inputChannel) throws IOException {
         this.reader = new ReaderWrapper(inputChannel);
-        stts = new LinkedList<TimeToSampleBox.Entry>();
         ctts = new LinkedList<CompositionTimeToSample.Entry>();
         sdtp = new LinkedList<SampleDependencyTypeBox.Entry>();
         stss = new LinkedList<Integer>();
@@ -150,10 +145,6 @@ public class H264TrackImpl extends AbstractTrack {
 
     public SampleDescriptionBox getSampleDescriptionBox() {
         return sampleDescriptionBox;
-    }
-
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return stts;
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
@@ -320,7 +311,6 @@ public class H264TrackImpl extends AbstractTrack {
 //                    LOG.fine("Adding sample with size " + bb.capacity() + " and header " + sh);
                     buffered = new ArrayList<ByteBuffer>();
                     samples.add(bb);
-                    stts.add(new TimeToSampleBox.Entry(1, frametick));
                     if (nal_unit_type == 5) { // IDR Picture
                         stss.add(frameNr);
                     }
@@ -347,8 +337,12 @@ public class H264TrackImpl extends AbstractTrack {
             reader.seek(currentScSize);
             reader.mark();
         }
+        decodingTimes = new long[samples.size()];
+        Arrays.fill(decodingTimes, frametick);
         return true;
     }
+
+
     
     protected class CleanInputStream extends FilterInputStream {
     	
@@ -414,7 +408,11 @@ public class H264TrackImpl extends AbstractTrack {
     protected InputStream cleanBuffer(InputStream is) {
     	return new CleanInputStream(is);
     }
-    
+
+    public long[] getSampleDurations() {
+        return decodingTimes;
+    }
+
     static byte[] toArray(ByteBuffer buf) {
     	buf = buf.duplicate();
     	byte[] b = new byte[buf.remaining()];

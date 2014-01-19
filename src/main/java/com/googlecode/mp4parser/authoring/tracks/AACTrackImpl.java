@@ -212,22 +212,15 @@ public class AACTrackImpl extends AbstractTrack {
         trackMetaData.setLanguage(lang);
         trackMetaData.setVolume(1);
         trackMetaData.setTimescale(firstHeader.sampleRate); // Audio tracks always use sampleRate as timescale
+        decTimes = new long[samples.size()];
+        Arrays.fill(decTimes, 1024);
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
         return sampleDescriptionBox;
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        throw new RuntimeException("Do not use me");
-    }
-
-    @Override
-    public synchronized long[] getDecodingTimes() {
-        if (decTimes == null) {
-            decTimes = new long[samples.size()];
-            Arrays.fill(decTimes, 1024);
-        }
+    public long[] getSampleDurations() {
         return decTimes;
     }
 

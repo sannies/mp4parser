@@ -32,7 +32,6 @@ import com.googlecode.mp4parser.util.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.*;
 
@@ -365,22 +364,16 @@ public class AppendTrack extends AbstractTrack {
         return stsd;
     }
 
-    @Override
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        throw new RuntimeException("Don't use me. Use getDecodingTimes");
-    }
-
-    @Override
-    public synchronized long[] getDecodingTimes() {
+    public synchronized long[] getSampleDurations() {
         int numSamples = 0;
         for (Track track : tracks) {
-            numSamples += track.getDecodingTimes().length;
+            numSamples += track.getSampleDurations().length;
         }
         long[] decodingTimes = new long[numSamples];
         int index = 0;
         // should use system arraycopy but this works too (yes it's slow ...)
         for (Track track : tracks) {
-            for (long l : track.getDecodingTimes()) {
+            for (long l : track.getSampleDurations()) {
                 decodingTimes[index] = l;
             }
         }

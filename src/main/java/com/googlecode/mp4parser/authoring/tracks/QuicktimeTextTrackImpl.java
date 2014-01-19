@@ -31,10 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * A Text track as Quicktime Pro would create.
@@ -92,20 +89,27 @@ public class QuicktimeTextTrackImpl extends AbstractTrack {
         return sampleDescriptionBox;
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        List<TimeToSampleBox.Entry> stts = new LinkedList<TimeToSampleBox.Entry>();
+    public long[] getSampleDurations() {
+        List<Long> decTimes = new ArrayList<Long>();
+
         long lastEnd = 0;
         for (Line sub : subs) {
             long silentTime = sub.from - lastEnd;
             if (silentTime > 0) {
-                stts.add(new TimeToSampleBox.Entry(1, silentTime));
+
+                decTimes.add(silentTime);
             } else if (silentTime < 0) {
                 throw new Error("Subtitle display times may not intersect");
             }
-            stts.add(new TimeToSampleBox.Entry(1, sub.to - sub.from));
+            decTimes.add( sub.to - sub.from);
             lastEnd = sub.to;
         }
-        return stts;
+        long[] decTimesArray = new long[decTimes.size()];
+        int index = 0;
+        for (Long decTime : decTimes) {
+            decTimesArray[index++] = decTime;
+        }
+        return decTimesArray;
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {

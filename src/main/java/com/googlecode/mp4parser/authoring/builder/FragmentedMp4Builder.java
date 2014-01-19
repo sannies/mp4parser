@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -89,8 +88,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 // one based sample numbers - the first sample is 1
 
                 // now let's get the start times
-                long[] decTimes1 = o1.getDecodingTimes();
-                long[] decTimes2 = o2.getDecodingTimes();
+                long[] decTimes1 = o1.getSampleDurations();
+                long[] decTimes2 = o2.getSampleDurations();
                 long startTime1 = 0;
                 long startTime2 = 0;
 
@@ -348,7 +347,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         TrackFragmentBaseMediaDecodeTimeBox tfdt = new TrackFragmentBaseMediaDecodeTimeBox();
         tfdt.setVersion(1);
         long startTime = 0;
-        long[] times = track.getDecodingTimes();
+        long[] times = track.getSampleDurations();
         for (int i = 1; i < startSample; i++) {
             startTime += times[i];
         }
@@ -428,7 +427,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
             }
 
-            entry.setSampleDuration(track.getDecodingTimes()[l2i(startSample + i - 1)]);
+            entry.setSampleDuration(track.getSampleDurations()[l2i(startSample + i - 1)]);
 
             if (compositionTimeQueue != null) {
                 entry.setSampleCompositionTimeOffset(compositionTimeQueue[compositionTimeQueueIndex].getOffset());
@@ -661,23 +660,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     protected Box createTkhd(Movie movie, Track track) {
         TrackHeaderBox tkhd = new TrackHeaderBox();
         tkhd.setVersion(1);
-        int flags = 0;
-        if (track.isEnabled()) {
-            flags += 1;
-        }
-
-        if (track.isInMovie()) {
-            flags += 2;
-        }
-
-        if (track.isInPreview()) {
-            flags += 4;
-        }
-
-        if (track.isInPoster()) {
-            flags += 8;
-        }
-        tkhd.setFlags(flags);
+        tkhd.setFlags(7); // enabled, in movie, in previe, in poster
 
         tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
         tkhd.setCreationTime(track.getTrackMetaData().getCreationTime());

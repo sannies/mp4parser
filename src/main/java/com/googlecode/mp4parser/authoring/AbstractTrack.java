@@ -24,52 +24,6 @@ import java.util.List;
  *
  */
 public abstract class AbstractTrack implements Track {
-    private boolean enabled = true;
-    private boolean inMovie = true;
-    private boolean inPreview = true;
-    private boolean inPoster = true;
-    private long[] decodingTimes = null;
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public boolean isInMovie() {
-        return inMovie;
-    }
-
-    public boolean isInPreview() {
-        return inPreview;
-    }
-
-    public boolean isInPoster() {
-        return inPoster;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public void setInMovie(boolean inMovie) {
-        this.inMovie = inMovie;
-    }
-
-    public void setInPreview(boolean inPreview) {
-        this.inPreview = inPreview;
-    }
-
-    public void setInPoster(boolean inPoster) {
-        this.inPoster = inPoster;
-    }
-
-    public abstract List<TimeToSampleBox.Entry> getDecodingTimeEntries();
-
-    public synchronized long[] getDecodingTimes() {
-        if (decodingTimes == null) {
-            decodingTimes = TimeToSampleBox.blowupTimeToSamples(this.getDecodingTimeEntries());
-        }
-        return decodingTimes;
-    }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
         return null;
@@ -89,7 +43,7 @@ public abstract class AbstractTrack implements Track {
 
     public long getDuration() {
         long duration = 0;
-        for (long delta : getDecodingTimes()) {
+        for (long delta : getSampleDurations()) {
             duration += delta;
         }
         return duration;

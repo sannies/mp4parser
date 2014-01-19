@@ -47,7 +47,7 @@ public class SilenceTrackImpl implements Track {
         return source.getSampleDescriptionBox();
     }
 
-    public long[] getDecodingTimes() {
+    public long[] getSampleDurations() {
         return decodingTimes;
     }
 
@@ -67,21 +67,6 @@ public class SilenceTrackImpl implements Track {
         return source.getHandler();
     }
 
-    public boolean isEnabled() {
-        return source.isEnabled();
-    }
-
-    public boolean isInMovie() {
-        return source.isInMovie();
-    }
-
-    public boolean isInPreview() {
-        return source.isInPreview();
-    }
-
-    public boolean isInPoster() {
-        return source.isInPoster();
-    }
 
     public List<Sample> getSamples() {
         return samples;

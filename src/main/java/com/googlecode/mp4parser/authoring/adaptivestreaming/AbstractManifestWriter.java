@@ -1,7 +1,6 @@
 package com.googlecode.mp4parser.authoring.adaptivestreaming;
 
 import com.coremedia.iso.boxes.OriginalFormatBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.coremedia.iso.boxes.sampleentry.AbstractSampleEntry;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
@@ -9,11 +8,8 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.logging.Logger;
-
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 public abstract class AbstractManifestWriter implements ManifestWriter {
     private static final Logger LOG = Logger.getLogger(AbstractManifestWriter.class.getName());
@@ -39,7 +35,7 @@ public abstract class AbstractManifestWriter implements ManifestWriter {
         int currentFragment = 0;
         int currentSample = 1; // sync samples start with 1 !
 
-        for (long delta : track.getDecodingTimes()) {
+        for (long delta : track.getSampleDurations()) {
             for (int max = currentSample + 1; currentSample < max; currentSample++) {
                 // in this loop we go through the entry.getCount() samples starting from current sample.
                 // the next entry.getCount() samples have the same decoding time.

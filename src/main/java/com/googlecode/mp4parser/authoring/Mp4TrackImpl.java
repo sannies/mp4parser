@@ -17,17 +17,10 @@ package com.googlecode.mp4parser.authoring;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.boxes.fragment.SampleFlags;
-import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
-import com.coremedia.iso.boxes.fragment.TrackRunBox;
+import com.coremedia.iso.boxes.fragment.*;
 import com.coremedia.iso.boxes.mdat.SampleList;
 import com.googlecode.mp4parser.util.Path;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -167,11 +160,6 @@ public class Mp4TrackImpl extends AbstractTrack {
         MediaHeaderBox mdhd = trackBox.getMediaBox().getMediaHeaderBox();
         TrackHeaderBox tkhd = trackBox.getTrackHeaderBox();
 
-        setEnabled(tkhd.isEnabled());
-        setInMovie(tkhd.isInMovie());
-        setInPoster(tkhd.isInPoster());
-        setInPreview(tkhd.isInPreview());
-
         trackMetaData.setTrackId(tkhd.getTrackId());
         trackMetaData.setCreationTime(mdhd.getCreationTime());
         trackMetaData.setLanguage(mdhd.getLanguage());
@@ -189,17 +177,12 @@ public class Mp4TrackImpl extends AbstractTrack {
         return samples;
     }
 
-    @Override
-    public synchronized long[] getDecodingTimes() {
+    public synchronized long[] getSampleDurations() {
         return decodingTimes;
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
         return sampleDescriptionBox;
-    }
-
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        throw new RuntimeException("Don't use me, use getDecodingTimes");
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {

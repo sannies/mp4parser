@@ -16,17 +16,13 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
-import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
 import static com.googlecode.mp4parser.util.Math.gcd;
 import static com.googlecode.mp4parser.util.Math.lcm;
 import static java.lang.Math.round;
@@ -70,21 +66,6 @@ public class MultiplyTimeScaleTrack implements Track {
         return source.getHandler();
     }
 
-    public boolean isEnabled() {
-        return source.isEnabled();
-    }
-
-    public boolean isInMovie() {
-        return source.isInMovie();
-    }
-
-    public boolean isInPreview() {
-        return source.isInPreview();
-    }
-
-    public boolean isInPoster() {
-        return source.isInPoster();
-    }
 
     public List<Sample> getSamples() {
         return source.getSamples();
@@ -103,12 +84,11 @@ public class MultiplyTimeScaleTrack implements Track {
         }
     }
 
-    public long[] getDecodingTimes() {
-        long[] scaled = new long[source.getDecodingTimes().length];
+    public long[] getSampleDurations() {
+        long[] scaled = new long[source.getSampleDurations().length];
 
-        LinkedList<TimeToSampleBox.Entry> entries2 = new LinkedList<TimeToSampleBox.Entry>();
-        for (int i = 0; i < source.getDecodingTimes().length; i++) {
-            scaled[i] = source.getDecodingTimes()[i] * timeScaleFactor;
+        for (int i = 0; i < source.getSampleDurations().length; i++) {
+            scaled[i] = source.getSampleDurations()[i] * timeScaleFactor;
         }
         return scaled;
     }

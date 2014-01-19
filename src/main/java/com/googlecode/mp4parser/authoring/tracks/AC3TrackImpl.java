@@ -2,6 +2,7 @@ package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
+import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.SampleImpl;
@@ -9,83 +10,48 @@ import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.AC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.nio.channels.WritableByteChannel;
+import java.util.*;
 
 public class AC3TrackImpl extends AbstractTrack {
-    TrackMetaData trackMetaData = new TrackMetaData();
-    SampleDescriptionBox sampleDescriptionBox;
-
-    int samplerate;
-    int bitrate;
-    int channelCount;
-
-    int fscod;
-    int bsid;
-    int bsmod;
-    int acmod;
-    int lfeon;
-    int frmsizecod;
-
-    int frameSize;
-    int[][][][] bitRateAndFrameSizeTable;
-
-    private InputStream inputStream;
+    static int[][][][] bitRateAndFrameSizeTable;
+    private final DataSource dataSource;
     private List<Sample> samples;
-    boolean readSamples = false;
-    List<TimeToSampleBox.Entry> stts;
-    private String lang = "und";
+    private long[] duration;
+    private TrackMetaData trackMetaData = new TrackMetaData();
+    private SampleDescriptionBox sampleDescriptionBox;
 
-    public AC3TrackImpl(InputStream fin, String lang) throws IOException {
-        this.lang = lang;
-        parse(fin);
+
+
+
+
+
+    public AC3TrackImpl(DataSource dataSource) throws IOException {
+        this(dataSource, "eng");
+
     }
 
-    public AC3TrackImpl(InputStream fin) throws IOException {
-        parse(fin);
-    }
+    public AC3TrackImpl(DataSource dataSource, String lang) throws IOException {
+        this.dataSource = dataSource;
+        this.trackMetaData.setLanguage(lang);
 
-    private void parse(InputStream fin) throws IOException {
-        inputStream = fin;
-        bitRateAndFrameSizeTable = new int[19][2][3][2];
-        stts = new LinkedList<TimeToSampleBox.Entry>();
-        initBitRateAndFrameSizeTable();
-        if (!readVariables()) {
-            throw new IOException();
-        }
+        samples = readSamples();
+
 
         sampleDescriptionBox = new SampleDescriptionBox();
-        AudioSampleEntry audioSampleEntry = new AudioSampleEntry("ac-3");
-        audioSampleEntry.setChannelCount(2);  // According to  ETSI TS 102 366 Annex F
-        audioSampleEntry.setSampleRate(samplerate);
-        audioSampleEntry.setDataReferenceIndex(1);
-        audioSampleEntry.setSampleSize(16);
-
-        AC3SpecificBox ac3 = new AC3SpecificBox();
-        ac3.setAcmod(acmod);
-        ac3.setBitRateCode(frmsizecod >> 1);
-        ac3.setBsid(bsid);
-        ac3.setBsmod(bsmod);
-        ac3.setFscod(fscod);
-        ac3.setLfeon(lfeon);
-        ac3.setReserved(0);
-
-        audioSampleEntry.addBox(ac3);
-        sampleDescriptionBox.addBox(audioSampleEntry);
+        AudioSampleEntry ase = createAudioSampleEntry();
+        sampleDescriptionBox.addBox(ase);
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
         trackMetaData.setLanguage(lang);
-        trackMetaData.setTimescale(samplerate); // Audio tracks always use samplerate as timescale
+        trackMetaData.setTimescale(ase.getSampleRate()); // Audio tracks always use samplerate as timescale
         trackMetaData.setVolume(1);
-        samples = new LinkedList<Sample>();
-        if (!readSamples()) {
-            throw new IOException();
-        }
+
     }
 
 
@@ -98,8 +64,8 @@ public class AC3TrackImpl extends AbstractTrack {
         return sampleDescriptionBox;
     }
 
-    public List<TimeToSampleBox.Entry> getDecodingTimeEntries() {
-        return stts;
+    public synchronized long[] getSampleDurations() {
+        return duration;
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
@@ -130,22 +96,18 @@ public class AC3TrackImpl extends AbstractTrack {
         return null;
     }
 
-    private boolean readVariables() throws IOException {
-        byte[] data = new byte[100];
-        inputStream.mark(100);
-        if (100 != inputStream.read(data, 0, 100)) {
-            return false;
-        }
-        inputStream.reset(); // Rewind
-        ByteBuffer bb = ByteBuffer.wrap(data);
+    private AudioSampleEntry createAudioSampleEntry() throws IOException {
+
+
+        ByteBuffer bb = samples.get(0).asByteBuffer();
         BitReaderBuffer brb = new BitReaderBuffer(bb);
         int syncword = brb.readBits(16);
         if (syncword != 0xb77) {
-            return false;
+            throw new RuntimeException("Stream doesn't seem to be AC3");
         }
         brb.readBits(16); // CRC-1
-        fscod = brb.readBits(2);
-
+        int fscod = brb.readBits(2);
+        int samplerate;
         switch (fscod) {
             case 0:
                 samplerate = 48000;
@@ -159,32 +121,26 @@ public class AC3TrackImpl extends AbstractTrack {
                 samplerate = 32000;
                 break;
 
-            case 3:
-                samplerate = 0;
-                break;
+            default:
+                throw new RuntimeException("Unsupported Sample Rate");
 
         }
-        if (samplerate == 0) {
-            return false;
-        }
 
-        frmsizecod = brb.readBits(6);
+        int frmsizecod = brb.readBits(6);
 
-        if (!calcBitrateAndFrameSize(frmsizecod)) {
-            return false;
-        }
 
-        if (frameSize == 0) {
-            return false;
+        int bsid = brb.readBits(5);
+        int bsmod = brb.readBits(3);
+        int acmod = brb.readBits(3);
+
+        if (bsid == 16) {
+            throw new RuntimeException("You cannot read E-AC-3 track with AC3TrackImpl.class - user EC3TrackImpl.class");
         }
-        bsid = brb.readBits(5);
-        bsmod = brb.readBits(3);
-        acmod = brb.readBits(3);
 
         if (bsid == 9) {
             samplerate /= 2;
         } else if (bsid != 8 && bsid != 6) {
-            return false;
+            throw new RuntimeException("Unsupported bsid");
         }
 
         if ((acmod != 1) && ((acmod & 1) == 1)) {
@@ -198,7 +154,7 @@ public class AC3TrackImpl extends AbstractTrack {
         if (acmod == 2) {
             brb.readBits(2);
         }
-
+        int channelCount;
         switch (acmod) {
             case 0:
                 channelCount = 2;
@@ -231,51 +187,95 @@ public class AC3TrackImpl extends AbstractTrack {
             case 7:
                 channelCount = 5;
                 break;
+            default:
+                throw new RuntimeException("Unsupported acmod");
 
         }
 
-        lfeon = brb.readBits(1);
+        int lfeon = brb.readBits(1);
 
         if (lfeon == 1) {
             channelCount++;
         }
-        return true;
+        AudioSampleEntry audioSampleEntry = new AudioSampleEntry("ac-3");
+        audioSampleEntry.setChannelCount(2);  // According to  ETSI TS 102 366 Annex F
+        audioSampleEntry.setSampleRate(samplerate);
+        audioSampleEntry.setDataReferenceIndex(1);
+        audioSampleEntry.setSampleSize(16);
+
+        AC3SpecificBox ac3 = new AC3SpecificBox();
+        ac3.setAcmod(acmod);
+        ac3.setBitRateCode(frmsizecod >> 1);
+        ac3.setBsid(bsid);
+        ac3.setBsmod(bsmod);
+        ac3.setFscod(fscod);
+        ac3.setLfeon(lfeon);
+        ac3.setReserved(0);
+
+        audioSampleEntry.addBox(ac3);
+        return audioSampleEntry;
     }
 
-    private boolean calcBitrateAndFrameSize(int code) {
+    private int getFrameSize(int code, int fscod) {
         int frmsizecode = code >>> 1;
         int flag = code & 1;
         if (frmsizecode > 18 || flag > 1 || fscod > 2) {
-            return false;
+            throw new RuntimeException("Cannot determine framesize of current sample");
         }
-        bitrate = bitRateAndFrameSizeTable[frmsizecode][flag][fscod][0];
-        frameSize = 2 * bitRateAndFrameSizeTable[frmsizecode][flag][fscod][1];
-        return true;
+        return  2 * bitRateAndFrameSizeTable[frmsizecode][flag][fscod][1];
+
     }
 
-    private boolean readSamples() throws IOException {
-        if (readSamples) {
-            return true;
+
+    private List<Sample> readSamples() throws IOException {
+        class SampleImpl implements Sample{
+            private final long start;
+            private final long size;
+            private final DataSource dataSource;
+
+            public SampleImpl(long start, long size, DataSource dataSource) {
+
+                this.start = start;
+                this.size = size;
+                this.dataSource = dataSource;
+            }
+            public void writeTo(WritableByteChannel channel) throws IOException {
+                dataSource.transferTo(start, size, channel);
+            }
+
+            public long getSize() {
+                return size;
+            }
+
+            public ByteBuffer asByteBuffer() {
+                try {
+                    return dataSource.map(start, size);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
         }
-        readSamples = true;
-        byte[] header = new byte[5];
-        boolean ret = false;
-        inputStream.mark(5);
-        while (-1 != inputStream.read(header)) {
-            ret = true;
-            int frmsizecode = header[4] & 63;
-            calcBitrateAndFrameSize(frmsizecode);
-            inputStream.reset();
-            byte[] data = new byte[frameSize];
-            inputStream.read(data);
-            samples.add(new SampleImpl(ByteBuffer.wrap(data)));
-            stts.add(new TimeToSampleBox.Entry(1, 1536));
-            inputStream.mark(5);
+
+        ByteBuffer header =  ByteBuffer.allocate(5);
+        List<Sample> mysamples = new ArrayList<Sample>();
+
+        while (-1 != dataSource.read(header)) {
+            int frmsizecode = header.get(4) & 63;
+            int fscod = header.get(4)>>6;
+            int frameSize = getFrameSize(frmsizecode, fscod);
+            mysamples.add(new SampleImpl(dataSource.position()-5 , frameSize, dataSource));
+            dataSource.position(dataSource.position() - 5 + frameSize);
+            header.rewind();
+
         }
-        return ret;
+        duration = new long[mysamples.size()];
+        Arrays.fill(duration, 1536);
+        return mysamples;
     }
 
-    private void initBitRateAndFrameSizeTable() {
+    static {
+        bitRateAndFrameSizeTable = new int[19][2][3][2];
         // ETSI 102 366 Table 4.13, in frmsizecod, flag, fscod, bitrate/size order. Note that all sizes are in words, and all bitrates in kbps
 
         // 48kHz
