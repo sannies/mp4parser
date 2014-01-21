@@ -2,6 +2,7 @@ package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
+import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.SampleImpl;
@@ -9,14 +10,9 @@ import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.EC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,58 +22,42 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class EC3TrackImpl extends AbstractTrack {
+    private final DataSource dataSource;
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
 
-    int samplerate;
-    int bitrate;
-    int frameSize;
+    private int bitrate;
+    private int frameSize;
 
-    List<BitStreamInfo> entries = new LinkedList<BitStreamInfo>();
-
-    private BufferedInputStream inputStream;
+    private List<BitStreamInfo> bitStreamInfos = new LinkedList<BitStreamInfo>();
     private List<Sample> samples;
-    List<TimeToSampleBox.Entry> stts = new LinkedList<TimeToSampleBox.Entry>();
-    private String lang = "und";
     private long[] decodingTimes;
 
-    public EC3TrackImpl(InputStream fin, String lang) throws IOException {
-        this.lang = lang;
-        parse(fin);
-    }
-
-    public EC3TrackImpl(InputStream fin) throws IOException {
-        parse(fin);
-    }
-
-    private void parse(InputStream fin) throws IOException {
-        inputStream = new BufferedInputStream(fin);
+    public EC3TrackImpl(DataSource dataSource) throws IOException {
+        this.dataSource = dataSource;
 
         boolean done = false;
-        inputStream.mark(10000);
+
         while (!done) {
             BitStreamInfo bsi = readVariables();
             if (bsi == null) {
                 throw new IOException();
             }
-            for (BitStreamInfo entry : entries) {
+            for (BitStreamInfo entry : bitStreamInfos) {
                 if (bsi.strmtyp != 1 && entry.substreamid == bsi.substreamid) {
                     done = true;
                 }
             }
             if (!done) {
-                entries.add(bsi);
-                long skipped = inputStream.skip(bsi.frameSize);
-                assert skipped == bsi.frameSize;
+                bitStreamInfos.add(bsi);
             }
         }
 
-        inputStream.reset();
 
-        if (entries.size() == 0) {
+        if (bitStreamInfos.size() == 0) {
             throw new IOException();
         }
-        samplerate = entries.get(0).samplerate;
+        int samplerate = bitStreamInfos.get(0).samplerate;
 
         sampleDescriptionBox = new SampleDescriptionBox();
         AudioSampleEntry audioSampleEntry = new AudioSampleEntry("ec-3");
@@ -87,15 +67,15 @@ public class EC3TrackImpl extends AbstractTrack {
         audioSampleEntry.setSampleSize(16);
 
         EC3SpecificBox ec3 = new EC3SpecificBox();
-        int[] deps = new int[entries.size()];
-        int[] chan_locs = new int[entries.size()];
-        for (BitStreamInfo bsi : entries) {
+        int[] deps = new int[bitStreamInfos.size()];
+        int[] chan_locs = new int[bitStreamInfos.size()];
+        for (BitStreamInfo bsi : bitStreamInfos) {
             if (bsi.strmtyp == 1) {
                 deps[bsi.substreamid]++;
                 chan_locs[bsi.substreamid] = ((bsi.chanmap >> 6) & 0x100) | ((bsi.chanmap >> 5) & 0xff);
             }
         }
-        for (BitStreamInfo bsi : entries) {
+        for (BitStreamInfo bsi : bitStreamInfos) {
             if (bsi.strmtyp != 1) {
                 EC3SpecificBox.Entry e = new EC3SpecificBox.Entry();
                 e.fscod = bsi.fscod;
@@ -119,15 +99,14 @@ public class EC3TrackImpl extends AbstractTrack {
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
-        trackMetaData.setLanguage(lang);
+
         trackMetaData.setTimescale(samplerate); // Audio tracks always use samplerate as timescale
         trackMetaData.setVolume(1);
 
-        samples = new ArrayList<Sample>();
-        if (!readSamples()) {
-            throw new IOException();
-        }
+        dataSource.position(0);
+        samples = readSamples();
         this.decodingTimes = new long[samples.size()];
+        Arrays.fill(decodingTimes, 1536);
     }
 
 
@@ -173,13 +152,11 @@ public class EC3TrackImpl extends AbstractTrack {
     }
 
     private BitStreamInfo readVariables() throws IOException {
-        byte[] data = new byte[200];
-        inputStream.mark(200);
-        if (200 != inputStream.read(data, 0, 200)) {
-            return null;
-        }
-        inputStream.reset(); // Rewind
-        ByteBuffer bb = ByteBuffer.wrap(data);
+        long startPosition = dataSource.position();
+        ByteBuffer bb = ByteBuffer.allocate(200);
+        dataSource.read(bb);
+        bb.rewind();
+
         BitReaderBuffer brb = new BitReaderBuffer(bb);
         int syncword = brb.readBits(16);
         if (syncword != 0xb77) {
@@ -392,22 +369,23 @@ public class EC3TrackImpl extends AbstractTrack {
 
         entry.bitrate = (int) (((double) entry.samplerate) / 1536.0 * entry.frameSize * 8);
 
+        dataSource.position(startPosition + entry.frameSize);
         return entry;
     }
 
-    private boolean readSamples() throws IOException {
-        int read = frameSize;
-        boolean ret = false;
-        while (frameSize == read) {
-            ret = true;
-            byte[] data = new byte[frameSize];
-            read = inputStream.read(data);
+    private List<Sample> readSamples() throws IOException {
+        List<Sample> mySamples = new ArrayList<Sample>();
+        while (dataSource.position() + frameSize <= dataSource.size()) {
+            ByteBuffer bb = ByteBuffer.allocate(frameSize);
+            int read = dataSource.read(bb);
+            bb.rewind();
             if (read == frameSize) {
-                samples.add(new SampleImpl(ByteBuffer.wrap(data)));
-                stts.add(new TimeToSampleBox.Entry(1, 1536));
+                mySamples.add(new SampleImpl(bb));
+            } else {
+                throw new RuntimeException("Sample not fully read");
             }
         }
-        return ret;
+        return mySamples;
     }
 
     public static class BitStreamInfo extends EC3SpecificBox.Entry {
@@ -435,8 +413,7 @@ public class EC3TrackImpl extends AbstractTrack {
     public String toString() {
         return "EC3TrackImpl{" +
                 "bitrate=" + bitrate +
-                ", samplerate=" + samplerate +
-                ", entries=" + entries +
+                ", bitStreamInfos=" + bitStreamInfos +
                 '}';
     }
 }

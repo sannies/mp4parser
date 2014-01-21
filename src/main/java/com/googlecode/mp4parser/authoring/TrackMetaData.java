@@ -24,7 +24,7 @@ import java.util.Date;
  *
  */
 public class TrackMetaData implements Cloneable {
-    private String language;
+    private String language = "eng";
     private long timescale;
     private Date modificationTime = new Date();
     private Date creationTime = new Date();
