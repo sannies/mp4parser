@@ -12,7 +12,10 @@ import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.*;
+
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * Created by IntelliJ IDEA.
@@ -22,6 +25,7 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class EC3TrackImpl extends AbstractTrack {
+    private static final long MAX_FRAMES_PER_MMAP = 20;
     private final DataSource dataSource;
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
@@ -374,17 +378,29 @@ public class EC3TrackImpl extends AbstractTrack {
     }
 
     private List<Sample> readSamples() throws IOException {
-        List<Sample> mySamples = new ArrayList<Sample>();
-        while (dataSource.position() + frameSize <= dataSource.size()) {
-            ByteBuffer bb = ByteBuffer.allocate(frameSize);
-            int read = dataSource.read(bb);
-            bb.rewind();
-            if (read == frameSize) {
-                mySamples.add(new SampleImpl(bb));
-            } else {
-                throw new RuntimeException("Sample not fully read");
-            }
+        final int framesLeft = l2i((dataSource.size() - dataSource.position()) / frameSize);
+        List<Sample> mySamples = new ArrayList<Sample>(framesLeft);
+        for (int i = 0; i < framesLeft; i++) {
+            final int start = i * frameSize;
+            mySamples.add(new Sample() {
+                public void writeTo(WritableByteChannel channel) throws IOException {
+                    dataSource.transferTo(start, frameSize, channel);
+                }
+
+                public long getSize() {
+                    return frameSize;
+                }
+
+                public ByteBuffer asByteBuffer() {
+                    try {
+                        return dataSource.map(start, frameSize);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
         }
+
         return mySamples;
     }
 
