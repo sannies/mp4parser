@@ -7,7 +7,7 @@
     <description>A generic parser and writer for all ISO 14496 based files (MP4, Quicktime, DCF, PDCF, ...)
     </description>
     <url>http://code.google.com/p/mp4parser/</url>
-    <version>1.0-RC-31</version>
+    <version>1.0-RC-32-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -232,8 +232,8 @@
     </reporting>
 
     <scm>
-        <url>http://code.google.com/p/mp4parser/source/browse/tags/mp4parser-project-1.0-RC-31/browse</url>
-        <connection>scm:svn:https://mp4parser.googlecode.com/svn/tags/mp4parser-project-1.0-RC-31/isoparser</connection>
+        <url>http://code.google.com/p/mp4parser/source/browse/</url>
+        <connection>scm:svn:https://mp4parser.googlecode.com/svn/trunk/isoparser</connection>
     </scm>
 
     <ciManagement>
