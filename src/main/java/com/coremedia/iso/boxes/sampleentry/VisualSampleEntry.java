@@ -28,7 +28,7 @@ import com.googlecode.mp4parser.DataSource;
 import java.nio.channels.WritableByteChannel;
 
 /**
- * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2}" || "{@value #TYPE3}" || "{@value #TYPE4}"</h1>
+ * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2}" || "{@value #TYPE3}" || "{@value #TYPE4}" || "{@value #TYPE5}"</h1>
  * Contains information common to all visual tracks.
  * <pre>
  * class VisualSampleEntry(codingname) extends AbstractSampleEntry (codingname){
@@ -53,7 +53,8 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
     public static final String TYPE1 = "mp4v";
     public static final String TYPE2 = "s263";
     public static final String TYPE3 = "avc1";
-    public static final String TYPE4 = "drmi";
+    public static final String TYPE4 = "avc3";
+    public static final String TYPE5 = "drmi";
 
 
     /**
