@@ -62,7 +62,7 @@ public class TrackRunBox extends AbstractFullBox {
         private long sampleDuration;
         private long sampleSize;
         private SampleFlags sampleFlags;
-        private int sampleCompositionTimeOffset;
+        private long sampleCompositionTimeOffset;
 
         public Entry() {
         }
@@ -86,7 +86,7 @@ public class TrackRunBox extends AbstractFullBox {
             return sampleFlags;
         }
 
-        public int getSampleCompositionTimeOffset() {
+        public long getSampleCompositionTimeOffset() {
             return sampleCompositionTimeOffset;
         }
 
@@ -193,7 +193,11 @@ public class TrackRunBox extends AbstractFullBox {
                 entry.sampleFlags.getContent(byteBuffer);
             }
             if ((flags & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
-                byteBuffer.putInt(entry.sampleCompositionTimeOffset);
+                if (getVersion() == 0) {
+                    IsoTypeWriter.writeUInt32(byteBuffer, entry.sampleCompositionTimeOffset);
+                } else {
+                    byteBuffer.putInt((int) entry.sampleCompositionTimeOffset);
+                }
             }
         }
     }
@@ -224,6 +228,9 @@ public class TrackRunBox extends AbstractFullBox {
                 entry.sampleFlags = new SampleFlags(content);
             }
             if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
+                if (getVersion() == 0) {
+                    entry.sampleCompositionTimeOffset = IsoTypeReader.readUInt32(content);
+                }
                 entry.sampleCompositionTimeOffset = content.getInt();
             }
             entries.add(entry);
