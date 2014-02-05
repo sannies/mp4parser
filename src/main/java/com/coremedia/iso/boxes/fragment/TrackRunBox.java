@@ -230,8 +230,9 @@ public class TrackRunBox extends AbstractFullBox {
             if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
                 if (getVersion() == 0) {
                     entry.sampleCompositionTimeOffset = IsoTypeReader.readUInt32(content);
+                } else {
+                    entry.sampleCompositionTimeOffset = content.getInt();
                 }
-                entry.sampleCompositionTimeOffset = content.getInt();
             }
             entries.add(entry);
         }
