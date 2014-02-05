@@ -42,7 +42,7 @@ public class FragmentedMp4BuilderTest {
         MessageDigest md = MessageDigest.getInstance("MD5");
         String digest = Hex.encodeHex(md.digest(baos.toByteArray()));
         System.err.println(digest);
-        String oldDigest = "302E261E6312EFEA4D6C2EF920B39F9F";
+        String oldDigest = "1329F9A3D6CF44A7061979379798692A";
 
         Assert.assertEquals(oldDigest, digest);
 
