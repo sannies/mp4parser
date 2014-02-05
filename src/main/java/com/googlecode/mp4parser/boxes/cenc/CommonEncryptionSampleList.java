@@ -25,7 +25,17 @@ public class CommonEncryptionSampleList extends AbstractList<Sample> {
     List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats;
     SecretKey secretKey;
     List<Sample> parent;
-    Cipher cipher;
+    static Cipher cipher;
+
+    static {
+        try {
+            cipher = Cipher.getInstance("AES/CTR/NoPadding");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchPaddingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public CommonEncryptionSampleList(
             SecretKey secretKey,
@@ -34,13 +44,6 @@ public class CommonEncryptionSampleList extends AbstractList<Sample> {
         this.auxiliaryDataFormats = auxiliaryDataFormats;
         this.secretKey = secretKey;
         this.parent = parent;
-        try {
-            this.cipher = Cipher.getInstance("AES/CTR/NoPadding");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchPaddingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override

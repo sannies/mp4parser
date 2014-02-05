@@ -217,7 +217,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
 
         isoFile.addBox(createFtyp(movie));
-        isoFile.addBox(createPdin(movie));
+        //isoFile.addBox(createPdin(movie));
         isoFile.addBox(createMoov(movie));
 
         for (Box box : createMoofMdat(movie)) {
