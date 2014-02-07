@@ -74,7 +74,7 @@ public class CommonEncryptionSampleList extends AbstractList<Sample> {
             ByteBuffer sample = (ByteBuffer) clearSample.asByteBuffer().rewind();
             initCipher(cencSampleAuxiliaryDataFormat.iv);
             try {
-                if (cencSampleAuxiliaryDataFormat.pairs != null) {
+                if (cencSampleAuxiliaryDataFormat.pairs != null && cencSampleAuxiliaryDataFormat.pairs.size() > 0) {
                     for (CencSampleAuxiliaryDataFormat.Pair pair : cencSampleAuxiliaryDataFormat.pairs) {
                         byte[] clears = new byte[pair.clear];
                         sample.get(clears);
