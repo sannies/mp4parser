@@ -172,6 +172,11 @@ public class AACTrackImpl extends AbstractTrack {
 
         sampleDescriptionBox = new SampleDescriptionBox();
         AudioSampleEntry audioSampleEntry = new AudioSampleEntry("mp4a");
+        if (firstHeader.channelconfig == 7) {
+            audioSampleEntry.setChannelCount(8);
+        } else {
+            audioSampleEntry.setChannelCount(firstHeader.channelconfig);
+        }
         audioSampleEntry.setChannelCount(2);
         audioSampleEntry.setSampleRate(firstHeader.sampleRate);
         audioSampleEntry.setDataReferenceIndex(1);
