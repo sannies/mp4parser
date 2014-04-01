@@ -200,7 +200,7 @@ public abstract class AbstractBox implements Box {
      * @return the box's size
      */
     public long getSize() {
-        long size = (isRead ? (isParsed ? getContentSize() : content.limit()) : memMapSize);
+        long size = (isRead ? (isParsed ? getContentSize() : (content != null ? content.limit() : 0)) : memMapSize);
         size += (8 + // size|type
                 (size >= ((1L << 32) - 8) ? 8 : 0) + // 32bit - 8 byte size and type
                 (UserBox.TYPE.equals(getType()) ? 16 : 0));

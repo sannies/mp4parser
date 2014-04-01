@@ -32,6 +32,19 @@ public class VUIParameters {
         public int num_reorder_frames;
         public int max_dec_frame_buffering;
 
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("BitstreamRestriction{");
+            sb.append("motion_vectors_over_pic_boundaries_flag=").append(motion_vectors_over_pic_boundaries_flag);
+            sb.append(", max_bytes_per_pic_denom=").append(max_bytes_per_pic_denom);
+            sb.append(", max_bits_per_mb_denom=").append(max_bits_per_mb_denom);
+            sb.append(", log2_max_mv_length_horizontal=").append(log2_max_mv_length_horizontal);
+            sb.append(", log2_max_mv_length_vertical=").append(log2_max_mv_length_vertical);
+            sb.append(", num_reorder_frames=").append(num_reorder_frames);
+            sb.append(", max_dec_frame_buffering=").append(max_dec_frame_buffering);
+            sb.append('}');
+            return sb.toString();
+        }
     }
 
     public boolean aspect_ratio_info_present_flag;
