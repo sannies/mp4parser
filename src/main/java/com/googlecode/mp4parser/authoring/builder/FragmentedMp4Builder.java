@@ -696,7 +696,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         createStsd(track, stbl);
         stbl.addBox(new TimeToSampleBox());
-        //stbl.addBox(new SampleToChunkBox());
+        stbl.addBox(new SampleToChunkBox());
+        stbl.addBox(new SampleSizeBox());
         stbl.addBox(new StaticChunkOffsetBox());
         return stbl;
     }
