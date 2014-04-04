@@ -678,7 +678,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     private long getTrackDuration(Movie movie, Track track) {
-        return track.getDuration() * (movie.getTimescale() / track.getTrackMetaData().getTimescale());
+        return (track.getDuration() * movie.getTimescale()) / track.getTrackMetaData().getTimescale();
     }
 
     protected Box createMdhd(Movie movie, Track track) {
