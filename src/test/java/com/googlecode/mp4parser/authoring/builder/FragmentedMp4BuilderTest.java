@@ -42,8 +42,8 @@ public class FragmentedMp4BuilderTest {
         MessageDigest md = MessageDigest.getInstance("MD5");
         String digest = Hex.encodeHex(md.digest(baos.toByteArray()));
         System.err.println(digest);
-        String oldDigest = "1329F9A3D6CF44A7061979379798692A";
-
+        String oldDigest = "6ADE7D47A2DCEC00AEBF4736949035EB";
+        //new FileOutputStream("D:\\check.mp4").write(baos.toByteArray());
         Assert.assertEquals(oldDigest, digest);
 
     }
