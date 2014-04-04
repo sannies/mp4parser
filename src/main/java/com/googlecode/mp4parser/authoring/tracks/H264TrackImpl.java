@@ -501,10 +501,11 @@ public class H264TrackImpl extends AbstractTrack {
             case 7:
                 if (seqParameterSet == null) {
                     InputStream is = cleanBuffer(new ByteBufferBackedInputStream(data));
-                    is.read();
-                    seqParameterSet = SeqParameterSet.read(is);
+                    is.read(); // remove nal unit type
+                    byte[] sps = toByteArray(is);
+                    seqParameterSet = SeqParameterSet.read(new ByteArrayInputStream(sps));
                     // make a copy
-                    seqParameterSetList.add(toArray(data));
+                    seqParameterSetList.add(sps);
                     configureFramerate();
                 }
                 action = NALActions.IGNORE;
@@ -512,10 +513,11 @@ public class H264TrackImpl extends AbstractTrack {
 
             case 8:
                 if (pictureParameterSet == null) {
-                    InputStream is = new ByteBufferBackedInputStream(data);
+                    InputStream is = cleanBuffer(new ByteBufferBackedInputStream(data));
                     is.read();
-                    pictureParameterSet = PictureParameterSet.read(is);
-                    pictureParameterSetList.add(toArray(data));
+                    byte[] pps = toByteArray(is);
+                    pictureParameterSet = PictureParameterSet.read(new ByteArrayInputStream(pps));
+                    pictureParameterSetList.add(pps);
                 }
                 action = NALActions.IGNORE;
                 break;
@@ -846,5 +848,22 @@ public class H264TrackImpl extends AbstractTrack {
             out += '}';
             return out;
         }
+    }
+
+
+    byte[] toByteArray(InputStream is) throws IOException {
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        int nRead;
+        byte[] data = new byte[16384];
+
+        while ((nRead = is.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+
+        buffer.flush();
+
+        return buffer.toByteArray();
     }
 }
