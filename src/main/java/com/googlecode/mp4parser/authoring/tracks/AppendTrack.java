@@ -374,7 +374,7 @@ public class AppendTrack extends AbstractTrack {
         // should use system arraycopy but this works too (yes it's slow ...)
         for (Track track : tracks) {
             for (long l : track.getSampleDurations()) {
-                decodingTimes[index] = l;
+                decodingTimes[index++] = l;
             }
         }
         return decodingTimes;
