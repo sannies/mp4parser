@@ -20,10 +20,12 @@ import java.nio.ByteBuffer;
 public final class IsoTypeWriter {
 
     public static void writeUInt64(ByteBuffer bb, long u) {
+        assert u > 0 : "The given long is negative";
         bb.putLong(u);
     }
 
     public static void writeUInt32(ByteBuffer bb, long u) {
+        assert u >= 0 && u <= 1L << 32 : "The given long is not in the range of uint32 (" + u + ")";
         bb.putInt((int) u);
 
     }
