@@ -228,16 +228,16 @@ public class H264TrackImpl extends AbstractTrack {
             fillBuffer();
         }
 
-        boolean nextFourEquals0001() throws IOException {
-            if (buffer.remaining() >= 4) {
+        boolean nextThreeEquals001() throws IOException {
+            if (buffer.limit() - inBufferPos >= 3) {
                 return (buffer.get(inBufferPos) == 0 &&
                         buffer.get(inBufferPos + 1) == 0 &&
-                        buffer.get(inBufferPos + 2) == 0 &&
-                        buffer.get(inBufferPos + 3) == 1);
+                        buffer.get(inBufferPos + 2) == 1);
             } else {
                 if (bufferStartPos + inBufferPos == dataSource.size()) {
                     throw new EOFException();
                 }
+                System.err.println(H264TrackImpl.this.samples.size());
                 throw new RuntimeException("buffer repositioning require");
             }
         }
@@ -284,10 +284,9 @@ public class H264TrackImpl extends AbstractTrack {
 
     private ByteBuffer findNextSample(LookAhead la) throws IOException {
         try {
-            while (!la.nextFourEquals0001()) {
+            while (!la.nextThreeEquals001()) {
                 la.discardByte();
             }
-            la.discardByte();
             la.discardNext3AndMarkStart();
 
             while (!la.nextThreeEquals000or001orEof()) {
