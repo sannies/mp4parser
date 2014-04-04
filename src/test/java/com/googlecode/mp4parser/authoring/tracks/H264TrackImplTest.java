@@ -38,6 +38,7 @@ public class H264TrackImplTest {
     @Test
     public void freeze() throws IOException {
         DataSource fc = new FileDataSourceImpl(getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/h264-sample.h264");
+        H264TrackImpl.BUFFER = 65535; // make sure we are not just in one buffer
         Track t = new H264TrackImpl(fc);
         Movie m = new Movie();
         m.addTrack(t);

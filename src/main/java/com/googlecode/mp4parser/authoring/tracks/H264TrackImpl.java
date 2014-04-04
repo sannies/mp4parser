@@ -12,10 +12,8 @@ import com.googlecode.mp4parser.h264.model.PictureParameterSet;
 import com.googlecode.mp4parser.h264.model.SeqParameterSet;
 import com.googlecode.mp4parser.h264.read.CAVLCReader;
 
-import java.io.ByteArrayInputStream;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.logging.Logger;
@@ -26,11 +24,14 @@ import java.util.logging.Logger;
  */
 public class H264TrackImpl extends AbstractTrack {
     private static final Logger LOG = Logger.getLogger(H264TrackImpl.class.getName());
+    // not final to allow test decreasing it
+    static int BUFFER = 65535 << 10;
 
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
 
-    private ReaderWrapper reader;
+    private DataSource dataSource;
+
     private List<Sample> samples;
     boolean readSamples = false;
 
@@ -78,29 +79,31 @@ public class H264TrackImpl extends AbstractTrack {
         this.lang = lang;
         this.timescale = timescale; //e.g. 23976
         this.frametick = frametick;
+        this.dataSource = fc;
         if ((timescale > 0) && (frametick > 0)) {
             this.determineFrameRate = false;
         }
-        parse(fc);
+        parse(new LookAhead(dataSource));
     }
 
     public H264TrackImpl(DataSource fc, String lang) throws IOException {
         this.lang = lang;
-        parse(fc);
+        this.dataSource = fc;
+        parse(new LookAhead(dataSource));
     }
 
     public H264TrackImpl(DataSource fc) throws IOException {
-        parse(fc);
+        this.dataSource = fc;
+        parse(new LookAhead(dataSource));
     }
 
-    private void parse(DataSource inputChannel) throws IOException {
-        this.reader = new ReaderWrapper(inputChannel);
+    private void parse(LookAhead la) throws IOException {
         ctts = new LinkedList<CompositionTimeToSample.Entry>();
         sdtp = new LinkedList<SampleDependencyTypeBox.Entry>();
         stss = new LinkedList<Integer>();
 
         samples = new LinkedList<Sample>();
-        if (!readSamples()) {
+        if (!readSamples(la)) {
             throw new IOException();
         }
 
@@ -172,7 +175,7 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     public List<Sample> getSamples() {
-    	return samples;
+        return samples;
     }
 
     public AbstractMediaHeaderBox getMediaHeaderBox() {
@@ -204,98 +207,155 @@ public class H264TrackImpl extends AbstractTrack {
         return true;
     }
 
-    private boolean findNextStartcode() throws IOException {
-        byte[] test = new byte[]{-1, -1, -1, -1};
+    ByteBuffer sixtyFourK = ByteBuffer.allocate(1);
 
-        while (reader.hasRemaining()) {
-            test[0] = test[1];
-            test[1] = test[2];
-            test[2] = test[3];
-            test[3] = (byte) reader.get();
-            if (test[0] == 0 && test[1] == 0 && test[2] == 0 && test[3] == 1) {
-                prevScSize = currentScSize;
-                currentScSize = 4;
-                return true;
-            }
-            if (test[0] == 0 && test[1] == 0 && test[2] == 1) {
-                prevScSize = currentScSize;
-                currentScSize = 3;
-                return true;
+
+    class LookAhead {
+        long bufferStartPos = 0;
+        int inBufferPos = 0;
+        DataSource dataSource;
+        ByteBuffer buffer;
+
+        long start;
+
+        public void fillBuffer() throws IOException {
+            buffer = dataSource.map(bufferStartPos, Math.min(dataSource.size() - bufferStartPos, BUFFER));
+        }
+
+
+        LookAhead(DataSource dataSource) throws IOException {
+            this.dataSource = dataSource;
+            fillBuffer();
+        }
+
+        boolean nextFourEquals0001() throws IOException {
+            if (buffer.remaining() >= 4) {
+                return (buffer.get(inBufferPos) == 0 &&
+                        buffer.get(inBufferPos + 1) == 0 &&
+                        buffer.get(inBufferPos + 2) == 0 &&
+                        buffer.get(inBufferPos + 3) == 1);
+            } else {
+                if (bufferStartPos + inBufferPos == dataSource.size()) {
+                    throw new EOFException();
+                }
+                throw new RuntimeException("buffer repositioning require");
             }
         }
-        if (test[0] == -1 && test[1] == -1 && test[2] == -1 && test[3] == -1) {
-            // we really at the end of the file and we have not read anymore data
-            return false;
+
+        boolean nextThreeEquals000or001orEof() throws IOException {
+            if (buffer.limit() - inBufferPos >= 3) {
+                return ((buffer.get(inBufferPos) == 0 &&
+                        buffer.get(inBufferPos + 1) == 0 &&
+                        (buffer.get(inBufferPos + 2) == 0 || buffer.get(inBufferPos + 2) == 1)));
+            } else {
+                if (bufferStartPos + inBufferPos + 3 > dataSource.size()) {
+                    return bufferStartPos + inBufferPos == dataSource.size();
+                } else {
+                    bufferStartPos = start;
+                    inBufferPos = 0;
+                    fillBuffer();
+                    return nextThreeEquals000or001orEof();
+                }
+            }
         }
-        prevScSize = 0;
-        currentScSize = 0;
-        return true;
+
+        void discardByte() {
+            inBufferPos++;
+        }
+
+        void discardNext3AndMarkStart() {
+            inBufferPos += 3;
+            start = bufferStartPos + inBufferPos;
+        }
+
+        public ByteBuffer getSample() {
+            if (start >= bufferStartPos) {
+                buffer.position((int) (start - bufferStartPos));
+                Buffer sample = buffer.slice();
+                sample.limit((int) (inBufferPos - (start - bufferStartPos)));
+                return (ByteBuffer) sample;
+            } else {
+                throw new RuntimeException("damn sample crosses buffers");
+            }
+
+        }
+    }
+
+
+    private ByteBuffer findNextSample(LookAhead la) throws IOException {
+        try {
+            while (!la.nextFourEquals0001()) {
+                la.discardByte();
+            }
+            la.discardByte();
+            la.discardNext3AndMarkStart();
+
+            while (!la.nextThreeEquals000or001orEof()) {
+                la.discardByte();
+            }
+            return la.getSample();
+        } catch (EOFException e) {
+            return null;
+        }
+
     }
 
     private enum NALActions {
         IGNORE, BUFFER, STORE, END
     }
-    
+
     /**
      * Builds the sample by prepending the length of each buffer to the data
-     * 
+     *
      * @param buffers
      * @return
      */
     protected Sample createSample(List<? extends ByteBuffer> buffers) {
-    	byte[] sizeInfo = new byte[buffers.size() * 4];
-    	ByteBuffer sizeBuf = ByteBuffer.wrap(sizeInfo);
-    	for(ByteBuffer b : buffers) {
-    		sizeBuf.putInt(b.remaining());
-    	}
-    	
-    	ByteBuffer[] data = new ByteBuffer[buffers.size() * 2];
-    	
-    	for(int i = 0; i < buffers.size(); i++) {
-    		data[2*i] = ByteBuffer.wrap(sizeInfo, i*4, 4);
-    		data[2*i+1] = buffers.get(i);
-    	}
-    	
-    	return new SampleImpl(data);
+        byte[] sizeInfo = new byte[buffers.size() * 4];
+        ByteBuffer sizeBuf = ByteBuffer.wrap(sizeInfo);
+        for (ByteBuffer b : buffers) {
+            sizeBuf.putInt(b.remaining());
+        }
+
+        ByteBuffer[] data = new ByteBuffer[buffers.size() * 2];
+
+        for (int i = 0; i < buffers.size(); i++) {
+            data[2 * i] = ByteBuffer.wrap(sizeInfo, i * 4, 4);
+            data[2 * i + 1] = buffers.get(i);
+        }
+
+        return new SampleImpl(data);
     }
 
-    
-    private boolean readSamples() throws IOException {
+
+    private boolean readSamples(LookAhead la) throws IOException {
         if (readSamples) {
             return true;
         }
 
         readSamples = true;
 
-        findNextStartcode();
-        reader.mark();
-        long pos = reader.getPos();
-
         List<ByteBuffer> buffered = new ArrayList<ByteBuffer>();
 
         int frameNr = 0;
-
-        while (findNextStartcode()) {
-            long newpos = reader.getPos();
-            int size = (int) (newpos - pos - prevScSize);
-            reader.reset();
-            ByteBuffer data = reader.map(size);
-            int type = data.get(data.position());
+        ByteBuffer sample;
+        while ((sample = findNextSample(la)) != null) {
+            int type = sample.get(0);
             int nal_ref_idc = (type >> 5) & 3;
             int nal_unit_type = type & 0x1f;
-            NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, data);
+            NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, sample);
             switch (action) {
                 case IGNORE:
                     break;
 
                 case BUFFER:
-                    buffered.add(data);
+                    buffered.add(sample);
                     break;
 
                 case STORE:
                     int stdpValue = 22;
                     frameNr++;
-                    buffered.add(data);
+                    buffered.add(sample);
                     boolean IdrPicFlag = false;
                     if (nal_unit_type == 5) {
                         stdpValue += 16;
@@ -333,9 +393,7 @@ public class H264TrackImpl extends AbstractTrack {
 
 
             }
-            pos = newpos;
-            reader.seek(currentScSize);
-            reader.mark();
+
         }
         decodingTimes = new long[samples.size()];
         Arrays.fill(decodingTimes, frametick);
@@ -343,70 +401,70 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
 
-    
     protected class CleanInputStream extends FilterInputStream {
-    	
-    	int prevprev = -1;
-    	int prev = -1;
 
-		CleanInputStream(InputStream in) {
-			super(in);
-		}
-		
-		public boolean markSupported() {
-			return false;
-		}
-		
-		public int read() throws IOException {
-			int c = super.read();
-			if(c == 3 && prevprev == 0 && prev == 0) {
-				// discard this character
-				prevprev = -1;
-				prev = -1;
-				c = super.read();
-			}
-			prevprev = prev;
-			prev = c;
-			return c;
-		}
-		
-	    /**
-	     * Copy of InputStream.read(b, off, len)
-	     * @see        java.io.InputStream#read()
-	     */
-	    public int read(byte b[], int off, int len) throws IOException {
-	        if (b == null) {
-	            throw new NullPointerException();
-	        } else if (off < 0 || len < 0 || len > b.length - off) {
-	            throw new IndexOutOfBoundsException();
-	        } else if (len == 0) {
-	            return 0;
-	        }
+        int prevprev = -1;
+        int prev = -1;
 
-	        int c = read();
-	        if (c == -1) {
-	            return -1;
-	        }
-	        b[off] = (byte)c;
+        CleanInputStream(InputStream in) {
+            super(in);
+        }
 
-	        int i = 1;
-	        try {
-	            for (; i < len ; i++) {
-	                c = read();
-	                if (c == -1) {
-	                    break;
-	                }
-	                b[off + i] = (byte)c;
-	            }
-	        } catch (IOException ee) {
-	        }
-	        return i;
-	    }
-    	
+        public boolean markSupported() {
+            return false;
+        }
+
+        public int read() throws IOException {
+            int c = super.read();
+            if (c == 3 && prevprev == 0 && prev == 0) {
+                // discard this character
+                prevprev = -1;
+                prev = -1;
+                c = super.read();
+            }
+            prevprev = prev;
+            prev = c;
+            return c;
+        }
+
+        /**
+         * Copy of InputStream.read(b, off, len)
+         *
+         * @see java.io.InputStream#read()
+         */
+        public int read(byte b[], int off, int len) throws IOException {
+            if (b == null) {
+                throw new NullPointerException();
+            } else if (off < 0 || len < 0 || len > b.length - off) {
+                throw new IndexOutOfBoundsException();
+            } else if (len == 0) {
+                return 0;
+            }
+
+            int c = read();
+            if (c == -1) {
+                return -1;
+            }
+            b[off] = (byte) c;
+
+            int i = 1;
+            try {
+                for (; i < len; i++) {
+                    c = read();
+                    if (c == -1) {
+                        break;
+                    }
+                    b[off + i] = (byte) c;
+                }
+            } catch (IOException ee) {
+            }
+            return i;
+        }
+
     }
 
     protected InputStream cleanBuffer(InputStream is) {
-    	return new CleanInputStream(is);
+        return new CleanInputStream(is);
     }
 
     public long[] getSampleDurations() {
@@ -414,10 +472,10 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     static byte[] toArray(ByteBuffer buf) {
-    	buf = buf.duplicate();
-    	byte[] b = new byte[buf.remaining()];
-    	buf.get(b, 0, b.length);
-    	return b;
+        buf = buf.duplicate();
+        byte[] b = new byte[buf.remaining()];
+        buf.get(b, 0, b.length);
+        return b;
     }
 
     private NALActions handleNALUnit(int nal_ref_idc, int nal_unit_type, ByteBuffer data) throws IOException {
@@ -437,9 +495,6 @@ public class H264TrackImpl extends AbstractTrack {
                 break;
 
             case 9:
-//                printAccessUnitDelimiter(data);
-                int type = data.get(data.position() + 1) >> 5;
-                LOG.fine("Access unit delimiter type: " + type);
                 action = NALActions.BUFFER;
                 break;
 
@@ -586,53 +641,12 @@ public class H264TrackImpl extends AbstractTrack {
         }
     }
 
-    private class ReaderWrapper {
-        final ByteBuffer buffer;
-
-        private ReaderWrapper(DataSource fc) throws IOException {
-            this.buffer = fc.map(fc.position(), fc.size() - fc.position());
-        }
-        
-        boolean hasRemaining() {
-        	return buffer.hasRemaining();
-        }
-
-        int get() throws IOException {
-        	return buffer.get();
-        }
-
-        ByteBuffer map(int size) throws IOException {
-        	ByteBuffer buf = buffer.duplicate();
-        	buf.position(buffer.position());
-        	buf.limit(buf.position() + size);
-            buffer.position(buffer.position() + size);
-        	return buf;
-        }
-
-        void seek(int dist) throws IOException {
-        	buffer.position(buffer.position() + dist);
-        }
-
-        public long getPos() throws IOException {
-            return buffer.position();
-        }
-
-        public void mark() throws IOException {
-            buffer.mark();
-        }
-
-
-        public void reset() throws IOException {
-        	buffer.reset();
-        }
-    }
-    
     public class ByteBufferBackedInputStream extends InputStream {
 
         private final ByteBuffer buf;
 
         public ByteBufferBackedInputStream(ByteBuffer buf) {
-        	// make a coy of the buffer
+            // make a coy of the buffer
             this.buf = buf.duplicate();
         }
 
