@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 public final class IsoTypeWriter {
 
     public static void writeUInt64(ByteBuffer bb, long u) {
-        assert u > 0 : "The given long is negative";
+        assert u >= 0 : "The given long is negative";
         bb.putLong(u);
     }
 
