@@ -19,6 +19,11 @@ public abstract class Utf8AppleDataBox extends AppleDataBox {
     }
 
     public String getValue() {
+        //patched by Toias Bley / UltraMixer
+        if(!isParsed())
+        {
+            parseDetails();
+        }
         return value;
     }
 

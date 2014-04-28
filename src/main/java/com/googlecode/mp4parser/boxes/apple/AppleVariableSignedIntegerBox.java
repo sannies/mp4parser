@@ -25,6 +25,11 @@ public abstract class AppleVariableSignedIntegerBox extends AppleDataBox {
     }
 
     public long getValue() {
+        //patched by Tobias Bley / UltraMixer (04/25/2014)
+        if (!isParsed())
+        {
+            parseDetails();
+        }
         return value;
     }
 
