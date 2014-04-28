@@ -184,12 +184,12 @@ public class SegmentIndexBox extends AbstractFullBox {
         public Entry() {
         }
 
-        public Entry(byte referenceType, int referencedSize, long subsegmentDuration, byte startsWithSap, byte sapType, int sapDeltaTime) {
-            this.referenceType = referenceType;
+        public Entry(int referenceType, int referencedSize, long subsegmentDuration, boolean startsWithSap, int sapType, int sapDeltaTime) {
+            this.referenceType = (byte) referenceType;
             this.referencedSize = referencedSize;
             this.subsegmentDuration = subsegmentDuration;
-            this.startsWithSap = startsWithSap;
-            this.sapType = sapType;
+            this.startsWithSap = (byte) (startsWithSap?1:0);
+            this.sapType = (byte) sapType;
             this.sapDeltaTime = sapDeltaTime;
         }
 
