@@ -19,6 +19,6 @@ public class SegmentIndexBoxTest extends BoxWriteReadBase<SegmentIndexBox> {
         values.put("earliestPresentationTime", 724L);
         values.put("firstOffset", 34567L);
         values.put("reserved", 0);
-        values.put("entries", Arrays.asList(new SegmentIndexBox.Entry((byte) 1, 2, 3, (byte) 1, (byte) 5, 6)));
+        values.put("entries", Arrays.asList(new SegmentIndexBox.Entry((byte) 1, 2, 3, true, (byte) 5, 6)));
     }
 }
