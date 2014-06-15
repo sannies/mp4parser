@@ -60,7 +60,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.4</version>
+                <version>1.5</version>
                 <executions>
                     <execution>
                         <goals>
@@ -73,12 +73,14 @@
                     <dependency>
                         <groupId>org.aspectj</groupId>
                         <artifactId>aspectjtools</artifactId>
-                        <version>1.7.3</version>
+                        <version>1.8.0</version>
                     </dependency>
 
                 </dependencies>
                 <configuration>
+                    <complianceLevel>1.5</complianceLevel>
                     <source>1.5</source>
+                    <target>1.5</target>
                 </configuration>
             </plugin>
 
@@ -126,7 +128,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.7.3</version>
+            <version>1.8.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.android</groupId>
