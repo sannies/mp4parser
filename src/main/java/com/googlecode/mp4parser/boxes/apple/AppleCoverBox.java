@@ -15,6 +15,8 @@ public class AppleCoverBox extends AppleDataBox
 {
     private Logger logger = Logger.getLogger(getClass().getName());
     private Image cover;
+    private Image origCover;
+    private byte[] data;
 
     public AppleCoverBox()
     {
@@ -23,18 +25,17 @@ public class AppleCoverBox extends AppleDataBox
 
     public Image getCover()
     {
-        if (!isParsed() && cover == null)
-        {
-            parseDetails();
-        }
         return cover;
     }
 
     @Override
     protected byte[] writeData()
     {
-        logger.info("not yet implemented");
-        return new byte[0];  //To change body of implemented methods use File | Settings | File Templates.
+        if (origCover == cover) {
+            return data;
+        } else {
+            throw new RuntimeException("At the moment you can't change the cover");
+        }
     }
 
     @Override
@@ -43,8 +44,9 @@ public class AppleCoverBox extends AppleDataBox
         InputStream is = null;
         try
         {
+            this.data = data.array();
             is = new ByteBufferBackedInputStream(data);
-            this.cover = ImageIO.read(is);
+            this.cover = this.origCover =  ImageIO.read(is);
 
         }
         catch (Exception e)
