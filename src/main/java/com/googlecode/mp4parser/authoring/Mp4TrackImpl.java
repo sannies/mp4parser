@@ -199,7 +199,11 @@ public class Mp4TrackImpl extends AbstractTrack {
     }
 
     public long[] getSyncSamples() {
-        return syncSamples;
+        if (syncSamples.length == samples.size()) {
+            return null;
+        } else {
+            return syncSamples;
+        }
     }
 
     public List<SampleDependencyTypeBox.Entry> getSampleDependencies() {
