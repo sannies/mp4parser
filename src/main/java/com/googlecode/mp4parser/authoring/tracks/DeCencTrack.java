@@ -40,6 +40,9 @@ public class DeCencTrack extends AbstractTrack {
         samples = new DecryptedSampleList(key, original.getSamples(), original, original.getSampleEncryptionEntries());
     }
 
+    public long[] getSyncSamples() {
+        return original.getSyncSamples();
+    }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
         OriginalFormatBox frma = (OriginalFormatBox) Path.getPath(original.getSampleDescriptionBox(), "enc./sinf/frma");
@@ -68,6 +71,8 @@ public class DeCencTrack extends AbstractTrack {
         stsd.getSampleEntry().setBoxes(nuBoxes);
         return stsd;
     }
+
+
 
     public long[] getSampleDurations() {
         return original.getSampleDurations();
@@ -149,11 +154,12 @@ public class DeCencTrack extends AbstractTrack {
                         byte[] clears = new byte[clearBytes];
                         encSampleBuffer.get(clears);
                         decSampleBuffer.put(clears);
-
-                        byte[] encs = new byte[encrypted];
-                        encSampleBuffer.get(encs);
-                        final byte[] decr = cipher.doFinal(encs);
-                        decSampleBuffer.put(decr);
+                        if (encrypted > 0) {
+                            byte[] encs = new byte[encrypted];
+                            encSampleBuffer.get(encs);
+                            final byte[] decr = cipher.update(encs);
+                            decSampleBuffer.put(decr);
+                        }
 
                     }
                     if (encSampleBuffer.remaining() > 0) {
