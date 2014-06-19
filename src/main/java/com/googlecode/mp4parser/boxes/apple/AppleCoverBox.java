@@ -1,5 +1,7 @@
 package com.googlecode.mp4parser.boxes.apple;
 
+import com.googlecode.mp4parser.util.ChannelHelper;
+
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
@@ -21,7 +23,9 @@ public class AppleCoverBox extends AppleDataBox {
 
     @Override
     protected void parseData(ByteBuffer data) {
-        this.data = data.array();
+
+        this.data =  new byte[data.limit()];
+        data.get(this.data);
     }
 
     @Override
