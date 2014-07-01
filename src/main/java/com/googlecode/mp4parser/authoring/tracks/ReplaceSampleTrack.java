@@ -22,6 +22,7 @@ import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.AbstractList;
 import java.util.List;
@@ -42,6 +43,10 @@ public class ReplaceSampleTrack extends AbstractTrack {
         this.sampleContent = new SampleImpl(content);
         this.samples = new ReplaceASingleEntryList();
 
+    }
+
+    public void close() throws IOException {
+        origTrack.close();
     }
 
     public List<Sample> getSamples() {

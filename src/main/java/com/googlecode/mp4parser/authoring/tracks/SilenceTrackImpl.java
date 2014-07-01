@@ -7,6 +7,7 @@ import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,6 +43,9 @@ public class SilenceTrackImpl implements Track {
         }
     }
 
+    public void close() throws IOException {
+        // nothing to close
+    }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
         return source.getSampleDescriptionBox();

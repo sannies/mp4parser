@@ -21,6 +21,7 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -51,6 +52,11 @@ public class CroppedTrack extends AbstractTrack {
         this.fromSample = (int) fromSample;
         this.toSample = (int) toSample;
     }
+
+    public void close() throws IOException {
+        origTrack.close();
+    }
+
 
     public List<Sample> getSamples() {
         return origTrack.getSamples().subList(fromSample, toSample);

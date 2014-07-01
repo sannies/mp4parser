@@ -23,6 +23,7 @@ import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Date;
@@ -57,6 +58,10 @@ public class Amf0Track extends AbstractTrack {
             samples.add(new SampleImpl(ByteBuffer.wrap(bytes)));
         }
         return samples;
+    }
+
+    public void close() throws IOException {
+        // no resources involved - doing nothing
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {

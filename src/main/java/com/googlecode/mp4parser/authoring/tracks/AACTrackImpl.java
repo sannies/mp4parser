@@ -16,7 +16,6 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.googlecode.mp4parser.DataSource;
-import com.googlecode.mp4parser.util.ChannelHelper;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
@@ -26,10 +25,9 @@ import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.*;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.*;
 
 /**
@@ -124,23 +122,23 @@ public class AACTrackImpl extends AbstractTrack {
     long maxBitRate;
     long avgBitRate;
 
+    private DataSource dataSource;
     private List<Sample> samples;
     private String lang = "eng";
 
+    public void close() throws IOException {
+        // doing everything to get rid of references to memory mapped things
+        dataSource.close();
+    }
 
-    public AACTrackImpl(DataSource channel, String lang) throws IOException {
+    public AACTrackImpl(DataSource dataSource) throws IOException {
+        this(dataSource, "eng");
+    }
+    public AACTrackImpl(DataSource dataSource, String lang) throws IOException {
         this.lang = lang;
-        parse(channel);
-    }
-
-    public AACTrackImpl(DataSource channel) throws IOException {
-        parse(channel);
-    }
-
-    private void parse(DataSource channel) throws IOException {
-
+        this.dataSource = dataSource;
         samples = new ArrayList<Sample>();
-        firstHeader = readSamples(channel);
+        firstHeader = readSamples(dataSource);
 
         double packetsPerSecond = (double) firstHeader.sampleRate / 1024.0;
         double duration = samples.size() / packetsPerSecond;
@@ -331,10 +329,27 @@ public class AACTrackImpl extends AbstractTrack {
             if (first == null) {
                 first = hdr;
             }
-            ByteBuffer data = channel.map(channel.position(), hdr.frameLength - hdr.getSize());
-            samples.add(new SampleImpl(data));
+
+            final long currentPosition = channel.position();
+            final long frameSize = hdr.frameLength - hdr.getSize();
+            samples.add(new Sample() {
+                public void writeTo(WritableByteChannel channel) throws IOException {
+                    dataSource.transferTo(currentPosition, frameSize, channel);
+                }
+
+                public long getSize() {
+                    return frameSize;
+                }
+
+                public ByteBuffer asByteBuffer() {
+                    try {
+                        return dataSource.map(currentPosition, frameSize);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
             channel.position(channel.position() + hdr.frameLength - hdr.getSize());
-            data.rewind();
         }
         return first;
     }

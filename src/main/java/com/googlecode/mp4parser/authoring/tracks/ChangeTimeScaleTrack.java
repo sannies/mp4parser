@@ -20,6 +20,7 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,6 +51,10 @@ public class ChangeTimeScaleTrack implements Track {
         double timeScaleFactor = (double) targetTimeScale / source.getTrackMetaData().getTimescale();
         ctts = adjustCtts(source.getCompositionTimeEntries(), timeScaleFactor);
         decodingTimes = adjustTts(source.getSampleDurations(), timeScaleFactor, syncSamples, getTimes(source, syncSamples, targetTimeScale));
+    }
+
+    public void close() throws IOException {
+        source.close();
     }
 
     private static long[] getTimes(Track track, long[] syncSamples, long targetTimeScale) {

@@ -20,6 +20,7 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,6 +35,10 @@ public class DivideTimeScaleTrack implements Track {
     public DivideTimeScaleTrack(Track source, int timeScaleDivisor) {
         this.source = source;
         this.timeScaleDivisor = timeScaleDivisor;
+    }
+
+    public void close() throws IOException {
+        source.close();
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {

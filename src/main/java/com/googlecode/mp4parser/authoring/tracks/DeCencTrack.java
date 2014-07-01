@@ -40,6 +40,10 @@ public class DeCencTrack extends AbstractTrack {
         samples = new DecryptedSampleList(key, original.getSamples(), original, original.getSampleEncryptionEntries());
     }
 
+    public void close() throws IOException {
+        original.close();
+    }
+
     public long[] getSyncSamples() {
         return original.getSyncSamples();
     }

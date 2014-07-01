@@ -113,6 +113,9 @@ public class EC3TrackImpl extends AbstractTrack {
         Arrays.fill(decodingTimes, 1536);
     }
 
+    public void close() throws IOException {
+        dataSource.close();
+    }
 
     public List<Sample> getSamples() {
 

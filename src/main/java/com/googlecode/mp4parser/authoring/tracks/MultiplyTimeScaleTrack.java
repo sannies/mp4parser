@@ -20,6 +20,7 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,10 @@ public class MultiplyTimeScaleTrack implements Track {
     public MultiplyTimeScaleTrack(Track source, int timeScaleFactor) {
         this.source = source;
         this.timeScaleFactor = timeScaleFactor;
+    }
+
+    public void close() throws IOException {
+        source.close();
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {

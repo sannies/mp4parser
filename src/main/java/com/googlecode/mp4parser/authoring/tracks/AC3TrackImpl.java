@@ -26,13 +26,8 @@ public class AC3TrackImpl extends AbstractTrack {
     private SampleDescriptionBox sampleDescriptionBox;
 
 
-
-
-
-
     public AC3TrackImpl(DataSource dataSource) throws IOException {
         this(dataSource, "eng");
-
     }
 
     public AC3TrackImpl(DataSource dataSource, String lang) throws IOException {
@@ -54,6 +49,9 @@ public class AC3TrackImpl extends AbstractTrack {
 
     }
 
+    public void close() throws IOException {
+        dataSource.close();
+    }
 
     public List<Sample> getSamples() {
 

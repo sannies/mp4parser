@@ -19,10 +19,12 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.*;
 import com.coremedia.iso.boxes.mdat.SampleList;
+import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
 import com.googlecode.mp4parser.boxes.ultraviolet.SampleEncryptionBox;
 import com.googlecode.mp4parser.util.Path;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -44,6 +46,9 @@ public class Mp4TrackImpl extends AbstractTrack {
     private TrackMetaData trackMetaData = new TrackMetaData();
     private String handler;
     private AbstractMediaHeaderBox mihd;
+
+    TrackBox trackBox;
+    IsoFile[] fragments;
 
     /**
      * Creates a track from a TrackBox and potentially fragments. Use <b>fragements parameter
@@ -180,6 +185,18 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setLayer(tkhd.getLayer());
         trackMetaData.setMatrix(tkhd.getMatrix());
         trackMetaData.setEditList((EditListBox) Path.getPath(trackBox, "edts/elst"));
+    }
+
+    public void close() throws IOException {
+        Container c = trackBox.getParent();
+        if (c instanceof BasicContainer) {
+            ((BasicContainer)c).close();
+        }
+        for (IsoFile fragment : fragments) {
+            fragment.close();
+        }
+
+
     }
 
     public List<Sample> getSamples() {

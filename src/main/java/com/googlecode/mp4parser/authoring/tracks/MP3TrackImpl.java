@@ -36,6 +36,7 @@ public class MP3TrackImpl extends AbstractTrack {
 
     private static final int ES_OBJECT_TYPE_INDICATION = 0x6b;
     private static final int ES_STREAM_TYPE = 5;
+    private final DataSource dataSource;
 
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
@@ -46,20 +47,20 @@ public class MP3TrackImpl extends AbstractTrack {
 
     private List<Sample> samples;
     private long[] durations;
-    private String lang = "eng";
 
-    public MP3TrackImpl(DataSource channel, String lang) throws IOException {
-        this.lang = lang;
-        parse(channel);
-    }
 
     public MP3TrackImpl(DataSource channel) throws IOException {
-        parse(channel);
+        this(channel, "eng");
     }
 
-    private void parse(DataSource channel) throws IOException {
+    public void close() throws IOException {
+        dataSource.close();
+    }
+
+    public MP3TrackImpl(DataSource dataSource, String lang) throws IOException {
+        this.dataSource = dataSource;
         samples = new LinkedList<Sample>();
-        firstHeader = readSamples(channel);
+        firstHeader = readSamples(dataSource);
 
         double packetsPerSecond = (double) firstHeader.sampleRate / SAMPLES_PER_FRAME;
         double duration = samples.size() / packetsPerSecond;

@@ -48,8 +48,7 @@ public class H264TrackImpl extends AbstractTrack {
     private int height;
     private long timescale;
     private int frametick;
-    private int currentScSize;
-    private int prevScSize;
+
 
     private SEIMessage seiMessage;
     int frameNrInGop = 0;
@@ -84,6 +83,10 @@ public class H264TrackImpl extends AbstractTrack {
             this.determineFrameRate = false;
         }
         parse(new LookAhead(dataSource));
+    }
+
+    public void close() throws IOException {
+        dataSource.close();
     }
 
     public H264TrackImpl(DataSource fc, String lang) throws IOException {
@@ -206,9 +209,6 @@ public class H264TrackImpl extends AbstractTrack {
         }
         return true;
     }
-
-    ByteBuffer sixtyFourK = ByteBuffer.allocate(1);
-
 
     class LookAhead {
         long bufferStartPos = 0;

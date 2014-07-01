@@ -64,15 +64,19 @@ public class DTSTrackImpl extends AbstractTrack {
     String type = "none";
     private String lang = "eng";
 
-    public DTSTrackImpl(DataSource fin, String lang) throws IOException {
+    public DTSTrackImpl(DataSource dataSource, String lang) throws IOException {
         this.lang = lang;
-        this.dataSource = fin;
+        this.dataSource = dataSource;
         parse();
     }
 
-    public DTSTrackImpl(DataSource fin) throws IOException {
-        this.dataSource = fin;
+    public DTSTrackImpl(DataSource dataSource) throws IOException {
+        this.dataSource = dataSource;
         parse();
+    }
+
+    public void close() throws IOException {
+        dataSource.close();
     }
 
     private void parse() throws IOException {
@@ -244,7 +248,7 @@ public class DTSTrackImpl extends AbstractTrack {
         ByteBuffer bb = dataSource.map(0, 25000);
         int testHeader1 = bb.getInt();
         int testHeader2 = bb.getInt();
-        if (testHeader1 != 0x44545348 || testHeader2 != 0x44484452) { // This is NOT a DTSHD file that has some extra metadata
+        if (testHeader1 != 0x44545348 || (testHeader2 != 0x44484452)) { // This is NOT a DTSHD file that has some extra metadata
             return false;
         }
 

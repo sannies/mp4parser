@@ -59,6 +59,12 @@ public class AppendTrack extends AbstractTrack {
         }
     }
 
+    public void close() throws IOException {
+        for (Track track : tracks) {
+            track.close();
+        }
+    }
+
     private SampleDescriptionBox mergeStsds(SampleDescriptionBox stsd1, SampleDescriptionBox stsd2) throws IOException {
         ByteArrayOutputStream curBaos = new ByteArrayOutputStream();
         ByteArrayOutputStream refBaos = new ByteArrayOutputStream();

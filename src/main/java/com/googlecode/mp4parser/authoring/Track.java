@@ -17,6 +17,7 @@ package com.googlecode.mp4parser.authoring;
 
 import com.coremedia.iso.boxes.*;
 
+import java.io.Closeable;
 import java.util.List;
 
 /**
@@ -26,7 +27,7 @@ import java.util.List;
  * <p>For media data, a track corresponds to a sequence of images or sampled audio; for hint tracks, a track
  * corresponds to a streaming channel.</p>
  */
-public interface Track {
+public interface Track extends Closeable {
 
     SampleDescriptionBox getSampleDescriptionBox();
 

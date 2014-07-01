@@ -62,6 +62,9 @@ public class TextTrackImpl extends AbstractTrack {
 
     }
 
+    public void close() throws IOException {
+        // nothing to close
+    }
 
     public List<Sample> getSamples() {
         List<Sample> samples = new LinkedList<Sample>();

@@ -6,6 +6,7 @@ import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.util.LazyList;
 import com.googlecode.mp4parser.util.Logger;
 
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -18,8 +19,8 @@ import java.util.NoSuchElementException;
 /**
  * Created by sannies on 18.05.13.
  */
-public class BasicContainer implements Container, Iterator<Box> {
-    private static Logger LOG = Logger.getLogger(AbstractContainerBox.class);
+public class BasicContainer implements Container, Iterator<Box>, Closeable {
+    private static Logger LOG = Logger.getLogger(BasicContainer.class);
 
     private List<Box> boxes = new ArrayList<Box>();
     protected BoxParser boxParser;
@@ -193,4 +194,7 @@ public class BasicContainer implements Container, Iterator<Box> {
         }
     }
 
+    public void close() throws IOException {
+        dataSource.close();
+    }
 }
