@@ -20,6 +20,7 @@ public class MetaBoxTest {
     @Test
     public void testRooundTrip() throws IOException {
         File f = File.createTempFile("MetaBoxTest", "");
+        f.deleteOnExit();
         FileOutputStream fos = new FileOutputStream(f);
         fos.write(metaBox);
         fos.close();

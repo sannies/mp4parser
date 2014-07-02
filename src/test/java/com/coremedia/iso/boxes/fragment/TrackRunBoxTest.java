@@ -58,6 +58,7 @@ public class TrackRunBoxTest {
         trun.setEntries(entries);
 
         File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        f.deleteOnExit();
         FileChannel fc = new FileOutputStream(f).getChannel();
         trun.getBox(fc);
         fc.close();

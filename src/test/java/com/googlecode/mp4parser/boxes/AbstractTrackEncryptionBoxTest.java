@@ -23,17 +23,18 @@ public abstract class AbstractTrackEncryptionBoxTest {
 
 
         File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        f.deleteOnExit();
         FileChannel fc = new FileOutputStream(f).getChannel();
         tenc.getBox(fc);
         fc.close();
 
         IsoFile iso = new IsoFile(f.getAbsolutePath());
-
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractTrackEncryptionBox);
         AbstractTrackEncryptionBox tenc2 = (AbstractTrackEncryptionBox) iso.getBoxes().get(0);
         Assert.assertEquals(0, tenc2.getFlags());
         Assert.assertTrue(tenc.equals(tenc2));
         Assert.assertTrue(tenc2.equals(tenc));
+        iso.close();
 
     }
 }

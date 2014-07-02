@@ -49,6 +49,7 @@ public class SampleAuxiliaryInformationSizesBoxTest {
         ss.add((short) 100);
         saiz1.setSampleInfoSizes(ss);
         File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        f.deleteOnExit();
         FileChannel fc = new FileOutputStream(f).getChannel();
         saiz1.getBox(fc);
         fc.close();

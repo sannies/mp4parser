@@ -41,6 +41,7 @@ public class FreeBoxTest {
         fsb.setData(new byte[100]);
         fb.addAndReplace(fsb);
         File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        f.deleteOnExit();
         FileChannel fc = new FileOutputStream(f).getChannel();
         fb.getBox(fc);
         fc.close();

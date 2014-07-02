@@ -31,6 +31,7 @@ public class SampleEncryptionBoxTest  {
         senc.setEntries(entries);
 
         File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        f.deleteOnExit();
         FileChannel fc = new FileOutputStream(f).getChannel();
         senc.getBox(fc);
         fc.close();

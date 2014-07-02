@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import com.googlecode.mp4parser.DataSource;
 
 import java.nio.channels.FileChannel;
 import java.util.Collections;
@@ -42,6 +41,7 @@ public class ItemLocationBoxTest {
         ilocOrig.setOffsetSize(offsetSize);
 
         File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        f.deleteOnExit();
         FileChannel fc = new FileOutputStream(f).getChannel();
         ilocOrig.getBox(fc);
         fc.close();
@@ -85,6 +85,7 @@ public class ItemLocationBoxTest {
         ItemLocationBox.Item item = ilocOrig.createItem(12, 0, 13, 123, Collections.<ItemLocationBox.Extent>emptyList());
         ilocOrig.setItems(Collections.singletonList(item));
         File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        f.deleteOnExit();
         FileChannel fc = new FileOutputStream(f).getChannel();
         ilocOrig.getBox(fc);
         fc.close();
@@ -130,6 +131,7 @@ public class ItemLocationBoxTest {
         ItemLocationBox.Item item = ilocOrig.createItem(12, 0, 13, 123, extents);
         ilocOrig.setItems(Collections.singletonList(item));
         File f = File.createTempFile(this.getClass().getSimpleName(), "");
+        f.deleteOnExit();
         FileChannel fc = new FileOutputStream(f).getChannel();
         ilocOrig.getBox(fc);
         fc.close();
