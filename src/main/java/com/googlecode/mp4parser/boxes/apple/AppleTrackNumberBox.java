@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
  */
 public class AppleTrackNumberBox extends AppleDataBox {
     public AppleTrackNumberBox() {
-        super("tkrn", 0);
+        super("trkn", 0);
     }
 
     int a;
