@@ -268,21 +268,22 @@ public class H264TrackImpl extends AbstractTrack {
             start = bufferStartPos + inBufferPos;
         }
 
-        public ByteBuffer getSample() {
+        public ByteBuffer getNal() {
             if (start >= bufferStartPos) {
                 buffer.position((int) (start - bufferStartPos));
                 Buffer sample = buffer.slice();
                 sample.limit((int) (inBufferPos - (start - bufferStartPos)));
                 return (ByteBuffer) sample;
             } else {
-                throw new RuntimeException("damn sample crosses buffers");
+                throw new RuntimeException("damn! NAL exceeds buffer");
+                // this can only happen if NAL is bigger than the buffer
             }
 
         }
     }
 
 
-    private ByteBuffer findNextSample(LookAhead la) throws IOException {
+    private ByteBuffer findNextNal(LookAhead la) throws IOException {
         try {
             while (!la.nextThreeEquals001()) {
                 la.discardByte();
@@ -292,7 +293,7 @@ public class H264TrackImpl extends AbstractTrack {
             while (!la.nextThreeEquals000or001orEof()) {
                 la.discardByte();
             }
-            return la.getSample();
+            return la.getNal();
         } catch (EOFException e) {
             return null;
         }
@@ -337,24 +338,24 @@ public class H264TrackImpl extends AbstractTrack {
         List<ByteBuffer> buffered = new ArrayList<ByteBuffer>();
 
         int frameNr = 0;
-        ByteBuffer sample;
-        while ((sample = findNextSample(la)) != null) {
-            int type = sample.get(0);
+        ByteBuffer nal;
+        while ((nal = findNextNal(la)) != null) {
+            int type = nal.get(0);
             int nal_ref_idc = (type >> 5) & 3;
             int nal_unit_type = type & 0x1f;
-            NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, sample);
+            NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, nal);
             switch (action) {
                 case IGNORE:
                     break;
 
                 case BUFFER:
-                    buffered.add(sample);
+                    buffered.add(nal);
                     break;
 
                 case STORE:
                     int stdpValue = 22;
                     frameNr++;
-                    buffered.add(sample);
+                    buffered.add(nal);
                     boolean IdrPicFlag = false;
                     if (nal_unit_type == 5) {
                         stdpValue += 16;

@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Created by sannies on 1/9/14.
  */
-public class CommonEncryptionSampleListTest {
+public class CencEncryptingSampleListTest {
 
     @Test
     public void test() throws IOException {
@@ -33,8 +33,8 @@ public class CommonEncryptionSampleListTest {
         cencSampleAuxiliaryDataFormat.iv = new byte[16];
 
 
-        CommonEncryptionSampleList cencSamples =
-                new CommonEncryptionSampleList(
+        CencEncryptingSampleList cencSamples =
+                new CencEncryptingSampleList(
                         secretKey, clearSamples,
                         Collections.singletonList(cencSampleAuxiliaryDataFormat));
 

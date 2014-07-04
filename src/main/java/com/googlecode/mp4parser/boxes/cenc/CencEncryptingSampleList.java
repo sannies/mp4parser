@@ -20,7 +20,7 @@ import java.util.List;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
-public class CommonEncryptionSampleList extends AbstractList<Sample> {
+public class CencEncryptingSampleList extends AbstractList<Sample> {
 
     List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats;
     SecretKey secretKey;
@@ -37,7 +37,7 @@ public class CommonEncryptionSampleList extends AbstractList<Sample> {
         }
     }
 
-    public CommonEncryptionSampleList(
+    public CencEncryptingSampleList(
             SecretKey secretKey,
             List<Sample> parent,
             List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats) {

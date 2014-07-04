@@ -43,6 +43,13 @@ public abstract class AbstractTrackEncryptionBox extends AbstractFullBox {
         return new UUID(b.getLong(), b.getLong()).toString();
     }
 
+    public void setDefault_KID(UUID uuid) {
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+        this.default_KID = bb.array();
+    }
+
     public void setDefault_KID(byte[] default_KID) {
         this.default_KID = default_KID;
     }

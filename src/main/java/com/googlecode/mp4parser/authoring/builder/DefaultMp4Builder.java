@@ -18,33 +18,15 @@ package com.googlecode.mp4parser.authoring.builder;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.Container;
-import com.coremedia.iso.boxes.DataEntryUrlBox;
-import com.coremedia.iso.boxes.DataInformationBox;
-import com.coremedia.iso.boxes.DataReferenceBox;
-import com.coremedia.iso.boxes.FileTypeBox;
-import com.coremedia.iso.boxes.HandlerBox;
-import com.coremedia.iso.boxes.MediaBox;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.MediaInformationBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.MovieHeaderBox;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.StaticChunkOffsetBox;
-import com.coremedia.iso.boxes.SyncSampleBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
+import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
+import com.googlecode.mp4parser.boxes.ultraviolet.SampleEncryptionBox;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
@@ -69,6 +51,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 public class DefaultMp4Builder implements Mp4Builder {
 
     Set<StaticChunkOffsetBox> chunkOffsetBoxes = new HashSet<StaticChunkOffsetBox>();
+    Set<SampleAuxiliaryInformationOffsetsBox> sampleAuxiliaryInformationOffsetsBoxes = new HashSet<SampleAuxiliaryInformationOffsetsBox>();
     private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
 
     HashMap<Track, List<Sample>> track2Sample = new HashMap<Track, List<Sample>>();
@@ -131,6 +114,33 @@ public class DefaultMp4Builder implements Mp4Builder {
             for (int i = 0; i < offsets.length; i++) {
                 offsets[i] += dataOffset;
             }
+        }
+        for (SampleAuxiliaryInformationOffsetsBox saio : sampleAuxiliaryInformationOffsetsBoxes) {
+            List<Long> nuOffsets = new ArrayList<Long>(saio.getOffsets().size());
+
+
+
+            long offset = saio.getSize(); // the calculation is systematically wrong by 4, I don't want to debug why. Just a quick correction --san 14.May.13
+            offset += 4 + 4 + 4 + 4 + 4;
+            // size of all header we were missing otherwise (moov, trak, mdia, minf, stbl)
+            Object b = saio;
+            do {
+                Object current = b;
+                b = ((Box)b).getParent();
+
+                for (Box box : ((Container)b).getBoxes()) {
+                    if (box == current) {
+                        break;
+                    }
+                    offset += box.getSize();
+                }
+
+            } while (b instanceof Box);
+
+            for (Long aLong : saio.getOffsets()) {
+                nuOffsets.add(aLong + offset);
+            }
+            saio.setOffsets(nuOffsets);
         }
 
 
@@ -283,7 +293,53 @@ public class DefaultMp4Builder implements Mp4Builder {
         createStsz(track, stbl);
         createStco(track, movie, chunks, stbl);
 
+        if (track instanceof CencEncyprtedTrack) {
+            createCencBoxes((CencEncyprtedTrack) track, stbl, chunks.get(track));
+        }
+
         return stbl;
+    }
+
+    protected void createCencBoxes(CencEncyprtedTrack track, SampleTableBox stbl, int[] chunkSizes) {
+
+        SampleAuxiliaryInformationSizesBox saiz = new SampleAuxiliaryInformationSizesBox();
+
+        saiz.setAuxInfoType("cenc");
+        saiz.setFlags(1);
+        List<CencSampleAuxiliaryDataFormat> sampleEncryptionEntries = track.getSampleEncryptionEntries();
+        if (track.hasSubSampleEncryption()) {
+            LinkedList<Short> sizes = new LinkedList<Short>();
+            for (CencSampleAuxiliaryDataFormat e : sampleEncryptionEntries) {
+                sizes.add((short) (e.getSize()));
+            }
+            saiz.setSampleInfoSizes(sizes);
+        } else {
+            saiz.setDefaultSampleInfoSize(8); // 8 bytes iv
+            saiz.setSampleCount(track.getSamples().size());
+        }
+
+        SampleAuxiliaryInformationOffsetsBox saio = new SampleAuxiliaryInformationOffsetsBox();
+        SampleEncryptionBox senc = new SampleEncryptionBox();
+        senc.setSubSampleEncryption(track.hasSubSampleEncryption());
+        senc.setEntries(sampleEncryptionEntries);
+
+        long offset = senc.getOffsetToFirstIV();
+        int index = 0;
+        List<Long> offsets = new ArrayList<Long>(track.getSamples().size());
+        for (int chunkSize : chunkSizes) {
+            offsets.add(offset);
+            for (int i = 0; i < chunkSize; i++){
+                offset += sampleEncryptionEntries.get(index++).getSize();
+            }
+        }
+        saio.setOffsets(offsets);
+
+        stbl.addBox(saiz);
+        stbl.addBox(saio);
+        stbl.addBox(senc);
+        sampleAuxiliaryInformationOffsetsBoxes.add(saio);
+
+
     }
 
     protected void createStsd(Track track, SampleTableBox stbl) {

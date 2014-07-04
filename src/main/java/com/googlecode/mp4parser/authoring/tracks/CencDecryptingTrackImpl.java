@@ -26,18 +26,18 @@ import java.util.AbstractList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class DeCencTrack extends AbstractTrack {
-    DecryptedSampleList samples;
+public class CencDecryptingTrackImpl extends AbstractTrack {
+    CencDecryptingSampleList samples;
     Track original;
 
 
-    public DeCencTrack(Mp4TrackImpl original, SecretKey key) {
+    public CencDecryptingTrackImpl(CencEncyprtedTrack original, SecretKey key) {
         this.original = original;
         SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(original.getSampleDescriptionBox(), "enc./sinf/schm");
         if (!"cenc".equals(schm.getSchemeType())) {
-            throw new RuntimeException("You can only use the DeCencTrack with CENC encrypted tracks");
+            throw new RuntimeException("You can only use the CencDecryptingTrackImpl with CENC encrypted tracks");
         }
-        samples = new DecryptedSampleList(key, original.getSamples(), original, original.getSampleEncryptionEntries());
+        samples = new CencDecryptingSampleList(key, original.getSamples(), original, original.getSampleEncryptionEntries());
     }
 
     public void close() throws IOException {
@@ -98,14 +98,14 @@ public class DeCencTrack extends AbstractTrack {
         return original.getMediaHeaderBox();
     }
 
-    public class DecryptedSampleList extends AbstractList<Sample> {
+    public class CencDecryptingSampleList extends AbstractList<Sample> {
 
         List<CencSampleAuxiliaryDataFormat> sencInfo;
         AvcConfigurationBox avcC = null;
         SecretKey secretKey;
         List<Sample> parent;
 
-        public DecryptedSampleList(SecretKey secretKey, List<Sample> parent, Track track, List<CencSampleAuxiliaryDataFormat> sencInfo) {
+        public CencDecryptingSampleList(SecretKey secretKey, List<Sample> parent, Track track, List<CencSampleAuxiliaryDataFormat> sencInfo) {
             this.sencInfo = sencInfo;
             this.secretKey = secretKey;
             this.parent = parent;

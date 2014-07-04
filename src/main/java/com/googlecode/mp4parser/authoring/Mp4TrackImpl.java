@@ -42,7 +42,6 @@ public class Mp4TrackImpl extends AbstractTrack {
     private List<CompositionTimeToSample.Entry> compositionTimeEntries;
     private long[] syncSamples = new long[0];
     private List<SampleDependencyTypeBox.Entry> sampleDependencies;
-    private List<CencSampleAuxiliaryDataFormat> sampleEncryptionEntries;
     private TrackMetaData trackMetaData = new TrackMetaData();
     private String handler;
     private AbstractMediaHeaderBox mihd;
@@ -67,7 +66,6 @@ public class Mp4TrackImpl extends AbstractTrack {
         List<TimeToSampleBox.Entry> decodingTimeEntries = new ArrayList<TimeToSampleBox.Entry>();
         compositionTimeEntries = new ArrayList<CompositionTimeToSample.Entry>();
         sampleDependencies = new ArrayList<SampleDependencyTypeBox.Entry>();
-        sampleEncryptionEntries = new ArrayList<CencSampleAuxiliaryDataFormat>();
 
         decodingTimeEntries.addAll(stbl.getTimeToSampleBox().getEntries());
         if (stbl.getCompositionTimeToSample() != null) {
@@ -95,10 +93,7 @@ public class Mp4TrackImpl extends AbstractTrack {
                             List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
                             for (TrackFragmentBox traf : trafs) {
                                 if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
-                                    List<SampleEncryptionBox> sencs = traf.getBoxes(SampleEncryptionBox.class);
-                                    for (SampleEncryptionBox senc : sencs) {
-                                        sampleEncryptionEntries.addAll(senc.getEntries());
-                                    }
+
 
                                     List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
                                     for (TrackRunBox trun : truns) {
@@ -241,10 +236,6 @@ public class Mp4TrackImpl extends AbstractTrack {
 
     public SubSampleInformationBox getSubsampleInformationBox() {
         return null;
-    }
-
-    public List<CencSampleAuxiliaryDataFormat> getSampleEncryptionEntries() {
-        return sampleEncryptionEntries;
     }
 
     @Override
