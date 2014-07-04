@@ -43,13 +43,17 @@ public class CencTracksImplTest {
 
         c.writeContainer(Channels.newChannel(baos));
 
+        c.writeContainer(new FileOutputStream("output.mp4").getChannel());
+
         Movie m2 = MovieCreator.build(new MemoryDataSourceImpl(baos.toByteArray()));
         List<Track> decTracks = new LinkedList<Track>();
         for (Track track : m2.getTracks()) {
             decTracks.add(new CencDecryptingTrackImpl((CencEncyprtedTrack) track, sk));
         }
-        m.setTracks(decTracks);
+        m2.setTracks(decTracks);
+        c = mp4Builder.build(m2);
 
+        c.writeContainer(new FileOutputStream("output2.mp4").getChannel());
 
     }
 }

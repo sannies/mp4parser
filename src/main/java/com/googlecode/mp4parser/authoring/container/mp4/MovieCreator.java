@@ -16,14 +16,18 @@
 package com.googlecode.mp4parser.authoring.container.mp4;
 
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.SchemeTypeBox;
 import com.coremedia.iso.boxes.TrackBox;
 import com.googlecode.mp4parser.FileDataSourceImpl;
+import com.googlecode.mp4parser.authoring.CencMp4TrackImplImpl;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Mp4TrackImpl;
 
 import java.io.File;
 import java.io.IOException;
 import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.util.Path;
+
 import java.util.List;
 
 /**
@@ -47,7 +51,12 @@ public class MovieCreator {
         Movie m = new Movie();
         List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
         for (TrackBox trackBox : trackBoxes) {
-            m.addTrack(new Mp4TrackImpl(trackBox));
+            SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schm[0]");
+            if (schm != null && schm.getSchemeType().equals("cenc")) {
+                m.addTrack(new CencMp4TrackImplImpl(trackBox));
+            } else {
+                m.addTrack(new Mp4TrackImpl(trackBox));
+            }
         }
         m.setMatrix(isoFile.getMovieBox().getMovieHeaderBox().getMatrix());
         return m;
