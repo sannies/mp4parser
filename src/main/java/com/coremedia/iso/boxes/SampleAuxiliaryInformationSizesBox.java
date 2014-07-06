@@ -33,7 +33,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
     public static final String TYPE = "saiz";
 
-    private int defaultSampleInfoSize;
+    private short defaultSampleInfoSize;
     private List<Short> sampleInfoSizes = new LinkedList<Short>();
     private int sampleCount;
     private String auxInfoType;
@@ -53,6 +53,15 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         size += 5;
         size += defaultSampleInfoSize == 0 ? sampleInfoSizes.size() : 0;
         return size;
+    }
+
+    public short getSize(int index) {
+        if (getDefaultSampleInfoSize() == 0) {
+            return sampleInfoSizes.get(index);
+        } else {
+            return defaultSampleInfoSize;
+        }
+
     }
 
     @Override
@@ -117,7 +126,7 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
 
     public void setDefaultSampleInfoSize(int defaultSampleInfoSize) {
         assert defaultSampleInfoSize <= 255;
-        this.defaultSampleInfoSize = defaultSampleInfoSize;
+        this.defaultSampleInfoSize = (short) defaultSampleInfoSize;
     }
 
     public List<Short> getSampleInfoSizes() {

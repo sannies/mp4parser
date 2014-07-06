@@ -3,14 +3,10 @@ package com.googlecode.mp4parser.authoring;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
+import com.coremedia.iso.boxes.fragment.*;
 import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
 import com.googlecode.mp4parser.boxes.basemediaformat.TrackEncryptionBox;
 import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
-import com.googlecode.mp4parser.boxes.ultraviolet.SampleEncryptionBox;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
@@ -41,110 +37,110 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
         super(trackBox, fragments);
 
         SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schm[0]");
-        assert schm != null && schm.getSchemeType().equals("cenc"): "Track must be CENC encrypted";
+        assert schm != null && schm.getSchemeType().equals("cenc") : "Track must be CENC encrypted";
 
         sampleEncryptionEntries = new ArrayList<CencSampleAuxiliaryDataFormat>();
-        SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
-        SampleDescriptionBox sampleDescriptionBox = stbl.getSampleDescriptionBox();
-        final List<MovieExtendsBox> movieExtendsBoxes = trackBox.getParent().getBoxes(MovieExtendsBox.class);
         long trackId = trackBox.getTrackHeaderBox().getTrackId();
-        if (movieExtendsBoxes.size() > 0) {
-            for (MovieExtendsBox mvex : movieExtendsBoxes) {
-                final List<TrackExtendsBox> trackExtendsBoxes = mvex.getBoxes(TrackExtendsBox.class);
-                for (TrackExtendsBox trex : trackExtendsBoxes) {
-                    if (trex.getTrackId() == trackId) {
-                        List<Long> syncSampleList = new LinkedList<Long>();
+        if (trackBox.getParent().getBoxes(MovieExtendsBox.class).size() > 0) {
 
-                        long sampleNumber = 1;
-                        for (MovieFragmentBox movieFragmentBox : ((Box) trackBox.getParent()).getParent().getBoxes(MovieFragmentBox.class)) {
-                            List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
-                            for (TrackFragmentBox traf : trafs) {
-                                if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
-                                    List<SampleEncryptionBox> sencs = traf.getBoxes(SampleEncryptionBox.class);
-                                    for (SampleEncryptionBox senc : sencs) {
 
-                                        // use saios!!!
-                                        sampleEncryptionEntries.addAll(senc.getEntries());
-                                    }
-                                }
+            for (MovieFragmentBox movieFragmentBox : ((Box) trackBox.getParent()).getParent().getBoxes(MovieFragmentBox.class)) {
+                List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
+                for (TrackFragmentBox traf : trafs) {
+                    if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
+                        TrackEncryptionBox tenc = (TrackEncryptionBox) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/tenc[0]");
+
+                        Container base;
+                        long baseOffset;
+                        if (traf.getTrackFragmentHeaderBox().hasBaseDataOffset()) {
+                            base = ((Box) trackBox.getParent()).getParent();
+                            baseOffset = traf.getTrackFragmentHeaderBox().getBaseDataOffset();
+                        } else {
+                            base = movieFragmentBox;
+                            baseOffset = 0;
+                        }
+
+                        FindSaioSaizPair saizSaioPair = new FindSaioSaizPair(traf).invoke();
+                        SampleAuxiliaryInformationOffsetsBox saio = saizSaioPair.getSaio();
+                        SampleAuxiliaryInformationSizesBox saiz = saizSaioPair.getSaiz();
+                        // now we have the correct saio/saiz combo!
+                        assert saio != null;
+                        assert saio.getOffsets().size() == traf.getBoxes(TrackRunBox.class).size();
+                        assert saiz != null;
+
+                        List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
+                        int sampleNo = 0;
+                        for (int i = 0; i < saio.getOffsets().size(); i++) {
+                            int numSamples = truns.get(i).getEntries().size();
+                            long offset = saio.getOffsets().get(i);
+                            long length = 0;
+
+                            for (int j = sampleNo; j < sampleNo + numSamples; j++) {
+                                length += saiz.getSize(j);
                             }
+                            ByteBuffer trunsCencSampleAuxData = base.getByteBuffer(baseOffset + offset, length);
+                            for (int j = sampleNo; j < sampleNo + numSamples; j++) {
+                                int auxInfoSize = saiz.getSize(j);
+                                sampleEncryptionEntries.add(
+                                        parseCencAuxDataFormat(tenc.getDefaultIvSize(), trunsCencSampleAuxData, auxInfoSize)
+                                );
+
+                            }
+
+                            sampleNo += numSamples;
                         }
                     }
                 }
+
             }
         } else {
-            SampleAuxiliaryInformationOffsetsBox saio = (SampleAuxiliaryInformationOffsetsBox) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/saio[0]");
-            SampleAuxiliaryInformationSizesBox saiz = (SampleAuxiliaryInformationSizesBox) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/saiz[0]");
             TrackEncryptionBox tenc = (TrackEncryptionBox) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/tenc[0]");
-            List<SampleToChunkBox.Entry> s2chunkEntries = trackBox.getSampleTableBox().getSampleToChunkBox().getEntries();
-            SampleToChunkBox.Entry[] entries = s2chunkEntries.toArray(new SampleToChunkBox.Entry[s2chunkEntries.size()]);
+            ChunkOffsetBox chunkOffsetBox = (ChunkOffsetBox) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stco[0]");
+
+            if (chunkOffsetBox == null) {
+                chunkOffsetBox = (ChunkOffsetBox) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/co64[0]");
+            }
+            long[] chunkSizes = trackBox.getSampleTableBox().getSampleToChunkBox().blowup(chunkOffsetBox.getChunkOffsets().length);
+
+
+            FindSaioSaizPair saizSaioPair = new FindSaioSaizPair((Container) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]")).invoke();
+            SampleAuxiliaryInformationOffsetsBox saio = saizSaioPair.saio;
+            SampleAuxiliaryInformationSizesBox saiz = saizSaioPair.saiz;
 
             Container topLevel = ((MovieBox) trackBox.getParent()).getParent();
 
-            int s2cIndex = 0;
-            SampleToChunkBox.Entry next = entries[s2cIndex++];
-            int currentChunkNo = 0;
-            int currentSamplePerChunk = 0;
-
-            long nextFirstChunk = next.getFirstChunk();
-            int nextSamplePerChunk = l2i(next.getSamplesPerChunk());
-
             int currentSampleNo = 0;
-            int lastSampleNo = saiz.getSampleCount();
-
-
-            do {
-                currentChunkNo++;
-                if (currentChunkNo == nextFirstChunk) {
-                    currentSamplePerChunk = nextSamplePerChunk;
-                    if (entries.length > s2cIndex) {
-                        next = entries[s2cIndex++];
-                        nextSamplePerChunk = l2i(next.getSamplesPerChunk());
-                        nextFirstChunk = next.getFirstChunk();
-                    } else {
-                        nextSamplePerChunk = -1;
-                        nextFirstChunk = Long.MAX_VALUE;
-                    }
-                }
-                long offset = saio.getOffsets().get(currentChunkNo -1);
+            for (int i = 0; i < chunkSizes.length; i++) {
+                long offset = saio.getOffsets().get(i);
                 long size = 0;
-                if (saiz.getDefaultSampleInfoSize() == 0) {
-                    for (int i = currentSampleNo; i < currentSampleNo + currentSamplePerChunk; i++) {
-                        size += saiz.getSampleInfoSizes().get(currentSampleNo + i);
-                    }
-                } else {
-                    size += currentSamplePerChunk * saiz.getDefaultSampleInfoSize();
+                for (int j = currentSampleNo; j < currentSampleNo + chunkSizes[i]; j++) {
+                    size += saiz.getSize(currentSampleNo + j);
                 }
-                ByteBuffer chunksCencSampleAuxData = topLevel.getByteBuffer(
-                        offset, size);
-                for (int i = 0; i < currentSamplePerChunk; i++) {
-                    CencSampleAuxiliaryDataFormat cadf = new CencSampleAuxiliaryDataFormat();
-                    sampleEncryptionEntries.add(cadf);
-                    long auxInfoSize;
-                    if (saiz.getDefaultSampleInfoSize() == 0) {
-                        auxInfoSize = saiz.getSampleInfoSizes().get(currentSampleNo + i );
-                    } else {
-                        auxInfoSize = saiz.getDefaultSampleInfoSize();
-                    }
-
-
-                    cadf.iv = new byte[tenc.getDefaultIvSize()];
-                    chunksCencSampleAuxData.get(cadf.iv);
-                    if (auxInfoSize > tenc.getDefaultIvSize()) {
-                        int numOfPairs = IsoTypeReader.readUInt16(chunksCencSampleAuxData);
-                        cadf.pairs = new LinkedList<CencSampleAuxiliaryDataFormat.Pair>();
-                        while (numOfPairs-- > 0) {
-                            cadf.pairs.add(cadf.createPair(
-                                    IsoTypeReader.readUInt16(chunksCencSampleAuxData),
-                                    IsoTypeReader.readUInt32(chunksCencSampleAuxData)));
-                        }
-                    }
-
+                ByteBuffer chunksCencSampleAuxData = topLevel.getByteBuffer(offset, size);
+                for (int j = 0; j < chunkSizes[i]; j++) {
+                    long auxInfoSize = saiz.getSize(currentSampleNo + i);
+                    sampleEncryptionEntries.add(
+                            parseCencAuxDataFormat(tenc.getDefaultIvSize(), chunksCencSampleAuxData, auxInfoSize)
+                    );
                 }
-
-            } while ((currentSampleNo += currentSamplePerChunk) < lastSampleNo);
-
+            }
         }
+    }
+
+    private CencSampleAuxiliaryDataFormat parseCencAuxDataFormat(int ivSize, ByteBuffer chunksCencSampleAuxData, long auxInfoSize) {
+        CencSampleAuxiliaryDataFormat cadf = new CencSampleAuxiliaryDataFormat();
+        cadf.iv = new byte[ivSize];
+        chunksCencSampleAuxData.get(cadf.iv);
+        if (auxInfoSize > ivSize) {
+            int numOfPairs = IsoTypeReader.readUInt16(chunksCencSampleAuxData);
+            cadf.pairs = new LinkedList<CencSampleAuxiliaryDataFormat.Pair>();
+            while (numOfPairs-- > 0) {
+                cadf.pairs.add(cadf.createPair(
+                        IsoTypeReader.readUInt16(chunksCencSampleAuxData),
+                        IsoTypeReader.readUInt32(chunksCencSampleAuxData)));
+            }
+        }
+        return cadf;
     }
 
     public UUID getKeyId() {
@@ -164,5 +160,49 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
         return "CencMp4TrackImpl{" +
                 "handler='" + getHandler() + '\'' +
                 '}';
+    }
+
+    private class FindSaioSaizPair {
+        private Container container;
+        private SampleAuxiliaryInformationSizesBox saiz;
+        private SampleAuxiliaryInformationOffsetsBox saio;
+
+        public FindSaioSaizPair(Container container) {
+            this.container = container;
+        }
+
+        public SampleAuxiliaryInformationSizesBox getSaiz() {
+            return saiz;
+        }
+
+        public SampleAuxiliaryInformationOffsetsBox getSaio() {
+            return saio;
+        }
+
+        public FindSaioSaizPair invoke() {
+            List<SampleAuxiliaryInformationSizesBox> saizs = container.getBoxes(SampleAuxiliaryInformationSizesBox.class);
+            List<SampleAuxiliaryInformationOffsetsBox> saios = container.getBoxes(SampleAuxiliaryInformationOffsetsBox.class);
+            assert saizs.size() == saios.size();
+            saiz = null;
+            saio = null;
+
+            for (int i = 0; i < saizs.size(); i++) {
+                if (saiz == null && (saizs.get(i).getAuxInfoType() == null) || "cenc".equals(saizs.get(i).getAuxInfoType())) {
+                    saiz = saizs.get(i);
+                } else if (saiz != null && saiz.getAuxInfoType() == null && "cenc".equals(saizs.get(i).getAuxInfoType())) {
+                    saiz = saizs.get(i);
+                } else {
+                    throw new RuntimeException("BULL.SHIT.");
+                }
+                if (saio == null && (saios.get(i).getAuxInfoType() == null) || "cenc".equals(saios.get(i).getAuxInfoType())) {
+                    saio = saios.get(i);
+                } else if (saio != null && saio.getAuxInfoType() == null && "cenc".equals(saios.get(i).getAuxInfoType())) {
+                    saio = saios.get(i);
+                } else {
+                    throw new RuntimeException("BULL.SHIT.");
+                }
+            }
+            return this;
+        }
     }
 }
