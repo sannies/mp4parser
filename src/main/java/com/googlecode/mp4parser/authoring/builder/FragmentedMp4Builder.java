@@ -25,6 +25,9 @@ import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
+import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
+import com.googlecode.mp4parser.boxes.ultraviolet.SampleEncryptionBox;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
@@ -283,29 +286,85 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return new Mdat();
     }
 
-    protected Box createTfhd(long startSample, long endSample, Track track, int sequenceNumber) {
+    protected void createTfhd(long startSample, long endSample, Track track, int sequenceNumber, TrackFragmentBox parent) {
         TrackFragmentHeaderBox tfhd = new TrackFragmentHeaderBox();
         SampleFlags sf = new SampleFlags();
 
         tfhd.setDefaultSampleFlags(sf);
         tfhd.setBaseDataOffset(-1);
         tfhd.setTrackId(track.getTrackMetaData().getTrackId());
-        return tfhd;
+        parent.addBox(tfhd);
     }
 
-    protected Box createMfhd(long startSample, long endSample, Track track, int sequenceNumber) {
+    protected void createMfhd(long startSample, long endSample, Track track, int sequenceNumber, MovieFragmentBox parent) {
         MovieFragmentHeaderBox mfhd = new MovieFragmentHeaderBox();
         mfhd.setSequenceNumber(sequenceNumber);
-        return mfhd;
+        parent.addBox(mfhd);
     }
 
-    protected Box createTraf(long startSample, long endSample, Track track, int sequenceNumber) {
+    protected void createTraf(long startSample, long endSample, Track track, int sequenceNumber, MovieFragmentBox parent) {
         TrackFragmentBox traf = new TrackFragmentBox();
-        traf.addBox(createTfhd(startSample, endSample, track, sequenceNumber));
-        traf.addBox(createTfdt(startSample, track));
-        traf.addBox(createTrun(startSample, endSample, track, sequenceNumber));
+        parent.addBox(traf);
+        createTfhd(startSample, endSample, track, sequenceNumber, traf);
+        createTfdt(startSample, track, traf);
+        createTrun(startSample, endSample, track, sequenceNumber, traf);
 
-        return traf;
+        if (track instanceof CencEncyprtedTrack) {
+            createSenc(startSample, endSample, (CencEncyprtedTrack) track, sequenceNumber, traf);
+            createSaio(startSample, endSample, (CencEncyprtedTrack) track, sequenceNumber, traf);
+            createSaiz(startSample, endSample, (CencEncyprtedTrack) track, sequenceNumber, traf);
+        }
+
+
+    }
+
+    protected void createSenc(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
+        SampleEncryptionBox senc = new SampleEncryptionBox();
+        senc.setSubSampleEncryption(track.hasSubSampleEncryption());
+        senc.setEntries(track.getSampleEncryptionEntries().subList(l2i(startSample - 1), l2i(endSample - 1)));
+        parent.addBox(senc);
+    }
+
+    protected void createSaio(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
+        SampleAuxiliaryInformationOffsetsBox saio = new SampleAuxiliaryInformationOffsetsBox();
+        parent.addBox(saio);
+        assert parent.getBoxes(TrackRunBox.class).size() == 1 : "Don't know how to deal with multiple Track Run Boxes when encrypting";
+
+        long offset = 0;
+        offset += 8; // traf header till 1st child box
+        for (Box box : parent.getBoxes()) {
+            if (box instanceof SampleEncryptionBox) {
+                offset += ((SampleEncryptionBox) box).getOffsetToFirstIV();
+                break;
+            } else {
+                offset += box.getSize();
+            }
+        }
+        MovieFragmentBox moof = (MovieFragmentBox) parent.getParent();
+        offset += 8; // traf header till 1st child box
+        for (Box box : moof.getBoxes()) {
+            if (box == parent) {
+                break;
+            } else {
+                offset += box.getSize();
+            }
+
+        }
+
+        saio.setOffsets(Collections.singletonList(offset));
+
+    }
+
+    protected void createSaiz(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
+        SampleAuxiliaryInformationSizesBox saiz = new SampleAuxiliaryInformationSizesBox();
+        List<Short> sizes = new ArrayList<Short>(l2i(endSample - startSample));
+        for (CencSampleAuxiliaryDataFormat auxiliaryDataFormat :
+                track.getSampleEncryptionEntries().subList(l2i(startSample - 1), l2i(endSample - 1))) {
+            sizes.add((short) auxiliaryDataFormat.getSize());
+
+        }
+        saiz.setSampleInfoSizes(sizes);
+        parent.addBox(saiz);
     }
 
 
@@ -343,7 +402,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return sampleSizes;
     }
 
-    protected TrackFragmentBaseMediaDecodeTimeBox createTfdt(long startSample, Track track) {
+    protected void createTfdt(long startSample, Track track, TrackFragmentBox parent) {
         TrackFragmentBaseMediaDecodeTimeBox tfdt = new TrackFragmentBaseMediaDecodeTimeBox();
         tfdt.setVersion(1);
         long startTime = 0;
@@ -352,7 +411,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
             startTime += times[i];
         }
         tfdt.setBaseMediaDecodeTime(startTime);
-        return tfdt;
+        parent.addBox(tfdt);
     }
 
     /**
@@ -362,9 +421,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
      * @param endSample      high endpoint (exclusive) of the sample sequence
      * @param track          source of the samples
      * @param sequenceNumber the fragment index of the requested list of samples
-     * @return the list of TrackRun boxes.
+     * @param parent         the created box must be added to this box
      */
-    protected TrackRunBox createTrun(long startSample, long endSample, Track track, int sequenceNumber) {
+    protected void createTrun(long startSample, long endSample, Track track, int sequenceNumber, TrackFragmentBox parent) {
         TrackRunBox trun = new TrackRunBox();
         long[] sampleSizes = getSampleSizes(startSample, endSample, track, sequenceNumber);
 
@@ -441,7 +500,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         trun.setEntries(entries);
 
-        return trun;
+        parent.addBox(trun);
     }
 
     /**
@@ -455,8 +514,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
      */
     protected Box createMoof(long startSample, long endSample, Track track, int sequenceNumber) {
         MovieFragmentBox moof = new MovieFragmentBox();
-        moof.addBox(createMfhd(startSample, endSample, track, sequenceNumber));
-        moof.addBox(createTraf(startSample, endSample, track, sequenceNumber));
+        createMfhd(startSample, endSample, track, sequenceNumber, moof);
+        createTraf(startSample, endSample, track, sequenceNumber, moof);
 
         TrackRunBox firstTrun = moof.getTrackRunBoxes().get(0);
         firstTrun.setDataOffset(1); // dummy to make size correct

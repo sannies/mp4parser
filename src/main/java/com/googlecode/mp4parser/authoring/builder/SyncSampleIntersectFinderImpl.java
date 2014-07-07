@@ -15,9 +15,12 @@
  */
 package com.googlecode.mp4parser.authoring.builder;
 
+import com.coremedia.iso.boxes.OriginalFormatBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
+import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.util.Path;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,6 +53,16 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         this.movie = movie;
         this.referenceTrack = referenceTrack;
         this.minFragmentDurationSeconds = minFragmentDurationSeconds;
+    }
+
+    static String getFormat(Track track) {
+        SampleEntry se = track.getSampleDescriptionBox().getSampleEntry();
+        String type = se.getType();
+        if (type.equals("encv") || type.equals("enca") || type.equals("encv")) {
+            OriginalFormatBox frma = (OriginalFormatBox) Path.getPath(se, "sinf/frma");
+            type = frma.getDataFormat();
+        }
+        return type;
     }
 
 
@@ -94,7 +107,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                 long[] syncSamples = new long[refSyncSamples.length];
                 long minSampleRate = 192000;
                 for (Track testTrack : movie.getTracks()) {
-                    if (track.getSampleDescriptionBox().getSampleEntry().getType().equals(testTrack.getSampleDescriptionBox().getSampleEntry().getType())) {
+                    if (getFormat(track).equals(getFormat(testTrack))) {
                         AudioSampleEntry ase = (AudioSampleEntry) testTrack.getSampleDescriptionBox().getSampleEntry();
                         if (ase.getSampleRate() < minSampleRate) {
                             minSampleRate = ase.getSampleRate();
