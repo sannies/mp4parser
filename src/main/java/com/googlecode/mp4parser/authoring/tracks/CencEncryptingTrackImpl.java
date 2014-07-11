@@ -37,7 +37,6 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
     UUID keyId;
     CencEncryptingSampleList samples;
     List<CencSampleAuxiliaryDataFormat> cencSampleAuxiliaryData;
-    private Random random = new SecureRandom();
     boolean dummyIvs = false;
     boolean subSampleEncryption = false;
 
@@ -59,6 +58,7 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
             byte[] init = new byte[]{};
             BigInteger ivInt = new BigInteger(1, new byte[]{0, 0, 0, 0, 0, 0, 0, 0});
             if (!dummyIvs) {
+                Random random = new SecureRandom();
                 random.nextBytes(init);
             }
 
