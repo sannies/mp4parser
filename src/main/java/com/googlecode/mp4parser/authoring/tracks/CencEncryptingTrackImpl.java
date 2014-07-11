@@ -114,6 +114,10 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
         samples = new CencEncryptingSampleList(cek, source.getSamples(), cencSampleAuxiliaryData);
     }
 
+    public void setDummyIvs(boolean dummyIvs) {
+        this.dummyIvs = dummyIvs;
+    }
+
     public UUID getKeyId() {
         return keyId;
     }
