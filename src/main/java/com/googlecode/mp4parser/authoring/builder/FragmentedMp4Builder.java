@@ -357,11 +357,11 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     protected void createSaiz(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
         SampleAuxiliaryInformationSizesBox saiz = new SampleAuxiliaryInformationSizesBox();
-        List<Short> sizes = new ArrayList<Short>(l2i(endSample - startSample));
-        for (CencSampleAuxiliaryDataFormat auxiliaryDataFormat :
-                track.getSampleEncryptionEntries().subList(l2i(startSample - 1), l2i(endSample - 1))) {
-            sizes.add((short) auxiliaryDataFormat.getSize());
-
+        short[] sizes = new short[l2i(endSample - startSample)];
+        List<CencSampleAuxiliaryDataFormat> auxs =
+                track.getSampleEncryptionEntries().subList(l2i(startSample - 1), l2i(endSample - 1));
+        for (int i = 0; i < sizes.length; i++) {
+            sizes[i] = (short) auxs.get(i).getSize();
         }
         saiz.setSampleInfoSizes(sizes);
         parent.addBox(saiz);

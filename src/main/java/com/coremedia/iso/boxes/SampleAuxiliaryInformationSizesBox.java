@@ -22,6 +22,7 @@ import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
     public static final String TYPE = "saiz";
 
     private short defaultSampleInfoSize;
-    private List<Short> sampleInfoSizes = new LinkedList<Short>();
+    private short[] sampleInfoSizes = new short[0];
     private int sampleCount;
     private String auxInfoType;
     private String auxInfoTypeParameter;
@@ -51,13 +52,13 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         }
 
         size += 5;
-        size += defaultSampleInfoSize == 0 ? sampleInfoSizes.size() : 0;
+        size += defaultSampleInfoSize == 0 ? sampleInfoSizes.length : 0;
         return size;
     }
 
     public short getSize(int index) {
         if (getDefaultSampleInfoSize() == 0) {
-            return sampleInfoSizes.get(index);
+            return sampleInfoSizes[index];
         } else {
             return defaultSampleInfoSize;
         }
@@ -75,7 +76,7 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         IsoTypeWriter.writeUInt8(byteBuffer, defaultSampleInfoSize);
 
         if (defaultSampleInfoSize == 0) {
-            IsoTypeWriter.writeUInt32(byteBuffer, sampleInfoSizes.size());
+            IsoTypeWriter.writeUInt32(byteBuffer, sampleInfoSizes.length);
             for (short sampleInfoSize : sampleInfoSizes) {
                 IsoTypeWriter.writeUInt8(byteBuffer, sampleInfoSize);
             }
@@ -95,11 +96,12 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         defaultSampleInfoSize = (short) IsoTypeReader.readUInt8(content);
         sampleCount = l2i(IsoTypeReader.readUInt32(content));
 
-        sampleInfoSizes.clear();
+
 
         if (defaultSampleInfoSize == 0) {
+            sampleInfoSizes = new short[sampleCount];
             for (int i = 0; i < sampleCount; i++) {
-                sampleInfoSizes.add((short) IsoTypeReader.readUInt8(content));
+                sampleInfoSizes[i] = (short) IsoTypeReader.readUInt8(content);
             }
         }
     }
@@ -129,12 +131,12 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         this.defaultSampleInfoSize = (short) defaultSampleInfoSize;
     }
 
-    public List<Short> getSampleInfoSizes() {
-        return sampleInfoSizes;
+    public short[] getSampleInfoSizes() {
+        return Arrays.copyOf(sampleInfoSizes, sampleInfoSizes.length);
     }
 
-    public void setSampleInfoSizes(List<Short> sampleInfoSizes) {
-        this.sampleInfoSizes = sampleInfoSizes;
+    public void setSampleInfoSizes(short[] sampleInfoSizes) {
+        this.sampleInfoSizes = Arrays.copyOf(sampleInfoSizes, sampleInfoSizes.length);
     }
 
     public int getSampleCount() {

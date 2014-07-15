@@ -306,9 +306,9 @@ public class DefaultMp4Builder implements Mp4Builder {
         saiz.setFlags(1);
         List<CencSampleAuxiliaryDataFormat> sampleEncryptionEntries = track.getSampleEncryptionEntries();
         if (track.hasSubSampleEncryption()) {
-            LinkedList<Short> sizes = new LinkedList<Short>();
-            for (CencSampleAuxiliaryDataFormat e : sampleEncryptionEntries) {
-                sizes.add((short) (e.getSize()));
+            short[] sizes = new short[sampleEncryptionEntries.size()];
+            for (int i = 0; i < sizes.length; i++) {
+                sizes[i] = (short) sampleEncryptionEntries.get(i).getSize();
             }
             saiz.setSampleInfoSizes(sizes);
         } else {
