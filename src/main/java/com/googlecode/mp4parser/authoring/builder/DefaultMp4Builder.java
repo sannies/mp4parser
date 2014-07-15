@@ -119,7 +119,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             List<Long> nuOffsets = new ArrayList<Long>(saio.getOffsets().size());
 
             long offset = saio.getSize(); // the calculation is systematically wrong by 4, I don't want to debug why. Just a quick correction --san 14.May.13
-            offset += 4 + 4 + 4 + 4 + 4 + 24;
+            offset += 4 + 4 + 4 + 4 + 4 + 24 ;
             // size of all header we were missing otherwise (moov, trak, mdia, minf, stbl)
             Object b = saio;
             do {

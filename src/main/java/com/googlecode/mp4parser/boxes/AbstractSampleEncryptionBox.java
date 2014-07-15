@@ -14,17 +14,14 @@ import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     protected int algorithmId = -1;
     protected int ivSize = -1;
     protected byte[] kid = new byte[]{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-    List<CencSampleAuxiliaryDataFormat> entries = new LinkedList<CencSampleAuxiliaryDataFormat>();
+    List<CencSampleAuxiliaryDataFormat> entries = Collections.emptyList();
 
     protected AbstractSampleEncryptionBox(String type) {
         super(type);
@@ -66,7 +63,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     }
 
     private List<CencSampleAuxiliaryDataFormat> parseEntries(ByteBuffer content, final long numOfEntries, int ivSize) {
-        List<CencSampleAuxiliaryDataFormat> _entries = new LinkedList<CencSampleAuxiliaryDataFormat>();
+        List<CencSampleAuxiliaryDataFormat> _entries = new ArrayList<CencSampleAuxiliaryDataFormat>();
         try {
             long remainingNumOfEntries = numOfEntries;
             while (remainingNumOfEntries-- > 0) {
@@ -75,7 +72,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
                 content.get(e.iv);
                 if ((getFlags() & 0x2) > 0) {
                     int numOfPairs = IsoTypeReader.readUInt16(content);
-                    e.pairs = new LinkedList<CencSampleAuxiliaryDataFormat.Pair>();
+                    e.pairs = new ArrayList<CencSampleAuxiliaryDataFormat.Pair>(numOfPairs);
                     while (numOfPairs-- > 0) {
                         e.pairs.add(e.createPair(IsoTypeReader.readUInt16(content), IsoTypeReader.readUInt32(content)));
                     }

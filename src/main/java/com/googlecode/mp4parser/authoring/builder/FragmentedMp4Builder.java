@@ -341,7 +341,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
             }
         }
         MovieFragmentBox moof = (MovieFragmentBox) parent.getParent();
-        offset += 8; // traf header till 1st child box
+        offset += 16; // traf header till 1st child box
         for (Box box : moof.getBoxes()) {
             if (box == parent) {
                 break;
