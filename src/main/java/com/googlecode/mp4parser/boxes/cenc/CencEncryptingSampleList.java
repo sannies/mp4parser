@@ -74,13 +74,13 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
             ByteBuffer sample = (ByteBuffer) clearSample.asByteBuffer().rewind();
             initCipher(cencSampleAuxiliaryDataFormat.iv);
             try {
-                if (cencSampleAuxiliaryDataFormat.pairs != null && cencSampleAuxiliaryDataFormat.pairs.size() > 0) {
+                if (cencSampleAuxiliaryDataFormat.pairs != null && cencSampleAuxiliaryDataFormat.pairs.length > 0) {
                     for (CencSampleAuxiliaryDataFormat.Pair pair : cencSampleAuxiliaryDataFormat.pairs) {
-                        byte[] clears = new byte[pair.clear];
+                        byte[] clears = new byte[pair.clear()];
                         sample.get(clears);
                         channel.write(ByteBuffer.wrap(clears));
-                        if (pair.encrypted > 0) {
-                            byte[] toBeEncrypted = new byte[l2i(pair.encrypted)];
+                        if (pair.encrypted() > 0) {
+                            byte[] toBeEncrypted = new byte[l2i(pair.encrypted())];
                             sample.get(toBeEncrypted);
                             assert (toBeEncrypted.length % 16) == 0;
                             byte[] encrypted = cipher.update(toBeEncrypted);
@@ -116,11 +116,11 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
             try {
                 if (entry.pairs != null) {
                     for (CencSampleAuxiliaryDataFormat.Pair pair : entry.pairs) {
-                        byte[] clears = new byte[pair.clear];
+                        byte[] clears = new byte[pair.clear()];
                         sample.get(clears);
                         encSample.put(clears);
-                        if (pair.encrypted > 0) {
-                            byte[] toBeEncrypted = new byte[l2i(pair.encrypted)];
+                        if (pair.encrypted() > 0) {
+                            byte[] toBeEncrypted = new byte[l2i(pair.encrypted())];
                             sample.get(toBeEncrypted);
                             assert (toBeEncrypted.length % 16) == 0;
                             byte[] encrypted = cipher.update(toBeEncrypted);

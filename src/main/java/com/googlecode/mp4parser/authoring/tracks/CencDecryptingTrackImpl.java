@@ -26,6 +26,8 @@ import java.util.AbstractList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
+
 public class CencDecryptingTrackImpl extends AbstractTrack {
     CencDecryptingSampleList samples;
     Track original;
@@ -150,10 +152,10 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
             Cipher cipher = getCipher(secretKey, sencEntry.iv);
             try {
                 if (avcC != null) {
-                    final List<CencSampleAuxiliaryDataFormat.Pair> pairs = sencEntry.pairs;
-                    for (CencSampleAuxiliaryDataFormat.Pair pair : pairs) {
-                        final int clearBytes = pair.clear;
-                        final int encrypted = (int) pair.encrypted;
+
+                    for (CencSampleAuxiliaryDataFormat.Pair pair : sencEntry.pairs) {
+                        final int clearBytes = pair.clear();
+                        final int encrypted = l2i(pair.encrypted());
 
                         byte[] clears = new byte[clearBytes];
                         encSampleBuffer.get(clears);

@@ -72,11 +72,12 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
                 content.get(e.iv);
                 if ((getFlags() & 0x2) > 0) {
                     int numOfPairs = IsoTypeReader.readUInt16(content);
-                    e.pairs = new ArrayList<CencSampleAuxiliaryDataFormat.Pair>(numOfPairs);
-                    while (numOfPairs-- > 0) {
-                        e.pairs.add(e.createPair(IsoTypeReader.readUInt16(content), IsoTypeReader.readUInt32(content)));
-                    }
-                }
+                    e.pairs = new CencSampleAuxiliaryDataFormat.Pair[numOfPairs];
+                    for (int i = 0; i < e.pairs.length; i++) {
+                        e.pairs[i] = e.createPair(
+                                IsoTypeReader.readUInt16(content),
+                                IsoTypeReader.readUInt32(content));
+                    }                }
                 _entries.add(e);
             }
         } catch (BufferUnderflowException bue) {
@@ -129,10 +130,10 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
             }
             byteBuffer.put(entry.iv);
             if (isSubSampleEncryption()) {
-                IsoTypeWriter.writeUInt16(byteBuffer, entry.pairs.size());
+                IsoTypeWriter.writeUInt16(byteBuffer, entry.pairs.length);
                 for (CencSampleAuxiliaryDataFormat.Pair pair : entry.pairs) {
-                    IsoTypeWriter.writeUInt16(byteBuffer, pair.clear);
-                    IsoTypeWriter.writeUInt32(byteBuffer, pair.encrypted);
+                    IsoTypeWriter.writeUInt16(byteBuffer, pair.clear());
+                    IsoTypeWriter.writeUInt32(byteBuffer, pair.encrypted());
                 }
             }
         }
@@ -199,7 +200,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
             short size = (short) entry.iv.length;
             if (isSubSampleEncryption()) {
                 size += 2; //numPairs
-                size += entry.pairs.size() * 6;
+                size += entry.pairs.length * 6;
             }
             entrySizes.add(size);
         }

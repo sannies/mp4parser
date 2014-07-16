@@ -83,7 +83,14 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
     }
 
     private int getTrafSize(TrackFragmentBox traf) {
-        return l2i(traf.getBoxes(TrackRunBox.class).get(0).getSampleCount());
+        List<Box> boxes= traf.getBoxes();
+        for (int i =0; i< boxes.size();i++) {
+            Box b = boxes.get(i);
+            if (b instanceof TrackRunBox) {
+                return l2i(((TrackRunBox)b).getSampleCount());
+            }
+        }
+        return 0;
     }
 
     @Override

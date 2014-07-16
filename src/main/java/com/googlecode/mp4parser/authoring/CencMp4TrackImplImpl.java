@@ -12,7 +12,6 @@ import com.googlecode.mp4parser.util.Path;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -133,11 +132,11 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
         chunksCencSampleAuxData.get(cadf.iv);
         if (auxInfoSize > ivSize) {
             int numOfPairs = IsoTypeReader.readUInt16(chunksCencSampleAuxData);
-            cadf.pairs = new LinkedList<CencSampleAuxiliaryDataFormat.Pair>();
-            while (numOfPairs-- > 0) {
-                cadf.pairs.add(cadf.createPair(
+            cadf.pairs = new CencSampleAuxiliaryDataFormat.Pair[numOfPairs];
+            for (int i = 0; i < cadf.pairs.length; i++) {
+                cadf.pairs[i] = cadf.createPair(
                         IsoTypeReader.readUInt16(chunksCencSampleAuxData),
-                        IsoTypeReader.readUInt32(chunksCencSampleAuxData)));
+                        IsoTypeReader.readUInt32(chunksCencSampleAuxData));
             }
         }
         return cadf;

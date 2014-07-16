@@ -33,11 +33,11 @@ import java.nio.ByteBuffer;
  * unsigned int(16) sample_degradation_priority;
  */
 public class SampleFlags {
-    private int reserved;
-    private int sampleDependsOn;
-    private int sampleIsDependedOn;
-    private int sampleHasRedundancy;
-    private int samplePaddingValue;
+    private byte reserved;
+    private byte sampleDependsOn;
+    private byte sampleIsDependedOn;
+    private byte sampleHasRedundancy;
+    private byte samplePaddingValue;
     private boolean sampleIsDifferenceSample;
     private int sampleDegradationPriority;
 
@@ -47,11 +47,11 @@ public class SampleFlags {
 
     public SampleFlags(ByteBuffer bb) {
         BitReaderBuffer brb = new BitReaderBuffer(bb);
-        reserved = brb.readBits(6);
-        sampleDependsOn = brb.readBits(2);
-        sampleIsDependedOn = brb.readBits(2);
-        sampleHasRedundancy = brb.readBits(2);
-        samplePaddingValue = brb.readBits(3);
+        reserved = (byte) brb.readBits(6);
+        sampleDependsOn = (byte) brb.readBits(2);
+        sampleIsDependedOn = (byte) brb.readBits(2);
+        sampleHasRedundancy = (byte) brb.readBits(2);
+        samplePaddingValue = (byte) brb.readBits(3);
         sampleIsDifferenceSample = brb.readBits(1) == 1;
         sampleDegradationPriority = brb.readBits(16);
     }
@@ -73,7 +73,7 @@ public class SampleFlags {
     }
 
     public void setReserved(int reserved) {
-        this.reserved = reserved;
+        this.reserved = (byte) reserved;
     }
 
     /**
@@ -103,7 +103,7 @@ public class SampleFlags {
      * @param sampleDependsOn new depends on value
      */
     public void setSampleDependsOn(int sampleDependsOn) {
-        this.sampleDependsOn = sampleDependsOn;
+        this.sampleDependsOn = (byte) sampleDependsOn;
     }
 
     /**
@@ -133,7 +133,7 @@ public class SampleFlags {
      * @param sampleIsDependedOn new is_depends on value
      */
     public void setSampleIsDependedOn(int sampleIsDependedOn) {
-        this.sampleIsDependedOn = sampleIsDependedOn;
+        this.sampleIsDependedOn = (byte) sampleIsDependedOn;
     }
 
     /**
@@ -163,7 +163,7 @@ public class SampleFlags {
      * @param sampleHasRedundancy new redundancy level
      */
     public void setSampleHasRedundancy(int sampleHasRedundancy) {
-        this.sampleHasRedundancy = sampleHasRedundancy;
+        this.sampleHasRedundancy = (byte) sampleHasRedundancy;
     }
 
     public int getSamplePaddingValue() {
@@ -171,7 +171,7 @@ public class SampleFlags {
     }
 
     public void setSamplePaddingValue(int samplePaddingValue) {
-        this.samplePaddingValue = samplePaddingValue;
+        this.samplePaddingValue = (byte) samplePaddingValue;
     }
 
     public boolean isSampleIsDifferenceSample() {

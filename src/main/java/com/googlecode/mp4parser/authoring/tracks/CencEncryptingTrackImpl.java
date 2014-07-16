@@ -21,10 +21,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.security.SecureRandom;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -93,6 +90,7 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
 
                 if (avcC != null) {
                     int nalLengthSize = avcC.getLengthSizeMinusOne() + 1;
+                    List<CencSampleAuxiliaryDataFormat.Pair> pairs = new ArrayList<CencSampleAuxiliaryDataFormat.Pair>(5);
                     while (sample.remaining() > 0) {
                         int nalLength = l2i(IsoTypeReaderVariable.read(sample, nalLengthSize));
                         int clearBytes;
@@ -102,9 +100,10 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
                         } else {
                             clearBytes = nalGrossSize;
                         }
-                        e.pairs.add(e.createPair(clearBytes, nalGrossSize - clearBytes));
+                        pairs.add(e.createPair(clearBytes, nalGrossSize - clearBytes));
                         sample.position(sample.position() + nalLength);
                     }
+                    e.pairs = pairs.toArray(new CencSampleAuxiliaryDataFormat.Pair[pairs.size()]);
                 }
 
                 ivInt = ivInt.add(one);

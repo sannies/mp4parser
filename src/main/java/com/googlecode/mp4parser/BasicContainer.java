@@ -11,10 +11,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Created by sannies on 18.05.13.
@@ -76,13 +73,41 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
 
     @SuppressWarnings("unchecked")
     public <T extends Box> List<T> getBoxes(Class<T> clazz) {
-        return getBoxes(clazz, false);
+        List<T> boxesToBeReturned = null;
+        T oneBox = null;
+        List<Box> boxes = getBoxes();
+        for (int i = 0; i < boxes.size(); i++) {
+            Box boxe = boxes.get(i);
+            //clazz.isInstance(boxe) / clazz == boxe.getClass()?
+            // I hereby finally decide to use isInstance
+
+            if (clazz.isInstance(boxe)) {
+                if (oneBox == null) {
+                    oneBox = (T) boxe;
+                } else {
+                    if (boxesToBeReturned == null) {
+                        boxesToBeReturned = new ArrayList<T>(2);
+                        boxesToBeReturned.add(oneBox);
+                    }
+                    boxesToBeReturned.add((T) boxe);
+                }
+            }
+        }
+        if (boxesToBeReturned != null) {
+            return boxesToBeReturned;
+        } else if (oneBox != null) {
+            return Collections.singletonList(oneBox);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @SuppressWarnings("unchecked")
     public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
         List<T> boxesToBeReturned = new ArrayList<T>(2);
-        for (Box boxe : getBoxes()) {
+        List<Box> boxes = getBoxes();
+        for (int i = 0; i < boxes.size(); i++) {
+            Box boxe = boxes.get(i);
             //clazz.isInstance(boxe) / clazz == boxe.getClass()?
             // I hereby finally decide to use isInstance
 

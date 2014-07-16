@@ -28,8 +28,9 @@ public class CencEncryptingSampleListTest {
                 new SampleImpl(ByteBuffer.wrap(new byte[1230])));
 
         CencSampleAuxiliaryDataFormat cencSampleAuxiliaryDataFormat = new CencSampleAuxiliaryDataFormat();
-        cencSampleAuxiliaryDataFormat.pairs.add(cencSampleAuxiliaryDataFormat.createPair(101, 384));
-        cencSampleAuxiliaryDataFormat.pairs.add(cencSampleAuxiliaryDataFormat.createPair(105, 640));
+        cencSampleAuxiliaryDataFormat.pairs = new CencSampleAuxiliaryDataFormat.Pair[2];
+        cencSampleAuxiliaryDataFormat.pairs[0] = cencSampleAuxiliaryDataFormat.createPair(101, 384);
+        cencSampleAuxiliaryDataFormat.pairs[1] = cencSampleAuxiliaryDataFormat.createPair(105, 640);
         cencSampleAuxiliaryDataFormat.iv = new byte[16];
 
 
