@@ -16,6 +16,8 @@
 
 package com.coremedia.iso.boxes.fragment;
 
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
@@ -46,26 +48,24 @@ public class SampleFlags {
     }
 
     public SampleFlags(ByteBuffer bb) {
-        BitReaderBuffer brb = new BitReaderBuffer(bb);
-        reserved = (byte) brb.readBits(6);
-        sampleDependsOn = (byte) brb.readBits(2);
-        sampleIsDependedOn = (byte) brb.readBits(2);
-        sampleHasRedundancy = (byte) brb.readBits(2);
-        samplePaddingValue = (byte) brb.readBits(3);
-        sampleIsDifferenceSample = brb.readBits(1) == 1;
-        sampleDegradationPriority = brb.readBits(16);
+        long a = IsoTypeReader.readUInt32(bb);
+        sampleDegradationPriority = (int) (a & 0xffff);
+        a = a >> 16;
+        sampleIsDependedOn = (byte) ((a & 0xc0) >> 6);
+        sampleHasRedundancy = (byte) ((a & 0x30) >> 4);
+        samplePaddingValue = (byte) ((a & 0x0e) >> 1);
+        sampleIsDifferenceSample = (a & 0x01) == 1;
+        a = a >> 8;
+        reserved   = (byte) ((a & 0xfc) >>2);
+        sampleDependsOn = (byte) (a & 0x03);
     }
 
 
     public void getContent(ByteBuffer os) {
-        BitWriterBuffer bitWriterBuffer = new BitWriterBuffer(os);
-        bitWriterBuffer.writeBits(reserved, 6);
-        bitWriterBuffer.writeBits(sampleDependsOn, 2);
-        bitWriterBuffer.writeBits(sampleIsDependedOn, 2);
-        bitWriterBuffer.writeBits(sampleHasRedundancy, 2);
-        bitWriterBuffer.writeBits(samplePaddingValue, 3);
-        bitWriterBuffer.writeBits(this.sampleIsDifferenceSample ? 1 : 0, 1);
-        bitWriterBuffer.writeBits(sampleDegradationPriority, 16);
+        long a = (((reserved << 2) & 0xfc) | (sampleDependsOn & 0x03)) << 24;
+        a |= (sampleIsDependedOn << 6 & 0xc0 | sampleHasRedundancy<<4 & 0x30 | samplePaddingValue << 1 & 0x0e | (sampleIsDifferenceSample?1:0)) << 16;
+        a |= (sampleDegradationPriority & 0xffff);
+        IsoTypeWriter.writeUInt32(os, a);
     }
 
     public int getReserved() {
