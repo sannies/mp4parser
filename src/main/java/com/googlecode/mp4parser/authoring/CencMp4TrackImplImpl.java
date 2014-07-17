@@ -64,14 +64,15 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
                         SampleAuxiliaryInformationSizesBox saiz = saizSaioPair.getSaiz();
                         // now we have the correct saio/saiz combo!
                         assert saio != null;
-                        assert saio.getOffsets().size() == traf.getBoxes(TrackRunBox.class).size();
+                        long[] saioOffsets = saio.getOffsets();
+                        assert saioOffsets.length == traf.getBoxes(TrackRunBox.class).size();
                         assert saiz != null;
 
                         List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
                         int sampleNo = 0;
-                        for (int i = 0; i < saio.getOffsets().size(); i++) {
+                        for (int i = 0; i < saioOffsets.length; i++) {
                             int numSamples = truns.get(i).getEntries().size();
-                            long offset = saio.getOffsets().get(i);
+                            long offset = saioOffsets[i];
                             long length = 0;
 
                             for (int j = sampleNo; j < sampleNo + numSamples; j++) {
@@ -110,7 +111,7 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
 
             int currentSampleNo = 0;
             for (int i = 0; i < chunkSizes.length; i++) {
-                long offset = saio.getOffsets().get(i);
+                long offset = saio.getOffsets()[i];
                 long size = 0;
                 for (int j = currentSampleNo; j < currentSampleNo + chunkSizes[i]; j++) {
                     size += saiz.getSize(currentSampleNo + j);

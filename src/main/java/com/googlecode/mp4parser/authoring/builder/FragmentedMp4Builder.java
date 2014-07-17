@@ -351,7 +351,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         }
 
-        saio.setOffsets(Collections.singletonList(offset));
+        saio.setOffsets(new long[]{offset});
 
     }
 

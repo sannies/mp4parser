@@ -32,14 +32,7 @@ import com.googlecode.mp4parser.util.Path;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -116,8 +109,6 @@ public class DefaultMp4Builder implements Mp4Builder {
             }
         }
         for (SampleAuxiliaryInformationOffsetsBox saio : sampleAuxiliaryInformationOffsetsBoxes) {
-            List<Long> nuOffsets = new ArrayList<Long>(saio.getOffsets().size());
-
             long offset = saio.getSize(); // the calculation is systematically wrong by 4, I don't want to debug why. Just a quick correction --san 14.May.13
             offset += 4 + 4 + 4 + 4 + 4 + 24 ;
             // size of all header we were missing otherwise (moov, trak, mdia, minf, stbl)
@@ -135,10 +126,12 @@ public class DefaultMp4Builder implements Mp4Builder {
 
             } while (b instanceof Box);
 
-            for (Long aLong : saio.getOffsets()) {
-                nuOffsets.add(aLong + offset);
+            long[] saioOffsets = saio.getOffsets();
+            for (int i = 0; i < saioOffsets.length; i++) {
+                saioOffsets[i] = saioOffsets[i] + offset;
+
             }
-            saio.setOffsets(nuOffsets);
+            saio.setOffsets(saioOffsets);
         }
 
 
@@ -323,10 +316,12 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         long offset = senc.getOffsetToFirstIV();
         int index = 0;
-        List<Long> offsets = new ArrayList<Long>(track.getSamples().size());
-        for (int chunkSize : chunkSizes) {
-            offsets.add(offset);
-            for (int i = 0; i < chunkSize; i++){
+        long[] offsets = new long[track.getSamples().size()];
+
+
+        for (int i = 0; i < chunkSizes.length; i++) {
+            offsets[i] = offset;
+            for (int j = 0; j < chunkSizes[i]; j++){
                 offset += sampleEncryptionEntries.get(index++).getSize();
             }
         }

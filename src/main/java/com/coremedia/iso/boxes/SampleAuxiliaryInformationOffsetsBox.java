@@ -22,6 +22,7 @@ import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -53,7 +54,7 @@ aligned(8) class SampleAuxiliaryInformationOffsetsBox
 public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
     public static final String TYPE = "saio";
 
-    private List<Long> offsets = new LinkedList<Long>();
+    private long[] offsets = new long[0];
     private String auxInfoType;
     private String auxInfoTypeParameter;
 
@@ -63,7 +64,7 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 8 + (getVersion() == 0 ? 4 * offsets.size() : 8 * offsets.size()) + ((getFlags() & 1) == 1 ? 8 : 0);
+        return 8 + (getVersion() == 0 ? 4 * offsets.length : 8 * offsets.length) + ((getFlags() & 1) == 1 ? 8 : 0);
     }
 
     @Override
@@ -74,7 +75,7 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
             byteBuffer.put(IsoFile.fourCCtoBytes(auxInfoTypeParameter));
         }
 
-        IsoTypeWriter.writeUInt32(byteBuffer, offsets.size());
+        IsoTypeWriter.writeUInt32(byteBuffer, offsets.length);
         for (Long offset : offsets) {
             if (getVersion() == 0) {
                 IsoTypeWriter.writeUInt32(byteBuffer, offset);
@@ -94,13 +95,13 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
         }
 
         int entryCount = l2i(IsoTypeReader.readUInt32(content));
-        offsets.clear();
+        offsets = new long[entryCount];
 
         for (int i = 0; i < entryCount; i++) {
             if (getVersion() == 0) {
-                offsets.add(IsoTypeReader.readUInt32(content));
+                offsets[i] = IsoTypeReader.readUInt32(content);
             } else {
-                offsets.add(IsoTypeReader.readUInt64(content));
+                offsets[i] = IsoTypeReader.readUInt64(content);
             }
         }
     }
@@ -122,11 +123,11 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
         this.auxInfoTypeParameter = auxInfoTypeParameter;
     }
 
-    public List<Long> getOffsets() {
+    public long[] getOffsets() {
         return offsets;
     }
 
-    public void setOffsets(List<Long> offsets) {
+    public void setOffsets(long[] offsets) {
         this.offsets = offsets;
     }
 }

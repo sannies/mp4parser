@@ -10,9 +10,11 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.util.Path;
 
+import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.*;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -35,18 +37,17 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
     public FragmentedMp4SampleList(long track, Container topLevel, IsoFile... fragments) {
         this.topLevel = topLevel;
         this.fragments = fragments;
-        List<TrackBox> trackBoxes = topLevel.getBoxes(MovieBox.class).get(0).getBoxes(TrackBox.class);
 
-        for (TrackBox tb : trackBoxes) {
-            if (tb.getTrackHeaderBox().getTrackId() == track) {
-                trackBox = tb;
+        for (Box tb : Path.getPaths(topLevel, "moov[0]/trak")) {
+            if (((TrackBox)tb).getTrackHeaderBox().getTrackId() == track) {
+                trackBox = (TrackBox) tb;
             }
         }
         if (trackBox == null) {
             throw new RuntimeException("This MP4 does not contain track " + track);
         }
 
-        for (Box box : Path.getPaths(topLevel, "moov/mvex/trex")) {
+        for (Box box : Path.getPaths(topLevel, "moov[0]/mvex[0]/trex")) {
             if (((TrackExtendsBox) box).getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
                 trex = ((TrackExtendsBox) box);
             }
@@ -110,11 +111,11 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
 
 
         int targetIndex = index + 1;
-        int j = firstSamples.length-1;
-        while (targetIndex -  firstSamples[j] < 0) {
+        int j = firstSamples.length - 1;
+        while (targetIndex - firstSamples[j] < 0) {
             j--;
         }
-        TrackFragmentBox trackFragmentBox  = allTrafs.get(j);
+        TrackFragmentBox trackFragmentBox = allTrafs.get(j);
         // we got the correct traf.
         int sampleIndexWithInTraf = targetIndex - firstSamples[j];
         int previousTrunsSize = 0;
@@ -123,25 +124,16 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
         for (Box box : trackFragmentBox.getBoxes()) {
             if (box instanceof TrackRunBox) {
                 TrackRunBox trun = (TrackRunBox) box;
-                if (trun.getEntries().size()<(sampleIndexWithInTraf - previousTrunsSize)) {
+
+
+                if (trun.getEntries().size() < (sampleIndexWithInTraf - previousTrunsSize)) {
                     previousTrunsSize += trun.getEntries().size();
                 } else {
+                    // we are in correct trun box
+
+
                     List<TrackRunBox.Entry> trackRunEntries = trun.getEntries();
                     TrackFragmentHeaderBox tfhd = trackFragmentBox.getTrackFragmentHeaderBox();
-
-                    long offset = 0;
-                    Container base;
-                    if (tfhd.hasBaseDataOffset()) {
-                        offset += tfhd.getBaseDataOffset();
-                        base = moof.getParent();
-                    } else {
-                        base = moof;
-                    }
-
-                    if (trun.isDataOffsetPresent()) {
-                        offset += trun.getDataOffset();
-                    }
-
                     boolean sampleSizePresent = trun.isSampleSizePresent();
                     boolean hasDefaultSampleSize = tfhd.hasDefaultSampleSize();
                     long defaultSampleSize = 0;
@@ -155,6 +147,39 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                             defaultSampleSize = trex.getDefaultSampleSize();
                         }
                     }
+
+                    final SoftReference<ByteBuffer> trunDataRef = trunDataCache.get(trun);
+                    ByteBuffer trunData = trunDataRef != null ? trunDataRef.get() : null;
+                    if (trunData == null) {
+                        long offset = 0;
+                        Container base;
+                        if (tfhd.hasBaseDataOffset()) {
+                            offset += tfhd.getBaseDataOffset();
+                            base = moof.getParent();
+                        } else {
+                            base = moof;
+                        }
+
+                        if (trun.isDataOffsetPresent()) {
+                            offset += trun.getDataOffset();
+                        }
+                        int size = 0;
+                        for (TrackRunBox.Entry e : trackRunEntries) {
+                            if (sampleSizePresent) {
+                                size += e.getSampleSize();
+                            } else {
+                                size += defaultSampleSize;
+                            }
+                        }
+                        try {
+                            trunData = base.getByteBuffer(offset, size);
+                            trunDataCache.put(trun, new SoftReference<ByteBuffer>(trunData));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    int offset = 0;
                     for (int i = 0; i < (sampleIndexWithInTraf - previousTrunsSize); i++) {
                         if (sampleSizePresent) {
                             offset += trackRunEntries.get(i).getSampleSize();
@@ -162,13 +187,29 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                             offset += defaultSampleSize;
                         }
                     }
-                    long sampleSize;
+                    final long sampleSize;
                     if (sampleSizePresent) {
-                        sampleSize = trackRunEntries.get(sampleIndexWithInTraf).getSampleSize();
+                        sampleSize = trackRunEntries.get(sampleIndexWithInTraf- previousTrunsSize).getSampleSize();
                     } else {
                         sampleSize = defaultSampleSize;
                     }
-                    final SampleImpl sample = new SampleImpl(offset, sampleSize, base);
+
+                    final ByteBuffer finalTrunData = trunData;
+                    final int finalOffset = offset;
+                    Sample sample = new Sample() {
+
+                        public void writeTo(WritableByteChannel channel) throws IOException {
+                            channel.write(asByteBuffer());
+                        }
+
+                        public long getSize() {
+                            return sampleSize;
+                        }
+
+                        public ByteBuffer asByteBuffer() {
+                            return (ByteBuffer) ((ByteBuffer)finalTrunData.position(finalOffset)).slice().limit(l2i(sampleSize));
+                        }
+                    };
                     sampleCache[index] = new SoftReference<Sample>(sample);
                     return sample;
                 }
