@@ -59,7 +59,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
         if (allTrafs != null) {
             return allTrafs;
         }
-        List<TrackFragmentBox> trafs = new LinkedList<TrackFragmentBox>();
+        List<TrackFragmentBox> trafs = new ArrayList<TrackFragmentBox>();
         for (MovieFragmentBox moof : topLevel.getBoxes(MovieFragmentBox.class)) {
             for (TrackFragmentBox trackFragmentBox : moof.getBoxes(TrackFragmentBox.class)) {
                 if (trackFragmentBox.getTrackFragmentHeaderBox().getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
@@ -117,59 +117,65 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
         TrackFragmentBox trackFragmentBox  = allTrafs.get(j);
         // we got the correct traf.
         int sampleIndexWithInTraf = targetIndex - firstSamples[j];
+        int previousTrunsSize = 0;
         MovieFragmentBox moof = ((MovieFragmentBox) trackFragmentBox.getParent());
 
-        List<TrackRunBox> truns = trackFragmentBox.getBoxes(TrackRunBox.class);
-        if (truns.size()!=1) {
-            throw new RuntimeException("Please make me work with more than one trun");
-        }
-        TrackRunBox trun = truns.get(0);
-        List<TrackRunBox.Entry> trackRunEntries = trun.getEntries();
-        TrackFragmentHeaderBox tfhd = trackFragmentBox.getTrackFragmentHeaderBox();
+        for (Box box : trackFragmentBox.getBoxes()) {
+            if (box instanceof TrackRunBox) {
+                TrackRunBox trun = (TrackRunBox) box;
+                if (trun.getEntries().size()<(sampleIndexWithInTraf - previousTrunsSize)) {
+                    previousTrunsSize += trun.getEntries().size();
+                } else {
+                    List<TrackRunBox.Entry> trackRunEntries = trun.getEntries();
+                    TrackFragmentHeaderBox tfhd = trackFragmentBox.getTrackFragmentHeaderBox();
 
-        long offset = 0;
-        Container base;
-        if (tfhd.hasBaseDataOffset()) {
-            offset += tfhd.getBaseDataOffset();
-            base = moof.getParent();
-        } else {
-            base = moof;
-        }
+                    long offset = 0;
+                    Container base;
+                    if (tfhd.hasBaseDataOffset()) {
+                        offset += tfhd.getBaseDataOffset();
+                        base = moof.getParent();
+                    } else {
+                        base = moof;
+                    }
 
-        if (trun.isDataOffsetPresent()) {
-            offset += trun.getDataOffset();
-        }
+                    if (trun.isDataOffsetPresent()) {
+                        offset += trun.getDataOffset();
+                    }
 
-        boolean sampleSizePresent = trun.isSampleSizePresent();
-        boolean hasDefaultSampleSize = tfhd.hasDefaultSampleSize();
-        long defaultSampleSize = 0;
-        if (!sampleSizePresent) {
-            if (hasDefaultSampleSize) {
-                defaultSampleSize  = tfhd.getDefaultSampleSize();
-            } else {
-                if (trex == null) {
-                    throw new RuntimeException("File doesn't contain trex box but track fragments aren't fully self contained. Cannot determine sample size.");
+                    boolean sampleSizePresent = trun.isSampleSizePresent();
+                    boolean hasDefaultSampleSize = tfhd.hasDefaultSampleSize();
+                    long defaultSampleSize = 0;
+                    if (!sampleSizePresent) {
+                        if (hasDefaultSampleSize) {
+                            defaultSampleSize = tfhd.getDefaultSampleSize();
+                        } else {
+                            if (trex == null) {
+                                throw new RuntimeException("File doesn't contain trex box but track fragments aren't fully self contained. Cannot determine sample size.");
+                            }
+                            defaultSampleSize = trex.getDefaultSampleSize();
+                        }
+                    }
+                    for (int i = 0; i < (sampleIndexWithInTraf - previousTrunsSize); i++) {
+                        if (sampleSizePresent) {
+                            offset += trackRunEntries.get(i).getSampleSize();
+                        } else {
+                            offset += defaultSampleSize;
+                        }
+                    }
+                    long sampleSize;
+                    if (sampleSizePresent) {
+                        sampleSize = trackRunEntries.get(sampleIndexWithInTraf).getSampleSize();
+                    } else {
+                        sampleSize = defaultSampleSize;
+                    }
+                    final SampleImpl sample = new SampleImpl(offset, sampleSize, base);
+                    sampleCache[index] = new SoftReference<Sample>(sample);
+                    return sample;
                 }
-                defaultSampleSize  = trex.getDefaultSampleSize();
             }
         }
-        for (int i = 0; i < sampleIndexWithInTraf; i++) {
-            if (sampleSizePresent) {
-                offset += trackRunEntries.get(i).getSampleSize();
-            } else {
-                offset += defaultSampleSize;
-            }
-        }
-        long sampleSize;
-        if (sampleSizePresent) {
-            sampleSize = trackRunEntries.get(sampleIndexWithInTraf).getSampleSize();
-        } else {
-            sampleSize = defaultSampleSize;
-        }
-        final SampleImpl sample = new SampleImpl(offset, sampleSize, base);
-        sampleCache[index] = new SoftReference<Sample>(sample);
-        return sample;
 
+        throw new RuntimeException("Couldn't find sample in the traf I was looking");
     }
 
     @Override
