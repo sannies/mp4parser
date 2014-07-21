@@ -95,7 +95,7 @@ public class SchemeTypeBox extends AbstractFullBox {
         buffer.append("Schema Type Box[");
         buffer.append("schemeUri=").append(schemeUri).append("; ");
         buffer.append("schemeType=").append(schemeType).append("; ");
-        buffer.append("schemeVersion=").append(schemeUri).append("; ");
+        buffer.append("schemeVersion=").append(schemeVersion).append("; ");
         buffer.append("]");
         return buffer.toString();
     }

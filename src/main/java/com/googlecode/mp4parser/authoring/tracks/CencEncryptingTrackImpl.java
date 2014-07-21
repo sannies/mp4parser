@@ -155,7 +155,7 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
 
         SchemeTypeBox schm = new SchemeTypeBox();
         schm.setSchemeType("cenc");
-        schm.setSchemeVersion(0);
+        schm.setSchemeVersion(0x00010000);
         sinf.addBox(schm);
 
         SchemeInformationBox schi = new SchemeInformationBox();
