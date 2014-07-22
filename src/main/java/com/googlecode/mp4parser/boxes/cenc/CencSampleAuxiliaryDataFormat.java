@@ -90,6 +90,7 @@ public class CencSampleAuxiliaryDataFormat {
         public long encrypted() {
             return encrypted;
         }
+
     }
 
     private class ByteShortPair extends AbstractPair {
@@ -314,6 +315,9 @@ public class CencSampleAuxiliaryDataFormat {
             }
 
             return true;
+        }
+        public String toString() {
+            return "P(" + clear() + "|" + encrypted() + ")";
         }
     }
 

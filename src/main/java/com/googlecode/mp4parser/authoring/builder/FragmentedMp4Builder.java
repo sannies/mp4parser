@@ -293,6 +293,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         tfhd.setDefaultSampleFlags(sf);
         tfhd.setBaseDataOffset(-1);
         tfhd.setTrackId(track.getTrackMetaData().getTrackId());
+        tfhd.setDefaultBaseIsMoof(true);
         parent.addBox(tfhd);
     }
 
@@ -310,9 +311,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
         createTrun(startSample, endSample, track, sequenceNumber, traf);
 
         if (track instanceof CencEncyprtedTrack) {
+            createSaiz(startSample, endSample, (CencEncyprtedTrack) track, sequenceNumber, traf);
             createSenc(startSample, endSample, (CencEncyprtedTrack) track, sequenceNumber, traf);
             createSaio(startSample, endSample, (CencEncyprtedTrack) track, sequenceNumber, traf);
-            createSaiz(startSample, endSample, (CencEncyprtedTrack) track, sequenceNumber, traf);
         }
 
 
@@ -326,10 +327,13 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     protected void createSaio(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
+        SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(track.getSampleDescriptionBox(), "enc.[0]/sinf[0]/schm[0]");
+
         SampleAuxiliaryInformationOffsetsBox saio = new SampleAuxiliaryInformationOffsetsBox();
         parent.addBox(saio);
         assert parent.getBoxes(TrackRunBox.class).size() == 1 : "Don't know how to deal with multiple Track Run Boxes when encrypting";
-
+        saio.setAuxInfoType(schm.getSchemeType());
+        saio.setFlags(1);
         long offset = 0;
         offset += 8; // traf header till 1st child box
         for (Box box : parent.getBoxes()) {
@@ -356,7 +360,10 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     protected void createSaiz(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
+        SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(track.getSampleDescriptionBox(), "enc.[0]/sinf[0]/schm[0]");
         SampleAuxiliaryInformationSizesBox saiz = new SampleAuxiliaryInformationSizesBox();
+        saiz.setAuxInfoType(schm.getSchemeType());
+        saiz.setFlags(1);
         short[] sizes = new short[l2i(endSample - startSample)];
         List<CencSampleAuxiliaryDataFormat> auxs =
                 track.getSampleEncryptionEntries().subList(l2i(startSample - 1), l2i(endSample - 1));

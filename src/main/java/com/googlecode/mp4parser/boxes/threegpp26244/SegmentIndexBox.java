@@ -293,4 +293,16 @@ public class SegmentIndexBox extends AbstractFullBox {
             return result;
         }
     }
+
+    @Override
+    public String toString() {
+        return "SegmentIndexBox{" +
+                "entries=" + entries +
+                ", referenceId=" + referenceId +
+                ", timeScale=" + timeScale +
+                ", earliestPresentationTime=" + earliestPresentationTime +
+                ", firstOffset=" + firstOffset +
+                ", reserved=" + reserved +
+                '}';
+    }
 }
