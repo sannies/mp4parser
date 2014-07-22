@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>examples</artifactId>
-    <name>IsoParser Examples</name>
+    <name>ISO Parser Examples</name>
     <version>1.0.3.2-SNAPSHOT</version>
     <parent>
         <groupId>com.googlecode.mp4parser</groupId>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.0.3.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>xom</groupId>
