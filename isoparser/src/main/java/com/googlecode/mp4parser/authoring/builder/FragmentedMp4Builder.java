@@ -26,6 +26,7 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
+import com.googlecode.mp4parser.boxes.basemediaformat.TrackEncryptionBox;
 import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
 import com.googlecode.mp4parser.boxes.ultraviolet.SampleEncryptionBox;
 import com.googlecode.mp4parser.util.Path;
@@ -361,16 +362,23 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     protected void createSaiz(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
         SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(track.getSampleDescriptionBox(), "enc.[0]/sinf[0]/schm[0]");
+        TrackEncryptionBox tenc = (TrackEncryptionBox) Path.getPath(track.getSampleDescriptionBox(), "enc.[0]/sinf[0]/schi[0]/tenc[0]");
+
         SampleAuxiliaryInformationSizesBox saiz = new SampleAuxiliaryInformationSizesBox();
         saiz.setAuxInfoType(schm.getSchemeType());
         saiz.setFlags(1);
-        short[] sizes = new short[l2i(endSample - startSample)];
-        List<CencSampleAuxiliaryDataFormat> auxs =
-                track.getSampleEncryptionEntries().subList(l2i(startSample - 1), l2i(endSample - 1));
-        for (int i = 0; i < sizes.length; i++) {
-            sizes[i] = (short) auxs.get(i).getSize();
+        if (track.hasSubSampleEncryption()) {
+            short[] sizes = new short[l2i(endSample - startSample)];
+            List<CencSampleAuxiliaryDataFormat> auxs =
+                    track.getSampleEncryptionEntries().subList(l2i(startSample - 1), l2i(endSample - 1));
+            for (int i = 0; i < sizes.length; i++) {
+                sizes[i] = (short) auxs.get(i).getSize();
+            }
+            saiz.setSampleInfoSizes(sizes);
+        } else {
+            saiz.setDefaultSampleInfoSize(tenc.getDefaultIvSize());
+            saiz.setSampleCount(l2i(endSample - startSample));
         }
-        saiz.setSampleInfoSizes(sizes);
         parent.addBox(saiz);
     }
 
@@ -432,6 +440,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
      */
     protected void createTrun(long startSample, long endSample, Track track, int sequenceNumber, TrackFragmentBox parent) {
         TrackRunBox trun = new TrackRunBox();
+        trun.setVersion(1);
         long[] sampleSizes = getSampleSizes(startSample, endSample, track, sequenceNumber);
 
         trun.setSampleDurationPresent(true);
