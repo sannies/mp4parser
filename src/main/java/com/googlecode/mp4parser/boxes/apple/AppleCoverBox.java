@@ -32,5 +32,8 @@ public class AppleCoverBox extends AppleDataBox {
     protected int getDataLength() {
         return data.length;
     }
+    public byte[] getCoverData() {
+        return data;
+    }
 
 }
