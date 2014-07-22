@@ -56,19 +56,16 @@ public class IsoFile extends BasicContainer implements Closeable {
      * @throws IOException in case I/O error
      */
     public IsoFile(DataSource dataSource) throws IOException {
-        parseContainer(dataSource, dataSource.size(), new PropertyBoxParserImpl());
+        this(dataSource, new PropertyBoxParserImpl());
 
     }
 
     public IsoFile(DataSource dataSource, BoxParser boxParser) throws IOException {
-        this.dataSource = dataSource;
-        this.boxParser = boxParser;
+        parseContainer(dataSource, dataSource.size(), boxParser);
     }
 
     public String toString() {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append("IsoFile[").append(dataSource.toString()).append("]");
-        return buffer.toString();
+        return "IsoFile[" + dataSource.toString() + "]";
     }
 
     public static byte[] fourCCtoBytes(String fourCC) {
