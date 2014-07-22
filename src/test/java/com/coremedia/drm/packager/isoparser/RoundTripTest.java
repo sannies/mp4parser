@@ -17,14 +17,12 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.IsoFile;
+import com.googlecode.mp4parser.MemoryDataSourceImpl;
 import com.googlecode.mp4parser.authoring.tracks.BoxComparator;
 import junit.framework.TestCase;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 
 import com.googlecode.mp4parser.DataSource;
@@ -97,13 +95,9 @@ public class RoundTripTest extends TestCase {
         Walk.through(isoFile);
         long start5 = System.currentTimeMillis();
 
-        File result = File.createTempFile(this.getName(), resource.replace("/", "_"));
 
-        FileOutputStream fos = new FileOutputStream(result);
-        FileChannel fcOut = fos.getChannel();
-        isoFile.getBox(fcOut);
-        fcOut.close();
-        fos.close();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        isoFile.getBox(Channels.newChannel(baos));
 
 
         long start6 = System.currentTimeMillis();
@@ -114,11 +108,10 @@ public class RoundTripTest extends TestCase {
         System.err.println("Walking took           : " + (start5 - start4) + "ms");*/
 
 
-        IsoFile copyViaIsoFileReparsed = new IsoFile(result.getAbsolutePath());
+        IsoFile copyViaIsoFileReparsed = new IsoFile(new MemoryDataSourceImpl(baos.toByteArray()));
         BoxComparator.check(isoFile, copyViaIsoFileReparsed, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]");
         isoFile.close();
         copyViaIsoFileReparsed.close();
-        result.deleteOnExit();
         // as windows cannot delete file when something is memory mapped and the garbage collector
         // doesn't necessarily free the Buffers quickly enough we cannot delete the file here (we could but only for linux)
 
@@ -126,14 +119,4 @@ public class RoundTripTest extends TestCase {
     }
 
 
-    public static void copy(InputStream input, OutputStream output) throws IOException {
-        assert input != null && output != null;
-
-        byte[] buffer = new byte[4096];
-        int count = input.read(buffer);
-        while (count > 0) {
-            output.write(buffer, 0, count);
-            count = input.read(buffer);
-        }
-    }
 }

@@ -45,7 +45,7 @@ public class CencTracksImplTest {
 
         c.writeContainer(Channels.newChannel(baos));
 
-        c.writeContainer(new FileOutputStream("output.mp4").getChannel());
+        //c.writeContainer(new FileOutputStream("output.mp4").getChannel());
 
         Movie m2 = MovieCreator.build(new MemoryDataSourceImpl(baos.toByteArray()));
         List<Track> decTracks = new LinkedList<Track>();
@@ -55,7 +55,7 @@ public class CencTracksImplTest {
         m2.setTracks(decTracks);
         c = mp4Builder.build(m2);
 
-        c.writeContainer(new FileOutputStream("output2.mp4").getChannel());
+        //c.writeContainer(new FileOutputStream("output2.mp4").getChannel());
 
 
     }
@@ -78,7 +78,7 @@ public class CencTracksImplTest {
 
         c.writeContainer(Channels.newChannel(baos));
 
-        c.writeContainer(new FileOutputStream("output.mp4").getChannel());
+        //c.writeContainer(new FileOutputStream("output.mp4").getChannel());
 
         Movie m2 = MovieCreator.build(new MemoryDataSourceImpl(baos.toByteArray()));
         List<Track> decTracks = new LinkedList<Track>();
@@ -88,7 +88,7 @@ public class CencTracksImplTest {
         m2.setTracks(decTracks);
         c = mp4Builder.build(m2);
 
-        c.writeContainer(new FileOutputStream("output2.mp4").getChannel());
+        //c.writeContainer(new FileOutputStream("output2.mp4").getChannel());
 
     }
 }

@@ -1,14 +1,17 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
+import com.googlecode.mp4parser.MemoryDataSourceImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -40,14 +43,14 @@ public class ItemLocationBoxTest {
         ilocOrig.setLengthSize(lengthSize);
         ilocOrig.setOffsetSize(offsetSize);
 
-        File f = File.createTempFile(this.getClass().getSimpleName(), "");
-        f.deleteOnExit();
-        FileChannel fc = new FileOutputStream(f).getChannel();
-        ilocOrig.getBox(fc);
-        fc.close();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 
-        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
+        ilocOrig.getBox(Channels.newChannel(baos));
+
+
+
+        IsoFile isoFile = new IsoFile(new MemoryDataSourceImpl(baos.toByteArray()));
 
         ItemLocationBox iloc = (ItemLocationBox) isoFile.getBoxes().get(0);
 
@@ -84,14 +87,10 @@ public class ItemLocationBoxTest {
         ilocOrig.setOffsetSize(offsetSize);
         ItemLocationBox.Item item = ilocOrig.createItem(12, 0, 13, 123, Collections.<ItemLocationBox.Extent>emptyList());
         ilocOrig.setItems(Collections.singletonList(item));
-        File f = File.createTempFile(this.getClass().getSimpleName(), "");
-        f.deleteOnExit();
-        FileChannel fc = new FileOutputStream(f).getChannel();
-        ilocOrig.getBox(fc);
-        fc.close();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ilocOrig.getBox(Channels.newChannel(baos));
 
-
-        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
+        IsoFile isoFile = new IsoFile(new MemoryDataSourceImpl(baos.toByteArray()));
 
         ItemLocationBox iloc = (ItemLocationBox) isoFile.getBoxes().get(0);
 
