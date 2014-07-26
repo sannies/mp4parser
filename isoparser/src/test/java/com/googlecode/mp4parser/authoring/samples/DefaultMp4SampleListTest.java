@@ -25,7 +25,9 @@ public class DefaultMp4SampleListTest {
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         for (int i = 0; i < sl.size(); i++) {
             //System.err.println("\"" + Hex.encodeHex(md5.digest(sl.get(i).asByteBuffer().array())) + "\",");
-            Assert.assertEquals(sampleChecksum.get(i), Hex.encodeHex(md5.digest(sl.get(i).asByteBuffer().array())));
+            byte[] sampleBytes = new byte[(int) sl.get(i).getSize()];
+            sl.get(i).asByteBuffer().get(sampleBytes);
+            Assert.assertEquals(sampleChecksum.get(i), Hex.encodeHex(md5.digest(sampleBytes)));
         }
     }
 

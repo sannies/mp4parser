@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.AbstractList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 public class DefaultMp4SampleList extends AbstractList<Sample> {
     Container topLevel;
     TrackBox trackBox = null;
-    SoftReference<ByteBuffer>[] cache = null;
+    ByteBuffer[] cache = null;
     int[] chunkNumsStartSampleNum;
     long[] chunkOffsets;
     int[] chunkSizes;
@@ -41,7 +42,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         chunkOffsets = trackBox.getSampleTableBox().getChunkOffsetBox().getChunkOffsets();
         chunkSizes = new int[chunkOffsets.length];
 
-        cache = (SoftReference<ByteBuffer>[]) Array.newInstance(SoftReference.class, chunkOffsets.length );
+        cache = new ByteBuffer[chunkOffsets.length];
         ssb = trackBox.getSampleTableBox().getSampleSizeBox();
         List<SampleToChunkBox.Entry> s2chunkEntries = trackBox.getSampleTableBox().getSampleToChunkBox().getEntries();
         SampleToChunkBox.Entry[] entries = s2chunkEntries.toArray(new SampleToChunkBox.Entry[s2chunkEntries.size()]);
@@ -153,12 +154,12 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         int currentSampleNo = chunkNumsStartSampleNum[currentChunkNoZeroBased];
 
         long offset = chunkOffsets[l2i(currentChunkNoZeroBased)];
-        ByteBuffer chunk = cache[l2i(currentChunkNoZeroBased)]!=null?cache[l2i(currentChunkNoZeroBased)].get():null;
+        ByteBuffer chunk = cache[l2i(currentChunkNoZeroBased)];
         if (chunk == null) {
 
             try {
                 chunk = topLevel.getByteBuffer(offset, chunkSizes[l2i(currentChunkNoZeroBased)] );
-                cache[l2i(currentChunkNoZeroBased)] = new SoftReference<ByteBuffer>(chunk);
+                cache[l2i(currentChunkNoZeroBased)] = chunk;
             } catch (IOException e) {
                 throw new IndexOutOfBoundsException(e.getMessage());
             }
@@ -170,8 +171,22 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         }
         final long sampleSize = ssb.getSampleSizeAtIndex(currentSampleNo - 1);
 
-        return new SampleImpl(offsetWithinChunk, sampleSize,
-                (ByteBuffer) ((ByteBuffer)chunk.position(offsetWithinChunk)).slice().limit(l2i(sampleSize)));
+        final ByteBuffer finalChunk = chunk;
+        final int finalOffsetWithinChunk = offsetWithinChunk;
+        return new Sample() {
+
+            public void writeTo(WritableByteChannel channel) throws IOException {
+                channel.write(asByteBuffer());
+            }
+
+            public long getSize() {
+                return sampleSize;
+            }
+
+            public ByteBuffer asByteBuffer() {
+                return (ByteBuffer) ((ByteBuffer) finalChunk.position(finalOffsetWithinChunk)).slice().limit(l2i(sampleSize));
+            }
+        };
     }
 
     @Override
