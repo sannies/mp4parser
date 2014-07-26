@@ -361,8 +361,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     protected void createSaiz(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
-        SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(track.getSampleDescriptionBox(), "enc.[0]/sinf[0]/schm[0]");
-        TrackEncryptionBox tenc = (TrackEncryptionBox) Path.getPath(track.getSampleDescriptionBox(), "enc.[0]/sinf[0]/schi[0]/tenc[0]");
+        SampleDescriptionBox sampleDescriptionBox = track.getSampleDescriptionBox();
+        SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(sampleDescriptionBox, "enc.[0]/sinf[0]/schm[0]");
+        TrackEncryptionBox tenc = (TrackEncryptionBox) Path.getPath(sampleDescriptionBox, "enc.[0]/sinf[0]/schi[0]/tenc[0]");
 
         SampleAuxiliaryInformationSizesBox saiz = new SampleAuxiliaryInformationSizesBox();
         saiz.setAuxInfoType(schm.getSchemeType());
