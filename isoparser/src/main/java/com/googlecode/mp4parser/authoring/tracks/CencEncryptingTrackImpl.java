@@ -49,7 +49,7 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
         List<Sample> origSamples = source.getSamples();
 
         if (cencSampleAuxiliaryData == null) {
-            this.cencSampleAuxiliaryData = cencSampleAuxiliaryData  = new LinkedList<CencSampleAuxiliaryDataFormat>();
+            this.cencSampleAuxiliaryData = cencSampleAuxiliaryData  = new ArrayList<CencSampleAuxiliaryDataFormat>();
 
             BigInteger one = new BigInteger("1");
             byte[] init = new byte[]{};
