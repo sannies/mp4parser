@@ -1,4 +1,4 @@
-package com.googlecode.mp4parser.boxes.ultraviolet;
+package com.googlecode.mp4parser.boxes.dece;
 
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.boxes.AbstractSampleEncryptionBox;

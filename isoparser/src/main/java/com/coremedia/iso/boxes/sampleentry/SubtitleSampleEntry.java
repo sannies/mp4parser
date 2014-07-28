@@ -52,7 +52,7 @@ public class SubtitleSampleEntry extends AbstractSampleEntry {
         imageMimeType = IsoTypeReader.readString((ByteBuffer) content.rewind());
         dataSource.position(start + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3);
 
-        parseContainer(dataSource, contentSize - (header.remaining() + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3), boxParser);
+        initContainer(dataSource, contentSize - (header.remaining() + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3), boxParser);
     }
 
     @Override

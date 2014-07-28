@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.googlecode.mp4parser.boxes.ultraviolet;
+package com.googlecode.mp4parser.boxes.dece;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.Utf8;

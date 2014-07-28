@@ -133,7 +133,7 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
         boxes.add(b);
     }
 
-    public void parseContainer(DataSource dataSource, long containerSize, BoxParser boxParser) throws IOException {
+    public void initContainer(DataSource dataSource, long containerSize, BoxParser boxParser) throws IOException {
 
         this.dataSource = dataSource;
         this.parsePosition = this.startPosition = dataSource.position();

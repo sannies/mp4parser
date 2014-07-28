@@ -61,7 +61,7 @@ public class IsoFile extends BasicContainer implements Closeable {
     }
 
     public IsoFile(DataSource dataSource, BoxParser boxParser) throws IOException {
-        parseContainer(dataSource, dataSource.size(), boxParser);
+        initContainer(dataSource, dataSource.size(), boxParser);
     }
 
     public String toString() {

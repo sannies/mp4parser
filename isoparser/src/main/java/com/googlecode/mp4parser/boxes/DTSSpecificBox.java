@@ -3,6 +3,7 @@ package com.googlecode.mp4parser.boxes;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractBox;
+import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
@@ -212,4 +213,113 @@ public class DTSSpecificBox extends AbstractBox {
     public void setReservedBoxPresent(int reservedBoxPresent) {
         this.reservedBoxPresent = reservedBoxPresent;
     }
+
+    @DoNotParseDetail
+    public int[] getDashAudioChannelConfiguration() {
+        final int channelLayout = this.getChannelLayout();
+        int numChannels = 0;
+        int dwChannelMask = 0;
+        if ((channelLayout & 0x0001) == 0x0001) {
+            //0001h Center in front of listener 1
+            numChannels += 1;
+            dwChannelMask |= 0x00000004; //SPEAKER_FRONT_CENTER
+        }
+        if ((channelLayout & 0x0002) == 0x0002) {
+            //0002h Left/Right in front 2
+            numChannels += 2;
+            dwChannelMask |= 0x00000001; //SPEAKER_FRONT_LEFT
+            dwChannelMask |= 0x00000002; //SPEAKER_FRONT_RIGHT
+        }
+        if ((channelLayout & 0x0004) == 0x0004) {
+            //0004h Left/Right surround on side in rear 2
+            numChannels += 2;
+            //* if Lss, Rss exist, then this position is equivalent to Lsr, Rsr respectively
+            dwChannelMask |= 0x00000010; //SPEAKER_BACK_LEFT
+            dwChannelMask |= 0x00000020; //SPEAKER_BACK_RIGHT
+        }
+        if ((channelLayout & 0x0008) == 0x0008) {
+            //0008h Low frequency effects subwoofer 1
+            numChannels += 1;
+            dwChannelMask |= 0x00000008; //SPEAKER_LOW_FREQUENCY
+        }
+        if ((channelLayout & 0x0010) == 0x0010) {
+            //0010h Center surround in rear 1
+            numChannels += 1;
+            dwChannelMask |= 0x00000100; //SPEAKER_BACK_CENTER
+        }
+        if ((channelLayout & 0x0020) == 0x0020) {
+            //0020h Left/Right height in front 2
+            numChannels += 2;
+            dwChannelMask |= 0x00001000; //SPEAKER_TOP_FRONT_LEFT
+            dwChannelMask |= 0x00004000; //SPEAKER_TOP_FRONT_RIGHT
+        }
+        if ((channelLayout & 0x0040) == 0x0040) {
+            //0040h Left/Right surround in rear 2
+            numChannels += 2;
+            dwChannelMask |= 0x00000010; //SPEAKER_BACK_LEFT
+            dwChannelMask |= 0x00000020; //SPEAKER_BACK_RIGHT
+        }
+        if ((channelLayout & 0x0080) == 0x0080) {
+            //0080h Center Height in front 1
+            numChannels += 1;
+            dwChannelMask |= 0x00002000; //SPEAKER_TOP_FRONT_CENTER
+        }
+        if ((channelLayout & 0x0100) == 0x0100) {
+            //0100h Over the listener’s head 1
+            numChannels += 1;
+            dwChannelMask |= 0x00000800; //SPEAKER_TOP_CENTER
+        }
+        if ((channelLayout & 0x0200) == 0x0200) {
+            //0200h Between left/right and center in front 2
+            numChannels += 2;
+            dwChannelMask |= 0x00000040; //SPEAKER_FRONT_LEFT_OF_CENTER
+            dwChannelMask |= 0x00000080; //SPEAKER_FRONT_RIGHT_OF_CENTER
+        }
+        if ((channelLayout & 0x0400) == 0x0400) {
+            //0400h Left/Right on side in front 2
+            numChannels += 2;
+            dwChannelMask |= 0x00000200; //SPEAKER_SIDE_LEFT
+            dwChannelMask |= 0x00000400; //SPEAKER_SIDE_RIGHT
+        }
+        if ((channelLayout & 0x0800) == 0x0800) {
+            //0800h Left/Right surround on side 2
+            numChannels += 2;
+            //* if Lss, Rss exist, then this position is equivalent to Lsr, Rsr respectively
+            dwChannelMask |= 0x00000010; //SPEAKER_BACK_LEFT
+            dwChannelMask |= 0x00000020; //SPEAKER_BACK_RIGHT
+        }
+        if ((channelLayout & 0x1000) == 0x1000) {
+            //1000h Second low frequency effects subwoofer 1
+            numChannels += 1;
+            dwChannelMask |= 0x00000008; //SPEAKER_LOW_FREQUENCY
+        }
+        if ((channelLayout & 0x2000) == 0x2000) {
+            //2000h Left/Right height on side 2
+            numChannels += 2;
+            dwChannelMask |= 0x00000010; //SPEAKER_BACK_LEFT
+            dwChannelMask |= 0x00000020; //SPEAKER_BACK_RIGHT
+        }
+        if ((channelLayout & 0x4000) == 0x4000) {
+            //4000h Center height in rear 1
+            numChannels += 1;
+            dwChannelMask |= 0x00010000; //SPEAKER_TOP_BACK_CENTER
+        }
+        if ((channelLayout & 0x8000) == 0x8000) {
+            //8000h Left/Right height in rear 2
+            numChannels += 2;
+            dwChannelMask |= 0x00008000; //SPEAKER_TOP_BACK_LEFT
+            dwChannelMask |= 0x00020000; //SPEAKER_TOP_BACK_RIGHT
+        }
+        if ((channelLayout & 0x10000) == 0x10000) {
+            //10000h Center below in front
+            numChannels += 1;
+        }
+        if ((channelLayout & 0x20000) == 0x20000) {
+            //20000h Left/Right below in front
+            numChannels += 2;
+        }
+        return new int[]{numChannels, dwChannelMask};
+    }
+
+
 }

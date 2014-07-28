@@ -91,7 +91,7 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
         } else {
             fontName = null;
         }
-        // parseContainer(); there are no child boxes!?
+        // initContainer(); there are no child boxes!?
     }
 
     @Override

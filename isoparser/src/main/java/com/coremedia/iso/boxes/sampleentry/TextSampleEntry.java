@@ -87,7 +87,7 @@ public class TextSampleEntry extends AbstractSampleEntry {
 
         styleRecord = new StyleRecord();
         styleRecord.parse(content);
-        parseContainer(dataSource, contentSize - 38, boxParser);
+        initContainer(dataSource, contentSize - 38, boxParser);
     }
 
     @Override

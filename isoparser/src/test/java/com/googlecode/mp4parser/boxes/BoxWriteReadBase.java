@@ -4,7 +4,6 @@ package com.googlecode.mp4parser.boxes;
 import com.coremedia.iso.PropertyBoxParserImpl;
 import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.AbstractContainerBox;
-import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,14 +12,9 @@ import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.lang.reflect.Constructor;
-import com.googlecode.mp4parser.DataSource;
 
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.Collection;
@@ -102,7 +96,7 @@ public abstract class BoxWriteReadBase<T extends Box> {
         baos.close();
 
         DummyContainerBox singleBoxIsoFile = new DummyContainerBox(dummyParent);
-        singleBoxIsoFile.parseContainer(new MemoryDataSourceImpl(baos.toByteArray()), baos.size(), new PropertyBoxParserImpl());
+        singleBoxIsoFile.initContainer(new MemoryDataSourceImpl(baos.toByteArray()), baos.size(), new PropertyBoxParserImpl());
         Assert.assertEquals("Expected box and file size to be the same", box.getSize(), baos.size());
         Assert.assertEquals("Expected a single box in the IsoFile structure", 1, singleBoxIsoFile.getBoxes().size());
         Assert.assertEquals("Expected to find a box of different type ", clazz, singleBoxIsoFile.getBoxes().get(0).getClass());

@@ -76,7 +76,7 @@ public class DataReferenceBox extends AbstractContainerBox implements FullBox {
         version = IsoTypeReader.readUInt8(versionFlagNumOfChildBoxes);
         flags = IsoTypeReader.readUInt24(versionFlagNumOfChildBoxes);
         // number of child boxes is not required - ignore
-        parseContainer(dataSource, contentSize - 8, boxParser);
+        initContainer(dataSource, contentSize - 8, boxParser);
     }
 
 

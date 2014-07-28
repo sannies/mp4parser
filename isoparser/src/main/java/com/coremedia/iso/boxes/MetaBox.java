@@ -79,7 +79,7 @@ public class MetaBox extends AbstractContainerBox {
         ByteBuffer bb = ByteBuffer.allocate(4);
         dataSource.read(bb);
         parseVersionAndFlags((ByteBuffer) bb.rewind());
-        parseContainer(dataSource, contentSize - 4, boxParser);
+        initContainer(dataSource, contentSize - 4, boxParser);
     }
 
     @Override

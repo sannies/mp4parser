@@ -275,10 +275,10 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
                 }
             });
         } else {
-            parseContainer(dataSource,
+            initContainer(dataSource,
                     contentSize - 28
-                        - (soundVersion == 1 ? 16 : 0)
-                        - (soundVersion == 2 ? 36 : 0), boxParser);
+                            - (soundVersion == 1 ? 16 : 0)
+                            - (soundVersion == 2 ? 36 : 0), boxParser);
         }
     }
 

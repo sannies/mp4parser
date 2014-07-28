@@ -2,7 +2,7 @@ package com.googlecode.mp4parser;
 
 import com.coremedia.iso.BoxReplacer;
 import com.coremedia.iso.boxes.Box;
-import com.googlecode.mp4parser.boxes.ultraviolet.BaseLocationBox;
+import com.googlecode.mp4parser.boxes.dece.BaseLocationBox;
 
 import java.io.File;
 import java.io.IOException;

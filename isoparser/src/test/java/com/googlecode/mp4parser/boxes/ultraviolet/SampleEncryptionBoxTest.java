@@ -3,6 +3,7 @@ package com.googlecode.mp4parser.boxes.ultraviolet;
 import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.boxes.AbstractSampleEncryptionBox;
 import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
+import com.googlecode.mp4parser.boxes.dece.SampleEncryptionBox;
 import org.junit.Assert;
 import org.junit.Test;
 

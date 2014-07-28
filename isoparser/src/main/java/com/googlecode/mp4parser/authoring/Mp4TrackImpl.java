@@ -20,8 +20,6 @@ import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.*;
 import com.coremedia.iso.boxes.mdat.SampleList;
 import com.googlecode.mp4parser.BasicContainer;
-import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
-import com.googlecode.mp4parser.boxes.ultraviolet.SampleEncryptionBox;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;

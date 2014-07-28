@@ -181,7 +181,7 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
         tmp = IsoTypeReader.readUInt16(content);
         assert 0xFFFF == tmp;
 
-        parseContainer(dataSource, contentSize - 78, boxParser);
+        initContainer(dataSource, contentSize - 78, boxParser);
 
     }
 

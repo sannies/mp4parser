@@ -79,7 +79,7 @@ public class AbstractContainerBox extends BasicContainer implements Box {
     public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         this.offset = dataSource.position() - header.remaining();
         this.largeBox = header.remaining() == 16; // sometime people use large boxes without requiring them
-        parseContainer(dataSource, contentSize, boxParser);
+        initContainer(dataSource, contentSize, boxParser);
     }
 
 
@@ -88,7 +88,7 @@ public class AbstractContainerBox extends BasicContainer implements Box {
         writeContainer(writableByteChannel);
     }
 
-    public void parseContainer(DataSource dataSource, long containerSize, BoxParser boxParser) throws IOException {
+    public void initContainer(DataSource dataSource, long containerSize, BoxParser boxParser) throws IOException {
         this.dataSource = dataSource;
         this.parsePosition = dataSource.position();
         this.startPosition =  parsePosition - (((largeBox || (containerSize + 8) >= (1L << 32)) ? 16 : 8));

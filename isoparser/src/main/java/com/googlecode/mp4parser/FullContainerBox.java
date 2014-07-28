@@ -24,6 +24,7 @@ import com.coremedia.iso.boxes.FullBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -66,6 +67,11 @@ public abstract class FullContainerBox extends AbstractContainerBox implements F
         dataSource.read(versionAndFlags);
         parseVersionAndFlags((ByteBuffer) versionAndFlags.rewind());
         super.parse(dataSource, header, contentSize, boxParser);
+    }
+
+    @Override
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        super.getBox(writableByteChannel);
     }
 
     public String toString() {

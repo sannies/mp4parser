@@ -28,7 +28,7 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
 import com.googlecode.mp4parser.boxes.basemediaformat.TrackEncryptionBox;
 import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
-import com.googlecode.mp4parser.boxes.ultraviolet.SampleEncryptionBox;
+import com.googlecode.mp4parser.boxes.dece.SampleEncryptionBox;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
