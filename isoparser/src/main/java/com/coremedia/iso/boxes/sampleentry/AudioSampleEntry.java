@@ -17,6 +17,7 @@
 package com.coremedia.iso.boxes.sampleentry;
 
 import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
@@ -25,8 +26,17 @@ import java.nio.ByteBuffer;
 
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
+import com.coremedia.iso.boxes.OriginalFormatBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
+import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.AudioSpecificConfig;
+import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderConfigDescriptor;
+import com.googlecode.mp4parser.util.Path;
+
 import java.nio.channels.WritableByteChannel;
+import java.util.List;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 

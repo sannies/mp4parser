@@ -63,9 +63,9 @@ public class AssetInformationBox extends AbstractFullBox {
             this.assetId = assetId;
         }
 
-        String namespace;
-        String profileLevelIdc;
-        String assetId;
+        public String namespace;
+        public String profileLevelIdc;
+        public String assetId;
 
         @Override
         public boolean equals(Object o) {
@@ -216,6 +216,8 @@ public class AssetInformationBox extends AbstractFullBox {
     public void setV1Entries(List<Entry> v1_Entries) {
         this.v1_Entries = v1_Entries;
     }
+
+
 
     @DoNotParseDetail
     public boolean isV1Hidden() {

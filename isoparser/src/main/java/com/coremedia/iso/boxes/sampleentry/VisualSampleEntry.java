@@ -16,16 +16,20 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoTypeReader;
-import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.Utf8;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.Container;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import com.coremedia.iso.boxes.OriginalFormatBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.util.Path;
+
 import java.nio.channels.WritableByteChannel;
+import java.util.List;
 
 /**
  * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2}" || "{@value #TYPE3}" || "{@value #TYPE4}" || "{@value #TYPE5}"</h1>
@@ -229,6 +233,8 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
         long t = 78;
         return s + t + ((largeBox || (s + t + 8) >= (1L << 32)) ? 16 : 8);
     }
+
+
 
 }
 
