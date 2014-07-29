@@ -25,7 +25,7 @@ public final class DashHelper {
         public String value = "";
     }
 
-    public ChannelConfiguration getChannelConfiguration(AudioSampleEntry e) {
+    public static ChannelConfiguration getChannelConfiguration(AudioSampleEntry e) {
         DTSSpecificBox ddts = (DTSSpecificBox) Path.getPath(e, "ddts");
         if (ddts != null) {
             return getDTSChannelConfig(e, ddts);
@@ -50,7 +50,7 @@ public final class DashHelper {
         return null;
     }
 
-    private ChannelConfiguration getEC3ChannelConfig(AudioSampleEntry e, EC3SpecificBox dec3) {
+    private static ChannelConfiguration getEC3ChannelConfig(AudioSampleEntry e, EC3SpecificBox dec3) {
         final List<EC3SpecificBox.Entry> ec3SpecificBoxEntries = dec3.getEntries();
         int audioChannelValue = 0;
         for (EC3SpecificBox.Entry ec3SpecificBoxEntry : ec3SpecificBoxEntries) {
@@ -62,7 +62,7 @@ public final class DashHelper {
         return cc;
     }
 
-    private ChannelConfiguration getAC3ChannelConfig(AudioSampleEntry e, AC3SpecificBox dac3) {
+    private static ChannelConfiguration getAC3ChannelConfig(AudioSampleEntry e, AC3SpecificBox dac3) {
         ChannelConfiguration cc = new ChannelConfiguration();
         int audioChannelValue = getDolbyAudioChannelValue(dac3.getAcmod(), dac3.getLfeon());
         cc.value = Hex.encodeHex(new byte[]{(byte) ((audioChannelValue >> 8) & 0xFF), (byte) (audioChannelValue & 0xFF)});
@@ -106,7 +106,7 @@ public final class DashHelper {
         return audioChannelValue;
     }
 
-    private ChannelConfiguration getAACChannelConfig(AudioSampleEntry e, ESDescriptorBox esds) {
+    private static ChannelConfiguration getAACChannelConfig(AudioSampleEntry e, ESDescriptorBox esds) {
 
         final DecoderConfigDescriptor decoderConfigDescriptor = esds.getEsDescriptor().getDecoderConfigDescriptor();
         final AudioSpecificConfig audioSpecificConfig = decoderConfigDescriptor.getAudioSpecificInfo();
@@ -222,7 +222,7 @@ public final class DashHelper {
         return numChannels;
     }
 
-    private ChannelConfiguration getDTSChannelConfig(AudioSampleEntry e, DTSSpecificBox ddts) {
+    private static ChannelConfiguration getDTSChannelConfig(AudioSampleEntry e, DTSSpecificBox ddts) {
         ChannelConfiguration cc = new ChannelConfiguration();
         cc.value = Integer.toString(getNumChannels(ddts));
         cc.schemeIdUri = "urn:dts:dash:audio_channel_configuration:2012";
@@ -235,7 +235,7 @@ public final class DashHelper {
      *
      * @return codec
      */
-    public String getRfc6381Codec(SampleEntry se) {
+    public static String getRfc6381Codec(SampleEntry se) {
 
         String type = se.getType();
         if (type.equals("encv")) {
