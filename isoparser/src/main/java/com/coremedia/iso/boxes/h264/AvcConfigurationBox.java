@@ -20,6 +20,7 @@ import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractBox;
+import com.googlecode.mp4parser.authoring.tracks.CleanInputStream;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 import com.googlecode.mp4parser.h264.model.PictureParameterSet;
@@ -336,8 +337,7 @@ public final class AvcConfigurationBox extends AbstractBox {
             for (byte[] sequenceParameterSet : sequenceParameterSets) {
                 String detail = "not parsable";
                 try {
-                    // skip NalUnit Header (will not work 100% but at least most cases)
-                    detail = SeqParameterSet.read(new ByteArrayInputStream(sequenceParameterSet, 1, sequenceParameterSet.length - 1)).toString();
+                    detail = SeqParameterSet.read(new CleanInputStream(new ByteArrayInputStream(sequenceParameterSet, 1, sequenceParameterSet.length - 1))).toString();
                 } catch (IOException e) {
 
                 }
