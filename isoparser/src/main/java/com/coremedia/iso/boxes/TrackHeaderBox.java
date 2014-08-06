@@ -116,7 +116,11 @@ public class TrackHeaderBox extends AbstractFullBox {
             modificationTime = DateHelper.convert(IsoTypeReader.readUInt64(content));
             trackId = IsoTypeReader.readUInt32(content);
             IsoTypeReader.readUInt32(content);
-            duration = IsoTypeReader.readUInt64(content);
+            duration = content.getLong();
+            if (duration < -1) {
+                throw new RuntimeException("The tracks duration is bigger than Long.MAX_VALUE");
+            }
+
         } else {
             creationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             modificationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
