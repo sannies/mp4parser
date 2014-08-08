@@ -84,9 +84,8 @@ public abstract class AbstractBoxParser implements BoxParser {
             size = IsoTypeReader.readUInt64(header.get());
             contentSize = size - 16;
         } else if (size == 0) {
-            size = byteChannel.size() - byteChannel.position() - 8;
-            contentSize = size - 8;
-            throw new RuntimeException( "'" + type + "' with '" + (parent instanceof Box?((Box) parent).getType():"IsoFile") + "' as parent has length == 0. That's not supported");
+            contentSize = byteChannel.size() - byteChannel.position();
+            size = contentSize + 8;
         } else {
             contentSize = size - 8;
         }
