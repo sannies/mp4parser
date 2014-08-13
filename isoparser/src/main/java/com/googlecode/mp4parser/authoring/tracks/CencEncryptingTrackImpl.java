@@ -38,76 +38,69 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
     boolean subSampleEncryption = false;
 
     public CencEncryptingTrackImpl(Track source, UUID keyId, SecretKey cek) {
-        this(source, keyId, cek, null);
-    }
-
-
-    public CencEncryptingTrackImpl(Track source, UUID keyId, SecretKey cek, List<CencSampleAuxiliaryDataFormat> cencSampleAuxiliaryData) {
         this.source = source;
         this.cek = cek;
         this.keyId = keyId;
         List<Sample> origSamples = source.getSamples();
 
-        if (cencSampleAuxiliaryData == null) {
-            this.cencSampleAuxiliaryData = cencSampleAuxiliaryData  = new ArrayList<CencSampleAuxiliaryDataFormat>();
+        this.cencSampleAuxiliaryData = new ArrayList<CencSampleAuxiliaryDataFormat>();
 
-            BigInteger one = new BigInteger("1");
-            byte[] init = new byte[]{};
-            BigInteger ivInt = new BigInteger(1, new byte[]{0, 0, 0, 0, 0, 0, 0, 0});
-            if (!dummyIvs) {
-                Random random = new SecureRandom();
-                random.nextBytes(init);
+        BigInteger one = new BigInteger("1");
+        byte[] init = new byte[]{};
+        BigInteger ivInt = new BigInteger(1, new byte[]{0, 0, 0, 0, 0, 0, 0, 0});
+        if (!dummyIvs) {
+            Random random = new SecureRandom();
+            random.nextBytes(init);
+        }
+
+
+        AvcConfigurationBox avcC = null;
+        List<Box> boxes = source.getSampleDescriptionBox().getSampleEntry().getBoxes();
+        for (Box box : boxes) {
+            if (box instanceof AvcConfigurationBox) {
+                avcC = (AvcConfigurationBox) box;
+                subSampleEncryption = true;
             }
+        }
 
 
-            AvcConfigurationBox avcC = null;
-            List<Box> boxes = source.getSampleDescriptionBox().getSampleEntry().getBoxes();
-            for (Box box : boxes) {
-                if (box instanceof AvcConfigurationBox) {
-                    avcC = (AvcConfigurationBox) box;
-                    subSampleEncryption = true;
-                }
-            }
+        for (Sample origSample : origSamples) {
+            byte[] iv = ivInt.toByteArray();
+            byte[] eightByteIv = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
+            System.arraycopy(
+                    iv,
+                    iv.length - 8 > 0 ? iv.length - 8 : 0,
+                    eightByteIv,
+                    (8 - iv.length) < 0 ? 0 : (8 - iv.length),
+                    iv.length > 8 ? 8 : iv.length);
+
+            CencSampleAuxiliaryDataFormat e = new CencSampleAuxiliaryDataFormat();
+            this.cencSampleAuxiliaryData.add(e);
+
+            e.iv = eightByteIv;
+
+            ByteBuffer sample = (ByteBuffer) origSample.asByteBuffer().rewind();
 
 
-            for (Sample origSample : origSamples) {
-                byte[] iv = ivInt.toByteArray();
-                byte[] eightByteIv = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
-                System.arraycopy(
-                        iv,
-                        iv.length - 8 > 0 ? iv.length - 8 : 0,
-                        eightByteIv,
-                        (8 - iv.length) < 0 ? 0 : (8 - iv.length),
-                        iv.length > 8 ? 8 : iv.length);
-
-                CencSampleAuxiliaryDataFormat e = new CencSampleAuxiliaryDataFormat();
-                this.cencSampleAuxiliaryData.add(e);
-
-                e.iv = eightByteIv;
-
-                ByteBuffer sample = (ByteBuffer) origSample.asByteBuffer().rewind();
-
-
-                if (avcC != null) {
-                    int nalLengthSize = avcC.getLengthSizeMinusOne() + 1;
-                    List<CencSampleAuxiliaryDataFormat.Pair> pairs = new ArrayList<CencSampleAuxiliaryDataFormat.Pair>(5);
-                    while (sample.remaining() > 0) {
-                        int nalLength = l2i(IsoTypeReaderVariable.read(sample, nalLengthSize));
-                        int clearBytes;
-                        int nalGrossSize = nalLength + nalLengthSize;
-                        if (nalGrossSize >= 112) {
-                            clearBytes = 96 + nalGrossSize % 16;
-                        } else {
-                            clearBytes = nalGrossSize;
-                        }
-                        pairs.add(e.createPair(clearBytes, nalGrossSize - clearBytes));
-                        sample.position(sample.position() + nalLength);
+            if (avcC != null) {
+                int nalLengthSize = avcC.getLengthSizeMinusOne() + 1;
+                List<CencSampleAuxiliaryDataFormat.Pair> pairs = new ArrayList<CencSampleAuxiliaryDataFormat.Pair>(5);
+                while (sample.remaining() > 0) {
+                    int nalLength = l2i(IsoTypeReaderVariable.read(sample, nalLengthSize));
+                    int clearBytes;
+                    int nalGrossSize = nalLength + nalLengthSize;
+                    if (nalGrossSize >= 112) {
+                        clearBytes = 96 + nalGrossSize % 16;
+                    } else {
+                        clearBytes = nalGrossSize;
                     }
-                    e.pairs = pairs.toArray(new CencSampleAuxiliaryDataFormat.Pair[pairs.size()]);
+                    pairs.add(e.createPair(clearBytes, nalGrossSize - clearBytes));
+                    sample.position(sample.position() + nalLength);
                 }
-
-                ivInt = ivInt.add(one);
+                e.pairs = pairs.toArray(new CencSampleAuxiliaryDataFormat.Pair[pairs.size()]);
             }
+
+            ivInt = ivInt.add(one);
         }
 
         samples = new CencEncryptingSampleList(cek, source.getSamples(), cencSampleAuxiliaryData);

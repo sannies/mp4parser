@@ -3,10 +3,16 @@ package com.googlecode.mp4parser.boxes.cenc;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
+import com.googlecode.mp4parser.boxes.piff.UuidBasedProtectionSystemSpecificHeaderBox;
 import com.googlecode.mp4parser.util.UUIDConverter;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
+
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 
 /**
@@ -34,6 +40,16 @@ public class ProtectionSystemSpecificHeaderBox extends AbstractFullBox {
     byte[] content;
     byte[] systemId;
 
+    public List<UUID> getKeyIds() {
+        return keyIds;
+    }
+
+    public void setKeyIds(List<UUID> keyIds) {
+        this.keyIds = keyIds;
+    }
+
+    List<UUID> keyIds = new ArrayList<UUID>();
+
 
     public byte[] getSystemId() {
         return systemId;
@@ -58,7 +74,12 @@ public class ProtectionSystemSpecificHeaderBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 24 + content.length;
+        long l = 24 + content.length ;
+        if (getVersion() > 0) {
+            l += 4;
+            l += 16 * keyIds.size();
+        }
+        return l;
     }
 
     @Override
@@ -66,6 +87,13 @@ public class ProtectionSystemSpecificHeaderBox extends AbstractFullBox {
         writeVersionAndFlags(byteBuffer);
         assert systemId.length == 16;
         byteBuffer.put(systemId, 0, 16);
+        if (getVersion() > 0) {
+            IsoTypeWriter.writeUInt32(byteBuffer, keyIds.size());
+            for (UUID keyId : keyIds) {
+                byteBuffer.put(UUIDConverter.convert(keyId));
+            }
+        }
+
         IsoTypeWriter.writeUInt32(byteBuffer, content.length);
         byteBuffer.put(content);
     }
@@ -75,6 +103,14 @@ public class ProtectionSystemSpecificHeaderBox extends AbstractFullBox {
         parseVersionAndFlags(content);
         systemId = new byte[16];
         content.get(systemId);
+        if (getVersion() > 0) {
+            int count = l2i(IsoTypeReader.readUInt32(content));
+            while (count-->0) {
+                byte[] k = new byte[16];
+                content.get(k);
+                keyIds.add(UUIDConverter.convert(k));
+            }
+        }
         long length = IsoTypeReader.readUInt32(content);
         this.content = new byte[content.remaining()];
         content.get(this.content);
