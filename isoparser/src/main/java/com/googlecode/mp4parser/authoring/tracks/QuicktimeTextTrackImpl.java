@@ -46,6 +46,7 @@ public class QuicktimeTextTrackImpl extends AbstractTrack {
     }
 
     public QuicktimeTextTrackImpl() {
+        super("subtitles");
         sampleDescriptionBox = new SampleDescriptionBox();
         QuicktimeTextSampleEntry textTrack = new QuicktimeTextSampleEntry();
         textTrack.setDataReferenceIndex(1);

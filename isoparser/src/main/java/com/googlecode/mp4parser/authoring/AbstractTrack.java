@@ -24,6 +24,11 @@ import java.util.List;
  *
  */
 public abstract class AbstractTrack implements Track {
+    String name;
+
+    public AbstractTrack(String name) {
+        this.name = name;
+    }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
         return null;
@@ -49,4 +54,7 @@ public abstract class AbstractTrack implements Track {
         return duration;
     }
 
+    public String getName() {
+        return this.name;
+    }
 }

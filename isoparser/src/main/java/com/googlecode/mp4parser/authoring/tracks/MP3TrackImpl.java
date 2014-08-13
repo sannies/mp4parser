@@ -58,6 +58,7 @@ public class MP3TrackImpl extends AbstractTrack {
     }
 
     public MP3TrackImpl(DataSource dataSource, String lang) throws IOException {
+        super(dataSource.toString());
         this.dataSource = dataSource;
         samples = new LinkedList<Sample>();
         firstHeader = readSamples(dataSource);

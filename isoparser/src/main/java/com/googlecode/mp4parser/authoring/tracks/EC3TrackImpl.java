@@ -38,6 +38,7 @@ public class EC3TrackImpl extends AbstractTrack {
     private long[] decodingTimes;
 
     public EC3TrackImpl(DataSource dataSource) throws IOException {
+        super(dataSource.toString());
         this.dataSource = dataSource;
 
         boolean done = false;

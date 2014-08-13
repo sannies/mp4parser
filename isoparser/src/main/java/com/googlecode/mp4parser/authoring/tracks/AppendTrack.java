@@ -44,7 +44,16 @@ public class AppendTrack extends AbstractTrack {
     Track[] tracks;
     SampleDescriptionBox stsd;
 
+    public static String appendTracknames (Track... tracks) {
+        String name = "";
+        for (Track track : tracks) {
+            name += track.getName() + " + ";
+        }
+        return name.substring(0, name.length() -3);
+    }
+
     public AppendTrack(Track... tracks) throws IOException {
+        super(appendTracknames(tracks));
         this.tracks = tracks;
 
         for (Track track : tracks) {

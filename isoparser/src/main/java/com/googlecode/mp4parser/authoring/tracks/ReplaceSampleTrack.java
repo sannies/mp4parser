@@ -38,6 +38,7 @@ public class ReplaceSampleTrack extends AbstractTrack {
     private List<Sample> samples;
 
     public ReplaceSampleTrack(Track origTrack, long sampleNumber, ByteBuffer content) {
+        super("replace(" + origTrack.getName() + ")");
         this.origTrack = origTrack;
         this.sampleNumber = sampleNumber;
         this.sampleContent = new SampleImpl(content);

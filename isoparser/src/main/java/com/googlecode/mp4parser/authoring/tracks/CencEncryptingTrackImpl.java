@@ -214,4 +214,9 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
     public void close() throws IOException {
         source.close();
     }
+
+    public String getName() {
+        return "enc(" + source.getName() + ")";
+    }
+
 }

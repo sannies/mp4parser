@@ -31,6 +31,7 @@ public class AC3TrackImpl extends AbstractTrack {
     }
 
     public AC3TrackImpl(DataSource dataSource, String lang) throws IOException {
+        super(dataSource.toString());
         this.dataSource = dataSource;
         this.trackMetaData.setLanguage(lang);
 

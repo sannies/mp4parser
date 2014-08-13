@@ -65,12 +65,14 @@ public class DTSTrackImpl extends AbstractTrack {
     private String lang = "eng";
 
     public DTSTrackImpl(DataSource dataSource, String lang) throws IOException {
+        super(dataSource.toString());
         this.lang = lang;
         this.dataSource = dataSource;
         parse();
     }
 
     public DTSTrackImpl(DataSource dataSource) throws IOException {
+        super(dataSource.toString());
         this.dataSource = dataSource;
         parse();
     }

@@ -186,6 +186,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             public ByteBuffer asByteBuffer() {
                 return (ByteBuffer) ((ByteBuffer) finalChunk.position(finalOffsetWithinChunk)).slice().limit(l2i(sampleSize));
             }
+
         };
     }
 

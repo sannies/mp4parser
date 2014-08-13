@@ -116,4 +116,8 @@ public class MultiplyTimeScaleTrack implements Track {
                 "source=" + source +
                 '}';
     }
+
+    public String getName() {
+        return "timscale(" + source.getName() + ")";
+    }
 }

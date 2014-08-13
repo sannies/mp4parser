@@ -62,4 +62,5 @@ public interface Track extends Closeable {
 
     public SubSampleInformationBox getSubsampleInformationBox();
 
+    public String getName();
 }

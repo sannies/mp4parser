@@ -57,7 +57,7 @@ public class H264TrackImpl extends AbstractTrack {
     private long[] decodingTimes;
 
     /**
-     * Creates a new <code>Track</code> object from a raw H264 source (<code>DataSource fc</code>).
+     * Creates a new <code>Track</code> object from a raw H264 source (<code>DataSource dataSource1</code>).
      * Whenever the timescale and frametick are set to negative value (e.g. -1) the H264TrackImpl
      * tries to detect the frame rate.
      * Typically values for <code>timescale</code> and <code>frametick</code> are:
@@ -68,17 +68,18 @@ public class H264TrackImpl extends AbstractTrack {
      * <li>30 FPS: timescale = 30; frametick = 1</li>
      * </ul>
      *
-     * @param fc        the source file of the H264 samples
+     * @param dataSource        the source file of the H264 samples
      * @param lang      language of the movie (in doubt: use "eng")
      * @param timescale number of time units (ticks) in one second
      * @param frametick number of time units (ticks) that pass while showing exactly one frame
      * @throws IOException in case of problems whiel reading from the <code>DataSource</code>
      */
-    public H264TrackImpl(DataSource fc, String lang, long timescale, int frametick) throws IOException {
+    public H264TrackImpl(DataSource dataSource, String lang, long timescale, int frametick) throws IOException {
+        super(dataSource.toString());
         this.lang = lang;
         this.timescale = timescale; //e.g. 23976
         this.frametick = frametick;
-        this.dataSource = fc;
+        this.dataSource = dataSource;
         if ((timescale > 0) && (frametick > 0)) {
             this.determineFrameRate = false;
         }
@@ -89,14 +90,16 @@ public class H264TrackImpl extends AbstractTrack {
         dataSource.close();
     }
 
-    public H264TrackImpl(DataSource fc, String lang) throws IOException {
+    public H264TrackImpl(DataSource dataSource, String lang) throws IOException {
+        super(dataSource.toString());
         this.lang = lang;
-        this.dataSource = fc;
+        this.dataSource = dataSource;
         parse(new LookAhead(dataSource));
     }
 
-    public H264TrackImpl(DataSource fc) throws IOException {
-        this.dataSource = fc;
+    public H264TrackImpl(DataSource dataSource) throws IOException {
+        super(dataSource.toString());
+        this.dataSource = dataSource;
         parse(new LookAhead(dataSource));
     }
 

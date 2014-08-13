@@ -42,6 +42,7 @@ public class TextTrackImpl extends AbstractTrack {
     }
 
     public TextTrackImpl() {
+        super("subtiles");
         sampleDescriptionBox = new SampleDescriptionBox();
         TextSampleEntry tx3g = new TextSampleEntry("tx3g");
         tx3g.setDataReferenceIndex(1);

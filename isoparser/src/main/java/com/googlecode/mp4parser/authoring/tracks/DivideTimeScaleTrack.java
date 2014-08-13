@@ -118,4 +118,8 @@ public class DivideTimeScaleTrack implements Track {
                 "source=" + source +
                 '}';
     }
+
+    public String getName() {
+        return "timscale(" + source.getName() + ")";
+    }
 }

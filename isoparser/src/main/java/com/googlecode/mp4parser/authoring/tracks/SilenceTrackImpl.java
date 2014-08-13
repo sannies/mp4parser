@@ -24,9 +24,11 @@ public class SilenceTrackImpl implements Track {
 
     List<Sample> samples = new LinkedList<Sample>();
     long[] decodingTimes;
+    String name;
 
     public SilenceTrackImpl(Track ofType, long ms) {
         source = ofType;
+        name = "" + ms + "ms silence";
         if ("mp4a".equals(ofType.getSampleDescriptionBox().getSampleEntry().getType())) {
             int numFrames = l2i(getTrackMetaData().getTimescale() * ms / 1000 / 1024);
             decodingTimes = new long[numFrames];
@@ -96,4 +98,7 @@ public class SilenceTrackImpl implements Track {
         return null;
     }
 
+    public String getName() {
+        return name;
+    }
 }

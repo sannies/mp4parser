@@ -13,18 +13,28 @@ import java.nio.channels.WritableByteChannel;
  */
 public class FileDataSourceImpl implements DataSource {
     FileChannel fc;
+    String filename;
 
 
     public FileDataSourceImpl(File f) throws FileNotFoundException {
         this.fc = new FileInputStream(f).getChannel();
+        this.filename = f.getName();
     }
 
     public FileDataSourceImpl(String f) throws FileNotFoundException {
-        this.fc = new FileInputStream(new File(f)).getChannel();
+        File file = new File(f);
+        this.fc = new FileInputStream(file).getChannel();
+        this.filename =  file.getName();
     }
+
 
     public FileDataSourceImpl(FileChannel fc) {
         this.fc = fc;
+        this.filename = "unknown";
+    }
+    public FileDataSourceImpl(FileChannel fc, String filename) {
+        this.fc = fc;
+        this.filename = filename;
     }
 
     public int read(ByteBuffer byteBuffer) throws IOException {
@@ -53,5 +63,10 @@ public class FileDataSourceImpl implements DataSource {
 
     public void close() throws IOException {
         fc.close();
+    }
+
+    @Override
+    public String toString() {
+        return filename;
     }
 }

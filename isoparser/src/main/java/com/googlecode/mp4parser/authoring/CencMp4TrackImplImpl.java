@@ -32,8 +32,8 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
      * @param trackBox  the <code>TrackBox</code> describing the track.
      * @param fragments additional fragments if located in more than a single file
      */
-    public CencMp4TrackImplImpl(TrackBox trackBox, IsoFile... fragments) throws IOException {
-        super(trackBox, fragments);
+    public CencMp4TrackImplImpl(String name, TrackBox trackBox, IsoFile... fragments) throws IOException {
+        super(name, trackBox, fragments);
 
         SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schm[0]");
         assert schm != null && schm.getSchemeType().equals("cenc") : "Track must be CENC encrypted";
@@ -192,17 +192,22 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
                 } else if (saiz != null && saiz.getAuxInfoType() == null && "cenc".equals(saizs.get(i).getAuxInfoType())) {
                     saiz = saizs.get(i);
                 } else {
-                    throw new RuntimeException("BULL.SHIT.");
+                    throw new RuntimeException("Are there two cenc labeled saiz?");
                 }
                 if (saio == null && (saios.get(i).getAuxInfoType() == null) || "cenc".equals(saios.get(i).getAuxInfoType())) {
                     saio = saios.get(i);
                 } else if (saio != null && saio.getAuxInfoType() == null && "cenc".equals(saios.get(i).getAuxInfoType())) {
                     saio = saios.get(i);
                 } else {
-                    throw new RuntimeException("BULL.SHIT.");
+                    throw new RuntimeException("Are there two cenc labeled saio?");
                 }
             }
             return this;
         }
+    }
+
+    @Override
+    public String getName() {
+        return "enc(" + super.getName() + ")";
     }
 }

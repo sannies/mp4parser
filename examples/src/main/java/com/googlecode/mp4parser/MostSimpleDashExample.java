@@ -32,7 +32,7 @@ public class MostSimpleDashExample {
             fragments.add(new IsoFile(basePath + "redbull_10sec" + i + ".m4s"));
         }
 
-        m.addTrack(new Mp4TrackImpl(
+        m.addTrack(new Mp4TrackImpl("redbull_100kbit_dash.mp4",
                 baseIsoFile.getMovieBox().getBoxes(TrackBox.class).get(0),
                 fragments.toArray(new IsoFile[fragments.size()])));
 

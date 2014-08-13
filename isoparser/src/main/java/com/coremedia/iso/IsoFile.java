@@ -64,10 +64,6 @@ public class IsoFile extends BasicContainer implements Closeable {
         initContainer(dataSource, dataSource.size(), boxParser);
     }
 
-    public String toString() {
-        return "IsoFile[" + dataSource.toString() + "]";
-    }
-
     public static byte[] fourCCtoBytes(String fourCC) {
         byte[] result = new byte[4];
         if (fourCC != null) {
@@ -117,5 +113,10 @@ public class IsoFile extends BasicContainer implements Closeable {
 
     public void close() throws IOException {
         this.dataSource.close();
+    }
+
+    @Override
+    public String toString() {
+        return "model(" + dataSource.toString() + ")";
     }
 }

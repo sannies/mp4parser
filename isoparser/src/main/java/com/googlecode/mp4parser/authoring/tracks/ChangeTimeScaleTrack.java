@@ -181,4 +181,8 @@ public class ChangeTimeScaleTrack implements Track {
                 "source=" + source +
                 '}';
     }
+
+    public String getName() {
+        return "timeScale(" + source.getName() + ")";
+    }
 }

@@ -54,7 +54,8 @@ public class Mp4TrackImpl extends AbstractTrack {
      * @param trackBox  the <code>TrackBox</code> describing the track.
      * @param fragments additional fragments if located in more than a single file
      */
-    public Mp4TrackImpl(TrackBox trackBox, IsoFile... fragments) {
+    public Mp4TrackImpl(String name, TrackBox trackBox, IsoFile... fragments) {
+        super(name);
         final long trackId = trackBox.getTrackHeaderBox().getTrackId();
         samples = new SampleList(trackBox, fragments);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
@@ -236,10 +237,5 @@ public class Mp4TrackImpl extends AbstractTrack {
         return null;
     }
 
-    @Override
-    public String toString() {
-        return "Mp4TrackImpl{" +
-                "handler='" + handler + '\'' +
-                '}';
-    }
+
 }

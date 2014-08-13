@@ -53,9 +53,9 @@ public class MovieCreator {
         for (TrackBox trackBox : trackBoxes) {
             SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schm[0]");
             if (schm != null && schm.getSchemeType().equals("cenc")) {
-                m.addTrack(new CencMp4TrackImplImpl(trackBox));
+                m.addTrack(new CencMp4TrackImplImpl(channel.toString() + "[" + trackBox.getTrackHeaderBox().getTrackId() + "]", trackBox));
             } else {
-                m.addTrack(new Mp4TrackImpl(trackBox));
+                m.addTrack(new Mp4TrackImpl(channel.toString() + "[" + trackBox.getTrackHeaderBox().getTrackId() + "]" , trackBox));
             }
         }
         m.setMatrix(isoFile.getMovieBox().getMovieHeaderBox().getMatrix());

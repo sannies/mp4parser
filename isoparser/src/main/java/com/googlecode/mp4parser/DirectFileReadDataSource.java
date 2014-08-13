@@ -21,9 +21,11 @@ public class DirectFileReadDataSource implements DataSource {
     private static final int TRANSFER_SIZE = 8192;
 
     private RandomAccessFile raf;
+    private String filename;
 
     public DirectFileReadDataSource(File f) throws IOException {
         this.raf = new RandomAccessFile(f, "r");
+        this.filename = f.getName();
     }
 
     public int read(ByteBuffer byteBuffer) throws IOException {
@@ -79,4 +81,8 @@ public class DirectFileReadDataSource implements DataSource {
     }
 
 
+    @Override
+    public String toString() {
+        return filename;
+    }
 }

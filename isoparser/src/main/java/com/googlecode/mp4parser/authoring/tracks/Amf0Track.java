@@ -45,6 +45,7 @@ public class Amf0Track extends AbstractTrack {
      * @param rawSamples raw samples of the track
      */
     public Amf0Track(Map<Long, byte[]> rawSamples) {
+        super("amf0");
         this.rawSamples = new TreeMap<Long, byte[]>(rawSamples);
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());

@@ -34,6 +34,7 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
 
 
     public CencDecryptingTrackImpl(CencEncyprtedTrack original, SecretKey key) {
+        super("dec(" + original.getName() + ")");
         this.original = original;
         SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(original.getSampleDescriptionBox(), "enc./sinf/schm");
         if (!"cenc".equals(schm.getSchemeType())) {
