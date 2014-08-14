@@ -44,10 +44,10 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
     private String groupingType;
     private int defaultLength;
     private List<GroupEntry> groupEntries = new LinkedList<GroupEntry>();
-    private int descriptionLength;
 
     public SampleGroupDescriptionBox() {
         super(TYPE);
+        setVersion(1);
     }
 
     @Override
@@ -97,8 +97,7 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
             int length = defaultLength;
             if (this.getVersion() == 1) {
                 if (defaultLength == 0) {
-                    descriptionLength = l2i(IsoTypeReader.readUInt32(content));
-                    length = descriptionLength;
+                    length = l2i(IsoTypeReader.readUInt32(content));
                 }
             } else {
                 throw new RuntimeException("This should be implemented");

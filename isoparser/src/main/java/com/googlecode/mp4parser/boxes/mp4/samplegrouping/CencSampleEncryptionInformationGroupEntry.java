@@ -19,9 +19,11 @@ package com.googlecode.mp4parser.boxes.mp4.samplegrouping;
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.util.UUIDConverter;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
@@ -34,34 +36,35 @@ import java.util.Arrays;
 public class CencSampleEncryptionInformationGroupEntry extends GroupEntry {
     public static final String TYPE = "seig";
 
-    private int isEncrypted;
+    private boolean isEncrypted;
     private byte ivSize;
-    private byte[] kid = new byte[16];
+    private UUID kid;
 
     @Override
     public void parse(ByteBuffer byteBuffer) {
-        isEncrypted = IsoTypeReader.readUInt24(byteBuffer);
+        isEncrypted = IsoTypeReader.readUInt24(byteBuffer) == 1;
         ivSize = (byte) IsoTypeReader.readUInt8(byteBuffer);
-        kid = new byte[16];
+        byte[] kid = new byte[16];
         byteBuffer.get(kid);
+        this.kid = UUIDConverter.convert(kid);
 
     }
 
     @Override
     public ByteBuffer get() {
         ByteBuffer byteBuffer = ByteBuffer.allocate(20);
-        IsoTypeWriter.writeUInt24(byteBuffer, isEncrypted);
+        IsoTypeWriter.writeUInt24(byteBuffer, isEncrypted?1:0);
         IsoTypeWriter.writeUInt8(byteBuffer, ivSize);
-        byteBuffer.put(kid);
+        byteBuffer.put(UUIDConverter.convert(kid));
         byteBuffer.rewind();
         return byteBuffer;
     }
 
-    public int getEncrypted() {
+    public boolean isEncrypted() {
         return isEncrypted;
     }
 
-    public void setEncrypted(int encrypted) {
+    public void setEncrypted(boolean encrypted) {
         isEncrypted = encrypted;
     }
 
@@ -69,16 +72,15 @@ public class CencSampleEncryptionInformationGroupEntry extends GroupEntry {
         return ivSize;
     }
 
-    public void setIvSize(byte ivSize) {
-        this.ivSize = ivSize;
+    public void setIvSize(int ivSize) {
+        this.ivSize = (byte) ivSize;
     }
 
-    public byte[] getKid() {
+    public UUID getKid() {
         return kid;
     }
 
-    public void setKid(byte[] kid) {
-        assert kid.length == 16;
+    public void setKid(UUID kid) {
         this.kid = kid;
     }
 
@@ -87,7 +89,7 @@ public class CencSampleEncryptionInformationGroupEntry extends GroupEntry {
         return "CencSampleEncryptionInformationGroupEntry{" +
                 "isEncrypted=" + isEncrypted +
                 ", ivSize=" + ivSize +
-                ", kid=" + Hex.encodeHex(kid) +
+                ", kid=" + kid +
                 '}';
     }
 
@@ -108,7 +110,7 @@ public class CencSampleEncryptionInformationGroupEntry extends GroupEntry {
         if (ivSize != that.ivSize) {
             return false;
         }
-        if (!Arrays.equals(kid, that.kid)) {
+        if (!kid.equals(that.kid)) {
             return false;
         }
 
@@ -117,9 +119,9 @@ public class CencSampleEncryptionInformationGroupEntry extends GroupEntry {
 
     @Override
     public int hashCode() {
-        int result = isEncrypted;
+        int result = isEncrypted?7:19;
         result = 31 * result + (int) ivSize;
-        result = 31 * result + (kid != null ? Arrays.hashCode(kid) : 0);
+        result = 31 * result + (kid != null ? kid.hashCode() : 0);
         return result;
     }
 }
