@@ -61,7 +61,6 @@ public class Mp4TrackImpl extends AbstractTrack {
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
         handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
 
-        mihd = trackBox.getMediaBox().getMediaInformationBox().getMediaHeaderBox();
         List<TimeToSampleBox.Entry> decodingTimeEntries = new ArrayList<TimeToSampleBox.Entry>();
         compositionTimeEntries = new ArrayList<CompositionTimeToSample.Entry>();
         sampleDependencies = new ArrayList<SampleDependencyTypeBox.Entry>();
@@ -227,10 +226,6 @@ public class Mp4TrackImpl extends AbstractTrack {
 
     public String getHandler() {
         return handler;
-    }
-
-    public AbstractMediaHeaderBox getMediaHeaderBox() {
-        return mihd;
     }
 
     public SubSampleInformationBox getSubsampleInformationBox() {

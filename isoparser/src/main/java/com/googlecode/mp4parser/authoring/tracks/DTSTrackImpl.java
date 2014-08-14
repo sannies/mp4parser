@@ -139,10 +139,6 @@ public class DTSTrackImpl extends AbstractTrack {
         return "soun";
     }
 
-    public AbstractMediaHeaderBox getMediaHeaderBox() {
-        return new SoundMediaHeaderBox();
-    }
-
     private boolean parseDtshdhdr(int size, ByteBuffer bb) {
         int hdrVersion = bb.getInt();
         int timeCodeHigh = bb.get();

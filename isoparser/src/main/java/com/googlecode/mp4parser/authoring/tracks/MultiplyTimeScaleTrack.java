@@ -98,10 +98,6 @@ public class MultiplyTimeScaleTrack implements Track {
         return scaled;
     }
 
-    public Box getMediaHeaderBox() {
-        return source.getMediaHeaderBox();
-    }
-
     public SubSampleInformationBox getSubsampleInformationBox() {
         return source.getSubsampleInformationBox();
     }

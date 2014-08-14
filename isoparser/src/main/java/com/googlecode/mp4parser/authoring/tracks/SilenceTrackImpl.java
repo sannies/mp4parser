@@ -78,10 +78,6 @@ public class SilenceTrackImpl implements Track {
         return samples;
     }
 
-    public Box getMediaHeaderBox() {
-        return source.getMediaHeaderBox();
-    }
-
     public SubSampleInformationBox getSubsampleInformationBox() {
         return null;
     }

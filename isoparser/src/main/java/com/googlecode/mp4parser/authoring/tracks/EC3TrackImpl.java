@@ -151,10 +151,6 @@ public class EC3TrackImpl extends AbstractTrack {
         return "soun";
     }
 
-    public AbstractMediaHeaderBox getMediaHeaderBox() {
-        return new SoundMediaHeaderBox();
-    }
-
     public SubSampleInformationBox getSubsampleInformationBox() {
         return null;
     }

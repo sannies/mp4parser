@@ -178,10 +178,6 @@ public class CroppedTrack extends AbstractTrack {
         return origTrack.getHandler();
     }
 
-    public Box getMediaHeaderBox() {
-        return origTrack.getMediaHeaderBox();
-    }
-
     public SubSampleInformationBox getSubsampleInformationBox() {
         return origTrack.getSubsampleInformationBox();
     }

@@ -146,10 +146,6 @@ public class MP3TrackImpl extends AbstractTrack {
         return samples;
     }
 
-    public Box getMediaHeaderBox() {
-        return new SoundMediaHeaderBox();
-    }
-
     class MP3Header {
         int mpegVersion;
         int layer;

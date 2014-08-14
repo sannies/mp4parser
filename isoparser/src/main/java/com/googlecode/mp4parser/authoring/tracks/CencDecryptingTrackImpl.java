@@ -97,10 +97,6 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
         return samples;
     }
 
-    public Box getMediaHeaderBox() {
-        return original.getMediaHeaderBox();
-    }
-
     public class CencDecryptingSampleList extends AbstractList<Sample> {
 
         List<CencSampleAuxiliaryDataFormat> sencInfo;

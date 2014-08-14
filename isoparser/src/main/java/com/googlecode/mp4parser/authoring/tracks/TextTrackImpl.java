@@ -165,9 +165,6 @@ public class TextTrackImpl extends AbstractTrack {
         }
     }
 
-    public AbstractMediaHeaderBox getMediaHeaderBox() {
-        return new NullMediaHeaderBox();
-    }
 
     public SubSampleInformationBox getSubsampleInformationBox() {
         return null;

@@ -159,10 +159,6 @@ public class ChangeTimeScaleTrack implements Track {
         return scaledArray;
     }
 
-    public Box getMediaHeaderBox() {
-        return source.getMediaHeaderBox();
-    }
-
     public SubSampleInformationBox getSubsampleInformationBox() {
         return source.getSubsampleInformationBox();
     }

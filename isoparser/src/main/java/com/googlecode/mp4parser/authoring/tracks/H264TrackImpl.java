@@ -184,10 +184,6 @@ public class H264TrackImpl extends AbstractTrack {
         return samples;
     }
 
-    public AbstractMediaHeaderBox getMediaHeaderBox() {
-        return new VideoMediaHeaderBox();
-    }
-
     private boolean readVariables() {
         width = (seqParameterSet.pic_width_in_mbs_minus1 + 1) * 16;
         int mult = 2;

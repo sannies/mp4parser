@@ -109,10 +109,6 @@ public class Amf0Track extends AbstractTrack {
         return "data";
     }
 
-    public Box getMediaHeaderBox() {
-        return new NullMediaHeaderBox();
-    }
-
     public SubSampleInformationBox getSubsampleInformationBox() {
         return null;
     }

@@ -196,10 +196,6 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
         return samples;
     }
 
-    public Box getMediaHeaderBox() {
-        return source.getMediaHeaderBox();
-    }
-
     public SubSampleInformationBox getSubsampleInformationBox() {
         return source.getSubsampleInformationBox();
     }

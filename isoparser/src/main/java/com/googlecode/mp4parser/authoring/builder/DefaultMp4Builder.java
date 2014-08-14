@@ -252,7 +252,19 @@ public class DefaultMp4Builder implements Mp4Builder {
         hdlr.setHandlerType(track.getHandler());
 
         MediaInformationBox minf = new MediaInformationBox();
-        minf.addBox(track.getMediaHeaderBox());
+        if (track.getHandler().equals("vide")) {
+            minf.addBox(new VideoMediaHeaderBox());
+        } else if (track.getHandler().equals("soun")) {
+            minf.addBox(new SoundMediaHeaderBox());
+        } else if (track.getHandler().equals("text")) {
+            minf.addBox(new NullMediaHeaderBox());
+        } else if (track.getHandler().equals("subt")) {
+            minf.addBox(new SubtitleMediaHeaderBox());
+        } else if (track.getHandler().equals("hint")) {
+            minf.addBox(new HintMediaHeaderBox());
+        } else if (track.getHandler().equals("sbtl")) {
+            minf.addBox(new NullMediaHeaderBox());
+        }
 
         // dinf: all these three boxes tell us is that the actual
         // data is in the current file and not somewhere external

@@ -96,10 +96,6 @@ public class DivideTimeScaleTrack implements Track {
         }
     }
 
-    public Box getMediaHeaderBox() {
-        return source.getMediaHeaderBox();
-    }
-
     public SubSampleInformationBox getSubsampleInformationBox() {
         return source.getSubsampleInformationBox();
     }

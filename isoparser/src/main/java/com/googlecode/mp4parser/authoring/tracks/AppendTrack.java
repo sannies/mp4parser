@@ -461,10 +461,6 @@ public class AppendTrack extends AbstractTrack {
         return tracks[0].getHandler();
     }
 
-    public Box getMediaHeaderBox() {
-        return tracks[0].getMediaHeaderBox();
-    }
-
     public SubSampleInformationBox getSubsampleInformationBox() {
         return tracks[0].getSubsampleInformationBox();
     }
