@@ -58,8 +58,6 @@ public interface Track extends Closeable {
 
     List<Sample> getSamples();
 
-    public Box getMediaHeaderBox();
-
     public SubSampleInformationBox getSubsampleInformationBox();
 
     public String getName();
