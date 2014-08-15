@@ -1,5 +1,6 @@
 package com.googlecode.mp4parser;
 
+import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
@@ -24,10 +25,9 @@ public class FindCommonSync {
             List<Track> tracks = invideo.getTracks();
 
             for (Track t : tracks) {
-                String type = t.getMediaHeaderBox().getType();
-                String ctype = t.getSampleDescriptionBox().getSampleEntry().getType();
-                System.out.println("Track of type " + type + " (" + ctype + ")");
-                if (type.equals("vmhd")) {
+                String type = t.getSampleDescriptionBox().getSampleEntry().getType();
+                System.out.println("Track of type " + type );
+                if (t.getSampleDescriptionBox().getSampleEntry() instanceof VisualSampleEntry) {
                     HashMap<Integer, Integer> previous = (HashMap<Integer, Integer>) common.clone();
                     common.clear();
                     System.out.println("Found video track in " + arg);

@@ -21,7 +21,7 @@ public class DumpAmf0TrackToPropertyFile {
 
 
         for (Track track : movie.getTracks()) {
-            if (track.getHandler().equals("data") && (track.getMediaHeaderBox() instanceof NullMediaHeaderBox)) {
+            if (track.getHandler().equals("data") ) {
                 long time = 0;
                 Iterator<Sample> samples = track.getSamples().iterator();
                 Properties properties = new Properties();
