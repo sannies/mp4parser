@@ -83,7 +83,7 @@ public class SubSampleInformationBox extends AbstractFullBox {
                 subsampleEntry.setSubsamplePriority(IsoTypeReader.readUInt8(content));
                 subsampleEntry.setDiscardable(IsoTypeReader.readUInt8(content));
                 subsampleEntry.setReserved(IsoTypeReader.readUInt32(content));
-                sampleEntry.addSubsampleEntry(subsampleEntry);
+                sampleEntry.getSubsampleEntries().add(subsampleEntry);
             }
             entries.add(sampleEntry);
         }
@@ -121,7 +121,6 @@ public class SubSampleInformationBox extends AbstractFullBox {
 
     public static class SampleEntry {
         private long sampleDelta;
-        private int subsampleCount;
         private List<SubsampleEntry> subsampleEntries = new ArrayList<SubsampleEntry>();
 
         public long getSampleDelta() {
@@ -133,20 +132,11 @@ public class SubSampleInformationBox extends AbstractFullBox {
         }
 
         public int getSubsampleCount() {
-            return subsampleCount;
-        }
-
-        public void setSubsampleCount(int subsampleCount) {
-            this.subsampleCount = subsampleCount;
+            return subsampleEntries.size();
         }
 
         public List<SubsampleEntry> getSubsampleEntries() {
             return subsampleEntries;
-        }
-
-        public void addSubsampleEntry(SubsampleEntry subsampleEntry) {
-            subsampleEntries.add(subsampleEntry);
-            subsampleCount++;
         }
 
         public static class SubsampleEntry {
@@ -202,7 +192,7 @@ public class SubSampleInformationBox extends AbstractFullBox {
         public String toString() {
             return "SampleEntry{" +
                     "sampleDelta=" + sampleDelta +
-                    ", subsampleCount=" + subsampleCount +
+                    ", subsampleCount=" + subsampleEntries.size() +
                     ", subsampleEntries=" + subsampleEntries +
                     '}';
         }

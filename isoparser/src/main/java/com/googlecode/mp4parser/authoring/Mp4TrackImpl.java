@@ -23,10 +23,7 @@ import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -42,7 +39,7 @@ public class Mp4TrackImpl extends AbstractTrack {
     private List<SampleDependencyTypeBox.Entry> sampleDependencies;
     private TrackMetaData trackMetaData = new TrackMetaData();
     private String handler;
-    private AbstractMediaHeaderBox mihd;
+    private SubSampleInformationBox subSampleInformationBox = null;
 
     TrackBox trackBox;
     IsoFile[] fragments;
@@ -78,12 +75,17 @@ public class Mp4TrackImpl extends AbstractTrack {
 
 
         sampleDescriptionBox = stbl.getSampleDescriptionBox();
+        int lastSubsSample = 0;
         final List<MovieExtendsBox> movieExtendsBoxes = trackBox.getParent().getBoxes(MovieExtendsBox.class);
         if (movieExtendsBoxes.size() > 0) {
             for (MovieExtendsBox mvex : movieExtendsBoxes) {
                 final List<TrackExtendsBox> trackExtendsBoxes = mvex.getBoxes(TrackExtendsBox.class);
                 for (TrackExtendsBox trex : trackExtendsBoxes) {
                     if (trex.getTrackId() == trackId) {
+                        List<SubSampleInformationBox> subss = Path.getPaths(((Box)trackBox.getParent()).getParent(), "/moof/traf/subs");
+                        if (subss.size()>0) {
+                            subSampleInformationBox = new SubSampleInformationBox();
+                        }
                         List<Long> syncSampleList = new LinkedList<Long>();
 
                         long sampleNumber = 1;
@@ -92,6 +94,22 @@ public class Mp4TrackImpl extends AbstractTrack {
                             for (TrackFragmentBox traf : trafs) {
                                 if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
 
+
+                                    SubSampleInformationBox subs = Path.getPath(traf, "subs");
+                                    if (subs!=null) {
+                                        long difFromLastFragment = sampleNumber - lastSubsSample - 1;
+                                        for (SubSampleInformationBox.SampleEntry sampleEntry : subs.getEntries()) {
+                                            SubSampleInformationBox.SampleEntry se = new SubSampleInformationBox.SampleEntry();
+                                            se.getSubsampleEntries().addAll(sampleEntry.getSubsampleEntries());
+                                            if (difFromLastFragment != 0) {
+                                                se.setSampleDelta(difFromLastFragment + sampleEntry.getSampleDelta());
+                                                difFromLastFragment = 0;
+                                            } else {
+                                                se.setSampleDelta(sampleEntry.getSampleDelta());
+                                            }
+                                            subSampleInformationBox.getEntries().add(se);
+                                        }
+                                    }
 
                                     List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
                                     for (TrackRunBox trun : truns) {
@@ -229,7 +247,7 @@ public class Mp4TrackImpl extends AbstractTrack {
     }
 
     public SubSampleInformationBox getSubsampleInformationBox() {
-        return null;
+        return subSampleInformationBox;
     }
 
 
