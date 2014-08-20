@@ -72,7 +72,7 @@ public class Mp4TrackImpl extends AbstractTrack {
         if (stbl.getSyncSampleBox() != null) {
             syncSamples = stbl.getSyncSampleBox().getSampleNumber();
         }
-
+        subSampleInformationBox = Path.getPath(stbl, "subs");
 
         sampleDescriptionBox = stbl.getSampleDescriptionBox();
         int lastSubsSample = 0;
@@ -98,14 +98,14 @@ public class Mp4TrackImpl extends AbstractTrack {
                                     SubSampleInformationBox subs = Path.getPath(traf, "subs");
                                     if (subs!=null) {
                                         long difFromLastFragment = sampleNumber - lastSubsSample - 1;
-                                        for (SubSampleInformationBox.SampleEntry sampleEntry : subs.getEntries()) {
-                                            SubSampleInformationBox.SampleEntry se = new SubSampleInformationBox.SampleEntry();
-                                            se.getSubsampleEntries().addAll(sampleEntry.getSubsampleEntries());
+                                        for (SubSampleInformationBox.SubSampleEntry subSampleEntry : subs.getEntries()) {
+                                            SubSampleInformationBox.SubSampleEntry se = new SubSampleInformationBox.SubSampleEntry();
+                                            se.getSubsampleEntries().addAll(subSampleEntry.getSubsampleEntries());
                                             if (difFromLastFragment != 0) {
-                                                se.setSampleDelta(difFromLastFragment + sampleEntry.getSampleDelta());
+                                                se.setSampleDelta(difFromLastFragment + subSampleEntry.getSampleDelta());
                                                 difFromLastFragment = 0;
                                             } else {
-                                                se.setSampleDelta(sampleEntry.getSampleDelta());
+                                                se.setSampleDelta(subSampleEntry.getSampleDelta());
                                             }
                                             subSampleInformationBox.getEntries().add(se);
                                         }
