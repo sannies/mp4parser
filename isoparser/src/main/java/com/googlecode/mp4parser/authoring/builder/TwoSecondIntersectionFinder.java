@@ -48,6 +48,7 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
         }
 
         int fragmentCount = (int) Math.ceil(trackLength / fragmentLength) - 1;
+        fragmentCount = Math.min(fragmentCount, track.getSamples().size());
         if (fragmentCount < 1) {
             fragmentCount = 1;
         }
