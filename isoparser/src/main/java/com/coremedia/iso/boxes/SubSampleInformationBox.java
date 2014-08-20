@@ -41,51 +41,60 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 public class SubSampleInformationBox extends AbstractFullBox {
     public static final String TYPE = "subs";
 
-    private long entryCount;
-    private List<SampleEntry> entries = new ArrayList<SampleEntry>();
+    private List<SubSampleEntry> entries = new ArrayList<SubSampleEntry>();
 
     public SubSampleInformationBox() {
         super(TYPE);
     }
 
-    public List<SampleEntry> getEntries() {
+    public List<SubSampleEntry> getEntries() {
         return entries;
     }
 
-    public void setEntries(List<SampleEntry> entries) {
+    public void setEntries(List<SubSampleEntry> entries) {
         this.entries = entries;
-        entryCount = entries.size();
     }
 
     @Override
     protected long getContentSize() {
-        long entries = 8 + ((4 + 2) * entryCount);
-        int subsampleEntries = 0;
-        for (SampleEntry sampleEntry : this.entries) {
-            subsampleEntries += sampleEntry.getSubsampleCount() * (((getVersion() == 1) ? 4 : 2) + 1 + 1 + 4);
+        long size = 8;
+
+        for (SubSampleEntry entry : entries) {
+            size += 4;
+            size += 2;
+            for (int j = 0; j < entry.getSubsampleEntries().size(); j++) {
+
+                if (getVersion() == 1) {
+                    size += 4;
+                } else {
+                    size += 2;
+                }
+                size += 2;
+                size += 4;
+            }
         }
-        return entries + subsampleEntries;
+        return size;
     }
 
     @Override
     public void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
 
-        entryCount = IsoTypeReader.readUInt32(content);
+        long entryCount = IsoTypeReader.readUInt32(content);
 
         for (int i = 0; i < entryCount; i++) {
-            SampleEntry sampleEntry = new SampleEntry();
-            sampleEntry.setSampleDelta(IsoTypeReader.readUInt32(content));
+            SubSampleEntry SubSampleEntry = new SubSampleEntry();
+            SubSampleEntry.setSampleDelta(IsoTypeReader.readUInt32(content));
             int subsampleCount = IsoTypeReader.readUInt16(content);
             for (int j = 0; j < subsampleCount; j++) {
-                SampleEntry.SubsampleEntry subsampleEntry = new SampleEntry.SubsampleEntry();
+                SubSampleEntry.SubsampleEntry subsampleEntry = new SubSampleEntry.SubsampleEntry();
                 subsampleEntry.setSubsampleSize(getVersion() == 1 ? IsoTypeReader.readUInt32(content) : IsoTypeReader.readUInt16(content));
                 subsampleEntry.setSubsamplePriority(IsoTypeReader.readUInt8(content));
                 subsampleEntry.setDiscardable(IsoTypeReader.readUInt8(content));
                 subsampleEntry.setReserved(IsoTypeReader.readUInt32(content));
-                sampleEntry.getSubsampleEntries().add(subsampleEntry);
+                SubSampleEntry.getSubsampleEntries().add(subsampleEntry);
             }
-            entries.add(sampleEntry);
+            entries.add(SubSampleEntry);
         }
 
     }
@@ -94,11 +103,11 @@ public class SubSampleInformationBox extends AbstractFullBox {
     protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
         IsoTypeWriter.writeUInt32(byteBuffer, entries.size());
-        for (SampleEntry sampleEntry : entries) {
-            IsoTypeWriter.writeUInt32(byteBuffer, sampleEntry.getSampleDelta());
-            IsoTypeWriter.writeUInt16(byteBuffer, sampleEntry.getSubsampleCount());
-            List<SampleEntry.SubsampleEntry> subsampleEntries = sampleEntry.getSubsampleEntries();
-            for (SampleEntry.SubsampleEntry subsampleEntry : subsampleEntries) {
+        for (SubSampleEntry subSampleEntry : entries) {
+            IsoTypeWriter.writeUInt32(byteBuffer, subSampleEntry.getSampleDelta());
+            IsoTypeWriter.writeUInt16(byteBuffer, subSampleEntry.getSubsampleCount());
+            List<SubSampleEntry.SubsampleEntry> subsampleEntries = subSampleEntry.getSubsampleEntries();
+            for (SubSampleEntry.SubsampleEntry subsampleEntry : subsampleEntries) {
                 if (getVersion() == 1) {
                     IsoTypeWriter.writeUInt32(byteBuffer, subsampleEntry.getSubsampleSize());
                 } else {
@@ -114,12 +123,12 @@ public class SubSampleInformationBox extends AbstractFullBox {
     @Override
     public String toString() {
         return "SubSampleInformationBox{" +
-                "entryCount=" + entryCount +
+                "entryCount=" + entries.size() +
                 ", entries=" + entries +
                 '}';
     }
 
-    public static class SampleEntry {
+    public static class SubSampleEntry {
         private long sampleDelta;
         private List<SubsampleEntry> subsampleEntries = new ArrayList<SubsampleEntry>();
 
