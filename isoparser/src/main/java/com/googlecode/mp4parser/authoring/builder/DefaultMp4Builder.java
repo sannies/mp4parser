@@ -299,8 +299,13 @@ public class DefaultMp4Builder implements Mp4Builder {
         if (track instanceof CencEncyprtedTrack) {
             createCencBoxes((CencEncyprtedTrack) track, stbl, chunks.get(track));
         }
+        createSubs(track, stbl);
 
         return stbl;
+    }
+
+    protected void createSubs(Track track, SampleTableBox stbl) {
+        stbl.addBox(track.getSubsampleInformationBox());
     }
 
     protected void createCencBoxes(CencEncyprtedTrack track, SampleTableBox stbl, int[] chunkSizes) {
