@@ -86,11 +86,11 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
         Box moov = createMovieBox(movie, chunks);
         isoFile.addBox(moov);
-        List<Box> stszs = Path.getPaths(moov, "trak/mdia/minf/stbl/stsz");
+        List<SampleSizeBox> stszs = Path.getPaths(moov, "trak/mdia/minf/stbl/stsz");
 
         long contentSize = 0;
-        for (Box stsz : stszs) {
-            contentSize += sum(((SampleSizeBox) stsz).getSampleSizes());
+        for (SampleSizeBox stsz : stszs) {
+            contentSize += sum(stsz.getSampleSizes());
 
         }
 

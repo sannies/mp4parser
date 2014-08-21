@@ -62,10 +62,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return new Date();
     }
 
-    public List<String> getAllowedHandlers() {
-        return Arrays.asList("soun", "vide");
-    }
-
     public Box createFtyp(Movie movie) {
         List<String> minorBrands = new LinkedList<String>();
         minorBrands.add("isom");
@@ -111,51 +107,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return tracks;
     }
 
-    /**
-     * Progressive Download Box required as per iso2 brand
-     */
-    protected Box createPdin(Movie movie) {
-        ProgressiveDownloadInformationBox pdin = new ProgressiveDownloadInformationBox();
-        LinkedList<ProgressiveDownloadInformationBox.Entry> entries = new LinkedList<ProgressiveDownloadInformationBox.Entry>();
-        //todo: not a tiny bit exact but who cares
-        double size = 0;
-        long durationInSeconds = 0;
-        for (Track track : movie.getTracks()) {
-            long tracksDuration = track.getDuration() / track.getTrackMetaData().getTimescale();
-            if (tracksDuration > durationInSeconds) {
-                durationInSeconds = tracksDuration;
-            }
-            List<Sample> samples = track.getSamples();
-            if (samples.size() < 10000) {
-                for (Sample sample : samples) {
-                    size += sample.getSize();
-                }
-            } else {
-                long _size = 0;
-                for (int i = 0; i < 10000; i++) {
-                    _size += samples.get(i).getSize();
-                }
-                size += _size * samples.size() / 10000;
-            }
-
-        }
-        size *= 1.2; // security margin
-        double byteRate = size / durationInSeconds;
-        long dlRate = 10000;
-
-        do {
-            //long waitTime = (videoRate - dlRate) * durationInSeconds / dlRate;
-            long waitTimeMilliseconds = Math.round((byteRate * durationInSeconds) / dlRate - durationInSeconds) * 1000;
-
-            ProgressiveDownloadInformationBox.Entry entry =
-                    new ProgressiveDownloadInformationBox.Entry(dlRate, waitTimeMilliseconds > 0 ? waitTimeMilliseconds + 3000 : 0);
-            entries.add(entry);
-            dlRate *= 2; // double dlRate 10k 20k 40k 80k 160k 320k 640k 1.2m 2.5m 5m
-        } while (byteRate > dlRate);
-        pdin.setEntries(entries);
-
-        return pdin;
-    }
 
     protected List<Box> createMoofMdat(final Movie movie) {
         List<Box> moofsMdats = new LinkedList<Box>();
@@ -176,10 +127,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
             final List<Track> sortedTracks = sortTracksInSequence(movie.getTracks(), cycle, intersectionMap);
 
             for (Track track : sortedTracks) {
-                if (getAllowedHandlers().isEmpty() || getAllowedHandlers().contains(track.getHandler())) {
-                    long[] startSamples = intersectionMap.get(track);
-                    sequence = createFragment(moofsMdats, track, startSamples, cycle, sequence);
-                }
+                long[] startSamples = intersectionMap.get(track);
+                sequence = createFragment(moofsMdats, track, startSamples, cycle, sequence);
             }
         }
         return moofsMdats;
@@ -328,7 +277,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     protected void createSaio(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
-        SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(track.getSampleDescriptionBox(), "enc.[0]/sinf[0]/schm[0]");
+        SchemeTypeBox schm = Path.getPath(track.getSampleDescriptionBox(), "enc.[0]/sinf[0]/schm[0]");
 
         SampleAuxiliaryInformationOffsetsBox saio = new SampleAuxiliaryInformationOffsetsBox();
         parent.addBox(saio);
@@ -362,8 +311,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     protected void createSaiz(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
         SampleDescriptionBox sampleDescriptionBox = track.getSampleDescriptionBox();
-        SchemeTypeBox schm = (SchemeTypeBox) Path.getPath(sampleDescriptionBox, "enc.[0]/sinf[0]/schm[0]");
-        TrackEncryptionBox tenc = (TrackEncryptionBox) Path.getPath(sampleDescriptionBox, "enc.[0]/sinf[0]/schi[0]/tenc[0]");
+        SchemeTypeBox schm = Path.getPath(sampleDescriptionBox, "enc.[0]/sinf[0]/schm[0]");
+        TrackEncryptionBox tenc = Path.getPath(sampleDescriptionBox, "enc.[0]/sinf[0]/schi[0]/tenc[0]");
 
         SampleAuxiliaryInformationSizesBox saiz = new SampleAuxiliaryInformationSizesBox();
         saiz.setAuxInfoType(schm.getSchemeType());
@@ -603,10 +552,10 @@ public class FragmentedMp4Builder implements Mp4Builder {
         List<TrackFragmentRandomAccessBox.Entry> offset2timeEntries = new LinkedList<TrackFragmentRandomAccessBox.Entry>();
 
         TrackExtendsBox trex = null;
-        List<Box> trexs = Path.getPaths(isoFile, "moov/mvex/trex");
-        for (Box innerTrex : trexs) {
-            if (((TrackExtendsBox) innerTrex).getTrackId() == track.getTrackMetaData().getTrackId()) {
-                trex = (TrackExtendsBox) innerTrex;
+        List<TrackExtendsBox> trexs = Path.getPaths(isoFile, "moov/mvex/trex");
+        for (TrackExtendsBox innerTrex : trexs) {
+            if (innerTrex.getTrackId() == track.getTrackMetaData().getTrackId()) {
+                trex = innerTrex;
             }
         }
 

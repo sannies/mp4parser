@@ -37,19 +37,20 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
     public FragmentedMp4SampleList(long track, Container topLevel, IsoFile... fragments) {
         this.topLevel = topLevel;
         this.fragments = fragments;
-
-        for (Box tb : Path.getPaths(topLevel, "moov[0]/trak")) {
-            if (((TrackBox)tb).getTrackHeaderBox().getTrackId() == track) {
-                trackBox = (TrackBox) tb;
+        List<TrackBox> tbs = Path.getPaths(topLevel, "moov[0]/trak");
+        for (TrackBox tb : tbs) {
+            if (tb.getTrackHeaderBox().getTrackId() == track) {
+                trackBox = tb;
             }
         }
         if (trackBox == null) {
             throw new RuntimeException("This MP4 does not contain track " + track);
         }
 
-        for (Box box : Path.getPaths(topLevel, "moov[0]/mvex[0]/trex")) {
-            if (((TrackExtendsBox) box).getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
-                trex = ((TrackExtendsBox) box);
+        List<TrackExtendsBox> trexs = Path.getPaths(topLevel, "moov[0]/mvex[0]/trex");
+        for (TrackExtendsBox box : trexs) {
+            if (box.getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
+                trex = box;
             }
         }
         sampleCache = (SoftReference<Sample>[]) Array.newInstance(SoftReference.class, size());
