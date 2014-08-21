@@ -8,6 +8,7 @@ import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.util.ChannelHelper;
+import com.googlecode.mp4parser.util.Iso639;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -72,6 +73,7 @@ public class SMPTETTTrackImpl extends AbstractTrack {
         dbFactory.setNamespaceAware(true);
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         long startTime = 0;
+        String firstLang = null;
         for (int sampleNo = 0; sampleNo < files.length; sampleNo++) {
             final File file = files[sampleNo];
             SubSampleInformationBox.SubSampleEntry subSampleEntry = new SubSampleInformationBox.SubSampleEntry();
@@ -79,6 +81,13 @@ public class SMPTETTTrackImpl extends AbstractTrack {
             subSampleEntry.setSampleDelta(1);
 
             Document doc = dBuilder.parse(file);
+            String lang = doc.getDocumentElement().getAttribute("xml:lang");
+            if (firstLang == null) {
+                firstLang = lang;
+            } else if (!firstLang.equals(lang)) {
+                throw new RuntimeException("Within one Track all sample documents need to have the same language");
+            }
+
             XPathFactory xPathfactory = XPathFactory.newInstance();
             NamespaceContext ctx = new TextTrackNamespaceContext();
             XPath xpath = xPathfactory.newXPath();
@@ -196,6 +205,7 @@ public class SMPTETTTrackImpl extends AbstractTrack {
 
 
         }
+        trackMetaData.setLanguage(Iso639.convert2to3(firstLang));
         subtitleSampleEntry.setNamespace(SMPTE_TT_NAMESPACE);
         subtitleSampleEntry.setSchemaLocation(SMPTE_TT_NAMESPACE);
         if (containsImages) {
@@ -206,6 +216,8 @@ public class SMPTETTTrackImpl extends AbstractTrack {
         sampleDescriptionBox.addBox(subtitleSampleEntry);
         trackMetaData.setTimescale(30000);
         trackMetaData.setLayer(65535);
+
+
 
 
     }
