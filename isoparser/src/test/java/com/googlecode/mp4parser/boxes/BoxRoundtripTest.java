@@ -31,7 +31,7 @@ public abstract class BoxRoundtripTest {
     Map<String, Object> props;
 
 
-    protected BoxRoundtripTest(Box boxUnderTest, Map.Entry<String, Object>... properties) {
+    public BoxRoundtripTest(Box boxUnderTest, Map.Entry<String, Object>... properties) {
         this.boxUnderTest = boxUnderTest;
         this.props = new HashMap<String, Object>();
         for (Map.Entry<String, Object> property : properties) {

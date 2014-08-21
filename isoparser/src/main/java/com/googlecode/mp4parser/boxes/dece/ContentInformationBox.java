@@ -1,0 +1,231 @@
+package com.googlecode.mp4parser.boxes.dece;
+
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.Utf8;
+import com.googlecode.mp4parser.AbstractFullBox;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * aligned(8) class ContentInformationBox
+ * extends FullBox(‘cinf’, version=0, flags=0)
+ * {
+ * <p/>
+ * <p/>
+ * <p/>
+ * string 				mimeSubtypeName;
+ * string				profile-level-idc;
+ * string				codecs;
+ * unsigned int(8) 	protection;
+ * string				languages;
+ * unsigned int(8) 	brand_entry_count;
+ * for( int i=0; i < brand_entry_count; i++)
+ * {
+ * string   iso_brand;
+ * string   version
+ * }
+ * unsigned int(8) 	id_entry_count;
+ * for( int i=0; i < id_entry_count; i++)
+ * {
+ * string	namespace;
+ * string	asset_id;
+ * }
+ * }
+ */
+public class ContentInformationBox extends AbstractFullBox {
+    public static final String TYPE = "cinf";
+
+    String mimeSubtypeName;
+    String profileLevelIdc;
+    String codecs;
+    String protection;
+    String languages;
+
+    List<BrandEntry> brandEntries = new ArrayList<BrandEntry>();
+    List<IdEntry> idEntries = new ArrayList<IdEntry>();
+
+    public ContentInformationBox() {
+        super(TYPE);
+    }
+
+    @Override
+    protected long getContentSize() {
+        long size = 4;
+        size += Utf8.utf8StringLengthInBytes(mimeSubtypeName) + 1;
+        size += Utf8.utf8StringLengthInBytes(profileLevelIdc) + 1;
+        size += Utf8.utf8StringLengthInBytes(codecs) + 1;
+        size += Utf8.utf8StringLengthInBytes(protection) + 1;
+        size += Utf8.utf8StringLengthInBytes(languages) + 1;
+        size += 1;
+        for (BrandEntry brandEntry : brandEntries) {
+            size += Utf8.utf8StringLengthInBytes(brandEntry.iso_brand) + 1;
+            size += Utf8.utf8StringLengthInBytes(brandEntry.version) + 1;
+        }
+        size += 1;
+        for (IdEntry idEntry : idEntries) {
+            size += Utf8.utf8StringLengthInBytes(idEntry.namespace) + 1;
+            size += Utf8.utf8StringLengthInBytes(idEntry.asset_id) + 1;
+
+        }
+        return size;
+    }
+
+    @Override
+    protected void getContent(ByteBuffer byteBuffer) {
+        writeVersionAndFlags(byteBuffer);
+        IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, mimeSubtypeName);
+        IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, profileLevelIdc);
+        IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, codecs);
+        IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, protection);
+        IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, languages);
+        IsoTypeWriter.writeUInt8(byteBuffer, brandEntries.size());
+        for (BrandEntry brandEntry : brandEntries) {
+            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, brandEntry.iso_brand);
+            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, brandEntry.version);
+        }
+        IsoTypeWriter.writeUInt8(byteBuffer, idEntries.size());
+        for (IdEntry idEntry : idEntries) {
+            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, idEntry.namespace);
+            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, idEntry.asset_id);
+
+        }
+    }
+
+    @Override
+    protected void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        mimeSubtypeName = IsoTypeReader.readString(content);
+        profileLevelIdc = IsoTypeReader.readString(content);
+        codecs = IsoTypeReader.readString(content);
+        protection = IsoTypeReader.readString(content);
+        languages = IsoTypeReader.readString(content);
+        int brandEntryCount = IsoTypeReader.readUInt8(content);
+        while (brandEntryCount-- > 0) {
+            brandEntries.add(new BrandEntry(IsoTypeReader.readString(content), IsoTypeReader.readString(content)));
+        }
+        int idEntryCount = IsoTypeReader.readUInt8(content);
+        while (idEntryCount-- > 0) {
+            idEntries.add(new IdEntry(IsoTypeReader.readString(content), IsoTypeReader.readString(content)));
+        }
+    }
+
+    public static class BrandEntry {
+        public BrandEntry(String iso_brand, String version) {
+            this.iso_brand = iso_brand;
+            this.version = version;
+        }
+
+        String iso_brand;
+        String version;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            BrandEntry that = (BrandEntry) o;
+
+            if (iso_brand != null ? !iso_brand.equals(that.iso_brand) : that.iso_brand != null) return false;
+            if (version != null ? !version.equals(that.version) : that.version != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = iso_brand != null ? iso_brand.hashCode() : 0;
+            result = 31 * result + (version != null ? version.hashCode() : 0);
+            return result;
+        }
+    }
+
+    public static class IdEntry {
+        public IdEntry(String namespace, String asset_id) {
+            this.namespace = namespace;
+            this.asset_id = asset_id;
+        }
+
+        String namespace;
+        String asset_id;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            IdEntry idEntry = (IdEntry) o;
+
+            if (asset_id != null ? !asset_id.equals(idEntry.asset_id) : idEntry.asset_id != null) return false;
+            if (namespace != null ? !namespace.equals(idEntry.namespace) : idEntry.namespace != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = namespace != null ? namespace.hashCode() : 0;
+            result = 31 * result + (asset_id != null ? asset_id.hashCode() : 0);
+            return result;
+        }
+    }
+
+    public String getMimeSubtypeName() {
+        return mimeSubtypeName;
+    }
+
+    public void setMimeSubtypeName(String mimeSubtypeName) {
+        this.mimeSubtypeName = mimeSubtypeName;
+    }
+
+    public String getProfileLevelIdc() {
+        return profileLevelIdc;
+    }
+
+    public void setProfileLevelIdc(String profileLevelIdc) {
+        this.profileLevelIdc = profileLevelIdc;
+    }
+
+    public String getCodecs() {
+        return codecs;
+    }
+
+    public void setCodecs(String codecs) {
+        this.codecs = codecs;
+    }
+
+    public String getProtection() {
+        return protection;
+    }
+
+    public void setProtection(String protection) {
+        this.protection = protection;
+    }
+
+    public String getLanguages() {
+        return languages;
+    }
+
+    public void setLanguages(String languages) {
+        this.languages = languages;
+    }
+
+    public List<BrandEntry> getBrandEntries() {
+        return brandEntries;
+    }
+
+    public void setBrandEntries(List<BrandEntry> brandEntries) {
+        this.brandEntries = brandEntries;
+    }
+
+    public List<IdEntry> getIdEntries() {
+        return idEntries;
+    }
+
+    public void setIdEntries(List<IdEntry> idEntries) {
+        this.idEntries = idEntries;
+    }
+}
