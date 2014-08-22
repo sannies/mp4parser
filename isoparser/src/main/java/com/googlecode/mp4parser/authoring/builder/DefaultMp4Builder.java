@@ -305,7 +305,9 @@ public class DefaultMp4Builder implements Mp4Builder {
     }
 
     protected void createSubs(Track track, SampleTableBox stbl) {
-        stbl.addBox(track.getSubsampleInformationBox());
+        if (track.getSubsampleInformationBox()!=null) {
+            stbl.addBox(track.getSubsampleInformationBox());
+        }
     }
 
     protected void createCencBoxes(CencEncyprtedTrack track, SampleTableBox stbl, int[] chunkSizes) {
