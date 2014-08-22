@@ -7,7 +7,6 @@ import com.coremedia.iso.boxes.sampleentry.SubtitleSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
-import com.googlecode.mp4parser.util.ChannelHelper;
 import com.googlecode.mp4parser.util.Iso639;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -22,7 +21,6 @@ import javax.xml.xpath.*;
 import java.io.*;
 import java.lang.Override;
 import java.lang.String;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -44,7 +42,7 @@ public class SMPTETTTrackImpl extends AbstractTrack {
 
     private long[] sampleDurations;
 
-    long toTime(String expr) {
+    static long toTime(String expr) {
         Pattern p = Pattern.compile("([0-9][0-9]):([0-9][0-9]):([0-9][0-9])([\\.:][0-9][0-9]?[0-9]?)?");
         Matcher m = p.matcher(expr);
         if (m.matches()) {
@@ -66,6 +64,65 @@ public class SMPTETTTrackImpl extends AbstractTrack {
         }
     }
 
+    public static String getLanguage(Document document) {
+        return document.getDocumentElement().getAttribute("xml:lang");
+    }
+
+    public static long earliestTimestamp(Document document) {
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        NamespaceContext ctx = new TextTrackNamespaceContext();
+        XPath xpath = xPathfactory.newXPath();
+        xpath.setNamespaceContext(ctx);
+
+        try {
+            XPathExpression timedNodesXpath = xpath.compile("//*[@begin]");
+            NodeList timedNodes = (NodeList) timedNodesXpath.evaluate(document, XPathConstants.NODESET);
+
+            long earliestTimestamp = 0;
+            for (int i = 0; i < timedNodes.getLength(); i++) {
+                Node n = timedNodes.item(i);
+                String begin = n.getAttributes().getNamedItem("begin").getNodeValue();
+                earliestTimestamp = Math.min(toTime(begin), earliestTimestamp);
+            }
+            return earliestTimestamp;
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public static long latestTimestamp(Document document) {
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        NamespaceContext ctx = new TextTrackNamespaceContext();
+        XPath xpath = xPathfactory.newXPath();
+        xpath.setNamespaceContext(ctx);
+
+        try {
+            XPathExpression timedNodesXpath = xpath.compile("//*[@begin]");
+
+            NodeList timedNodes = (NodeList) timedNodesXpath.evaluate(document, XPathConstants.NODESET);
+
+            long lastTimeStamp = 0;
+            for (int i = 0; i < timedNodes.getLength(); i++) {
+                Node n = timedNodes.item(i);
+                String begin = n.getAttributes().getNamedItem("begin").getNodeValue();
+                long end;
+                if (n.getAttributes().getNamedItem("dur") != null) {
+                    end = toTime(begin) + toTime(n.getAttributes().getNamedItem("dur").getNodeValue());
+                } else if (n.getAttributes().getNamedItem("end") != null) {
+                    end = toTime(n.getAttributes().getNamedItem("end").getNodeValue());
+                } else {
+                    throw new RuntimeException("neither end nor dur attribute is present");
+                }
+                lastTimeStamp = Math.max(end, lastTimeStamp);
+            }
+            return lastTimeStamp;
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     public SMPTETTTrackImpl(File... files) throws IOException, ParserConfigurationException, SAXException, XPathExpressionException {
         super(files[0].getName());
         sampleDurations = new long[files.length];
@@ -81,7 +138,7 @@ public class SMPTETTTrackImpl extends AbstractTrack {
             subSampleEntry.setSampleDelta(1);
 
             Document doc = dBuilder.parse(file);
-            String lang = doc.getDocumentElement().getAttribute("xml:lang");
+            String lang = getLanguage(doc);
             if (firstLang == null) {
                 firstLang = lang;
             } else if (!firstLang.equals(lang)) {
@@ -93,23 +150,7 @@ public class SMPTETTTrackImpl extends AbstractTrack {
             XPath xpath = xPathfactory.newXPath();
             xpath.setNamespaceContext(ctx);
 
-
-            XPathExpression timedNodesXpath = xpath.compile("//*[@begin]");
-            NodeList timedNodes = (NodeList) timedNodesXpath.evaluate(doc, XPathConstants.NODESET);
-            long lastTimeStamp = 0;
-            for (int i = 0; i < timedNodes.getLength(); i++) {
-                Node n = timedNodes.item(i);
-                String begin = n.getAttributes().getNamedItem("begin").getNodeValue();
-                long end;
-                if (n.getAttributes().getNamedItem("dur") != null) {
-                    end = toTime(begin) + toTime(n.getAttributes().getNamedItem("dur").getNodeValue());
-                } else if (n.getAttributes().getNamedItem("end") != null) {
-                    end = toTime(n.getAttributes().getNamedItem("end").getNodeValue());
-                } else {
-                    throw new RuntimeException("neither end nor dur attribute is present");
-                }
-                lastTimeStamp = Math.max(end, lastTimeStamp);
-            }
+            long lastTimeStamp = latestTimestamp(doc);
             sampleDurations[sampleNo] = lastTimeStamp - startTime;
             startTime = lastTimeStamp;
 
@@ -137,7 +178,6 @@ public class SMPTETTTrackImpl extends AbstractTrack {
                 final String finalXml = xml;
                 final List<File> pix = new ArrayList<File>();
                 samples.add(new Sample() {
-
                     public void writeTo(WritableByteChannel channel) throws IOException {
                         channel.write(ByteBuffer.wrap(Utf8.convert(finalXml)));
                         for (File file1 : pix) {
@@ -147,7 +187,6 @@ public class SMPTETTTrackImpl extends AbstractTrack {
                             while (-1 != (n = fis.read(buffer))) {
                                 channel.write(ByteBuffer.wrap(buffer, 0, n));
                             }
-
                         }
                     }
 
@@ -182,7 +221,6 @@ public class SMPTETTTrackImpl extends AbstractTrack {
                     sse.setSubsampleSize(pic.length());
                     subSampleEntry.getSubsampleEntries().add(sse);
                 }
-
             } else {
                 samples.add(new Sample() {
                     public void writeTo(WritableByteChannel channel) throws IOException {
@@ -202,8 +240,6 @@ public class SMPTETTTrackImpl extends AbstractTrack {
                     }
                 });
             }
-
-
         }
         trackMetaData.setLanguage(Iso639.convert2to3(firstLang));
         subtitleSampleEntry.setNamespace(SMPTE_TT_NAMESPACE);
@@ -216,8 +252,6 @@ public class SMPTETTTrackImpl extends AbstractTrack {
         sampleDescriptionBox.addBox(subtitleSampleEntry);
         trackMetaData.setTimescale(30000);
         trackMetaData.setLayer(65535);
-
-
 
 
     }
