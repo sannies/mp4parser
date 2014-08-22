@@ -11,22 +11,22 @@ import com.googlecode.mp4parser.DataSource;
 
 import java.nio.channels.WritableByteChannel;
 
-public class SubtitleSampleEntry extends AbstractSampleEntry {
+public class XMLSubtitleSampleEntry extends AbstractSampleEntry {
 
-    public static final String TYPE1 = "stpp";
+    public static final String TYPE = "stpp";
 
     private String namespace = "";
     private String schemaLocation = "";
-    private String imageMimeType = "";
+    private String auxiliaryMimeTypes = "";
 
-    public SubtitleSampleEntry() {
-        super(TYPE1);
+    public XMLSubtitleSampleEntry() {
+        super(TYPE);
     }
 
     @Override
     public long getSize() {
         long s = getContainerSize();
-        long t = 8 + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3;
+        long t = 8 + namespace.length() + schemaLocation.length() + auxiliaryMimeTypes.length() + 3;
         return s + t + ((largeBox || (s + t + 8) >= (1L << 32)) ? 16 : 8);
     }
 
@@ -49,21 +49,21 @@ public class SubtitleSampleEntry extends AbstractSampleEntry {
         dataSource.position(start + namespace.length() + schemaLocation.length() + 2);
 
         dataSource.read((ByteBuffer) content.rewind());
-        imageMimeType = IsoTypeReader.readString((ByteBuffer) content.rewind());
-        dataSource.position(start + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3);
+        auxiliaryMimeTypes = IsoTypeReader.readString((ByteBuffer) content.rewind());
+        dataSource.position(start + namespace.length() + schemaLocation.length() + auxiliaryMimeTypes.length() + 3);
 
-        initContainer(dataSource, contentSize - (header.remaining() + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3), boxParser);
+        initContainer(dataSource, contentSize - (header.remaining() + namespace.length() + schemaLocation.length() + auxiliaryMimeTypes.length() + 3), boxParser);
     }
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         writableByteChannel.write(getHeader());
-        ByteBuffer byteBuffer = ByteBuffer.allocate(8 + namespace.length() + schemaLocation.length() + imageMimeType.length() + 3);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(8 + namespace.length() + schemaLocation.length() + auxiliaryMimeTypes.length() + 3);
         byteBuffer.position(6);
         IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
         IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, namespace);
         IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, schemaLocation);
-        IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, imageMimeType);
+        IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, auxiliaryMimeTypes);
         writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
         writeContainer(writableByteChannel);
     }
@@ -84,12 +84,12 @@ public class SubtitleSampleEntry extends AbstractSampleEntry {
         this.schemaLocation = schemaLocation;
     }
 
-    public String getImageMimeType() {
-        return imageMimeType;
+    public String getAuxiliaryMimeTypes() {
+        return auxiliaryMimeTypes;
     }
 
-    public void setImageMimeType(String imageMimeType) {
-        this.imageMimeType = imageMimeType;
+    public void setAuxiliaryMimeTypes(String auxiliaryMimeTypes) {
+        this.auxiliaryMimeTypes = auxiliaryMimeTypes;
     }
 }
 

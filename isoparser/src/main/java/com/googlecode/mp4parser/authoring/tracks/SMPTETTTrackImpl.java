@@ -3,7 +3,7 @@ package com.googlecode.mp4parser.authoring.tracks;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.SubSampleInformationBox;
-import com.coremedia.iso.boxes.sampleentry.SubtitleSampleEntry;
+import com.coremedia.iso.boxes.sampleentry.XMLSubtitleSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
@@ -33,7 +33,7 @@ public class SMPTETTTrackImpl extends AbstractTrack {
     public static final String SMPTE_TT_NAMESPACE = "http://www.smpte-ra.org/schemas/2052-1/2010/smpte-tt";
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox = new SampleDescriptionBox();
-    SubtitleSampleEntry subtitleSampleEntry = new SubtitleSampleEntry();
+    XMLSubtitleSampleEntry XMLSubtitleSampleEntry = new XMLSubtitleSampleEntry();
 
     List<Sample> samples = new ArrayList<Sample>();
     SubSampleInformationBox subSampleInformationBox = new SubSampleInformationBox();
@@ -242,14 +242,14 @@ public class SMPTETTTrackImpl extends AbstractTrack {
             }
         }
         trackMetaData.setLanguage(Iso639.convert2to3(firstLang));
-        subtitleSampleEntry.setNamespace(SMPTE_TT_NAMESPACE);
-        subtitleSampleEntry.setSchemaLocation(SMPTE_TT_NAMESPACE);
+        XMLSubtitleSampleEntry.setNamespace(SMPTE_TT_NAMESPACE);
+        XMLSubtitleSampleEntry.setSchemaLocation(SMPTE_TT_NAMESPACE);
         if (containsImages) {
-            subtitleSampleEntry.setImageMimeType("image/png");
+            XMLSubtitleSampleEntry.setAuxiliaryMimeTypes("image/png");
         } else {
-            subtitleSampleEntry.setImageMimeType("");
+            XMLSubtitleSampleEntry.setAuxiliaryMimeTypes("");
         }
-        sampleDescriptionBox.addBox(subtitleSampleEntry);
+        sampleDescriptionBox.addBox(XMLSubtitleSampleEntry);
         trackMetaData.setTimescale(30000);
         trackMetaData.setLayer(65535);
 

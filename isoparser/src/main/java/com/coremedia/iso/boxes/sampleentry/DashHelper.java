@@ -26,23 +26,23 @@ public final class DashHelper {
     }
 
     public static ChannelConfiguration getChannelConfiguration(AudioSampleEntry e) {
-        DTSSpecificBox ddts = (DTSSpecificBox) Path.getPath(e, "ddts");
+        DTSSpecificBox ddts = Path.getPath(e, "ddts");
         if (ddts != null) {
             return getDTSChannelConfig(e, ddts);
         }
-        MLPSpecificBox dmlp = (MLPSpecificBox) Path.getPath(e, "dmlp");
+        MLPSpecificBox dmlp = Path.getPath(e, "dmlp");
         if (dmlp != null) {
             return null; // getMLPChannelConfig(e, dmlp);
         }
-        ESDescriptorBox esds = (ESDescriptorBox) Path.getPath(e, "esds");
+        ESDescriptorBox esds = Path.getPath(e, "esds");
         if (esds != null) {
             return getAACChannelConfig(e, esds);
         }
-        AC3SpecificBox dac3 = (AC3SpecificBox) Path.getPath(e, "dac3");
+        AC3SpecificBox dac3 = Path.getPath(e, "dac3");
         if (dac3 != null) {
             return getAC3ChannelConfig(e, dac3);
         }
-        EC3SpecificBox dec3 = (EC3SpecificBox) Path.getPath(e, "dec3");
+        EC3SpecificBox dec3 = Path.getPath(e, "dec3");
         if (dec3 != null) {
             return getEC3ChannelConfig(e, dec3);
         }
@@ -247,7 +247,7 @@ public final class DashHelper {
         }
 
         if ("avc1".equals(type)) {
-            AvcConfigurationBox avcConfigurationBox = ((VisualSampleEntry) se).getBoxes(AvcConfigurationBox.class).get(0);
+            AvcConfigurationBox avcConfigurationBox = Path.getPath(se, "avcC");
             List<byte[]> spsbytes = avcConfigurationBox.getSequenceParameterSets();
             byte[] CodecInit = new byte[3];
             CodecInit[0] = spsbytes.get(0)[1];
@@ -255,7 +255,7 @@ public final class DashHelper {
             CodecInit[2] = spsbytes.get(0)[3];
             return (type + "." + Hex.encodeHex(CodecInit)).toLowerCase();
         } else if (type.equals("mp4a")) {
-            final ESDescriptorBox esDescriptorBox = ((AudioSampleEntry) se).getBoxes(ESDescriptorBox.class).get(0);
+            final ESDescriptorBox esDescriptorBox = Path.getPath(se, "esds");
             final DecoderConfigDescriptor decoderConfigDescriptor = esDescriptorBox.getEsDescriptor().getDecoderConfigDescriptor();
             final AudioSpecificConfig audioSpecificConfig = decoderConfigDescriptor.getAudioSpecificInfo();
             if (audioSpecificConfig.getSbrPresentFlag() == 1) {
@@ -269,8 +269,18 @@ public final class DashHelper {
             return type;
         } else if (type.equals("ec-3") || type.equals("ac-3") || type.equals("mlpa")) {
             return type;
+        } else if (type.equals("stpp")) {
+            XMLSubtitleSampleEntry stpp = (XMLSubtitleSampleEntry) se;
+            if (stpp.getSchemaLocation().contains("cff-tt-text-ttaf1-dfxp")) {
+                return "cfft";
+            } else if (stpp.getSchemaLocation().contains("cff-tt-image-ttaf1-dfxp")) {
+                return "cffi";
+            } else {
+                return "stpp";
+            }
+
         } else {
-            throw new InternalError("I don't know how to get codec of type " + se.getType());
+            throw new RuntimeException("I don't know how to get codec of type " + se.getType());
         }
 
     }
