@@ -3,15 +3,20 @@ package com.googlecode.mp4parser;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import com.googlecode.mp4parser.util.LazyList;
 import com.googlecode.mp4parser.util.Logger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
+
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * Created by sannies on 18.05.13.
@@ -213,9 +218,43 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
         }
     }
 
-    public ByteBuffer getByteBuffer(long start, long size) throws IOException {
-        synchronized (this.dataSource) {
-            return this.dataSource.map(this.startPosition + start, size);
+    public ByteBuffer getByteBuffer(long rangeStart, long size) throws IOException {
+        if (this.dataSource != null) {
+            synchronized (this.dataSource) {
+                return this.dataSource.map(this.startPosition + rangeStart, size);
+            }
+        } else {
+            ByteBuffer out = ByteBuffer.allocate(l2i(size));
+            long rangeEnd = rangeStart + size;
+            long boxStart;
+            long boxEnd = 0;
+            for (Box box : boxes) {
+                boxStart = boxEnd;
+                boxEnd = boxStart + box.getSize();
+                if (!(boxEnd <= rangeStart || boxStart >= rangeEnd)) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    WritableByteChannel wbc = Channels.newChannel(baos);
+                    box.getBox(wbc);
+                    wbc.close();
+
+                    if (boxStart >= rangeStart && boxEnd <= rangeEnd) {
+                        out.put(baos.toByteArray());
+                        // within -> use full box
+                    } else if (boxStart < rangeStart && boxEnd > rangeEnd) {
+                        // around -> use 'middle' of box
+                        int length = l2i(box.getSize() - (rangeStart - boxStart) - (boxEnd - rangeEnd));
+                        out.put(baos.toByteArray(), l2i(rangeStart - boxStart), length);
+                    } else if (boxStart < rangeStart && boxEnd <= rangeEnd) {
+                        // endwith
+                        int length = l2i(box.getSize() - (rangeStart - boxStart));
+                        out.put(baos.toByteArray(), l2i(rangeStart - boxStart), length);
+                    } else if (boxStart >= rangeStart && boxEnd > rangeEnd) {
+                        int length = l2i(box.getSize() - (boxEnd - rangeEnd));
+                        out.put(baos.toByteArray(), 0, length);
+                    }
+                }
+            }
+            return (ByteBuffer) out.rewind();
         }
     }
 
