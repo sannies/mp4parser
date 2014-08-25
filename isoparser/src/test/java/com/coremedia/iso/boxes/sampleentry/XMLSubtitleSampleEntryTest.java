@@ -19,7 +19,7 @@ public class XMLSubtitleSampleEntryTest extends BoxWriteReadBase<XMLSubtitleSamp
     public void setupProperties(Map<String, Object> addPropsHere, XMLSubtitleSampleEntry box) {
         addPropsHere.put("boxes", Collections.singletonList(new FreeBox(100)));
         addPropsHere.put("dataReferenceIndex", 12);
-        addPropsHere.put("imageMimeType", "image/jpeg");
+        addPropsHere.put("auxiliaryMimeTypes", "image/jpeg");
         addPropsHere.put("namespace", "urn:namespace:dunno");
         addPropsHere.put("schemaLocation", "here");
     }
