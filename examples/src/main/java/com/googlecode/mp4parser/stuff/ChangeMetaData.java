@@ -74,14 +74,15 @@ public class ChangeMetaData {
 
             UserDataBox userDataBox;
             long sizeBefore;
-            if ((userDataBox = (UserDataBox) Path.getPath(tempIsoFile, "/moov/udta")) == null) {
+            if ((userDataBox = Path.getPath(tempIsoFile, "/moov/udta")) == null) {
                 sizeBefore = 0;
                 userDataBox = new UserDataBox();
+                tempIsoFile.getMovieBox().addBox(userDataBox);
             } else {
                 sizeBefore = userDataBox.getSize();
             }
             MetaBox metaBox;
-            if ((metaBox = (MetaBox) Path.getPath(userDataBox, "meta")) == null) {
+            if ((metaBox = Path.getPath(userDataBox, "meta")) == null) {
                 metaBox = new MetaBox();
                 userDataBox.addBox(metaBox);
             }
