@@ -16,6 +16,16 @@ public class ContentInformationBoxTest extends BoxRoundtripTest {
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
+        Map<String, String> aBrandEntries = new LinkedHashMap<String, String>();
+        aBrandEntries.put("abcd", "561326");
+        aBrandEntries.put("abcd", "561326");
+        aBrandEntries.put("abcd", "561326");
+
+        Map<String, String> aIdEntries = new LinkedHashMap<String, String>();
+        aIdEntries.put("urn:dece:dece:asset_id", "urn:dece:apid:org:dunno:1234");
+
+
+
         return Arrays.asList(
                 new Object[]{new ContentInformationBox(),
                         new Map.Entry[]{
@@ -25,8 +35,8 @@ public class ContentInformationBoxTest extends BoxRoundtripTest {
                                 new E("protection", "none, cenc"),
                                 new E("languages", "fr-FR, fr-CA"),
                                 new E("profileLevelIdc", "urn:dece:abc"),
-                                new E("brandEntries", Arrays.asList(new ContentInformationBox.BrandEntry("abcd", "561326"), new ContentInformationBox.BrandEntry("abcd", "561326"), new ContentInformationBox.BrandEntry("abcd", "561326"))),
-                                new E("idEntries", Arrays.asList(new ContentInformationBox.IdEntry("urn:dece:dece:asset_id", "urn:dece:apid:org:dunno:1234")))
+                                new E("brandEntries", aBrandEntries),
+                                new E("idEntries", aIdEntries)
                         }},
                 new Object[]{new ContentInformationBox(),
                         new Map.Entry[]{
@@ -36,9 +46,9 @@ public class ContentInformationBoxTest extends BoxRoundtripTest {
                                 new E("protection", "none, cenc"),
                                 new E("languages", "fr-FR, fr-CA"),
                                 new E("profileLevelIdc", "urn:dece:abc"),
-                                new E("brandEntries", Collections.emptyList()),
-                                new E("idEntries", Collections.emptyList())
+                                new E("brandEntries", Collections.emptyMap()),
+                                new E("idEntries", Collections.emptyMap())
                         }});
-        }
-
     }
+
+}

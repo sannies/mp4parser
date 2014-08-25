@@ -1,14 +1,13 @@
 package com.googlecode.mp4parser.boxes.dece;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.Utf8;
 import com.googlecode.mp4parser.AbstractFullBox;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * aligned(8) class ContentInformationBox
@@ -45,8 +44,8 @@ public class ContentInformationBox extends AbstractFullBox {
     String protection;
     String languages;
 
-    List<BrandEntry> brandEntries = new ArrayList<BrandEntry>();
-    List<IdEntry> idEntries = new ArrayList<IdEntry>();
+    Map<String, String> brandEntries = new LinkedHashMap<String, String>();
+    Map<String, String> idEntries = new LinkedHashMap<String, String>();
 
     public ContentInformationBox() {
         super(TYPE);
@@ -61,14 +60,14 @@ public class ContentInformationBox extends AbstractFullBox {
         size += Utf8.utf8StringLengthInBytes(protection) + 1;
         size += Utf8.utf8StringLengthInBytes(languages) + 1;
         size += 1;
-        for (BrandEntry brandEntry : brandEntries) {
-            size += Utf8.utf8StringLengthInBytes(brandEntry.iso_brand) + 1;
-            size += Utf8.utf8StringLengthInBytes(brandEntry.version) + 1;
+        for (Map.Entry<String, String> brandEntry : brandEntries.entrySet()) {
+            size += Utf8.utf8StringLengthInBytes(brandEntry.getKey()) + 1;
+            size += Utf8.utf8StringLengthInBytes(brandEntry.getValue()) + 1;
         }
         size += 1;
-        for (IdEntry idEntry : idEntries) {
-            size += Utf8.utf8StringLengthInBytes(idEntry.namespace) + 1;
-            size += Utf8.utf8StringLengthInBytes(idEntry.asset_id) + 1;
+        for (Map.Entry<String, String> idEntry : idEntries.entrySet()) {
+            size += Utf8.utf8StringLengthInBytes(idEntry.getKey()) + 1;
+            size += Utf8.utf8StringLengthInBytes(idEntry.getValue()) + 1;
 
         }
         return size;
@@ -83,14 +82,14 @@ public class ContentInformationBox extends AbstractFullBox {
         IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, protection);
         IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, languages);
         IsoTypeWriter.writeUInt8(byteBuffer, brandEntries.size());
-        for (BrandEntry brandEntry : brandEntries) {
-            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, brandEntry.iso_brand);
-            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, brandEntry.version);
+        for (Map.Entry<String, String> brandEntry : brandEntries.entrySet()) {
+            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, brandEntry.getKey());
+            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, brandEntry.getValue());
         }
         IsoTypeWriter.writeUInt8(byteBuffer, idEntries.size());
-        for (IdEntry idEntry : idEntries) {
-            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, idEntry.namespace);
-            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, idEntry.asset_id);
+        for (Map.Entry<String, String> idEntry : idEntries.entrySet()) {
+            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, idEntry.getKey());
+            IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, idEntry.getValue());
 
         }
     }
@@ -105,11 +104,11 @@ public class ContentInformationBox extends AbstractFullBox {
         languages = IsoTypeReader.readString(content);
         int brandEntryCount = IsoTypeReader.readUInt8(content);
         while (brandEntryCount-- > 0) {
-            brandEntries.add(new BrandEntry(IsoTypeReader.readString(content), IsoTypeReader.readString(content)));
+            brandEntries.put(IsoTypeReader.readString(content), IsoTypeReader.readString(content));
         }
         int idEntryCount = IsoTypeReader.readUInt8(content);
         while (idEntryCount-- > 0) {
-            idEntries.add(new IdEntry(IsoTypeReader.readString(content), IsoTypeReader.readString(content)));
+            idEntries.put(IsoTypeReader.readString(content), IsoTypeReader.readString(content));
         }
     }
 
@@ -213,19 +212,19 @@ public class ContentInformationBox extends AbstractFullBox {
         this.languages = languages;
     }
 
-    public List<BrandEntry> getBrandEntries() {
+    public Map<String, String> getBrandEntries() {
         return brandEntries;
     }
 
-    public void setBrandEntries(List<BrandEntry> brandEntries) {
+    public void setBrandEntries(Map<String, String> brandEntries) {
         this.brandEntries = brandEntries;
     }
 
-    public List<IdEntry> getIdEntries() {
+    public Map<String, String> getIdEntries() {
         return idEntries;
     }
 
-    public void setIdEntries(List<IdEntry> idEntries) {
+    public void setIdEntries(Map<String, String> idEntries) {
         this.idEntries = idEntries;
     }
 }
