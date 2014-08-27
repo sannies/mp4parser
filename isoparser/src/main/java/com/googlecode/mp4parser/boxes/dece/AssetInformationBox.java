@@ -26,21 +26,23 @@ import java.util.List;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
+ * <pre>
  * AssetInformationBox as defined the DECE Common File Format Spec.
  * aligned(8) class AssetInformationBox
  * extends FullBox(‘ainf’, version=1, flags)
  * {
- * string 				mimeSubtypeName;
- * string				codecs;
- * unsigned int(8) 	encrypted;
- * unsigned int(8) 	entry_count;
- * for( int i=0; i < entry_count; i++)
- * {
- * string	namespace;
- * string	profile-level-idc;
- * string	asset_id;
+ *  string 				mimeSubtypeName;
+ *  string				codecs;
+ *  unsigned int(8) 	encrypted;
+ *  unsigned int(8) 	entry_count;
+ *  for( int i=0; i &lt; entry_count; i++)
+ *  {
+ *   string	namespace;
+ *   string	profile-level-idc;
+ *   string	asset_id;
+ *  }
  * }
- * }
+ * </pre>
  */
 public class AssetInformationBox extends AbstractFullBox {
     public static final String TYPE = "ainf";

@@ -13,11 +13,11 @@ import java.util.List;
  * encrypted sample in protected AVC video tracks shall conform to ISO/IEC 14496-10 and ISO/IEC 14496-15
  * and shall use the subsample encryption scheme specified in 9.6.2, which requires subsample encryption data.
  * Both initialization vectors and subsample encryption data are provided as Sample Auxiliary Information with
- * aux_info_typeequal to ‘cenc’ and aux_info_type_parameterequal to 0. For tracks protected using
+ * aux_info_type equal to ‘cenc’ and aux_info_type_parameter equal to 0. For tracks protected using
  * the 'cenc' scheme, the default value for aux_info_type is equal to 'cenc' and the default value for the
  * aux_info_type_parameter is 0 so content may be created omitting these optional fields. Storage of
- * sample auxiliary information shall conform to ISO/IEC 14496-12.
- * <p/>
+ * sample auxiliary information shall conform to ISO/IEC 14496-12.<br>
+ *
  * This class can also be used for PIFF as it has been derived from the PIFF spec.
  */
 public class CencSampleAuxiliaryDataFormat {

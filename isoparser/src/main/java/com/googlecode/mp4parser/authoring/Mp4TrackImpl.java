@@ -48,6 +48,7 @@ public class Mp4TrackImpl extends AbstractTrack {
      * Creates a track from a TrackBox and potentially fragments. Use <b>fragements parameter
      * only</b> to supply additional fragments that are not located in the main file.
      *
+     * @param name a name for the track for better identification
      * @param trackBox  the <code>TrackBox</code> describing the track.
      * @param fragments additional fragments if located in more than a single file
      */

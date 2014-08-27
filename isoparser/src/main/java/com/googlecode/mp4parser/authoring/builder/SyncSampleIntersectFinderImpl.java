@@ -47,6 +47,8 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
      * Creates a <code>SyncSampleIntersectFinderImpl</code> that will not create any fragment
      * smaller than the given <code>minFragmentDurationSeconds</code>
      *
+     * @param movie this movie is the reference
+     * @param referenceTrack used for audio tracks to find similar boundaries of segments.
      * @param minFragmentDurationSeconds the smallest allowable duration of a fragment.
      */
     public SyncSampleIntersectFinderImpl(Movie movie, Track referenceTrack, int minFragmentDurationSeconds) {
@@ -59,7 +61,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         SampleEntry se = track.getSampleDescriptionBox().getSampleEntry();
         String type = se.getType();
         if (type.equals("encv") || type.equals("enca") || type.equals("encv")) {
-            OriginalFormatBox frma = (OriginalFormatBox) Path.getPath(se, "sinf/frma");
+            OriginalFormatBox frma = Path.getPath(se, "sinf/frma");
             type = frma.getDataFormat();
         }
         return type;

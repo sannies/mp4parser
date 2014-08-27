@@ -304,23 +304,24 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     /**
-     * Builds the sample by prepending the length of each buffer to the data
+     * Builds an MP4 sample from a list of NALs. Each NAL will be preceded by its
+     * 4 byte (unit32) length.
      *
-     * @param buffers
-     * @return
+     * @param nals a list of NALs that form the sample
+     * @return sample as it appears in the MP4 file
      */
-    protected Sample createSample(List<? extends ByteBuffer> buffers) {
-        byte[] sizeInfo = new byte[buffers.size() * 4];
+    protected Sample createSample(List<? extends ByteBuffer> nals) {
+        byte[] sizeInfo = new byte[nals.size() * 4];
         ByteBuffer sizeBuf = ByteBuffer.wrap(sizeInfo);
-        for (ByteBuffer b : buffers) {
+        for (ByteBuffer b : nals) {
             sizeBuf.putInt(b.remaining());
         }
 
-        ByteBuffer[] data = new ByteBuffer[buffers.size() * 2];
+        ByteBuffer[] data = new ByteBuffer[nals.size() * 2];
 
-        for (int i = 0; i < buffers.size(); i++) {
+        for (int i = 0; i < nals.size(); i++) {
             data[2 * i] = ByteBuffer.wrap(sizeInfo, i * 4, 4);
-            data[2 * i + 1] = buffers.get(i);
+            data[2 * i + 1] = nals.get(i);
         }
 
         return new SampleImpl(data);

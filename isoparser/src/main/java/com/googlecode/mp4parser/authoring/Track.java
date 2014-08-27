@@ -21,11 +21,11 @@ import java.io.Closeable;
 import java.util.List;
 
 /**
- * <p>Represents a Track. A track is a timed sequence of related samples.</p>
- * <p/>
- * <b>NOTE: </b>
- * <p>For media data, a track corresponds to a sequence of images or sampled audio; for hint tracks, a track
- * corresponds to a streaming channel.</p>
+ * Represents a Track. A track is a timed sequence of related samples.<br>
+ *
+ * <b>NOTE:</b>
+ * For media data, a track corresponds to a sequence of images or sampled audio; for hint tracks, a track
+ * corresponds to a streaming channel.
  */
 public interface Track extends Closeable {
 
@@ -56,9 +56,20 @@ public interface Track extends Closeable {
 
     String getHandler();
 
+    /**
+     * The list of all samples.
+     *
+     * @return this track's samples
+     */
     List<Sample> getSamples();
 
     public SubSampleInformationBox getSubsampleInformationBox();
 
+    /**
+     * A name for identification purposes. Might return the underlying filename or network address or any
+     * other identifier. For informational/debug only. This is no metadata!
+     *
+     * @return the track's name
+     */
     public String getName();
 }

@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
  * Null Media Header Box.
  */
 public class NullMediaHeaderBox extends AbstractMediaHeaderBox {
-    public static String TYPE = "nmhd";
+    public static final String TYPE = "nmhd";
 
     public NullMediaHeaderBox() {
         super(TYPE);

@@ -231,9 +231,10 @@ public final class DashHelper {
 
 
     /**
-     * Gets the codec according to RFC 6381.
+     * Gets the codec according to RFC 6381 from a <code>SampleEntry</code>.
      *
-     * @return codec
+     * @param se <code>SampleEntry</code> to id the codec.
+     * @return codec according to RFC
      */
     public static String getRfc6381Codec(SampleEntry se) {
 

@@ -10,30 +10,29 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
+ * <pre>
  * aligned(8) class ContentInformationBox
  * extends FullBox(‘cinf’, version=0, flags=0)
  * {
- * <p/>
- * <p/>
- * <p/>
- * string 				mimeSubtypeName;
- * string				profile-level-idc;
- * string				codecs;
- * unsigned int(8) 	protection;
- * string				languages;
- * unsigned int(8) 	brand_entry_count;
- * for( int i=0; i < brand_entry_count; i++)
- * {
- * string   iso_brand;
- * string   version
+ *  string          mimeSubtypeName;
+ *  string          profile-level-idc;
+ *  string          codecs;
+ *  unsigned int(8) protection;
+ *  string          languages;
+ *  unsigned int(8) brand_entry_count;
+ *  for( int i=0; i &lt; brand_entry_count; i++)
+ *  {
+ *   string iso_brand;
+ *   string version
+ *  }
+ *  unsigned int(8) id_entry_count;
+ *  for( int i=0; i &lt; id_entry_count; i++)
+ *  {
+ *   string namespace;
+ *   string asset_id;
+ *  }
  * }
- * unsigned int(8) 	id_entry_count;
- * for( int i=0; i < id_entry_count; i++)
- * {
- * string	namespace;
- * string	asset_id;
- * }
- * }
+ * </pre>
  */
 public class ContentInformationBox extends AbstractFullBox {
     public static final String TYPE = "cinf";
@@ -138,36 +137,6 @@ public class ContentInformationBox extends AbstractFullBox {
         public int hashCode() {
             int result = iso_brand != null ? iso_brand.hashCode() : 0;
             result = 31 * result + (version != null ? version.hashCode() : 0);
-            return result;
-        }
-    }
-
-    public static class IdEntry {
-        public IdEntry(String namespace, String asset_id) {
-            this.namespace = namespace;
-            this.asset_id = asset_id;
-        }
-
-        String namespace;
-        String asset_id;
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            IdEntry idEntry = (IdEntry) o;
-
-            if (asset_id != null ? !asset_id.equals(idEntry.asset_id) : idEntry.asset_id != null) return false;
-            if (namespace != null ? !namespace.equals(idEntry.namespace) : idEntry.namespace != null) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = namespace != null ? namespace.hashCode() : 0;
-            result = 31 * result + (asset_id != null ? asset_id.hashCode() : 0);
             return result;
         }
     }
