@@ -240,6 +240,10 @@
         </site>
     </distributionManagement>
 
+    <scm>
+        <url>https://github.com/sannies/mp4parser</url>
+    </scm>
+
     <licenses>
         <license>
             <name>Apache 2</name>
