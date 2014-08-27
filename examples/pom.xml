@@ -5,17 +5,17 @@
 
     <artifactId>examples</artifactId>
     <name>ISO Parser Examples</name>
-    <version>1.0.3.5</version>
+    <version>1.0.3.6-SNAPSHOT</version>
     <parent>
         <groupId>com.googlecode.mp4parser</groupId>
         <artifactId>mp4parser-project</artifactId>
-        <version>1.0.3.5</version>
+        <version>1.0.3.6-SNAPSHOT</version>
     </parent>
     <dependencies>
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.0.3.5</version>
+            <version>1.0.3.6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>xom</groupId>
@@ -74,7 +74,7 @@
     <scm>
         <url>http://code.google.com/p/mp4parser/source/browse/</url>
         <connection>scm:svn:https://mp4parser.googlecode.com/svn/trunk/examples</connection>
-      <tag>mp4parser-project-1.0.3.5</tag>
+      <tag>HEAD</tag>
   </scm>
     <repositories>
         <repository>
