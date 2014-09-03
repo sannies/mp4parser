@@ -75,6 +75,13 @@ public class Mp4TrackImpl extends AbstractTrack {
         }
         subSampleInformationBox = Path.getPath(stbl, "subs");
 
+        // gather all movie fragment boxes from the fragments
+        List<MovieFragmentBox> movieFragmentBoxes = new ArrayList<MovieFragmentBox>();
+        movieFragmentBoxes.addAll(((Box)trackBox.getParent()).getParent().getBoxes(MovieFragmentBox.class));
+        for(IsoFile fragment : fragments) {
+            movieFragmentBoxes.addAll(fragment.getBoxes(MovieFragmentBox.class));
+        }
+
         sampleDescriptionBox = stbl.getSampleDescriptionBox();
         int lastSubsSample = 0;
         final List<MovieExtendsBox> movieExtendsBoxes = trackBox.getParent().getBoxes(MovieExtendsBox.class);
@@ -90,7 +97,7 @@ public class Mp4TrackImpl extends AbstractTrack {
                         List<Long> syncSampleList = new LinkedList<Long>();
 
                         long sampleNumber = 1;
-                        for (MovieFragmentBox movieFragmentBox : ((Box) trackBox.getParent()).getParent().getBoxes(MovieFragmentBox.class)) {
+                        for (MovieFragmentBox movieFragmentBox : movieFragmentBoxes) {
                             List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
                             for (TrackFragmentBox traf : trafs) {
                                 if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
