@@ -38,6 +38,10 @@ public final class DashHelper {
         if (esds != null) {
             return getAACChannelConfig(e, esds);
         }
+        esds = Path.getPath(e, "..../esds"); // Apple does weird things
+        if (esds != null) {
+            return getAACChannelConfig(e, esds);
+        }
         AC3SpecificBox dac3 = Path.getPath(e, "dac3");
         if (dac3 != null) {
             return getAC3ChannelConfig(e, dac3);
@@ -256,7 +260,10 @@ public final class DashHelper {
             CodecInit[2] = spsbytes.get(0)[3];
             return (type + "." + Hex.encodeHex(CodecInit)).toLowerCase();
         } else if (type.equals("mp4a")) {
-            final ESDescriptorBox esDescriptorBox = Path.getPath(se, "esds");
+            ESDescriptorBox esDescriptorBox = Path.getPath(se, "esds");
+            if (esDescriptorBox == null) {
+                esDescriptorBox = Path.getPath(se, "..../esds"); // Apple does weird things
+            }
             final DecoderConfigDescriptor decoderConfigDescriptor = esDescriptorBox.getEsDescriptor().getDecoderConfigDescriptor();
             final AudioSpecificConfig audioSpecificConfig = decoderConfigDescriptor.getAudioSpecificInfo();
             if (audioSpecificConfig.getSbrPresentFlag() == 1) {
