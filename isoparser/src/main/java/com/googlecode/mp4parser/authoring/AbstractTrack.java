@@ -18,6 +18,8 @@ package com.googlecode.mp4parser.authoring;
 
 import com.coremedia.iso.boxes.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,6 +27,7 @@ import java.util.List;
  */
 public abstract class AbstractTrack implements Track {
     String name;
+    List<Edit> edits = new ArrayList<Edit>();
 
     public AbstractTrack(String name) {
         this.name = name;
@@ -57,4 +60,11 @@ public abstract class AbstractTrack implements Track {
     public String getName() {
         return this.name;
     }
+
+    public List<Edit> getEdits() {
+        return Collections.unmodifiableList(edits);
+    }
+
+
+
 }

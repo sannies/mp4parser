@@ -16,6 +16,7 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
+import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
@@ -48,7 +49,7 @@ public class DivideTimeScaleTrack implements Track {
     public long[] getSampleDurations() {
         long[] scaled = new long[source.getSampleDurations().length];
 
-        LinkedList<TimeToSampleBox.Entry> entries2 = new LinkedList<TimeToSampleBox.Entry>();
+
         for (int i = 0; i < source.getSampleDurations().length; i++) {
             scaled[i] = source.getSampleDurations()[i] / timeScaleDivisor;
         }
@@ -117,5 +118,9 @@ public class DivideTimeScaleTrack implements Track {
 
     public String getName() {
         return "timscale(" + source.getName() + ")";
+    }
+
+    public List<Edit> getEdits() {
+        return source.getEdits();
     }
 }

@@ -48,7 +48,7 @@ public class Mp4TrackImpl extends AbstractTrack {
      * Creates a track from a TrackBox and potentially fragments. Use <b>fragements parameter
      * only</b> to supply additional fragments that are not located in the main file.
      *
-     * @param name a name for the track for better identification
+     * @param name      a name for the track for better identification
      * @param trackBox  the <code>TrackBox</code> describing the track.
      * @param fragments additional fragments if located in more than a single file
      */
@@ -83,8 +83,8 @@ public class Mp4TrackImpl extends AbstractTrack {
                 final List<TrackExtendsBox> trackExtendsBoxes = mvex.getBoxes(TrackExtendsBox.class);
                 for (TrackExtendsBox trex : trackExtendsBoxes) {
                     if (trex.getTrackId() == trackId) {
-                        List<SubSampleInformationBox> subss = Path.getPaths(((Box)trackBox.getParent()).getParent(), "/moof/traf/subs");
-                        if (subss.size()>0) {
+                        List<SubSampleInformationBox> subss = Path.getPaths(((Box) trackBox.getParent()).getParent(), "/moof/traf/subs");
+                        if (subss.size() > 0) {
                             subSampleInformationBox = new SubSampleInformationBox();
                         }
                         List<Long> syncSampleList = new LinkedList<Long>();
@@ -97,7 +97,7 @@ public class Mp4TrackImpl extends AbstractTrack {
 
 
                                     SubSampleInformationBox subs = Path.getPath(traf, "subs");
-                                    if (subs!=null) {
+                                    if (subs != null) {
                                         long difFromLastFragment = sampleNumber - lastSubsSample - 1;
                                         for (SubSampleInformationBox.SubSampleEntry subSampleEntry : subs.getEntries()) {
                                             SubSampleInformationBox.SubSampleEntry se = new SubSampleInformationBox.SubSampleEntry();
@@ -196,13 +196,20 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setWidth(tkhd.getWidth());
         trackMetaData.setLayer(tkhd.getLayer());
         trackMetaData.setMatrix(tkhd.getMatrix());
-        trackMetaData.setEditList((EditListBox) Path.getPath(trackBox, "edts/elst"));
+        EditListBox elst = Path.getPath(trackBox, "edts/elst");
+        MovieHeaderBox mvhd = Path.getPath(trackBox, "../mvhd");
+        if (elst != null) {
+            for (EditListBox.Entry e : elst.getEntries()) {
+                edits.add(new Edit(mvhd.getTimescale(), e.getSegmentDuration(), e.getMediaTime(), e.getMediaRate()));
+            }
+        }
+
     }
 
     public void close() throws IOException {
         Container c = trackBox.getParent();
         if (c instanceof BasicContainer) {
-            ((BasicContainer)c).close();
+            ((BasicContainer) c).close();
         }
         for (IsoFile fragment : fragments) {
             fragment.close();

@@ -15,7 +15,11 @@
  */
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SubSampleInformationBox;
+import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
@@ -180,5 +184,9 @@ public class ChangeTimeScaleTrack implements Track {
 
     public String getName() {
         return "timeScale(" + source.getName() + ")";
+    }
+
+    public List<Edit> getEdits() {
+        return source.getEdits();
     }
 }

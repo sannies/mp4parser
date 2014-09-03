@@ -72,4 +72,6 @@ public interface Track extends Closeable {
      * @return the track's name
      */
     public String getName();
+
+    public List<Edit> getEdits();
 }

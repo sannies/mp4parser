@@ -21,6 +21,7 @@ import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
@@ -110,14 +111,14 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
         for (SampleAuxiliaryInformationOffsetsBox saio : sampleAuxiliaryInformationOffsetsBoxes) {
             long offset = saio.getSize(); // the calculation is systematically wrong by 4, I don't want to debug why. Just a quick correction --san 14.May.13
-            offset += 4 + 4 + 4 + 4 + 4 + 24 ;
+            offset += 4 + 4 + 4 + 4 + 4 + 24;
             // size of all header we were missing otherwise (moov, trak, mdia, minf, stbl)
             Object b = saio;
             do {
                 Object current = b;
-                b = ((Box)b).getParent();
+                b = ((Box) b).getParent();
 
-                for (Box box : ((Container)b).getBoxes()) {
+                for (Box box : ((Container) b).getBoxes()) {
                     if (box == current) {
                         break;
                     }
@@ -229,14 +230,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         trackBox.addBox(tkhd);
 
-/*
-        EditBox edit = new EditBox();
-        EditListBox editListBox = new EditListBox();
-        editListBox.setEntries(Collections.singletonList(
-                new EditListBox.Entry(editListBox, (long) (track.getTrackMetaData().getStartTime() * getTimescale(movie)), -1, 1)));
-        edit.addBox(editListBox);
-        trackBox.addBox(edit);
-*/
+        trackBox.addBox(createEdts(track, movie));
 
         MediaBox mdia = new MediaBox();
         trackBox.addBox(mdia);
@@ -284,6 +278,28 @@ public class DefaultMp4Builder implements Mp4Builder {
         return trackBox;
     }
 
+    protected Box createEdts(Track track, Movie movie) {
+        if (track.getEdits() != null && track.getEdits().size() > 0) {
+            EditListBox elst = new EditListBox();
+            elst.setVersion(1);
+            List<EditListBox.Entry> entries = new ArrayList<EditListBox.Entry>();
+
+            for (Edit edit : track.getEdits()) {
+                entries.add(new EditListBox.Entry(elst,
+                        edit.getSegmentDuration() * movie.getTimescale() / edit.getTimeScale(),
+                        edit.getMediaTime() * movie.getTimescale() / edit.getTimeScale(),
+                        edit.getMediaRate()));
+            }
+
+            elst.setEntries(entries);
+            EditBox edts = new EditBox();
+            edts.addBox(elst);
+            return edts;
+        } else {
+            return null;
+        }
+    }
+
     protected Box createStbl(Track track, Movie movie, Map<Track, int[]> chunks) {
         SampleTableBox stbl = new SampleTableBox();
 
@@ -305,7 +321,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     }
 
     protected void createSubs(Track track, SampleTableBox stbl) {
-        if (track.getSubsampleInformationBox()!=null) {
+        if (track.getSubsampleInformationBox() != null) {
             stbl.addBox(track.getSubsampleInformationBox());
         }
     }
@@ -340,7 +356,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         for (int i = 0; i < chunkSizes.length; i++) {
             offsets[i] = offset;
-            for (int j = 0; j < chunkSizes[i]; j++){
+            for (int j = 0; j < chunkSizes[i]; j++) {
                 offset += sampleEncryptionEntries.get(index++).getSize();
             }
         }

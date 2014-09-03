@@ -22,6 +22,7 @@ import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.*;
 import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
@@ -773,7 +774,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         LOG.fine("Creating Track " + track);
         TrackBox trackBox = new TrackBox();
         trackBox.addBox(createTkhd(movie, track));
-        final Box edts = createEdts(track, movie);
+        Box edts = createEdts(track, movie);
         if (edts != null) {
             trackBox.addBox(edts);
         }
@@ -782,8 +783,19 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     protected Box createEdts(Track track, Movie movie) {
-        final EditListBox elst = track.getTrackMetaData().getEditList();
-        if (elst != null) {
+        if (track.getEdits() != null && track.getEdits().size() > 0) {
+            EditListBox elst = new EditListBox();
+            elst.setVersion(1);
+            List<EditListBox.Entry> entries = new ArrayList<EditListBox.Entry>();
+
+            for (Edit edit : track.getEdits()) {
+                entries.add(new EditListBox.Entry(elst,
+                        edit.getSegmentDuration() * movie.getTimescale() / edit.getTimeScale(),
+                        edit.getMediaTime() * movie.getTimescale() / edit.getTimeScale(),
+                        edit.getMediaRate()));
+            }
+
+            elst.setEntries(entries);
             EditBox edts = new EditBox();
             edts.addBox(elst);
             return edts;

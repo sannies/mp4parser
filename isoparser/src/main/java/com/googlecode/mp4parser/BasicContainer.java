@@ -3,7 +3,6 @@ package com.googlecode.mp4parser;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import com.googlecode.mp4parser.util.LazyList;
 import com.googlecode.mp4parser.util.Logger;
 
@@ -128,14 +127,17 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
     }
 
     /**
-     * Add <code>b</code> to the container and sets the parent correctly.
+     * Add <code>box</code> to the container and sets the parent correctly. If <code>box</code> is <code>null</code>
+     * nochange will be performed and no error thrown.
      *
-     * @param b will be added to the container
+     * @param box will be added to the container
      */
-    public void addBox(Box b) {
-        boxes = new ArrayList<Box>(getBoxes());
-        b.setParent(this);
-        boxes.add(b);
+    public void addBox(Box box) {
+        if (box != null) {
+            boxes = new ArrayList<Box>(getBoxes());
+            box.setParent(this);
+            boxes.add(box);
+        }
     }
 
     public void initContainer(DataSource dataSource, long containerSize, BoxParser boxParser) throws IOException {

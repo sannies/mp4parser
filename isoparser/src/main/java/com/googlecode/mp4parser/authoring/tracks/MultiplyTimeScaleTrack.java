@@ -15,7 +15,11 @@
  */
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SubSampleInformationBox;
+import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
@@ -23,10 +27,6 @@ import com.googlecode.mp4parser.authoring.TrackMetaData;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.googlecode.mp4parser.util.Math.gcd;
-import static com.googlecode.mp4parser.util.Math.lcm;
-import static java.lang.Math.round;
 
 /**
  * Changes the timescale of a track by wrapping the track.
@@ -115,5 +115,9 @@ public class MultiplyTimeScaleTrack implements Track {
 
     public String getName() {
         return "timscale(" + source.getName() + ")";
+    }
+
+    public List<Edit> getEdits() {
+        return source.getEdits();
     }
 }

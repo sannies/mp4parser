@@ -100,7 +100,7 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
     }
 
     @Override
-    public void addBox(Box b) {
+    public void addBox(Box box) {
         throw new RuntimeException("QuicktimeTextSampleEntries may not have child boxes");
     }
 
