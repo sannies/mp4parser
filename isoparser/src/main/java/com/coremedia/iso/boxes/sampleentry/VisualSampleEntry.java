@@ -59,6 +59,8 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
     public static final String TYPE3 = "avc1";
     public static final String TYPE4 = "avc3";
     public static final String TYPE5 = "drmi";
+    public static final String TYPE6 = "hvc1";
+    public static final String TYPE7 = "hev1";
 
 
     /**

@@ -19,6 +19,10 @@ package com.googlecode.mp4parser.boxes.mp4.samplegrouping;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
+import com.mp4parser.iso14496.part15.StepwiseTemporalLayerEntry;
+import com.mp4parser.iso14496.part15.SyncSampleEntry;
+import com.mp4parser.iso14496.part15.TemporalLayerSampleGroup;
+import com.mp4parser.iso14496.part15.TemporalSubLayerSampleGroup;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
@@ -123,6 +127,14 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
             groupEntry = new VisualRandomAccessEntry();
         } else if (TemporalLevelEntry.TYPE.equals(groupingType)) {
             groupEntry = new TemporalLevelEntry();
+        } else if (SyncSampleEntry.TYPE.equals(groupingType)) {
+            groupEntry = new SyncSampleEntry();
+        } else if (TemporalLayerSampleGroup.TYPE.equals(groupingType)) {
+            groupEntry = new TemporalLayerSampleGroup();
+        } else if (TemporalSubLayerSampleGroup.TYPE.equals(groupingType)) {
+            groupEntry = new TemporalSubLayerSampleGroup();
+        } else if (StepwiseTemporalLayerEntry.TYPE.equals(groupingType)) {
+            groupEntry = new StepwiseTemporalLayerEntry();
         } else {
             groupEntry = new UnknownEntry();
         }

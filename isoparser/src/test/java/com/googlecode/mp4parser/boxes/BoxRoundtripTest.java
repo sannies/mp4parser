@@ -129,7 +129,7 @@ public abstract class BoxRoundtripTest {
                         System.out.println("No value given for the following properties: ");
                         output = true;
                     }
-                    System.out.println(String.format("addPropsHere.put(\"%s\", (%s) );", propertyDescriptor.getName(), propertyDescriptor.getPropertyType().getSimpleName()));
+                    System.out.println(String.format("new E(\"%s\", (%s)) ),", propertyDescriptor.getName(), propertyDescriptor.getPropertyType().getSimpleName()));
                 }
             }
         }

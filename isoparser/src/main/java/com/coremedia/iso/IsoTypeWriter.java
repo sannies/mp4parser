@@ -45,6 +45,13 @@ public final class IsoTypeWriter {
 
     }
 
+    public static void writeUInt48(ByteBuffer bb, long l) {
+        l = l & 0xFFFFFFFFFFFFl;
+        writeUInt16(bb, (int) (l >> 32));
+        writeUInt32(bb, l & 0xFFFFFFFFl);
+
+    }
+
 
     public static void writeUInt16(ByteBuffer bb, int i) {
         i = i & 0xFFFF;
