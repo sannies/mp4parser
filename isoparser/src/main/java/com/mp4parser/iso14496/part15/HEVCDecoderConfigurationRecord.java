@@ -105,8 +105,9 @@ public class HEVCDecoderConfigurationRecord {
         temporalIdNested = (a & 0x4) > 0;
         lengthSizeMinusOne = a & 0x2;
 
-        int numOfArrays = IsoTypeReader.readUInt8(content);
 
+        int numOfArrays = IsoTypeReader.readUInt8(content);
+        this.arrays = new ArrayList<Array>();
         for (int i = 0; i < numOfArrays; i++) {
             Array array = new Array();
 
@@ -123,6 +124,7 @@ public class HEVCDecoderConfigurationRecord {
                 content.get(nal);
                 array.nalUnits.add(nal);
             }
+            arrays.add(array);
         }
     }
 
@@ -150,23 +152,93 @@ public class HEVCDecoderConfigurationRecord {
 
         IsoTypeWriter.writeUInt16(byteBuffer, avgFrameRate);
 
-        IsoTypeWriter.writeUInt8(byteBuffer, (constantFrameRate << 6)  +( numTemporalLayers << 3) + (temporalIdNested?0x4:0) + lengthSizeMinusOne);
+        IsoTypeWriter.writeUInt8(byteBuffer, (constantFrameRate << 6) + (numTemporalLayers << 3) + (temporalIdNested ? 0x4 : 0) + lengthSizeMinusOne);
 
         IsoTypeWriter.writeUInt8(byteBuffer, arrays.size());
 
         for (Array array : arrays) {
-            IsoTypeWriter.writeUInt8(byteBuffer, (array.array_completeness?0x80:0) + (array.reserved?0x40:0) + array.nal_unit_type);
+            IsoTypeWriter.writeUInt8(byteBuffer, (array.array_completeness ? 0x80 : 0) + (array.reserved ? 0x40 : 0) + array.nal_unit_type);
 
             IsoTypeWriter.writeUInt16(byteBuffer, array.nalUnits.size());
             for (byte[] nalUnit : array.nalUnits) {
-                IsoTypeWriter.writeUInt16(byteBuffer,nalUnit.length);
+                IsoTypeWriter.writeUInt16(byteBuffer, nalUnit.length);
                 byteBuffer.put(nalUnit);
             }
         }
     }
 
     public int getSize() {
-        return 0;
+        int size = 22;
+        for (Array array : arrays) {
+            size += 3;
+            for (byte[] nalUnit : array.nalUnits) {
+                size += 2;
+                size += nalUnit.length;
+            }
+        }
+        return size;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        HEVCDecoderConfigurationRecord that = (HEVCDecoderConfigurationRecord) o;
+
+        if (avgFrameRate != that.avgFrameRate) return false;
+        if (bitDepthChromaMinus8 != that.bitDepthChromaMinus8) return false;
+        if (bitDepthLumaMinus8 != that.bitDepthLumaMinus8) return false;
+        if (chromaFormat != that.chromaFormat) return false;
+        if (configurationVersion != that.configurationVersion) return false;
+        if (constantFrameRate != that.constantFrameRate) return false;
+        if (general_constraint_indicator_flags != that.general_constraint_indicator_flags) return false;
+        if (general_level_idc != that.general_level_idc) return false;
+        if (general_profile_compatibility_flags != that.general_profile_compatibility_flags) return false;
+        if (general_profile_idc != that.general_profile_idc) return false;
+        if (general_profile_space != that.general_profile_space) return false;
+        if (general_tier_flag != that.general_tier_flag) return false;
+        if (lengthSizeMinusOne != that.lengthSizeMinusOne) return false;
+        if (min_spatial_segmentation_idc != that.min_spatial_segmentation_idc) return false;
+        if (numTemporalLayers != that.numTemporalLayers) return false;
+        if (parallelismType != that.parallelismType) return false;
+        if (reserved1 != that.reserved1) return false;
+        if (reserved2 != that.reserved2) return false;
+        if (reserved3 != that.reserved3) return false;
+        if (reserved4 != that.reserved4) return false;
+        if (reserved5 != that.reserved5) return false;
+        if (temporalIdNested != that.temporalIdNested) return false;
+        if (arrays != null ? !arrays.equals(that.arrays) : that.arrays != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = configurationVersion;
+        result = 31 * result + general_profile_space;
+        result = 31 * result + (general_tier_flag ? 1 : 0);
+        result = 31 * result + general_profile_idc;
+        result = 31 * result + (int) (general_profile_compatibility_flags ^ (general_profile_compatibility_flags >>> 32));
+        result = 31 * result + (int) (general_constraint_indicator_flags ^ (general_constraint_indicator_flags >>> 32));
+        result = 31 * result + general_level_idc;
+        result = 31 * result + reserved1;
+        result = 31 * result + min_spatial_segmentation_idc;
+        result = 31 * result + reserved2;
+        result = 31 * result + parallelismType;
+        result = 31 * result + reserved3;
+        result = 31 * result + chromaFormat;
+        result = 31 * result + reserved4;
+        result = 31 * result + bitDepthLumaMinus8;
+        result = 31 * result + reserved5;
+        result = 31 * result + bitDepthChromaMinus8;
+        result = 31 * result + avgFrameRate;
+        result = 31 * result + constantFrameRate;
+        result = 31 * result + numTemporalLayers;
+        result = 31 * result + (temporalIdNested ? 1 : 0);
+        result = 31 * result + lengthSizeMinusOne;
+        result = 31 * result + (arrays != null ? arrays.hashCode() : 0);
+        return result;
     }
 
     class Array {

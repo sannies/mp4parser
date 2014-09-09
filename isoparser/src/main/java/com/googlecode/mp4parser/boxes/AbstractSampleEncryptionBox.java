@@ -2,13 +2,9 @@ package com.googlecode.mp4parser.boxes;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.TrackHeaderBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
 import com.googlecode.mp4parser.AbstractFullBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
-import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 
 import java.io.IOException;
 import java.nio.BufferUnderflowException;

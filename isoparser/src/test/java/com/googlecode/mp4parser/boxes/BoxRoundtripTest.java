@@ -26,6 +26,25 @@ import java.util.Map;
 @RunWith(Parameterized.class)
 public abstract class BoxRoundtripTest {
 
+    /*
+
+
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+
+
+        return Collections.singletonList(
+                new Object[]{new Box(),
+                        new Map.Entry[]{
+                                new E("prop", 1),
+                                new E("prop2", 21)}
+                });
+    }
+
+
+
+     */
+
     String dummyParent = null;
     Box boxUnderTest;
     Map<String, Object> props;

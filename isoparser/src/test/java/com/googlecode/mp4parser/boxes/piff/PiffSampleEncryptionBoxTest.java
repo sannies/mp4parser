@@ -2,7 +2,7 @@ package com.googlecode.mp4parser.boxes.piff;
 
 import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.boxes.AbstractSampleEncryptionBox;
-import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.googlecode.mp4parser.util.UUIDConverter;
 import org.junit.Assert;
 import org.junit.Test;

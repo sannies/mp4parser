@@ -5,17 +5,15 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.*;
 import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
-import com.googlecode.mp4parser.boxes.basemediaformat.TrackEncryptionBox;
-import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.iso23001.part7.TrackEncryptionBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * This track implementation is to be used when MP4 track is CENC encrypted.

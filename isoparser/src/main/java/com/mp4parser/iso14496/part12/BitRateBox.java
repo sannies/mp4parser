@@ -14,7 +14,7 @@
  * limitations under the License. 
  */
 
-package com.coremedia.iso.boxes;
+package com.mp4parser.iso14496.part12;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;

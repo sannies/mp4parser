@@ -11,9 +11,9 @@ import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
-import com.googlecode.mp4parser.boxes.basemediaformat.TrackEncryptionBox;
 import com.googlecode.mp4parser.boxes.cenc.CencEncryptingSampleList;
-import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
+import com.mp4parser.iso23001.part7.TrackEncryptionBox;
 
 import javax.crypto.SecretKey;
 import java.io.ByteArrayOutputStream;

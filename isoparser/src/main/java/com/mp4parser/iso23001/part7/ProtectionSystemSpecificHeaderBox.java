@@ -1,4 +1,4 @@
-package com.googlecode.mp4parser.boxes.cenc;
+package com.mp4parser.iso23001.part7;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;

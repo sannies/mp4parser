@@ -6,6 +6,7 @@ package com.googlecode.mp4parser.boxes.cenc;
 
 
 import com.googlecode.mp4parser.authoring.Sample;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;

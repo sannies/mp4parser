@@ -2,13 +2,10 @@ package com.googlecode.mp4parser.boxes.mp4.samplegrouping;
 
 import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.boxes.BoxRoundtripTest;
-import com.googlecode.mp4parser.boxes.cenc.ProtectionSystemSpecificHeaderBox;
 import com.googlecode.mp4parser.util.UUIDConverter;
 import org.junit.runners.Parameterized;
 
 import java.util.*;
-
-import static org.junit.Assert.*;
 
 public class CencSampleEncryptionInformationGroupEntryTest extends BoxRoundtripTest {
 

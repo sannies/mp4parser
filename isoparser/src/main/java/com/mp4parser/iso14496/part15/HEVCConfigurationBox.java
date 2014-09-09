@@ -39,4 +39,22 @@ public class HEVCConfigurationBox extends AbstractBox {
     public void setHevcDecoderConfigurationRecord(HEVCDecoderConfigurationRecord hevcDecoderConfigurationRecord) {
         this.hevcDecoderConfigurationRecord = hevcDecoderConfigurationRecord;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        HEVCConfigurationBox that = (HEVCConfigurationBox) o;
+
+        if (hevcDecoderConfigurationRecord != null ? !hevcDecoderConfigurationRecord.equals(that.hevcDecoderConfigurationRecord) : that.hevcDecoderConfigurationRecord != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return hevcDecoderConfigurationRecord != null ? hevcDecoderConfigurationRecord.hashCode() : 0;
+    }
 }

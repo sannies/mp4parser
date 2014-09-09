@@ -10,7 +10,7 @@ import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
 import com.googlecode.mp4parser.authoring.*;
-import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.googlecode.mp4parser.util.Path;
 
 import javax.crypto.*;

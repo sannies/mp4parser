@@ -27,10 +27,10 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
-import com.googlecode.mp4parser.boxes.basemediaformat.TrackEncryptionBox;
-import com.googlecode.mp4parser.boxes.cenc.CencSampleAuxiliaryDataFormat;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.googlecode.mp4parser.boxes.dece.SampleEncryptionBox;
 import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.iso23001.part7.TrackEncryptionBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

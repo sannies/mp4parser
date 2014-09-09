@@ -1,7 +1,8 @@
-package com.googlecode.mp4parser.boxes.cenc;
+package com.mp4parser.iso23001.part7;
 
 import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.boxes.BoxRoundtripTest;
+import com.mp4parser.iso23001.part7.ProtectionSystemSpecificHeaderBox;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;

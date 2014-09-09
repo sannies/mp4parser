@@ -3,6 +3,7 @@ package com.googlecode.mp4parser.boxes.cenc;
 import com.coremedia.iso.Hex;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.SampleImpl;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import junit.framework.Assert;
 import org.junit.Test;
 

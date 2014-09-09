@@ -3,6 +3,7 @@ package com.googlecode.mp4parser.boxes;
 
 import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.util.UUIDConverter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -17,7 +18,7 @@ public abstract class AbstractTrackEncryptionBoxTest {
 
     @Test
     public void testRoundTrip() throws IOException {
-        tenc.setDefault_KID(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6});
+        tenc.setDefault_KID(UUIDConverter.convert(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6}));
         tenc.setDefaultAlgorithmId(0x0a0b0c);
         tenc.setDefaultIvSize(8);
 
