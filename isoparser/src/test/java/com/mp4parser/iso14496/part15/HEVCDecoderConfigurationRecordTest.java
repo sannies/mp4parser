@@ -12,12 +12,10 @@ public class HEVCDecoderConfigurationRecordTest {
 
     @Test
     public void roundtrip() {
-        String example = "00000000-00000001-00000000-00000000-00000000-00000000-050002D0-00480000-00480000-00000000-" +
-                "00010000-00000000-00000000-00000000-00000000-00000000-00000000-00000000-00000018-FFFF0000-00696876-" +
-                "63430101-60000000-80000000-00005DF0-00FCFDF8-F800000F-03A00001-00184001-0C01FFFF-01600000-03008000-" +
-                "00030000-03005DB5-0240A100-01001D42-01010160-00000300-80000003-00000300-5DA00280-802D165B-5BBCAC80-" +
-                "A2000100-064401C0-71831200-00001462-74727400-011CB800-2402C000-12FF00";
-        ByteBuffer confRecordOrig = ByteBuffer.wrap(Hex.decodeHex(example.replace("-", "")));
+
+        String example = "01008000000000000000000000F000FCFDF8F800000F03200001001940010C01FFFF00800000030000030000030000030000B50240210001002842010100800000030000030000030000030000A00280802D1FE5B59246D0CE4924B724AA49F292C822000100074401C1A5581E48";
+
+        ByteBuffer confRecordOrig = ByteBuffer.wrap(Hex.decodeHex(example.replace(" ", "")));
 
         HEVCDecoderConfigurationRecord h1 = new HEVCDecoderConfigurationRecord();
         h1.parse(confRecordOrig);
@@ -27,10 +25,8 @@ public class HEVCDecoderConfigurationRecordTest {
         HEVCDecoderConfigurationRecord h2 = new HEVCDecoderConfigurationRecord();
         h2.parse((ByteBuffer) confRecordWritten.rewind());
 
-        Assert.assertEquals(h1, h2);
         Assert.assertEquals(confRecordOrig, confRecordWritten);
-
-
+        Assert.assertEquals(h1, h2);
 
 
     }

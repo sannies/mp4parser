@@ -5,7 +5,9 @@ import com.coremedia.iso.IsoTypeWriter;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * unsigned int(8) numOfArrays;
@@ -67,19 +69,32 @@ public class HEVCDecoderConfigurationRecord {
     public void parse(ByteBuffer content) {
         configurationVersion = IsoTypeReader.readUInt8(content);
 
+        /*
+         * unsigned int(2) general_profile_space;
+         * unsigned int(1) general_tier_flag;
+         * unsigned int(5) general_profile_idc;
+         */
         int a = IsoTypeReader.readUInt8(content);
         general_profile_space = (a & 0xC0) >> 6;
         general_tier_flag = (a & 0x20) > 0;
         general_profile_idc = (a & 0x1F);
 
+        /* unsigned int(32) general_profile_compatibility_flags; */
         general_profile_compatibility_flags = IsoTypeReader.readUInt32(content);
+
+         /* unsigned int(48) general_constraint_indicator_flags; */
         general_constraint_indicator_flags = IsoTypeReader.readUInt48(content);
 
+        /* unsigned int(8) general_level_idc; */
         general_level_idc = IsoTypeReader.readUInt8(content);
 
-        a = IsoTypeReader.readUInt8(content);
-        reserved1 = (a & 0xF0) >> 4;
-        min_spatial_segmentation_idc = a & 0xF;
+        /*
+         * bit(4) reserved = ‘1111’b;
+         * unsigned int(12) min_spatial_segmentation_idc;
+         */
+        a = IsoTypeReader.readUInt16(content);
+        reserved1 = (a & 0xF000) >> 12;
+        min_spatial_segmentation_idc = a & 0xFFF;
 
         a = IsoTypeReader.readUInt8(content);
         reserved2 = (a & 0xFC) >> 2;
@@ -103,7 +118,7 @@ public class HEVCDecoderConfigurationRecord {
         constantFrameRate = (a & 0xC0) >> 6;
         numTemporalLayers = (a & 0x38) >> 3;
         temporalIdNested = (a & 0x4) > 0;
-        lengthSizeMinusOne = a & 0x2;
+        lengthSizeMinusOne = a & 0x3;
 
 
         int numOfArrays = IsoTypeReader.readUInt8(content);
@@ -140,7 +155,7 @@ public class HEVCDecoderConfigurationRecord {
 
         IsoTypeWriter.writeUInt8(byteBuffer, general_level_idc);
 
-        IsoTypeWriter.writeUInt8(byteBuffer, (reserved1 << 4) + min_spatial_segmentation_idc);
+        IsoTypeWriter.writeUInt16(byteBuffer, (reserved1 << 12) + min_spatial_segmentation_idc);
 
         IsoTypeWriter.writeUInt8(byteBuffer, (reserved2 << 2) + parallelismType);
 
@@ -168,7 +183,7 @@ public class HEVCDecoderConfigurationRecord {
     }
 
     public int getSize() {
-        int size = 22;
+        int size = 23;
         for (Array array : arrays) {
             size += 3;
             for (byte[] nalUnit : array.nalUnits) {
@@ -252,5 +267,75 @@ public class HEVCDecoderConfigurationRecord {
         public Array() {
 
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Array array = (Array) o;
+
+            if (array_completeness != array.array_completeness) return false;
+            if (nal_unit_type != array.nal_unit_type) return false;
+            if (reserved != array.reserved) return false;
+            ListIterator<byte[]> e1 = nalUnits.listIterator();
+            ListIterator<byte[]> e2 = (array.nalUnits).listIterator();
+            while (e1.hasNext() && e2.hasNext()) {
+                byte[] o1 = e1.next();
+                byte[] o2 = e2.next();
+
+                if (!(o1==null ? o2==null : Arrays.equals(o1, o2)))
+                    return false;
+            }
+            return !(e1.hasNext() || e2.hasNext());
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (array_completeness ? 1 : 0);
+            result = 31 * result + (reserved ? 1 : 0);
+            result = 31 * result + nal_unit_type;
+            result = 31 * result + (nalUnits != null ? nalUnits.hashCode() : 0);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Array{" +
+                    "nal_unit_type=" + nal_unit_type +
+                    ", reserved=" + reserved +
+                    ", array_completeness=" + array_completeness +
+                    ", num_nals=" + nalUnits.size() +
+                    '}';
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "HEVCDecoderConfigurationRecord{" +
+                "configurationVersion=" + configurationVersion +
+                ", general_profile_space=" + general_profile_space +
+                ", general_tier_flag=" + general_tier_flag +
+                ", general_profile_idc=" + general_profile_idc +
+                ", general_profile_compatibility_flags=" + general_profile_compatibility_flags +
+                ", general_constraint_indicator_flags=" + general_constraint_indicator_flags +
+                ", general_level_idc=" + general_level_idc +
+                (reserved1!=0xf?(", reserved1=" + reserved1):"") +
+                ", min_spatial_segmentation_idc=" + min_spatial_segmentation_idc +
+                (reserved2!=0x3F?(", reserved2=" + reserved2):"") +
+                ", parallelismType=" + parallelismType +
+                (reserved3!=0x3F?(", reserved3=" + reserved3):"") +
+                ", chromaFormat=" + chromaFormat +
+                (reserved4!=0x1F?(", reserved4=" + reserved4):"") +
+                ", bitDepthLumaMinus8=" + bitDepthLumaMinus8 +
+                (reserved5!=0x1F?(", reserved5=" + reserved5):"") +
+                ", bitDepthChromaMinus8=" + bitDepthChromaMinus8 +
+                ", avgFrameRate=" + avgFrameRate +
+                ", constantFrameRate=" + constantFrameRate +
+                ", numTemporalLayers=" + numTemporalLayers +
+                ", temporalIdNested=" + temporalIdNested +
+                ", lengthSizeMinusOne=" + lengthSizeMinusOne +
+                ", arrays=" + arrays +
+                '}';
     }
 }
