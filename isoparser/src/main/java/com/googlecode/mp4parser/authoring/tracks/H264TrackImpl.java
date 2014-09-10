@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
+import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.authoring.AbstractTrack;

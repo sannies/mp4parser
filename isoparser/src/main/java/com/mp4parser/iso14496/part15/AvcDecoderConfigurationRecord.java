@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
-* Created by sannies on 10.09.2014.
+*
 */
 public class AvcDecoderConfigurationRecord {
     public int configurationVersion;

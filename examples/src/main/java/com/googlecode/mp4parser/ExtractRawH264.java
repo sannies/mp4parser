@@ -2,19 +2,12 @@ package com.googlecode.mp4parser;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReaderVariable;
-import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
+import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
-import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.H264TrackImpl;
 import com.googlecode.mp4parser.util.Path;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;

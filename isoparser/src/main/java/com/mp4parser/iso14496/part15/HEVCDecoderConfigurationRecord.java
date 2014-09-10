@@ -25,7 +25,7 @@ import java.util.ListIterator;
  * }
  * }
  */
-public class HEVCDecoderConfigurationRecord {
+public class HevcDecoderConfigurationRecord {
     int configurationVersion;
 
     int general_profile_space;
@@ -62,7 +62,7 @@ public class HEVCDecoderConfigurationRecord {
     List<Array> arrays;
 
 
-    public HEVCDecoderConfigurationRecord() {
+    public HevcDecoderConfigurationRecord() {
     }
 
 
@@ -199,7 +199,7 @@ public class HEVCDecoderConfigurationRecord {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        HEVCDecoderConfigurationRecord that = (HEVCDecoderConfigurationRecord) o;
+        HevcDecoderConfigurationRecord that = (HevcDecoderConfigurationRecord) o;
 
         if (avgFrameRate != that.avgFrameRate) return false;
         if (bitDepthChromaMinus8 != that.bitDepthChromaMinus8) return false;
@@ -256,7 +256,7 @@ public class HEVCDecoderConfigurationRecord {
         return result;
     }
 
-    class Array {
+    public static class Array {
 
         boolean array_completeness;
         boolean reserved;
@@ -337,5 +337,149 @@ public class HEVCDecoderConfigurationRecord {
                 ", lengthSizeMinusOne=" + lengthSizeMinusOne +
                 ", arrays=" + arrays +
                 '}';
+    }
+
+    public int getConfigurationVersion() {
+        return configurationVersion;
+    }
+
+    public void setConfigurationVersion(int configurationVersion) {
+        this.configurationVersion = configurationVersion;
+    }
+
+    public int getGeneral_profile_space() {
+        return general_profile_space;
+    }
+
+    public void setGeneral_profile_space(int general_profile_space) {
+        this.general_profile_space = general_profile_space;
+    }
+
+    public boolean isGeneral_tier_flag() {
+        return general_tier_flag;
+    }
+
+    public void setGeneral_tier_flag(boolean general_tier_flag) {
+        this.general_tier_flag = general_tier_flag;
+    }
+
+    public int getGeneral_profile_idc() {
+        return general_profile_idc;
+    }
+
+    public void setGeneral_profile_idc(int general_profile_idc) {
+        this.general_profile_idc = general_profile_idc;
+    }
+
+    public long getGeneral_profile_compatibility_flags() {
+        return general_profile_compatibility_flags;
+    }
+
+    public void setGeneral_profile_compatibility_flags(long general_profile_compatibility_flags) {
+        this.general_profile_compatibility_flags = general_profile_compatibility_flags;
+    }
+
+    public long getGeneral_constraint_indicator_flags() {
+        return general_constraint_indicator_flags;
+    }
+
+    public void setGeneral_constraint_indicator_flags(long general_constraint_indicator_flags) {
+        this.general_constraint_indicator_flags = general_constraint_indicator_flags;
+    }
+
+    public int getGeneral_level_idc() {
+        return general_level_idc;
+    }
+
+    public void setGeneral_level_idc(int general_level_idc) {
+        this.general_level_idc = general_level_idc;
+    }
+
+    public int getMin_spatial_segmentation_idc() {
+        return min_spatial_segmentation_idc;
+    }
+
+    public void setMin_spatial_segmentation_idc(int min_spatial_segmentation_idc) {
+        this.min_spatial_segmentation_idc = min_spatial_segmentation_idc;
+    }
+
+    public int getParallelismType() {
+        return parallelismType;
+    }
+
+    public void setParallelismType(int parallelismType) {
+        this.parallelismType = parallelismType;
+    }
+
+    public int getChromaFormat() {
+        return chromaFormat;
+    }
+
+    public void setChromaFormat(int chromaFormat) {
+        this.chromaFormat = chromaFormat;
+    }
+
+    public int getBitDepthLumaMinus8() {
+        return bitDepthLumaMinus8;
+    }
+
+    public void setBitDepthLumaMinus8(int bitDepthLumaMinus8) {
+        this.bitDepthLumaMinus8 = bitDepthLumaMinus8;
+    }
+
+    public int getBitDepthChromaMinus8() {
+        return bitDepthChromaMinus8;
+    }
+
+    public void setBitDepthChromaMinus8(int bitDepthChromaMinus8) {
+        this.bitDepthChromaMinus8 = bitDepthChromaMinus8;
+    }
+
+    public int getAvgFrameRate() {
+        return avgFrameRate;
+    }
+
+    public void setAvgFrameRate(int avgFrameRate) {
+        this.avgFrameRate = avgFrameRate;
+    }
+
+    public int getNumTemporalLayers() {
+        return numTemporalLayers;
+    }
+
+    public void setNumTemporalLayers(int numTemporalLayers) {
+        this.numTemporalLayers = numTemporalLayers;
+    }
+
+    public int getLengthSizeMinusOne() {
+        return lengthSizeMinusOne;
+    }
+
+    public void setLengthSizeMinusOne(int lengthSizeMinusOne) {
+        this.lengthSizeMinusOne = lengthSizeMinusOne;
+    }
+
+    public boolean isTemporalIdNested() {
+        return temporalIdNested;
+    }
+
+    public void setTemporalIdNested(boolean temporalIdNested) {
+        this.temporalIdNested = temporalIdNested;
+    }
+
+    public int getConstantFrameRate() {
+        return constantFrameRate;
+    }
+
+    public void setConstantFrameRate(int constantFrameRate) {
+        this.constantFrameRate = constantFrameRate;
+    }
+
+    public List<Array> getArrays() {
+        return arrays;
+    }
+
+    public void setArrays(List<Array> arrays) {
+        this.arrays = arrays;
     }
 }

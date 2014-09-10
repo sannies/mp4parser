@@ -1,6 +1,7 @@
 package com.mp4parser.iso14496.part15;
 
 import com.coremedia.iso.Hex;
+import com.mp4parser.iso14496.part15.HevcDecoderConfigurationRecord;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -8,7 +9,7 @@ import java.nio.ByteBuffer;
 
 import static org.junit.Assert.*;
 
-public class HEVCDecoderConfigurationRecordTest {
+public class HevcDecoderConfigurationRecordTest {
 
     @Test
     public void roundtrip() {
@@ -17,12 +18,12 @@ public class HEVCDecoderConfigurationRecordTest {
 
         ByteBuffer confRecordOrig = ByteBuffer.wrap(Hex.decodeHex(example.replace(" ", "")));
 
-        HEVCDecoderConfigurationRecord h1 = new HEVCDecoderConfigurationRecord();
+        HevcDecoderConfigurationRecord h1 = new HevcDecoderConfigurationRecord();
         h1.parse(confRecordOrig);
         ByteBuffer confRecordWritten = ByteBuffer.allocate(h1.getSize());
         h1.write(confRecordWritten);
 
-        HEVCDecoderConfigurationRecord h2 = new HEVCDecoderConfigurationRecord();
+        HevcDecoderConfigurationRecord h2 = new HevcDecoderConfigurationRecord();
         h2.parse((ByteBuffer) confRecordWritten.rewind());
 
         Assert.assertEquals(confRecordOrig, confRecordWritten);

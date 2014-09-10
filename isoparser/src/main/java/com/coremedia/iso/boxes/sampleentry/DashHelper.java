@@ -2,7 +2,7 @@ package com.coremedia.iso.boxes.sampleentry;
 
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.boxes.OriginalFormatBox;
-import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
+import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.googlecode.mp4parser.boxes.AC3SpecificBox;
 import com.googlecode.mp4parser.boxes.DTSSpecificBox;
 import com.googlecode.mp4parser.boxes.EC3SpecificBox;

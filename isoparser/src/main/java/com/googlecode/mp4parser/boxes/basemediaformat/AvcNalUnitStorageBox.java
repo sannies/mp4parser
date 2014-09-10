@@ -16,8 +16,9 @@
 
 package com.googlecode.mp4parser.boxes.basemediaformat;
 
-import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
+import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.googlecode.mp4parser.AbstractBox;
+import com.mp4parser.iso14496.part15.AvcDecoderConfigurationRecord;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -29,7 +30,7 @@ import java.util.List;
  */
 public class AvcNalUnitStorageBox extends AbstractBox {
     public static final String TYPE = "avcn";
-    AvcConfigurationBox.AVCDecoderConfigurationRecord avcDecoderConfigurationRecord;
+    AvcDecoderConfigurationRecord avcDecoderConfigurationRecord;
 
     public AvcNalUnitStorageBox() {
         super(TYPE);
@@ -40,7 +41,7 @@ public class AvcNalUnitStorageBox extends AbstractBox {
         this.avcDecoderConfigurationRecord = avcConfigurationBox.getavcDecoderConfigurationRecord();
     }
 
-    public AvcConfigurationBox.AVCDecoderConfigurationRecord getAvcDecoderConfigurationRecord() {
+    public AvcDecoderConfigurationRecord getAvcDecoderConfigurationRecord() {
         return avcDecoderConfigurationRecord;
     }
 
@@ -76,7 +77,7 @@ public class AvcNalUnitStorageBox extends AbstractBox {
 
     @Override
     public void _parseDetails(ByteBuffer content) {
-        this.avcDecoderConfigurationRecord = new AvcConfigurationBox.AVCDecoderConfigurationRecord(content);
+        this.avcDecoderConfigurationRecord = new AvcDecoderConfigurationRecord(content);
     }
 
     @Override

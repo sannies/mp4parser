@@ -22,14 +22,9 @@ import com.coremedia.iso.boxes.Container;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import com.coremedia.iso.boxes.OriginalFormatBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.googlecode.mp4parser.DataSource;
-import com.googlecode.mp4parser.util.Path;
 
 import java.nio.channels.WritableByteChannel;
-import java.util.List;
 
 /**
  * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2}" || "{@value #TYPE3}" || "{@value #TYPE4}" || "{@value #TYPE5}"</h1>

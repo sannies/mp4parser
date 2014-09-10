@@ -3,7 +3,6 @@ package com.googlecode.mp4parser.authoring.tracks;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReaderVariable;
 import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
@@ -12,6 +11,7 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.cenc.CencEncryptingSampleList;
+import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.mp4parser.iso23001.part7.TrackEncryptionBox;
 
