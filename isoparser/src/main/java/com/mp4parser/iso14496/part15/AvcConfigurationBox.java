@@ -14,7 +14,7 @@
  * limitations under the License. 
  */
 
-package com.coremedia.iso.boxes.h264;
+package com.mp4parser.iso14496.part15;
 
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoTypeReader;
