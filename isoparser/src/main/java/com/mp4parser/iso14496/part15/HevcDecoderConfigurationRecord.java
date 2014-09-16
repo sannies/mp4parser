@@ -258,10 +258,10 @@ public class HevcDecoderConfigurationRecord {
 
     public static class Array {
 
-        boolean array_completeness;
-        boolean reserved;
-        int nal_unit_type;
-        List<byte[]> nalUnits;
+        public boolean array_completeness;
+        public boolean reserved;
+        public int nal_unit_type;
+        public List<byte[]> nalUnits;
 
 
         public Array() {
