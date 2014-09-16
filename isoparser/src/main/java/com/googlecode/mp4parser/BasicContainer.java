@@ -21,16 +21,6 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * Created by sannies on 18.05.13.
  */
 public class BasicContainer implements Container, Iterator<Box>, Closeable {
-    private static Logger LOG = Logger.getLogger(BasicContainer.class);
-
-    private List<Box> boxes = new ArrayList<Box>();
-    protected BoxParser boxParser;
-    protected DataSource dataSource;
-    Box lookahead = null;
-    long parsePosition = 0;
-    long startPosition = 0;
-    long endPosition = 0;
-
     private static final Box EOF = new AbstractBox("eof ") {
 
         @Override
@@ -46,6 +36,17 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
         protected void _parseDetails(ByteBuffer content) {
         }
     };
+    private static Logger LOG = Logger.getLogger(BasicContainer.class);
+    protected BoxParser boxParser;
+    protected DataSource dataSource;
+    Box lookahead = null;
+    long parsePosition = 0;
+    long startPosition = 0;
+    long endPosition = 0;
+    private List<Box> boxes = new ArrayList<Box>();
+
+    public BasicContainer() {
+    }
 
     public List<Box> getBoxes() {
         if (dataSource != null && lookahead != EOF) {
@@ -55,6 +56,11 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
         }
     }
 
+    public void setBoxes(List<Box> boxes) {
+        this.boxes = new ArrayList<Box>(boxes);
+        this.lookahead = EOF;
+        this.dataSource = null;
+    }
 
     protected long getContainerSize() {
         long contentSize = 0;
@@ -64,15 +70,6 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
             contentSize += boxes.get(i).getSize();
         }
         return contentSize;
-    }
-
-    public BasicContainer() {
-    }
-
-    public void setBoxes(List<Box> boxes) {
-        this.boxes = new ArrayList<Box>(boxes);
-        this.lookahead = EOF;
-        this.dataSource = null;
     }
 
     @SuppressWarnings("unchecked")
@@ -176,7 +173,7 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
             lookahead = null;
             return b;
         } else {
-            LOG.logDebug("Parsing next() box");
+           // LOG.logDebug("Parsing next() box");
             if (dataSource == null || parsePosition >= endPosition) {
                 lookahead = EOF;
                 throw new NoSuchElementException();
