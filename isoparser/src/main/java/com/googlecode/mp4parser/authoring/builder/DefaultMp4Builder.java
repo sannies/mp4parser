@@ -26,9 +26,11 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
-import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.googlecode.mp4parser.boxes.dece.SampleEncryptionBox;
 import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationOffsetsBox;
+import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationSizesBox;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -44,13 +46,35 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  */
 public class DefaultMp4Builder implements Mp4Builder {
 
+    private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
     Set<StaticChunkOffsetBox> chunkOffsetBoxes = new HashSet<StaticChunkOffsetBox>();
     Set<SampleAuxiliaryInformationOffsetsBox> sampleAuxiliaryInformationOffsetsBoxes = new HashSet<SampleAuxiliaryInformationOffsetsBox>();
-    private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
-
     HashMap<Track, List<Sample>> track2Sample = new HashMap<Track, List<Sample>>();
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
     private FragmentIntersectionFinder intersectionFinder;
+
+    private static long sum(int[] ls) {
+        long rc = 0;
+        for (long l : ls) {
+            rc += l;
+        }
+        return rc;
+    }
+
+    private static long sum(long[] ls) {
+        long rc = 0;
+        for (long l : ls) {
+            rc += l;
+        }
+        return rc;
+    }
+
+    public static long gcd(long a, long b) {
+        if (b == 0) {
+            return a;
+        }
+        return gcd(b, a % b);
+    }
 
     public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
         this.intersectionFinder = intersectionFinder;
@@ -489,27 +513,51 @@ public class DefaultMp4Builder implements Mp4Builder {
         stbl.addBox(stts);
     }
 
+    /**
+     * Gets the chunk sizes for the given track.
+     *
+     * @param track
+     * @param movie
+     * @return
+     */
+    int[] getChunkSizes(Track track, Movie movie) {
+
+        long[] referenceChunkStarts = intersectionFinder.sampleNumbers(track);
+        int[] chunkSizes = new int[referenceChunkStarts.length];
+
+
+        for (int i = 0; i < referenceChunkStarts.length; i++) {
+            long start = referenceChunkStarts[i] - 1;
+            long end;
+            if (referenceChunkStarts.length == i + 1) {
+                end = track.getSamples().size();
+            } else {
+                end = referenceChunkStarts[i + 1] - 1;
+            }
+
+            chunkSizes[i] = l2i(end - start);
+            // The Stretch makes sure that there are as much audio and video chunks!
+        }
+        assert DefaultMp4Builder.this.track2Sample.get(track).size() == sum(chunkSizes) : "The number of samples and the sum of all chunk lengths must be equal";
+        return chunkSizes;
+
+
+    }
+
+    public long getTimescale(Movie movie) {
+        long timescale = movie.getTracks().iterator().next().getTrackMetaData().getTimescale();
+        for (Track track : movie.getTracks()) {
+            timescale = gcd(track.getTrackMetaData().getTimescale(), timescale);
+        }
+        return timescale;
+    }
+
     private class InterleaveChunkMdat implements Box {
         List<Track> tracks;
         List<List<Sample>> chunkList = new ArrayList<List<Sample>>();
         Container parent;
 
         long contentSize;
-
-        public Container getParent() {
-            return parent;
-        }
-
-        public long getOffset() {
-            throw new RuntimeException("Doesn't have any meaning for programmatically created boxes");
-        }
-
-        public void setParent(Container parent) {
-            this.parent = parent;
-        }
-
-        public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        }
 
         private InterleaveChunkMdat(Movie movie, Map<Track, int[]> chunks, long contentSize) {
             this.contentSize = contentSize;
@@ -529,6 +577,21 @@ public class DefaultMp4Builder implements Mp4Builder {
 
             }
 
+        }
+
+        public Container getParent() {
+            return parent;
+        }
+
+        public void setParent(Container parent) {
+            this.parent = parent;
+        }
+
+        public long getOffset() {
+            throw new RuntimeException("Doesn't have any meaning for programmatically created boxes");
+        }
+
+        public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         }
 
         public long getDataOffset() {
@@ -584,68 +647,5 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         }
 
-    }
-
-    /**
-     * Gets the chunk sizes for the given track.
-     *
-     * @param track
-     * @param movie
-     * @return
-     */
-    int[] getChunkSizes(Track track, Movie movie) {
-
-        long[] referenceChunkStarts = intersectionFinder.sampleNumbers(track);
-        int[] chunkSizes = new int[referenceChunkStarts.length];
-
-
-        for (int i = 0; i < referenceChunkStarts.length; i++) {
-            long start = referenceChunkStarts[i] - 1;
-            long end;
-            if (referenceChunkStarts.length == i + 1) {
-                end = track.getSamples().size();
-            } else {
-                end = referenceChunkStarts[i + 1] - 1;
-            }
-
-            chunkSizes[i] = l2i(end - start);
-            // The Stretch makes sure that there are as much audio and video chunks!
-        }
-        assert DefaultMp4Builder.this.track2Sample.get(track).size() == sum(chunkSizes) : "The number of samples and the sum of all chunk lengths must be equal";
-        return chunkSizes;
-
-
-    }
-
-
-    private static long sum(int[] ls) {
-        long rc = 0;
-        for (long l : ls) {
-            rc += l;
-        }
-        return rc;
-    }
-
-    private static long sum(long[] ls) {
-        long rc = 0;
-        for (long l : ls) {
-            rc += l;
-        }
-        return rc;
-    }
-
-    public long getTimescale(Movie movie) {
-        long timescale = movie.getTracks().iterator().next().getTrackMetaData().getTimescale();
-        for (Track track : movie.getTracks()) {
-            timescale = gcd(track.getTrackMetaData().getTimescale(), timescale);
-        }
-        return timescale;
-    }
-
-    public static long gcd(long a, long b) {
-        if (b == 0) {
-            return a;
-        }
-        return gcd(b, a % b);
     }
 }

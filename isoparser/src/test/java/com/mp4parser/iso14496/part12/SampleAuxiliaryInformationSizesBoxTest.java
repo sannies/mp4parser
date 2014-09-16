@@ -1,4 +1,4 @@
-package com.coremedia.iso.boxes;
+package com.mp4parser.iso14496.part12;
 
 import com.coremedia.iso.IsoFile;
 import org.junit.Assert;

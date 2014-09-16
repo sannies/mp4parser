@@ -27,23 +27,17 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
-import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.googlecode.mp4parser.boxes.dece.SampleEncryptionBox;
 import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationOffsetsBox;
+import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationSizesBox;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.mp4parser.iso23001.part7.TrackEncryptionBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -192,12 +186,12 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 return parent;
             }
 
-            public long getOffset() {
-                throw new RuntimeException("Doesn't have any meaning for programmatically created boxes");
-            }
-
             public void setParent(Container parent) {
                 this.parent = parent;
+            }
+
+            public long getOffset() {
+                throw new RuntimeException("Doesn't have any meaning for programmatically created boxes");
             }
 
             public long getSize() {

@@ -3,10 +3,15 @@ package com.googlecode.mp4parser.authoring;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.*;
+import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
-import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationOffsetsBox;
+import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationSizesBox;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.mp4parser.iso23001.part7.TrackEncryptionBox;
 
 import java.io.IOException;
@@ -163,6 +168,11 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
                 '}';
     }
 
+    @Override
+    public String getName() {
+        return "enc(" + super.getName() + ")";
+    }
+
     private class FindSaioSaizPair {
         private Container container;
         private SampleAuxiliaryInformationSizesBox saiz;
@@ -205,10 +215,5 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
             }
             return this;
         }
-    }
-
-    @Override
-    public String getName() {
-        return "enc(" + super.getName() + ")";
     }
 }
