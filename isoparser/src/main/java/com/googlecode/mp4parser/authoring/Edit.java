@@ -4,24 +4,30 @@ package com.googlecode.mp4parser.authoring;
  * Format agnostic EditListBox.Entry.
  */
 public class Edit {
-    public Edit(long timeScale, long segmentDuration, long mediaTime, double mediaRate) {
+    private long timeScale;
+    private double segmentDurationInMs;
+    private long mediaTime;
+    private double mediaRate;
+
+    /**
+     * @param mediaTime           time within the current track that is considered start time of this edit.
+     * @param timeScale           time scale of the media time entry
+     * @param segmentDurationInMs segment duration in milliseconds
+     * @param mediaRate           when mediaRate is 1.0 the playback will be normal. When 2.0 it will be twice as fast.
+     */
+    public Edit(long mediaTime, long timeScale, double mediaRate, double segmentDurationInMs) {
         this.timeScale = timeScale;
-        this.segmentDuration = segmentDuration;
+        this.segmentDurationInMs = segmentDurationInMs;
         this.mediaTime = mediaTime;
         this.mediaRate = mediaRate;
     }
-
-    private long timeScale;
-    private long segmentDuration;
-    private long mediaTime;
-    private double mediaRate;
 
     public long getTimeScale() {
         return timeScale;
     }
 
-    public long getSegmentDuration() {
-        return segmentDuration;
+    public double getSegmentDuration() {
+        return segmentDurationInMs;
     }
 
     public long getMediaTime() {

@@ -23,7 +23,10 @@ import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -31,6 +34,8 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * Represents a single track of an MP4 file.
  */
 public class Mp4TrackImpl extends AbstractTrack {
+    TrackBox trackBox;
+    IsoFile[] fragments;
     private List<Sample> samples;
     private SampleDescriptionBox sampleDescriptionBox;
     private long[] decodingTimes;
@@ -40,9 +45,6 @@ public class Mp4TrackImpl extends AbstractTrack {
     private TrackMetaData trackMetaData = new TrackMetaData();
     private String handler;
     private SubSampleInformationBox subSampleInformationBox = null;
-
-    TrackBox trackBox;
-    IsoFile[] fragments;
 
     /**
      * Creates a track from a TrackBox and potentially fragments. Use <b>fragements parameter
@@ -77,8 +79,8 @@ public class Mp4TrackImpl extends AbstractTrack {
 
         // gather all movie fragment boxes from the fragments
         List<MovieFragmentBox> movieFragmentBoxes = new ArrayList<MovieFragmentBox>();
-        movieFragmentBoxes.addAll(((Box)trackBox.getParent()).getParent().getBoxes(MovieFragmentBox.class));
-        for(IsoFile fragment : fragments) {
+        movieFragmentBoxes.addAll(((Box) trackBox.getParent()).getParent().getBoxes(MovieFragmentBox.class));
+        for (IsoFile fragment : fragments) {
             movieFragmentBoxes.addAll(fragment.getBoxes(MovieFragmentBox.class));
         }
 
@@ -207,7 +209,7 @@ public class Mp4TrackImpl extends AbstractTrack {
         MovieHeaderBox mvhd = Path.getPath(trackBox, "../mvhd");
         if (elst != null) {
             for (EditListBox.Entry e : elst.getEntries()) {
-                edits.add(new Edit(mvhd.getTimescale(), e.getSegmentDuration(), e.getMediaTime(), e.getMediaRate()));
+                edits.add(new Edit(e.getMediaTime(), mdhd.getTimescale(), e.getMediaRate(), (double) e.getSegmentDuration() / mvhd.getTimescale()));
             }
         }
 
