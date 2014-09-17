@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
-public class HevcDecoderConfigurationRecordTest2 {
+public class HevcDecoderConfigurationRecordTest {
 
     @Test
     public void roundtrip() {
