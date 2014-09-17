@@ -9,22 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 
-/**
- * unsigned int(8) numOfArrays;
- * <p/>
- * for (j=0; j < numOfArrays; j++) {
- * <p/>
- * bit(1) array_completeness;
- * unsigned int(1) reserved = 0;
- * unsigned int(6) NAL_unit_type;
- * <p/>
- * unsigned int(16) numNalus;
- * for (i=0; i< numNalus; i++) {
- * unsigned int(16) nalUnitLength;
- * bit(8*nalUnitLength) nalUnit;
- * }
- * }
- */
 public class HevcDecoderConfigurationRecord {
     int configurationVersion;
 
@@ -256,60 +240,6 @@ public class HevcDecoderConfigurationRecord {
         return result;
     }
 
-    public static class Array {
-
-        public boolean array_completeness;
-        public boolean reserved;
-        public int nal_unit_type;
-        public List<byte[]> nalUnits;
-
-
-        public Array() {
-
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            Array array = (Array) o;
-
-            if (array_completeness != array.array_completeness) return false;
-            if (nal_unit_type != array.nal_unit_type) return false;
-            if (reserved != array.reserved) return false;
-            ListIterator<byte[]> e1 = nalUnits.listIterator();
-            ListIterator<byte[]> e2 = (array.nalUnits).listIterator();
-            while (e1.hasNext() && e2.hasNext()) {
-                byte[] o1 = e1.next();
-                byte[] o2 = e2.next();
-
-                if (!(o1==null ? o2==null : Arrays.equals(o1, o2)))
-                    return false;
-            }
-            return !(e1.hasNext() || e2.hasNext());
-        }
-
-        @Override
-        public int hashCode() {
-            int result = (array_completeness ? 1 : 0);
-            result = 31 * result + (reserved ? 1 : 0);
-            result = 31 * result + nal_unit_type;
-            result = 31 * result + (nalUnits != null ? nalUnits.hashCode() : 0);
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "Array{" +
-                    "nal_unit_type=" + nal_unit_type +
-                    ", reserved=" + reserved +
-                    ", array_completeness=" + array_completeness +
-                    ", num_nals=" + nalUnits.size() +
-                    '}';
-        }
-    }
-
     @Override
     public String toString() {
         return "HEVCDecoderConfigurationRecord{" +
@@ -320,15 +250,15 @@ public class HevcDecoderConfigurationRecord {
                 ", general_profile_compatibility_flags=" + general_profile_compatibility_flags +
                 ", general_constraint_indicator_flags=" + general_constraint_indicator_flags +
                 ", general_level_idc=" + general_level_idc +
-                (reserved1!=0xf?(", reserved1=" + reserved1):"") +
+                (reserved1 != 0xf ? (", reserved1=" + reserved1) : "") +
                 ", min_spatial_segmentation_idc=" + min_spatial_segmentation_idc +
-                (reserved2!=0x3F?(", reserved2=" + reserved2):"") +
+                (reserved2 != 0x3F ? (", reserved2=" + reserved2) : "") +
                 ", parallelismType=" + parallelismType +
-                (reserved3!=0x3F?(", reserved3=" + reserved3):"") +
+                (reserved3 != 0x3F ? (", reserved3=" + reserved3) : "") +
                 ", chromaFormat=" + chromaFormat +
-                (reserved4!=0x1F?(", reserved4=" + reserved4):"") +
+                (reserved4 != 0x1F ? (", reserved4=" + reserved4) : "") +
                 ", bitDepthLumaMinus8=" + bitDepthLumaMinus8 +
-                (reserved5!=0x1F?(", reserved5=" + reserved5):"") +
+                (reserved5 != 0x1F ? (", reserved5=" + reserved5) : "") +
                 ", bitDepthChromaMinus8=" + bitDepthChromaMinus8 +
                 ", avgFrameRate=" + avgFrameRate +
                 ", constantFrameRate=" + constantFrameRate +
@@ -481,5 +411,59 @@ public class HevcDecoderConfigurationRecord {
 
     public void setArrays(List<Array> arrays) {
         this.arrays = arrays;
+    }
+
+    public static class Array {
+
+        public boolean array_completeness;
+        public boolean reserved;
+        public int nal_unit_type;
+        public List<byte[]> nalUnits;
+
+
+        public Array() {
+
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Array array = (Array) o;
+
+            if (array_completeness != array.array_completeness) return false;
+            if (nal_unit_type != array.nal_unit_type) return false;
+            if (reserved != array.reserved) return false;
+            ListIterator<byte[]> e1 = nalUnits.listIterator();
+            ListIterator<byte[]> e2 = (array.nalUnits).listIterator();
+            while (e1.hasNext() && e2.hasNext()) {
+                byte[] o1 = e1.next();
+                byte[] o2 = e2.next();
+
+                if (!(o1 == null ? o2 == null : Arrays.equals(o1, o2)))
+                    return false;
+            }
+            return !(e1.hasNext() || e2.hasNext());
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (array_completeness ? 1 : 0);
+            result = 31 * result + (reserved ? 1 : 0);
+            result = 31 * result + nal_unit_type;
+            result = 31 * result + (nalUnits != null ? nalUnits.hashCode() : 0);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Array{" +
+                    "nal_unit_type=" + nal_unit_type +
+                    ", reserved=" + reserved +
+                    ", array_completeness=" + array_completeness +
+                    ", num_nals=" + nalUnits.size() +
+                    '}';
+        }
     }
 }
