@@ -1,15 +1,12 @@
 package com.mp4parser.iso14496.part15;
 
 import com.coremedia.iso.Hex;
-import com.mp4parser.iso14496.part15.HevcDecoderConfigurationRecord;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
-import static org.junit.Assert.*;
-
-public class HevcDecoderConfigurationRecordTest {
+public class HevcDecoderConfigurationRecordTest2 {
 
     @Test
     public void roundtrip() {
