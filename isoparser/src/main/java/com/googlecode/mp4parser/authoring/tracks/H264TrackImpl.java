@@ -232,13 +232,11 @@ public class H264TrackImpl extends AbstractTrack {
                 return (buffer.get(inBufferPos) == 0 &&
                         buffer.get(inBufferPos + 1) == 0 &&
                         buffer.get(inBufferPos + 2) == 1);
-            } else {
-                if (bufferStartPos + inBufferPos == dataSource.size()) {
-                    throw new EOFException();
-                }
-                System.err.println(H264TrackImpl.this.samples.size());
-                throw new RuntimeException("buffer repositioning require");
             }
+            if (bufferStartPos + inBufferPos + 3 >= dataSource.size()) {
+                throw new EOFException();
+            }
+            return false;
         }
 
         boolean nextThreeEquals000or001orEof() throws IOException {
