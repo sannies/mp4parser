@@ -18,13 +18,11 @@ package com.coremedia.iso;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.UserBox;
+import com.googlecode.mp4parser.DataSource;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
-import com.googlecode.mp4parser.DataSource;
-
 import java.util.logging.Logger;
 
 /**
@@ -33,9 +31,6 @@ import java.util.logging.Logger;
 public abstract class AbstractBoxParser implements BoxParser {
 
     private static Logger LOG = Logger.getLogger(AbstractBoxParser.class.getName());
-
-    public abstract Box createBox(String type, byte[] userType, String parent);
-
     ThreadLocal<ByteBuffer> header = new ThreadLocal<ByteBuffer>() {
         @Override
         protected ByteBuffer initialValue() {
@@ -43,6 +38,7 @@ public abstract class AbstractBoxParser implements BoxParser {
         }
     };
 
+    public abstract Box createBox(String type, byte[] userType, String parent);
 
     /**
      * Parses the next size and type, creates a box instance and parses the box's content.
@@ -53,13 +49,17 @@ public abstract class AbstractBoxParser implements BoxParser {
      * @throws java.io.IOException if reading from <code>in</code> fails
      */
     public Box parseBox(DataSource byteChannel, Container parent) throws IOException {
+        long startPos = byteChannel.position();
         header.get().rewind().limit(8);
+
         int bytesRead = 0;
-
-
-        while ((bytesRead += byteChannel.read(header.get())) != 8) {
-            if (bytesRead < 0) {
+        int b = 0;
+        while ((b = byteChannel.read(header.get())) != 8) {
+            if (b < 0) {
+                byteChannel.position(startPos);
                 throw new EOFException();
+            } else {
+                bytesRead += b;
             }
         }
         header.get().rewind();

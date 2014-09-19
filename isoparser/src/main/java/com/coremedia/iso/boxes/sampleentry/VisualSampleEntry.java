@@ -16,15 +16,18 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.Container;
+import com.googlecode.mp4parser.DataSource;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
-import com.googlecode.mp4parser.DataSource;
-
 import java.nio.channels.WritableByteChannel;
+
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2}" || "{@value #TYPE3}" || "{@value #TYPE4}" || "{@value #TYPE5}"</h1>
@@ -92,52 +95,52 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
         return width;
     }
 
-    public int getHeight() {
-        return height;
-    }
-
-    public double getHorizresolution() {
-        return horizresolution;
-    }
-
-    public double getVertresolution() {
-        return vertresolution;
-    }
-
-    public int getFrameCount() {
-        return frameCount;
-    }
-
-    public String getCompressorname() {
-        return compressorname;
-    }
-
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setCompressorname(String compressorname) {
-        this.compressorname = compressorname;
-    }
-
     public void setWidth(int width) {
         this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public void setHeight(int height) {
         this.height = height;
     }
 
+    public double getHorizresolution() {
+        return horizresolution;
+    }
+
     public void setHorizresolution(double horizresolution) {
         this.horizresolution = horizresolution;
+    }
+
+    public double getVertresolution() {
+        return vertresolution;
     }
 
     public void setVertresolution(double vertresolution) {
         this.vertresolution = vertresolution;
     }
 
+    public int getFrameCount() {
+        return frameCount;
+    }
+
     public void setFrameCount(int frameCount) {
         this.frameCount = frameCount;
+    }
+
+    public String getCompressorname() {
+        return compressorname;
+    }
+
+    public void setCompressorname(String compressorname) {
+        this.compressorname = compressorname;
+    }
+
+    public int getDepth() {
+        return depth;
     }
 
     public void setDepth(int depth) {
@@ -145,7 +148,8 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
     }
 
     @Override
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(final DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        final long endPosition = dataSource.position() + contentSize;
         ByteBuffer content = ByteBuffer.allocate(78);
         dataSource.read(content);
         content.position(6);
@@ -182,9 +186,50 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
         tmp = IsoTypeReader.readUInt16(content);
         assert 0xFFFF == tmp;
 
-        initContainer(dataSource, contentSize - 78, boxParser);
+
+        final DataSource dsLimited = new DataSource() {
+
+            public int read(ByteBuffer byteBuffer) throws IOException {
+                if (endPosition == dataSource.position()) {
+                    return -1;
+                } else if (byteBuffer.remaining() > endPosition - dataSource.position()) {
+                    ByteBuffer bb = ByteBuffer.allocate(l2i(endPosition - dataSource.position()));
+                    dataSource.read(bb);
+                    byteBuffer.put((ByteBuffer) bb.rewind());
+                    return bb.capacity();
+                } else {
+                    return dataSource.read(byteBuffer);
+                }
+            }
+
+            public long size() throws IOException {
+                return endPosition;
+            }
+
+            public long position() throws IOException {
+                return dataSource.position();
+            }
+
+            public void position(long nuPos) throws IOException {
+                dataSource.position(nuPos);
+            }
+
+            public long transferTo(long position, long count, WritableByteChannel target) throws IOException {
+                return dataSource.transferTo(position, count, target);
+            }
+
+            public ByteBuffer map(long startPosition, long size) throws IOException {
+                return dataSource.map(startPosition, size);
+            }
+
+            public void close() throws IOException {
+                dataSource.close();
+            }
+        };
+        initContainer(dsLimited, contentSize - 78, boxParser);
 
     }
+
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
