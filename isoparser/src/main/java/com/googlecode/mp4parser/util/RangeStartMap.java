@@ -37,7 +37,7 @@ public class RangeStartMap<K extends Comparable, V> implements Map<K, V> {
         K a = keys.next();
         do {
             if (keys.hasNext()) {
-                if (key.compareTo(a) < 0) {
+                if (key.compareTo(a) > 0) {
                     a = keys.next();
                 } else {
                     return base.get(a);

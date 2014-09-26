@@ -18,8 +18,8 @@ import java.util.Arrays;
  * This class can also be used for PIFF as it has been derived from the PIFF spec.
  */
 public class CencSampleAuxiliaryDataFormat {
-    public byte[] iv;
-    public Pair[] pairs;
+    public byte[] iv = new byte[0];
+    public Pair[] pairs = null;
 
     public int getSize() {
         int size = iv.length;
@@ -65,7 +65,41 @@ public class CencSampleAuxiliaryDataFormat {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
+        CencSampleAuxiliaryDataFormat entry = (CencSampleAuxiliaryDataFormat) o;
+
+        if (!new BigInteger(iv).equals(new BigInteger(entry.iv))) {
+            return false;
+        }
+        if (pairs != null ? !Arrays.equals(pairs, entry.pairs) : entry.pairs != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = iv != null ? Arrays.hashCode(iv) : 0;
+        result = 31 * result + (pairs != null ? Arrays.hashCode(pairs) : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Entry{" +
+                "iv=" + Hex.encodeHex(iv) +
+                ", pairs=" + Arrays.toString(pairs) +
+                '}';
+    }
     public interface Pair {
         int clear();
         long encrypted();
@@ -107,6 +141,7 @@ public class CencSampleAuxiliaryDataFormat {
             return encrypted;
         }
     }
+
     private class ByteIntPair extends AbstractPair {
         private byte clear;
         private int encrypted;
@@ -143,7 +178,6 @@ public class CencSampleAuxiliaryDataFormat {
         }
     }
 
-
     private class ShortBytePair extends AbstractPair {
         private short clear;
         private byte encrypted;
@@ -179,6 +213,7 @@ public class CencSampleAuxiliaryDataFormat {
             return encrypted;
         }
     }
+
     private class ShortIntPair extends AbstractPair {
         private short clear;
         private int encrypted;
@@ -215,11 +250,6 @@ public class CencSampleAuxiliaryDataFormat {
         }
     }
 
-
-
-
-
-
     private class IntBytePair extends AbstractPair {
         private int clear;
         private byte encrypted;
@@ -255,6 +285,7 @@ public class CencSampleAuxiliaryDataFormat {
             return encrypted;
         }
     }
+
     private class IntIntPair extends AbstractPair {
         private int clear;
         private int encrypted;
@@ -291,7 +322,6 @@ public class CencSampleAuxiliaryDataFormat {
         }
     }
 
-
     private abstract class AbstractPair implements Pair {
 
         public boolean equals(Object o) {
@@ -313,45 +343,9 @@ public class CencSampleAuxiliaryDataFormat {
 
             return true;
         }
+
         public String toString() {
             return "P(" + clear() + "|" + encrypted() + ")";
         }
-    }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        CencSampleAuxiliaryDataFormat entry = (CencSampleAuxiliaryDataFormat) o;
-
-        if (!new BigInteger(iv).equals(new BigInteger(entry.iv))) {
-            return false;
-        }
-        if (pairs != null ? !Arrays.equals(pairs, entry.pairs) : entry.pairs != null) {
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = iv != null ? Arrays.hashCode(iv) : 0;
-        result = 31 * result + (pairs != null ? Arrays.hashCode(pairs) : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "Entry{" +
-                "iv=" + Hex.encodeHex(iv) +
-                ", pairs=" + Arrays.toString(pairs) +
-                '}';
     }
 }

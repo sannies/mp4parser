@@ -9,9 +9,9 @@ import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
 import com.googlecode.mp4parser.authoring.*;
-import com.mp4parser.iso14496.part15.AvcConfigurationBox;
-import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.googlecode.mp4parser.util.Path;
+import com.googlecode.mp4parser.util.RangeStartMap;
+import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -40,7 +40,7 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
         if (!"cenc".equals(schm.getSchemeType())) {
             throw new RuntimeException("You can only use the CencDecryptingTrackImpl with CENC encrypted tracks");
         }
-        samples = new CencDecryptingSampleList(key, original.getSamples(), original, original.getSampleEncryptionEntries());
+        samples = new CencDecryptingSampleList(key, original.getSamples(), original.getSampleEncryptionEntries());
     }
 
     public void close() throws IOException {
@@ -52,7 +52,7 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
-        OriginalFormatBox frma = (OriginalFormatBox) Path.getPath(original.getSampleDescriptionBox(), "enc./sinf/frma");
+        OriginalFormatBox frma = Path.getPath(original.getSampleDescriptionBox(), "enc./sinf/frma");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SampleDescriptionBox stsd;
         try {
@@ -80,7 +80,6 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
     }
 
 
-
     public long[] getSampleDurations() {
         return original.getSampleDurations();
     }
@@ -97,24 +96,23 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
         return samples;
     }
 
-    public class CencDecryptingSampleList extends AbstractList<Sample> {
+    public static class CencDecryptingSampleList extends AbstractList<Sample> {
 
         List<CencSampleAuxiliaryDataFormat> sencInfo;
-        AvcConfigurationBox avcC = null;
-        SecretKey secretKey;
+        RangeStartMap<Integer, SecretKey> keys = new RangeStartMap<Integer, SecretKey>();
         List<Sample> parent;
 
-        public CencDecryptingSampleList(SecretKey secretKey, List<Sample> parent, Track track, List<CencSampleAuxiliaryDataFormat> sencInfo) {
+        public CencDecryptingSampleList(SecretKey secretKey, List<Sample> parent, List<CencSampleAuxiliaryDataFormat> sencInfo) {
             this.sencInfo = sencInfo;
-            this.secretKey = secretKey;
+            this.keys.put(0, secretKey);
             this.parent = parent;
 
-            List<Box> boxes = track.getSampleDescriptionBox().getSampleEntry().getBoxes();
-            for (Box box : boxes) {
-                if (box instanceof AvcConfigurationBox) {
-                    avcC = (AvcConfigurationBox) box;
-                }
-            }
+        }
+
+        public CencDecryptingSampleList(RangeStartMap<Integer, SecretKey> keys, List<Sample> parent, List<CencSampleAuxiliaryDataFormat> sencInfo) {
+            this.sencInfo = sencInfo;
+            this.keys = keys;
+            this.parent = parent;
         }
 
 
@@ -141,47 +139,51 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
 
         @Override
         public Sample get(int index) {
-            Sample encSample = parent.get(index);
-            final ByteBuffer encSampleBuffer = encSample.asByteBuffer();
-            encSampleBuffer.rewind();
-            final ByteBuffer decSampleBuffer = ByteBuffer.allocate(encSampleBuffer.limit());
-            final CencSampleAuxiliaryDataFormat sencEntry = sencInfo.get(index);
-            Cipher cipher = getCipher(secretKey, sencEntry.iv);
-            try {
-                if (avcC != null) {
-
-                    for (CencSampleAuxiliaryDataFormat.Pair pair : sencEntry.pairs) {
-                        final int clearBytes = pair.clear();
-                        final int encrypted = l2i(pair.encrypted());
-
-                        byte[] clears = new byte[clearBytes];
-                        encSampleBuffer.get(clears);
-                        decSampleBuffer.put(clears);
-                        if (encrypted > 0) {
-                            byte[] encs = new byte[encrypted];
-                            encSampleBuffer.get(encs);
-                            final byte[] decr = cipher.update(encs);
-                            decSampleBuffer.put(decr);
-                        }
-
-                    }
-                    if (encSampleBuffer.remaining() > 0) {
-                        System.err.println("Decrypted sample but still data remaining: " + encSample.getSize());
-                    }
-                    decSampleBuffer.put(cipher.doFinal());
-                } else {
-                    byte[] fullyEncryptedSample = new byte[encSampleBuffer.limit()];
-                    encSampleBuffer.get(fullyEncryptedSample);
-                    decSampleBuffer.put(cipher.doFinal(fullyEncryptedSample));
-                }
+            if (keys.get(index) != null) {
+                Sample encSample = parent.get(index);
+                final ByteBuffer encSampleBuffer = encSample.asByteBuffer();
                 encSampleBuffer.rewind();
-            } catch (IllegalBlockSizeException e) {
-                throw new RuntimeException(e);
-            } catch (BadPaddingException e) {
-                throw new RuntimeException(e);
+                final ByteBuffer decSampleBuffer = ByteBuffer.allocate(encSampleBuffer.limit());
+                final CencSampleAuxiliaryDataFormat sencEntry = sencInfo.get(index);
+                Cipher cipher = getCipher(keys.get(index), sencEntry.iv);
+                try {
+                    if (sencEntry.pairs != null && sencEntry.pairs.length > 0) {
+
+                        for (CencSampleAuxiliaryDataFormat.Pair pair : sencEntry.pairs) {
+                            final int clearBytes = pair.clear();
+                            final int encrypted = l2i(pair.encrypted());
+
+                            byte[] clears = new byte[clearBytes];
+                            encSampleBuffer.get(clears);
+                            decSampleBuffer.put(clears);
+                            if (encrypted > 0) {
+                                byte[] encs = new byte[encrypted];
+                                encSampleBuffer.get(encs);
+                                final byte[] decr = cipher.update(encs);
+                                decSampleBuffer.put(decr);
+                            }
+
+                        }
+                        if (encSampleBuffer.remaining() > 0) {
+                            System.err.println("Decrypted sample but still data remaining: " + encSample.getSize());
+                        }
+                        decSampleBuffer.put(cipher.doFinal());
+                    } else {
+                        byte[] fullyEncryptedSample = new byte[encSampleBuffer.limit()];
+                        encSampleBuffer.get(fullyEncryptedSample);
+                        decSampleBuffer.put(cipher.doFinal(fullyEncryptedSample));
+                    }
+                    encSampleBuffer.rewind();
+                } catch (IllegalBlockSizeException e) {
+                    throw new RuntimeException(e);
+                } catch (BadPaddingException e) {
+                    throw new RuntimeException(e);
+                }
+                decSampleBuffer.rewind();
+                return new SampleImpl(decSampleBuffer);
+            } else {
+                return parent.get(index);
             }
-            decSampleBuffer.rewind();
-            return new SampleImpl(decSampleBuffer);
         }
 
         @Override

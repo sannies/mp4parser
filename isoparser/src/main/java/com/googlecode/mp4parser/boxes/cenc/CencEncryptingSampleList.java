@@ -48,11 +48,24 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
         this.parent = parent;
     }
 
+    public CencEncryptingSampleList(
+            RangeStartMap<Integer, SecretKey> ceks,
+            List<Sample> parent,
+            List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats) {
+        this.auxiliaryDataFormats = auxiliaryDataFormats;
+        this.ceks = ceks;
+        this.parent = parent;
+    }
+
     @Override
     public Sample get(int index) {
         Sample clearSample = parent.get(index);
-        CencSampleAuxiliaryDataFormat entry = auxiliaryDataFormats.get(index);
-        return new EncryptedSampleImpl(clearSample, entry, cipher, ceks.get(index));
+        if (ceks.get(index) != null) {
+            CencSampleAuxiliaryDataFormat entry = auxiliaryDataFormats.get(index);
+            return new EncryptedSampleImpl(clearSample, entry, cipher, ceks.get(index));
+        } else {
+            return clearSample;
+        }
 
     }
 
