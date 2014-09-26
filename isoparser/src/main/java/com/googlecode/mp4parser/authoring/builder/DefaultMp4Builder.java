@@ -27,6 +27,9 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
 import com.googlecode.mp4parser.boxes.dece.SampleEncryptionBox;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleGroupDescriptionBox;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleToGroupBox;
 import com.googlecode.mp4parser.util.Path;
 import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationOffsetsBox;
 import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationSizesBox;
@@ -335,6 +338,43 @@ public class DefaultMp4Builder implements Mp4Builder {
         createStsc(track, chunks, stbl);
         createStsz(track, stbl);
         createStco(track, movie, chunks, stbl);
+
+        Map<String, List<GroupEntry>> groupEntryFamilies = new HashMap<String, List<GroupEntry>>();
+        for (Map.Entry<GroupEntry, long[]> sg : track.getSampleGroups().entrySet()) {
+            String type = sg.getKey().getType();
+            List<GroupEntry> groupEntries = groupEntryFamilies.get(type);
+            if (groupEntries == null) {
+                groupEntries = new ArrayList<GroupEntry>();
+                groupEntryFamilies.put(type, groupEntries);
+            }
+            groupEntries.add(sg.getKey());
+        }
+        for (Map.Entry<String, List<GroupEntry>> sg : groupEntryFamilies.entrySet()) {
+            SampleGroupDescriptionBox sgdb = new SampleGroupDescriptionBox();
+            String type = sg.getKey();
+            sgdb.setGroupEntries(sg.getValue());
+            SampleToGroupBox sbgp = new SampleToGroupBox();
+            sbgp.setGroupingType(type);
+            SampleToGroupBox.Entry last = null;
+            for (int i = 0; i < track.getSamples().size(); i++) {
+                int index = 0;
+                for (int j = 0; j < sg.getValue().size(); j++) {
+                    GroupEntry groupEntry = sg.getValue().get(j);
+                    long[] sampleNums = track.getSampleGroups().get(groupEntry);
+                    if (Arrays.binarySearch(sampleNums, i + 1) >= 0) {
+                        index = j + 1;
+                    }
+                }
+                if (last == null || last.getGroupDescriptionIndex() != index) {
+                    last = new SampleToGroupBox.Entry(1, index);
+                    sbgp.getEntries().add(last);
+                } else {
+                    last.setSampleCount(last.getSampleCount() + 1);
+                }
+            }
+            stbl.addBox(sgdb);
+            stbl.addBox(sbgp);
+        }
 
         if (track instanceof CencEncyprtedTrack) {
             createCencBoxes((CencEncyprtedTrack) track, stbl, chunks.get(track));
