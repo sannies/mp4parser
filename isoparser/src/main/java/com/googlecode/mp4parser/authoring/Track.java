@@ -15,10 +15,15 @@
  */
 package com.googlecode.mp4parser.authoring;
 
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SubSampleInformationBox;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 
 import java.io.Closeable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a Track. A track is a timed sequence of related samples.<br>
@@ -74,4 +79,7 @@ public interface Track extends Closeable {
     public String getName();
 
     public List<Edit> getEdits();
+
+    public Map<GroupEntry, long[]> getSampleGroups();
+
 }

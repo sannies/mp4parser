@@ -1,4 +1,4 @@
-package com.mp4parser;
+package com.googlecode.mp4parser.util;
 
 import java.util.*;
 

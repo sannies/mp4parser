@@ -5,12 +5,14 @@ import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.SubSampleInformationBox;
 import com.googlecode.mp4parser.authoring.*;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -98,5 +100,9 @@ public class SilenceTrackImpl implements Track {
 
     public List<Edit> getEdits() {
         return null;
+    }
+
+    public Map<GroupEntry, long[]> getSampleGroups() {
+        return source.getSampleGroups();
     }
 }

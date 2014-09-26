@@ -23,11 +23,13 @@ import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -57,10 +59,6 @@ public class ChangeTimeScaleTrack implements Track {
         decodingTimes = adjustTts(source.getSampleDurations(), timeScaleFactor, syncSamples, getTimes(source, syncSamples, targetTimeScale));
     }
 
-    public void close() throws IOException {
-        source.close();
-    }
-
     private static long[] getTimes(Track track, long[] syncSamples, long targetTimeScale) {
         long[] syncSampleTimes = new long[syncSamples.length];
 
@@ -79,42 +77,6 @@ public class ChangeTimeScaleTrack implements Track {
         return syncSampleTimes;
 
     }
-
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return source.getSampleDescriptionBox();
-    }
-
-    public long[] getSampleDurations() {
-        return decodingTimes;
-    }
-
-    public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
-        return ctts;
-    }
-
-    public long[] getSyncSamples() {
-        return source.getSyncSamples();
-    }
-
-    public List<SampleDependencyTypeBox.Entry> getSampleDependencies() {
-        return source.getSampleDependencies();
-    }
-
-    public TrackMetaData getTrackMetaData() {
-        TrackMetaData trackMetaData = (TrackMetaData) source.getTrackMetaData().clone();
-        trackMetaData.setTimescale(timeScale);
-        return trackMetaData;
-    }
-
-    public String getHandler() {
-        return source.getHandler();
-    }
-
-
-    public List<Sample> getSamples() {
-        return source.getSamples();
-    }
-
 
     /**
      * Adjusting the composition times is easy. Just scale it by the factor - that's it. There is no rounding
@@ -163,6 +125,44 @@ public class ChangeTimeScaleTrack implements Track {
         return scaledArray;
     }
 
+    public void close() throws IOException {
+        source.close();
+    }
+
+    public SampleDescriptionBox getSampleDescriptionBox() {
+        return source.getSampleDescriptionBox();
+    }
+
+    public long[] getSampleDurations() {
+        return decodingTimes;
+    }
+
+    public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
+        return ctts;
+    }
+
+    public long[] getSyncSamples() {
+        return source.getSyncSamples();
+    }
+
+    public List<SampleDependencyTypeBox.Entry> getSampleDependencies() {
+        return source.getSampleDependencies();
+    }
+
+    public TrackMetaData getTrackMetaData() {
+        TrackMetaData trackMetaData = (TrackMetaData) source.getTrackMetaData().clone();
+        trackMetaData.setTimescale(timeScale);
+        return trackMetaData;
+    }
+
+    public String getHandler() {
+        return source.getHandler();
+    }
+
+    public List<Sample> getSamples() {
+        return source.getSamples();
+    }
+
     public SubSampleInformationBox getSubsampleInformationBox() {
         return source.getSubsampleInformationBox();
     }
@@ -188,5 +188,9 @@ public class ChangeTimeScaleTrack implements Track {
 
     public List<Edit> getEdits() {
         return source.getEdits();
+    }
+
+    public Map<GroupEntry, long[]> getSampleGroups() {
+        return source.getSampleGroups();
     }
 }

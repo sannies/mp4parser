@@ -9,17 +9,21 @@ import java.nio.ByteBuffer;
  */
 public class TemporalSubLayerSampleGroup extends GroupEntry {
     public static final String TYPE = "tsas";
+    int i;
 
     @Override
     public void parse(ByteBuffer byteBuffer) {
     }
 
     @Override
+    public String getType() {
+        return TYPE;
+    }
+
+    @Override
     public ByteBuffer get() {
         return ByteBuffer.allocate(0);
     }
-
-    int i;
 
     @Override
     public boolean equals(Object o) {

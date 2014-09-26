@@ -5,10 +5,17 @@ import com.googlecode.mp4parser.boxes.BoxRoundtripTest;
 import com.googlecode.mp4parser.util.UUIDConverter;
 import org.junit.runners.Parameterized;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.UUID;
 
 public class CencSampleEncryptionInformationGroupEntryTest extends BoxRoundtripTest {
 
+
+    public CencSampleEncryptionInformationGroupEntryTest(Box boxUnderTest, Map.Entry<String, Object>... properties) {
+        super(boxUnderTest, properties);
+    }
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
@@ -23,16 +30,10 @@ public class CencSampleEncryptionInformationGroupEntryTest extends BoxRoundtripT
         return Arrays.asList(
                 new Object[]{new SampleGroupDescriptionBox(),
                         new Map.Entry[]{
-                                new E("groupingType", "seig"),
                                 new E("groupEntries", Arrays.asList(seig1))}},
                 new Object[]{new SampleGroupDescriptionBox(),
                         new Map.Entry[]{
-                                new E("groupingType", "seig"),
                                 new E("groupEntries", Arrays.asList(seig2))}});
-    }
-
-    public CencSampleEncryptionInformationGroupEntryTest(Box boxUnderTest, Map.Entry<String, Object>... properties) {
-        super(boxUnderTest, properties);
     }
 
 

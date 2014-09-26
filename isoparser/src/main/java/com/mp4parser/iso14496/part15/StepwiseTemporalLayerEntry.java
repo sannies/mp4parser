@@ -15,6 +15,12 @@ public class StepwiseTemporalLayerEntry extends GroupEntry {
     }
 
     @Override
+    public String getType() {
+        return TYPE;
+    }
+
+
+    @Override
     public ByteBuffer get() {
         return ByteBuffer.allocate(0);
     }

@@ -29,6 +29,12 @@ public class TemporalLevelEntry extends GroupEntry {
     private boolean levelIndependentlyDecodable;
     private short reserved;
 
+    @Override
+    public String getType() {
+        return TYPE;
+    }
+
+
     public boolean isLevelIndependentlyDecodable() {
         return levelIndependentlyDecodable;
     }

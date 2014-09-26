@@ -53,7 +53,7 @@ public class SampleGroupDescriptionBoxTestSuite {
 
         @Override
         public void setupProperties(Map<String, Object> addPropsHere, SampleGroupDescriptionBox box) {
-            UnknownEntry unknownEntry = new UnknownEntry();
+            UnknownEntry unknownEntry = new UnknownEntry("abcd");
             unknownEntry.setContent(ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6}));
 
             addPropsHere.put("defaultLength", 5);

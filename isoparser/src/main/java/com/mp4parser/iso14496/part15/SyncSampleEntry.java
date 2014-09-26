@@ -68,6 +68,11 @@ public class SyncSampleEntry extends GroupEntry {
     }
 
     @Override
+    public String getType() {
+        return TYPE;
+    }
+
+    @Override
     public String toString() {
         return "SyncSampleEntry{" +
                 "reserved=" + reserved +

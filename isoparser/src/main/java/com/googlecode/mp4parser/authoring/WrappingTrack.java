@@ -5,9 +5,11 @@ import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.SubSampleInformationBox;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A simple track wrapper that delegates all calls to parent track. Override certain methods inline to change result.
@@ -69,5 +71,9 @@ public class WrappingTrack implements Track {
 
     public void close() throws IOException {
         parent.close();
+    }
+
+    public Map<GroupEntry, long[]> getSampleGroups() {
+        return parent.getSampleGroups();
     }
 }

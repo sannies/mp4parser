@@ -25,8 +25,15 @@ import java.nio.ByteBuffer;
  */
 public class UnknownEntry extends GroupEntry {
     private ByteBuffer content;
+    private String type;
 
-    public UnknownEntry() {
+    public UnknownEntry(String type) {
+        this.type = type;
+    }
+
+    @Override
+    public String getType() {
+        return type;
     }
 
     public ByteBuffer getContent() {

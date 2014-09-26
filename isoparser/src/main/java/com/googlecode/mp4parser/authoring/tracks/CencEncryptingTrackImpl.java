@@ -11,6 +11,7 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.cenc.CencEncryptingSampleList;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.mp4parser.iso23001.part7.TrackEncryptionBox;
@@ -37,6 +38,8 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
     List<CencSampleAuxiliaryDataFormat> cencSampleAuxiliaryData;
     boolean dummyIvs = false;
     boolean subSampleEncryption = false;
+
+    Map<GroupEntry, long[]> sampleGroups = new HashMap<GroupEntry, long[]>();
 
     public CencEncryptingTrackImpl(Track source, UUID keyId, SecretKey cek) {
         this.source = source;
@@ -211,5 +214,9 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
 
     public List<Edit> getEdits() {
         return source.getEdits();
+    }
+
+    public Map<GroupEntry, long[]> getSampleGroups() {
+        return sampleGroups;
     }
 }

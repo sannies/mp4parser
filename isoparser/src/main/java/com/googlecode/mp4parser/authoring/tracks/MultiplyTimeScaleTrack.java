@@ -23,10 +23,12 @@ import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Changes the timescale of a track by wrapping the track.
@@ -40,6 +42,18 @@ public class MultiplyTimeScaleTrack implements Track {
         this.timeScaleFactor = timeScaleFactor;
     }
 
+    static List<CompositionTimeToSample.Entry> adjustCtts(List<CompositionTimeToSample.Entry> source, int timeScaleFactor) {
+        if (source != null) {
+            List<CompositionTimeToSample.Entry> entries2 = new ArrayList<CompositionTimeToSample.Entry>(source.size());
+            for (CompositionTimeToSample.Entry entry : source) {
+                entries2.add(new CompositionTimeToSample.Entry(entry.getCount(), timeScaleFactor * entry.getOffset()));
+            }
+            return entries2;
+        } else {
+            return null;
+        }
+    }
+
     public void close() throws IOException {
         source.close();
     }
@@ -47,7 +61,6 @@ public class MultiplyTimeScaleTrack implements Track {
     public SampleDescriptionBox getSampleDescriptionBox() {
         return source.getSampleDescriptionBox();
     }
-
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
         return adjustCtts(source.getCompositionTimeEntries(), timeScaleFactor);
@@ -71,22 +84,8 @@ public class MultiplyTimeScaleTrack implements Track {
         return source.getHandler();
     }
 
-
     public List<Sample> getSamples() {
         return source.getSamples();
-    }
-
-
-    static List<CompositionTimeToSample.Entry> adjustCtts(List<CompositionTimeToSample.Entry> source, int timeScaleFactor) {
-        if (source != null) {
-            List<CompositionTimeToSample.Entry> entries2 = new ArrayList<CompositionTimeToSample.Entry>(source.size());
-            for (CompositionTimeToSample.Entry entry : source) {
-                entries2.add(new CompositionTimeToSample.Entry(entry.getCount(), timeScaleFactor * entry.getOffset()));
-            }
-            return entries2;
-        } else {
-            return null;
-        }
     }
 
     public long[] getSampleDurations() {
@@ -119,5 +118,9 @@ public class MultiplyTimeScaleTrack implements Track {
 
     public List<Edit> getEdits() {
         return source.getEdits();
+    }
+
+    public Map<GroupEntry, long[]> getSampleGroups() {
+        return source.getSampleGroups();
     }
 }

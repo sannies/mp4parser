@@ -11,6 +11,10 @@ import java.util.Map;
 
 public class Part15GroupDescriptionBoxesTest extends BoxRoundtripTest {
 
+    public Part15GroupDescriptionBoxesTest(Box boxUnderTest, Map.Entry<String, Object>... properties) {
+        super(boxUnderTest, properties);
+    }
+
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         StepwiseTemporalLayerEntry stsa = new StepwiseTemporalLayerEntry();
@@ -37,25 +41,17 @@ public class Part15GroupDescriptionBoxesTest extends BoxRoundtripTest {
         return Arrays.asList(
                 new Object[]{new SampleGroupDescriptionBox(),
                         new Map.Entry[]{
-                                new E("groupingType", StepwiseTemporalLayerEntry.TYPE),
                                 new E("groupEntries", Arrays.asList(stsa))}},
 
                 new Object[]{new SampleGroupDescriptionBox(),
                         new Map.Entry[]{
-                                new E("groupingType", SyncSampleEntry.TYPE),
                                 new E("groupEntries", Arrays.asList(sync))}},
                 new Object[]{new SampleGroupDescriptionBox(),
                         new Map.Entry[]{
-                                new E("groupingType", TemporalLayerSampleGroup.TYPE),
                                 new E("groupEntries", Arrays.asList(tscl))}},
                 new Object[]{new SampleGroupDescriptionBox(),
                         new Map.Entry[]{
-                                new E("groupingType", TemporalSubLayerSampleGroup.TYPE),
                                 new E("groupEntries", Arrays.asList(tsas))}}
         );
-    }
-
-    public Part15GroupDescriptionBoxesTest(Box boxUnderTest, Map.Entry<String, Object>... properties) {
-        super(boxUnderTest, properties);
     }
 }

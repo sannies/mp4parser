@@ -16,11 +16,15 @@
 
 package com.googlecode.mp4parser.authoring;
 
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SubSampleInformationBox;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -28,6 +32,7 @@ import java.util.List;
 public abstract class AbstractTrack implements Track {
     String name;
     List<Edit> edits = new ArrayList<Edit>();
+    Map<GroupEntry, long[]> sampleGroups = new HashMap<GroupEntry, long[]>();
 
     public AbstractTrack(String name) {
         this.name = name;
@@ -62,9 +67,10 @@ public abstract class AbstractTrack implements Track {
     }
 
     public List<Edit> getEdits() {
-        return Collections.unmodifiableList(edits);
+        return edits;
     }
 
-
-
+    public Map<GroupEntry, long[]> getSampleGroups() {
+        return sampleGroups;
+    }
 }

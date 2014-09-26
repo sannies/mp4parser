@@ -6,6 +6,7 @@ package com.googlecode.mp4parser.boxes.cenc;
 
 
 import com.googlecode.mp4parser.authoring.Sample;
+import com.googlecode.mp4parser.util.RangeStartMap;
 import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 
 import javax.crypto.*;
@@ -23,11 +24,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 public class CencEncryptingSampleList extends AbstractList<Sample> {
 
-    List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats;
-    SecretKey secretKey;
-    List<Sample> parent;
     static Cipher cipher;
-
     static {
         try {
             cipher = Cipher.getInstance("AES/CTR/NoPadding");
@@ -38,12 +35,16 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
         }
     }
 
+    List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats;
+    RangeStartMap<Integer, SecretKey> ceks = new RangeStartMap<Integer, SecretKey>();
+    List<Sample> parent;
+
     public CencEncryptingSampleList(
-            SecretKey secretKey,
+            SecretKey defaultCek,
             List<Sample> parent,
             List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats) {
         this.auxiliaryDataFormats = auxiliaryDataFormats;
-        this.secretKey = secretKey;
+        this.ceks.put(0, defaultCek);
         this.parent = parent;
     }
 
@@ -51,8 +52,26 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
     public Sample get(int index) {
         Sample clearSample = parent.get(index);
         CencSampleAuxiliaryDataFormat entry = auxiliaryDataFormats.get(index);
-        return new EncryptedSampleImpl(clearSample, entry, cipher);
+        return new EncryptedSampleImpl(clearSample, entry, cipher, ceks.get(index));
 
+    }
+
+    protected void initCipher(byte[] iv, SecretKey cek) {
+        try {
+            byte[] fullIv = new byte[16];
+            System.arraycopy(iv, 0, fullIv, 0, iv.length);
+            // The IV
+            cipher.init(Cipher.ENCRYPT_MODE, cek, new IvParameterSpec(fullIv));
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int size() {
+        return parent.size();
     }
 
     private class EncryptedSampleImpl implements Sample {
@@ -60,20 +79,23 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
         private final Sample clearSample;
         private final CencSampleAuxiliaryDataFormat cencSampleAuxiliaryDataFormat;
         private final Cipher cipher;
+        private final SecretKey cek;
 
         private EncryptedSampleImpl(
                 Sample clearSample,
                 CencSampleAuxiliaryDataFormat cencSampleAuxiliaryDataFormat,
-                Cipher cipher) {
+                Cipher cipher,
+                SecretKey cek) {
 
             this.clearSample = clearSample;
             this.cencSampleAuxiliaryDataFormat = cencSampleAuxiliaryDataFormat;
             this.cipher = cipher;
+            this.cek = cek;
         }
 
         public void writeTo(WritableByteChannel channel) throws IOException {
             ByteBuffer sample = (ByteBuffer) clearSample.asByteBuffer().rewind();
-            initCipher(cencSampleAuxiliaryDataFormat.iv);
+            initCipher(cencSampleAuxiliaryDataFormat.iv, cek);
             try {
                 if (cencSampleAuxiliaryDataFormat.pairs != null && cencSampleAuxiliaryDataFormat.pairs.length > 0) {
                     for (CencSampleAuxiliaryDataFormat.Pair pair : cencSampleAuxiliaryDataFormat.pairs) {
@@ -113,7 +135,7 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
             ByteBuffer encSample = ByteBuffer.allocate(sample.limit());
 
             CencSampleAuxiliaryDataFormat entry = cencSampleAuxiliaryDataFormat;
-            initCipher(cencSampleAuxiliaryDataFormat.iv);
+            initCipher(cencSampleAuxiliaryDataFormat.iv, cek);
             try {
                 if (entry.pairs != null) {
                     for (CencSampleAuxiliaryDataFormat.Pair pair : entry.pairs) {
@@ -144,24 +166,6 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
             encSample.rewind();
             return encSample;
         }
-    }
-
-    protected void initCipher(byte[] iv) {
-        try {
-            byte[] fullIv = new byte[16];
-            System.arraycopy(iv, 0, fullIv, 0, iv.length);
-            // The IV
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(fullIv));
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public int size() {
-        return parent.size();
     }
 
 }

@@ -16,6 +16,7 @@
 
 package com.googlecode.mp4parser.boxes.mp4.samplegrouping;
 
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
@@ -45,7 +46,6 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 public class SampleGroupDescriptionBox extends AbstractFullBox {
     public static final String TYPE = "sgpd";
 
-    private String groupingType;
     private int defaultLength;
     private List<GroupEntry> groupEntries = new LinkedList<GroupEntry>();
 
@@ -73,7 +73,7 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
-        byteBuffer.put(groupingType.getBytes());
+        byteBuffer.put(IsoFile.fourCCtoBytes(groupEntries.get(0).getType()));
         if (this.getVersion() == 1) {
             IsoTypeWriter.writeUInt32(byteBuffer, defaultLength);
         }
@@ -92,7 +92,7 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
         if (this.getVersion() != 1) {
             throw new RuntimeException("SampleGroupDescriptionBox are only supported in version 1");
         }
-        groupingType = IsoTypeReader.read4cc(content);
+        String groupingType = IsoTypeReader.read4cc(content);
         if (this.getVersion() == 1) {
             defaultLength = l2i(IsoTypeReader.readUInt32(content));
         }
@@ -136,19 +136,10 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
         } else if (StepwiseTemporalLayerEntry.TYPE.equals(groupingType)) {
             groupEntry = new StepwiseTemporalLayerEntry();
         } else {
-            groupEntry = new UnknownEntry();
+            groupEntry = new UnknownEntry(groupingType);
         }
         groupEntry.parse(content);
         return groupEntry;
-    }
-
-
-    public String getGroupingType() {
-        return groupingType;
-    }
-
-    public void setGroupingType(String groupingType) {
-        this.groupingType = groupingType;
     }
 
     public int getDefaultLength() {
@@ -184,16 +175,13 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
         if (groupEntries != null ? !groupEntries.equals(that.groupEntries) : that.groupEntries != null) {
             return false;
         }
-        if (groupingType != null ? !groupingType.equals(that.groupingType) : that.groupingType != null) {
-            return false;
-        }
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = groupingType != null ? groupingType.hashCode() : 0;
+        int result = 0;
         result = 31 * result + defaultLength;
         result = 31 * result + (groupEntries != null ? groupEntries.hashCode() : 0);
         return result;
@@ -202,7 +190,7 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
     @Override
     public String toString() {
         return "SampleGroupDescriptionBox{" +
-                "groupingType='" + groupingType + '\'' +
+                "groupingType='" + (groupEntries.size() > 0 ? groupEntries.get(0).getType() : "????") + '\'' +
                 ", defaultLength=" + defaultLength +
                 ", groupEntries=" + groupEntries +
                 '}';

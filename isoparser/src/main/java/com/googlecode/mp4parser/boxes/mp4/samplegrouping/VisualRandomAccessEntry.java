@@ -40,6 +40,12 @@ public class VisualRandomAccessEntry extends GroupEntry {
     private boolean numLeadingSamplesKnown;
     private short numLeadingSamples;
 
+    @Override
+    public String getType() {
+        return TYPE;
+    }
+
+
     public boolean isNumLeadingSamplesKnown() {
         return numLeadingSamplesKnown;
     }

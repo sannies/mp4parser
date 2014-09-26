@@ -24,6 +24,11 @@ public class TemporalLayerSampleGroup extends GroupEntry {
     int tlConstantFrameRate;
     int tlAvgFrameRate;
 
+    @Override
+    public String getType() {
+        return TYPE;
+    }
+
     public int getTemporalLayerId() {
         return temporalLayerId;
     }

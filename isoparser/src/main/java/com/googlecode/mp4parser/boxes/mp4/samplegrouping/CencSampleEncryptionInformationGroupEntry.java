@@ -16,13 +16,11 @@
 
 package com.googlecode.mp4parser.boxes.mp4.samplegrouping;
 
-import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.util.UUIDConverter;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -39,6 +37,11 @@ public class CencSampleEncryptionInformationGroupEntry extends GroupEntry {
     private boolean isEncrypted;
     private byte ivSize;
     private UUID kid;
+
+    @Override
+    public String getType() {
+        return TYPE;
+    }
 
     @Override
     public void parse(ByteBuffer byteBuffer) {

@@ -32,6 +32,11 @@ public class RollRecoveryEntry extends GroupEntry {
     public static final String TYPE = "roll";
     private short rollDistance;
 
+    @Override
+    public String getType() {
+        return TYPE;
+    }
+
     public short getRollDistance() {
         return rollDistance;
     }

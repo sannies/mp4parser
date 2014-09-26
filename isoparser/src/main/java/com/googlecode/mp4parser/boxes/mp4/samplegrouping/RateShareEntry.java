@@ -53,6 +53,10 @@ public class RateShareEntry extends GroupEntry {
     private int minimumBitrate;
     private short discardPriority;
 
+    @Override
+    public String getType() {
+        return TYPE;
+    }
 
     @Override
     public void parse(ByteBuffer byteBuffer) {
@@ -87,68 +91,6 @@ public class RateShareEntry extends GroupEntry {
         IsoTypeWriter.writeUInt8(buf, discardPriority);
         buf.rewind();
         return buf;
-    }
-
-    public static class Entry {
-        public Entry(int availableBitrate, short targetRateShare) {
-            this.availableBitrate = availableBitrate;
-            this.targetRateShare = targetRateShare;
-        }
-
-        int availableBitrate;
-        short targetRateShare;
-
-        @Override
-        public String toString() {
-            return "{" +
-                    "availableBitrate=" + availableBitrate +
-                    ", targetRateShare=" + targetRateShare +
-                    '}';
-        }
-
-        public int getAvailableBitrate() {
-            return availableBitrate;
-        }
-
-        public void setAvailableBitrate(int availableBitrate) {
-            this.availableBitrate = availableBitrate;
-        }
-
-        public short getTargetRateShare() {
-            return targetRateShare;
-        }
-
-        public void setTargetRateShare(short targetRateShare) {
-            this.targetRateShare = targetRateShare;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            Entry entry = (Entry) o;
-
-            if (availableBitrate != entry.availableBitrate) {
-                return false;
-            }
-            if (targetRateShare != entry.targetRateShare) {
-                return false;
-            }
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = availableBitrate;
-            result = 31 * result + (int) targetRateShare;
-            return result;
-        }
     }
 
     @Override
@@ -241,5 +183,67 @@ public class RateShareEntry extends GroupEntry {
 
     public void setDiscardPriority(short discardPriority) {
         this.discardPriority = discardPriority;
+    }
+
+    public static class Entry {
+        int availableBitrate;
+        short targetRateShare;
+
+        public Entry(int availableBitrate, short targetRateShare) {
+            this.availableBitrate = availableBitrate;
+            this.targetRateShare = targetRateShare;
+        }
+
+        @Override
+        public String toString() {
+            return "{" +
+                    "availableBitrate=" + availableBitrate +
+                    ", targetRateShare=" + targetRateShare +
+                    '}';
+        }
+
+        public int getAvailableBitrate() {
+            return availableBitrate;
+        }
+
+        public void setAvailableBitrate(int availableBitrate) {
+            this.availableBitrate = availableBitrate;
+        }
+
+        public short getTargetRateShare() {
+            return targetRateShare;
+        }
+
+        public void setTargetRateShare(short targetRateShare) {
+            this.targetRateShare = targetRateShare;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Entry entry = (Entry) o;
+
+            if (availableBitrate != entry.availableBitrate) {
+                return false;
+            }
+            if (targetRateShare != entry.targetRateShare) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = availableBitrate;
+            result = 31 * result + (int) targetRateShare;
+            return result;
+        }
     }
 }
