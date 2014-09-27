@@ -6,7 +6,11 @@ import java.util.*;
  * Created by sannies on 10.09.2014.
  */
 public class RangeStartMap<K extends Comparable, V> implements Map<K, V> {
-    TreeMap<K, V> base = new TreeMap<K, V>();
+    TreeMap<K, V> base = new TreeMap<K, V>(new Comparator<K>() {
+        public int compare(K o1, K o2) {
+            return -o1.compareTo(o2);
+        }
+    });
 
 
     public int size() {
@@ -37,7 +41,7 @@ public class RangeStartMap<K extends Comparable, V> implements Map<K, V> {
         K a = keys.next();
         do {
             if (keys.hasNext()) {
-                if (key.compareTo(a) > 0) {
+                if (key.compareTo(a) < 0) {
                     a = keys.next();
                 } else {
                     return base.get(a);

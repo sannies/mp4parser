@@ -46,19 +46,23 @@ public class CencSampleEncryptionInformationGroupEntry extends GroupEntry {
     @Override
     public void parse(ByteBuffer byteBuffer) {
         isEncrypted = IsoTypeReader.readUInt24(byteBuffer) == 1;
-        ivSize = (byte) IsoTypeReader.readUInt8(byteBuffer);
-        byte[] kid = new byte[16];
-        byteBuffer.get(kid);
-        this.kid = UUIDConverter.convert(kid);
+        if (isEncrypted) {
+            ivSize = (byte) IsoTypeReader.readUInt8(byteBuffer);
+            byte[] kid = new byte[16];
+            byteBuffer.get(kid);
+            this.kid = UUIDConverter.convert(kid);
+        }
 
     }
 
     @Override
     public ByteBuffer get() {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(20);
+        ByteBuffer byteBuffer = isEncrypted ? ByteBuffer.allocate(20) : ByteBuffer.allocate(3);
         IsoTypeWriter.writeUInt24(byteBuffer, isEncrypted?1:0);
-        IsoTypeWriter.writeUInt8(byteBuffer, ivSize);
-        byteBuffer.put(UUIDConverter.convert(kid));
+        if (isEncrypted) {
+            IsoTypeWriter.writeUInt8(byteBuffer, ivSize);
+            byteBuffer.put(UUIDConverter.convert(kid));
+        }
         byteBuffer.rewind();
         return byteBuffer;
     }
@@ -98,24 +102,14 @@ public class CencSampleEncryptionInformationGroupEntry extends GroupEntry {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
         CencSampleEncryptionInformationGroupEntry that = (CencSampleEncryptionInformationGroupEntry) o;
 
-        if (isEncrypted != that.isEncrypted) {
-            return false;
-        }
-        if (ivSize != that.ivSize) {
-            return false;
-        }
-        if (!kid.equals(that.kid)) {
-            return false;
-        }
+        if (isEncrypted != that.isEncrypted) return false;
+        if (ivSize != that.ivSize) return false;
+        if (kid != null ? !kid.equals(that.kid) : that.kid != null) return false;
 
         return true;
     }

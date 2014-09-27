@@ -10,7 +10,10 @@ import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 
 public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
@@ -97,11 +100,6 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     }
 
     @DoNotParseDetail
-    protected boolean isOverrideTrackEncryptionBoxParameters() {
-        return (getFlags() & 0x1) > 0;
-    }
-
-    @DoNotParseDetail
     public void setSubSampleEncryption(boolean b) {
         if (b) {
             setFlags(getFlags() | 0x2);
@@ -110,6 +108,10 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         }
     }
 
+    @DoNotParseDetail
+    protected boolean isOverrideTrackEncryptionBoxParameters() {
+        return (getFlags() & 0x1) > 0;
+    }
 
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
@@ -121,15 +123,17 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         }
         IsoTypeWriter.writeUInt32(byteBuffer, entries.size());
         for (CencSampleAuxiliaryDataFormat entry : entries) {
-            if (entry.iv.length != 8 && entry.iv.length != 16) {
-                throw new RuntimeException("IV must be either 8 or 16 bytes");
-            }
-            byteBuffer.put(entry.iv);
-            if (isSubSampleEncryption()) {
-                IsoTypeWriter.writeUInt16(byteBuffer, entry.pairs.length);
-                for (CencSampleAuxiliaryDataFormat.Pair pair : entry.pairs) {
-                    IsoTypeWriter.writeUInt16(byteBuffer, pair.clear());
-                    IsoTypeWriter.writeUInt32(byteBuffer, pair.encrypted());
+            if (entry.getSize() > 0) {
+                if (entry.iv.length != 8 && entry.iv.length != 16) {
+                    throw new RuntimeException("IV must be either 8 or 16 bytes");
+                }
+                byteBuffer.put(entry.iv);
+                if (isSubSampleEncryption()) {
+                    IsoTypeWriter.writeUInt16(byteBuffer, entry.pairs.length);
+                    for (CencSampleAuxiliaryDataFormat.Pair pair : entry.pairs) {
+                        IsoTypeWriter.writeUInt16(byteBuffer, pair.clear());
+                        IsoTypeWriter.writeUInt32(byteBuffer, pair.encrypted());
+                    }
                 }
             }
         }

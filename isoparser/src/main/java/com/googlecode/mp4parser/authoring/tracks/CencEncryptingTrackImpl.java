@@ -11,7 +11,9 @@ import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.cenc.CencEncryptingSampleList;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
+import com.googlecode.mp4parser.util.RangeStartMap;
 import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.mp4parser.iso23001.part7.TrackEncryptionBox;
@@ -32,21 +34,48 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  */
 public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
     Track source;
-    SecretKey cek;
-    UUID keyId;
-    CencEncryptingSampleList samples;
+    Map<UUID, SecretKey> keys = new HashMap<UUID, SecretKey>();
+    UUID defaultKeyId;
+    List<Sample> samples;
     List<CencSampleAuxiliaryDataFormat> cencSampleAuxiliaryData;
     boolean dummyIvs = false;
     boolean subSampleEncryption = false;
 
-    Map<GroupEntry, long[]> sampleGroups = new HashMap<GroupEntry, long[]>();
 
-    public CencEncryptingTrackImpl(Track source, UUID keyId, SecretKey cek) {
+    RangeStartMap<Integer, SecretKey> indexToKey;
+    Map<GroupEntry, long[]> sampleGroups;
+
+    public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, SecretKey key) {
+        this(source, defaultKeyId, Collections.singletonMap(defaultKeyId, key),
+                new HashMap<CencSampleEncryptionInformationGroupEntry, long[]>());
+    }
+
+    public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, Map<UUID, SecretKey> keys,
+                                   Map<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation) {
         this.source = source;
-        this.cek = cek;
-        this.keyId = keyId;
-        List<Sample> origSamples = source.getSamples();
+        this.keys = keys;
+        this.defaultKeyId = defaultKeyId;
+        this.sampleGroups = new HashMap<GroupEntry, long[]>();
+        for (Map.Entry<GroupEntry, long[]> entry : source.getSampleGroups().entrySet()) {
+            if (!(entry.getKey() instanceof CencSampleEncryptionInformationGroupEntry)) {
+                sampleGroups.put(entry.getKey(), entry.getValue());
+            }
+        }
+        for (Map.Entry<CencSampleEncryptionInformationGroupEntry, long[]> entry : keyRotation.entrySet()) {
+            sampleGroups.put(entry.getKey(), entry.getValue());
+        }
+        this.sampleGroups = new HashMap<GroupEntry, long[]>(sampleGroups) {
+            @Override
+            public long[] put(GroupEntry key, long[] value) {
+                if (key instanceof CencSampleEncryptionInformationGroupEntry) {
+                    throw new RuntimeException("Please supply CencSampleEncryptionInformationGroupEntries in the constructor");
+                }
+                return super.put(key, value);
+            }
+        };
 
+
+        this.samples = source.getSamples();
         this.cencSampleAuxiliaryData = new ArrayList<CencSampleAuxiliaryDataFormat>();
 
         BigInteger one = new BigInteger("1");
@@ -55,6 +84,39 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
         if (!dummyIvs) {
             Random random = new SecureRandom();
             random.nextBytes(init);
+        }
+
+
+        List<CencSampleEncryptionInformationGroupEntry> groupEntries =
+                new ArrayList<CencSampleEncryptionInformationGroupEntry>(keyRotation.keySet());
+        indexToKey = new RangeStartMap<Integer, SecretKey>();
+        int lastSampleGroupDescriptionIndex = -1;
+        for (int i = 0; i < source.getSamples().size(); i++) {
+            int index = 0;
+            for (int j = 0; j < groupEntries.size(); j++) {
+                GroupEntry groupEntry = groupEntries.get(j);
+                long[] sampleNums = getSampleGroups().get(groupEntry);
+                if (Arrays.binarySearch(sampleNums, i) >= 0) {
+                    index = j + 1;
+                }
+            }
+            if (lastSampleGroupDescriptionIndex != index) {
+                if (index == 0) {
+                    indexToKey.put(i, keys.get(defaultKeyId));
+                } else {
+                    if (groupEntries.get(index - 1).getKid() != null) {
+                        SecretKey sk = keys.get(groupEntries.get(index - 1).getKid());
+                        if (sk == null) {
+                            throw new RuntimeException("Key " + groupEntries.get(index - 1).getKid() + " was not supplied for decryption");
+                        }
+                        indexToKey.put(i, sk);
+                    } else {
+                        indexToKey.put(i, null);
+                    }
+                }
+                lastSampleGroupDescriptionIndex = index;
+
+            }
         }
 
 
@@ -68,54 +130,56 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
         }
 
 
-        for (Sample origSample : origSamples) {
-            byte[] iv = ivInt.toByteArray();
-            byte[] eightByteIv = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
-            System.arraycopy(
-                    iv,
-                    iv.length - 8 > 0 ? iv.length - 8 : 0,
-                    eightByteIv,
-                    (8 - iv.length) < 0 ? 0 : (8 - iv.length),
-                    iv.length > 8 ? 8 : iv.length);
-
+        for (int i = 0; i < samples.size(); i++) {
+            Sample origSample = samples.get(i);
             CencSampleAuxiliaryDataFormat e = new CencSampleAuxiliaryDataFormat();
             this.cencSampleAuxiliaryData.add(e);
+            if (indexToKey.get(i) != null) {
+                byte[] iv = ivInt.toByteArray();
+                byte[] eightByteIv = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
+                System.arraycopy(
+                        iv,
+                        iv.length - 8 > 0 ? iv.length - 8 : 0,
+                        eightByteIv,
+                        (8 - iv.length) < 0 ? 0 : (8 - iv.length),
+                        iv.length > 8 ? 8 : iv.length);
 
-            e.iv = eightByteIv;
+                e.iv = eightByteIv;
 
-            ByteBuffer sample = (ByteBuffer) origSample.asByteBuffer().rewind();
+                ByteBuffer sample = (ByteBuffer) origSample.asByteBuffer().rewind();
 
 
-            if (avcC != null) {
-                int nalLengthSize = avcC.getLengthSizeMinusOne() + 1;
-                List<CencSampleAuxiliaryDataFormat.Pair> pairs = new ArrayList<CencSampleAuxiliaryDataFormat.Pair>(5);
-                while (sample.remaining() > 0) {
-                    int nalLength = l2i(IsoTypeReaderVariable.read(sample, nalLengthSize));
-                    int clearBytes;
-                    int nalGrossSize = nalLength + nalLengthSize;
-                    if (nalGrossSize >= 112) {
-                        clearBytes = 96 + nalGrossSize % 16;
-                    } else {
-                        clearBytes = nalGrossSize;
+                if (avcC != null) {
+                    int nalLengthSize = avcC.getLengthSizeMinusOne() + 1;
+                    List<CencSampleAuxiliaryDataFormat.Pair> pairs = new ArrayList<CencSampleAuxiliaryDataFormat.Pair>(5);
+                    while (sample.remaining() > 0) {
+                        int nalLength = l2i(IsoTypeReaderVariable.read(sample, nalLengthSize));
+                        int clearBytes;
+                        int nalGrossSize = nalLength + nalLengthSize;
+                        if (nalGrossSize >= 112) {
+                            clearBytes = 96 + nalGrossSize % 16;
+                        } else {
+                            clearBytes = nalGrossSize;
+                        }
+                        pairs.add(e.createPair(clearBytes, nalGrossSize - clearBytes));
+                        sample.position(sample.position() + nalLength);
                     }
-                    pairs.add(e.createPair(clearBytes, nalGrossSize - clearBytes));
-                    sample.position(sample.position() + nalLength);
+                    e.pairs = pairs.toArray(new CencSampleAuxiliaryDataFormat.Pair[pairs.size()]);
                 }
-                e.pairs = pairs.toArray(new CencSampleAuxiliaryDataFormat.Pair[pairs.size()]);
-            }
 
-            ivInt = ivInt.add(one);
+                ivInt = ivInt.add(one);
+            }
         }
 
-        samples = new CencEncryptingSampleList(cek, source.getSamples(), cencSampleAuxiliaryData);
+        System.err.println("");
     }
 
     public void setDummyIvs(boolean dummyIvs) {
         this.dummyIvs = dummyIvs;
     }
 
-    public UUID getKeyId() {
-        return keyId;
+    public UUID getDefaultKeyId() {
+        return defaultKeyId;
     }
 
     public boolean hasSubSampleEncryption() {
@@ -159,7 +223,7 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
         TrackEncryptionBox trackEncryptionBox = new TrackEncryptionBox();
         trackEncryptionBox.setDefaultIvSize(8);
         trackEncryptionBox.setDefaultAlgorithmId(0x01);
-        trackEncryptionBox.setDefault_KID(keyId);
+        trackEncryptionBox.setDefault_KID(defaultKeyId);
         schi.addBox(trackEncryptionBox);
 
         sinf.addBox(schi);
@@ -197,7 +261,9 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
     }
 
     public List<Sample> getSamples() {
-        return samples;
+
+
+        return new CencEncryptingSampleList(indexToKey, source.getSamples(), cencSampleAuxiliaryData);
     }
 
     public SubSampleInformationBox getSubsampleInformationBox() {

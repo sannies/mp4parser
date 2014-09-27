@@ -26,16 +26,16 @@ import java.util.UUID;
 public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedTrack {
 
     private List<CencSampleAuxiliaryDataFormat> sampleEncryptionEntries;
+    private UUID defaultKeyId;
 
 
     /**
      * Creates a track from a TrackBox and potentially fragments. Use <b>fragements parameter
      * only</b> to supply additional fragments that are not located in the main file.
      *
-     * @param name  a name for the track for better identification
+     * @param name      a name for the track for better identification
      * @param trackBox  the <code>TrackBox</code> describing the track.
      * @param fragments additional fragments if located in more than a single file
-     *
      * @throws java.io.IOException if reading from underlying <code>DataSource</code> fails
      */
     public CencMp4TrackImplImpl(String name, TrackBox trackBox, IsoFile... fragments) throws IOException {
@@ -54,7 +54,7 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
                 for (TrackFragmentBox traf : trafs) {
                     if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
                         TrackEncryptionBox tenc = Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/tenc[0]");
-
+                        defaultKeyId = tenc.getDefault_KID();
                         Container base;
                         long baseOffset;
                         if (traf.getTrackFragmentHeaderBox().hasBaseDataOffset()) {
@@ -101,6 +101,7 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
             }
         } else {
             TrackEncryptionBox tenc = Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/tenc[0]");
+            defaultKeyId = tenc.getDefault_KID();
             ChunkOffsetBox chunkOffsetBox = Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stco[0]");
 
             if (chunkOffsetBox == null) {
@@ -135,22 +136,24 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
 
     private CencSampleAuxiliaryDataFormat parseCencAuxDataFormat(int ivSize, ByteBuffer chunksCencSampleAuxData, long auxInfoSize) {
         CencSampleAuxiliaryDataFormat cadf = new CencSampleAuxiliaryDataFormat();
-        cadf.iv = new byte[ivSize];
-        chunksCencSampleAuxData.get(cadf.iv);
-        if (auxInfoSize > ivSize) {
-            int numOfPairs = IsoTypeReader.readUInt16(chunksCencSampleAuxData);
-            cadf.pairs = new CencSampleAuxiliaryDataFormat.Pair[numOfPairs];
-            for (int i = 0; i < cadf.pairs.length; i++) {
-                cadf.pairs[i] = cadf.createPair(
-                        IsoTypeReader.readUInt16(chunksCencSampleAuxData),
-                        IsoTypeReader.readUInt32(chunksCencSampleAuxData));
+        if (auxInfoSize > 0) {
+            cadf.iv = new byte[ivSize];
+            chunksCencSampleAuxData.get(cadf.iv);
+            if (auxInfoSize > ivSize) {
+                int numOfPairs = IsoTypeReader.readUInt16(chunksCencSampleAuxData);
+                cadf.pairs = new CencSampleAuxiliaryDataFormat.Pair[numOfPairs];
+                for (int i = 0; i < cadf.pairs.length; i++) {
+                    cadf.pairs[i] = cadf.createPair(
+                            IsoTypeReader.readUInt16(chunksCencSampleAuxData),
+                            IsoTypeReader.readUInt32(chunksCencSampleAuxData));
+                }
             }
         }
         return cadf;
     }
 
-    public UUID getKeyId() {
-        return null;
+    public UUID getDefaultKeyId() {
+        return defaultKeyId;
     }
 
     public boolean hasSubSampleEncryption() {

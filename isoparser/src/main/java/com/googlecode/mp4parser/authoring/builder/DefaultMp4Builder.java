@@ -361,7 +361,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                 for (int j = 0; j < sg.getValue().size(); j++) {
                     GroupEntry groupEntry = sg.getValue().get(j);
                     long[] sampleNums = track.getSampleGroups().get(groupEntry);
-                    if (Arrays.binarySearch(sampleNums, i + 1) >= 0) {
+                    if (Arrays.binarySearch(sampleNums, i) >= 0) {
                         index = j + 1;
                     }
                 }

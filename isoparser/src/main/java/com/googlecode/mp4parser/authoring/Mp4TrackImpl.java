@@ -20,13 +20,13 @@ import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.*;
 import com.coremedia.iso.boxes.mdat.SampleList;
 import com.googlecode.mp4parser.BasicContainer;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleGroupDescriptionBox;
+import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleToGroupBox;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -59,6 +59,7 @@ public class Mp4TrackImpl extends AbstractTrack {
         final long trackId = trackBox.getTrackHeaderBox().getTrackId();
         samples = new SampleList(trackBox, fragments);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
+        sampleGroups = getSampleGroups(stbl);
         handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
 
         List<TimeToSampleBox.Entry> decodingTimeEntries = new ArrayList<TimeToSampleBox.Entry>();
@@ -213,6 +214,43 @@ public class Mp4TrackImpl extends AbstractTrack {
             }
         }
 
+    }
+
+    private Map<GroupEntry, long[]> getSampleGroups(SampleTableBox stbl) {
+        Map<GroupEntry, long[]> sampleGroups = new HashMap<GroupEntry, long[]>();
+        List<SampleGroupDescriptionBox> sgdbs = stbl.getBoxes(SampleGroupDescriptionBox.class);
+        for (SampleGroupDescriptionBox sgdb : sgdbs) {
+            boolean found = false;
+            for (SampleToGroupBox sbgp : stbl.getBoxes(SampleToGroupBox.class)) {
+                if (sbgp.getGroupingType().equals(sgdb.getGroupEntries().get(0).getType())) {
+                    found = true;
+                    int sampleNum = 0;
+                    for (SampleToGroupBox.Entry entry : sbgp.getEntries()) {
+                        if (entry.getGroupDescriptionIndex() > 0) {
+                            GroupEntry groupEntry = sgdb.getGroupEntries().get(entry.getGroupDescriptionIndex() - 1);
+                            long[] samples = sampleGroups.get(groupEntry);
+                            if (samples == null) {
+                                samples = new long[0];
+                            }
+
+                            long[] nuSamples = new long[l2i(entry.getSampleCount()) + samples.length];
+                            System.arraycopy(samples, 0, nuSamples, 0, samples.length);
+                            for (int i = 0; i < entry.getSampleCount(); i++) {
+                                nuSamples[samples.length + i] = sampleNum + i;
+                            }
+                            sampleGroups.put(groupEntry, nuSamples);
+
+                        }
+                        sampleNum += entry.getSampleCount();
+                    }
+
+                }
+            }
+            if (!found) {
+                throw new RuntimeException("Could not find SampleToGroupBox for " + sgdb.getGroupEntries().get(0).getType() + ".");
+            }
+        }
+        return sampleGroups;
     }
 
     public void close() throws IOException {

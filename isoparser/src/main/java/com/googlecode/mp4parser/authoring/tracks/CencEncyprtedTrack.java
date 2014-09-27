@@ -11,6 +11,7 @@ import java.util.UUID;
  */
 public interface CencEncyprtedTrack extends Track {
     List<CencSampleAuxiliaryDataFormat> getSampleEncryptionEntries();
-    UUID getKeyId();
+
+    UUID getDefaultKeyId();
     boolean hasSubSampleEncryption();
 }

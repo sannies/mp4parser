@@ -2,7 +2,6 @@ package com.googlecode.mp4parser.boxes.mp4.samplegrouping;
 
 import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.boxes.BoxRoundtripTest;
-import com.googlecode.mp4parser.util.UUIDConverter;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
@@ -25,12 +24,15 @@ public class CencSampleEncryptionInformationGroupEntryTest extends BoxRoundtripT
         seig1.setIvSize(8);
         CencSampleEncryptionInformationGroupEntry seig2 = new CencSampleEncryptionInformationGroupEntry();
         seig2.setEncrypted(false);
-        seig2.setKid(UUIDConverter.convert(new byte[]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}));
+        seig2.setKid(null);
 
         return Arrays.asList(
                 new Object[]{new SampleGroupDescriptionBox(),
                         new Map.Entry[]{
                                 new E("groupEntries", Arrays.asList(seig1))}},
+                new Object[]{new SampleGroupDescriptionBox(),
+                        new Map.Entry[]{
+                                new E("groupEntries", Arrays.asList(seig1, seig2))}},
                 new Object[]{new SampleGroupDescriptionBox(),
                         new Map.Entry[]{
                                 new E("groupEntries", Arrays.asList(seig2))}});
