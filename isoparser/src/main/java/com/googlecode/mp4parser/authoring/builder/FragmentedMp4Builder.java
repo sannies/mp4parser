@@ -278,9 +278,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
 
         for (Map.Entry<String, List<GroupEntry>> sg : groupEntryFamilies.entrySet()) {
-            SampleGroupDescriptionBox sgdb = new SampleGroupDescriptionBox();
+            SampleGroupDescriptionBox sgpd = new SampleGroupDescriptionBox();
             String type = sg.getKey();
-            sgdb.setGroupEntries(sg.getValue());
+            sgpd.setGroupEntries(sg.getValue());
             SampleToGroupBox sbgp = new SampleToGroupBox();
             sbgp.setGroupingType(type);
             SampleToGroupBox.Entry last = null;
@@ -300,7 +300,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
                     last.setSampleCount(last.getSampleCount() + 1);
                 }
             }
-            traf.addBox(sgdb);
+            traf.addBox(sgpd);
             traf.addBox(sbgp);
         }
 

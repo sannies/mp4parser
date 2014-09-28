@@ -14,6 +14,7 @@ import com.googlecode.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.crypto.SecretKey;
@@ -28,42 +29,65 @@ import java.util.*;
  */
 public class CencFileRoundtripTest {
     String baseDir = CencFileRoundtripTest.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+    Map<UUID, SecretKey> keys;
+    HashMap<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation1;
+    HashMap<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation2;
+    UUID uuidDefault;
+
+    @Before
+    public void setUp() throws Exception {
+        uuidDefault = UUID.randomUUID();
+        UUID uuidAlt = UUID.randomUUID();
+        SecretKey cekDefault = new SecretKeySpec(new byte[]{0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1}, "AES");
+        SecretKey cekAlt = new SecretKeySpec(new byte[]{0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1}, "AES");
+
+        keys = new HashMap<UUID, SecretKey>();
+        keys.put(uuidDefault, cekDefault);
+        keys.put(uuidAlt, cekAlt);
+
+        CencSampleEncryptionInformationGroupEntry cencNone = new CencSampleEncryptionInformationGroupEntry();
+        cencNone.setEncrypted(false);
+        CencSampleEncryptionInformationGroupEntry cencAlt = new CencSampleEncryptionInformationGroupEntry();
+        cencAlt.setKid(uuidAlt);
+        cencAlt.setIvSize(8);
+        cencAlt.setEncrypted(true);
+        keyRotation1 = new HashMap<CencSampleEncryptionInformationGroupEntry, long[]>();
+        keyRotation1.put(cencNone, new long[]{0, 1, 2, 3, 4});
+        keyRotation1.put(cencAlt, new long[]{10, 11, 12, 13});
+
+        keyRotation2 = new HashMap<CencSampleEncryptionInformationGroupEntry, long[]>();
+        keyRotation2.put(cencNone, new long[]{0, 2, 4, 6, 8});
+
+
+    }
 
     @Test
     public void testMultipleKeysStdMp4() throws IOException {
-        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4");
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1);
     }
 
 
     @Test
     public void testMultipleKeysFragMp4() throws IOException {
-        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4");
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1);
     }
 
-    public void testMultipleKeys(Mp4Builder builder, String testFile) throws IOException {
+    @Test
+    public void testMultipleKeysStdMp4_2() throws IOException {
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2);
+    }
+
+
+    @Test
+    public void testMultipleKeysFragMp4_2() throws IOException {
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2);
+    }
+
+    public void testMultipleKeys(Mp4Builder builder, String testFile, Map<UUID, SecretKey> keys, HashMap<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation) throws IOException {
         Movie m1 = MovieCreator.build(testFile);
-
-
-        UUID uuidDefault = UUID.randomUUID();
-        UUID uuidAlt = UUID.randomUUID();
-        SecretKey cekDefault = new SecretKeySpec(new byte[]{0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1}, "AES");
-        SecretKey cekAlt = new SecretKeySpec(new byte[]{0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1}, "AES");
-
-        Map<UUID, SecretKey> keys = new HashMap<UUID, SecretKey>();
-        keys.put(uuidDefault, cekDefault);
-        keys.put(uuidAlt, cekAlt);
-
         Movie m2 = new Movie();
         for (Track track : m1.getTracks()) {
-            CencSampleEncryptionInformationGroupEntry cencNone = new CencSampleEncryptionInformationGroupEntry();
-            cencNone.setEncrypted(false);
-            CencSampleEncryptionInformationGroupEntry cencAlt = new CencSampleEncryptionInformationGroupEntry();
-            cencAlt.setKid(uuidAlt);
-            cencAlt.setIvSize(8);
-            cencAlt.setEncrypted(true);
-            HashMap<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation = new HashMap<CencSampleEncryptionInformationGroupEntry, long[]>();
-            keyRotation.put(cencNone, new long[]{0, 1, 2, 3, 4});
-            keyRotation.put(cencAlt, new long[]{10, 11, 12, 13});
+
             CencEncryptingTrackImpl cencEncryptingTrack = new CencEncryptingTrackImpl(track, uuidDefault, keys, keyRotation);
             m2.addTrack(cencEncryptingTrack);
         }
@@ -101,7 +125,6 @@ public class CencFileRoundtripTest {
     public void verifySampleEquality(List<Sample> orig, List<Sample> roundtripped) throws IOException {
         Iterator<Sample> origIter = orig.iterator();
         Iterator<Sample> roundTrippedIter = roundtripped.iterator();
-        int sampleNo = 0;
         while (origIter.hasNext() && roundTrippedIter.hasNext()) {
             ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
             ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
