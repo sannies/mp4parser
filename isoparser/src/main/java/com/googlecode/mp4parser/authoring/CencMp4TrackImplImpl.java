@@ -119,13 +119,17 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
             if (saio.getOffsets().length == 1) {
                 long offset = saio.getOffsets()[0];
                 int sizeInTotal = 0;
-                for (short auxInfoSize : saiz.getSampleInfoSizes()) {
-                    sizeInTotal += auxInfoSize;
+                if (saiz.getDefaultSampleInfoSize() > 0) {
+                    sizeInTotal += saiz.getSampleCount() * saiz.getDefaultSampleInfoSize();
+                } else {
+                    for (int i = 0; i < saiz.getSampleCount(); i++) {
+                        sizeInTotal += saiz.getSampleInfoSizes()[i];
+                    }
                 }
                 ByteBuffer chunksCencSampleAuxData = topLevel.getByteBuffer(offset, sizeInTotal);
-                for (short auxInfoSize : saiz.getSampleInfoSizes()) {
+                for (int i = 0; i < saiz.getSampleCount(); i++) {
                     sampleEncryptionEntries.add(
-                            parseCencAuxDataFormat(tenc.getDefaultIvSize(), chunksCencSampleAuxData, auxInfoSize)
+                            parseCencAuxDataFormat(tenc.getDefaultIvSize(), chunksCencSampleAuxData, saiz.getSize(i))
                     );
                 }
 
@@ -134,9 +138,14 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
                 for (int i = 0; i < chunkSizes.length; i++) {
                     long offset = saio.getOffsets()[i];
                     long size = 0;
-                    for (int j = 0; j < chunkSizes[i]; j++) {
-                        size += saiz.getSize(currentSampleNo + j);
+                    if (saiz.getDefaultSampleInfoSize() > 0) {
+                        size += saiz.getSampleCount() * chunkSizes[i];
+                    } else {
+                        for (int j = 0; j < chunkSizes[i]; j++) {
+                            size += saiz.getSize(currentSampleNo + j);
+                        }
                     }
+
                     ByteBuffer chunksCencSampleAuxData = topLevel.getByteBuffer(offset, size);
                     for (int j = 0; j < chunkSizes[i]; j++) {
                         long auxInfoSize = saiz.getSize(currentSampleNo + j);
