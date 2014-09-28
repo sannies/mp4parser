@@ -70,7 +70,7 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
                 if (index == 0) {
                     indexToKey.put(i, keys.get(original.getDefaultKeyId()));
                 } else {
-                    if (groupEntries.get(index - 1).getKid() != null) {
+                    if (groupEntries.get(index - 1).isEncrypted()) {
                         SecretKey sk = keys.get(groupEntries.get(index - 1).getKid());
                         if (sk == null) {
                             throw new RuntimeException("Key " + groupEntries.get(index - 1).getKid() + " was not supplied for decryption");

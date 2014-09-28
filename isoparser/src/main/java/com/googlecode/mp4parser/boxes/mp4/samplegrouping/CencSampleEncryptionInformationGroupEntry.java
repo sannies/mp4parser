@@ -46,22 +46,22 @@ public class CencSampleEncryptionInformationGroupEntry extends GroupEntry {
     @Override
     public void parse(ByteBuffer byteBuffer) {
         isEncrypted = IsoTypeReader.readUInt24(byteBuffer) == 1;
-        if (isEncrypted) {
-            ivSize = (byte) IsoTypeReader.readUInt8(byteBuffer);
-            byte[] kid = new byte[16];
-            byteBuffer.get(kid);
-            this.kid = UUIDConverter.convert(kid);
-        }
+        ivSize = (byte) IsoTypeReader.readUInt8(byteBuffer);
+        byte[] kid = new byte[16];
+        byteBuffer.get(kid);
+        this.kid = UUIDConverter.convert(kid);
 
     }
 
     @Override
     public ByteBuffer get() {
-        ByteBuffer byteBuffer = isEncrypted ? ByteBuffer.allocate(20) : ByteBuffer.allocate(3);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(20);
         IsoTypeWriter.writeUInt24(byteBuffer, isEncrypted?1:0);
         if (isEncrypted) {
             IsoTypeWriter.writeUInt8(byteBuffer, ivSize);
             byteBuffer.put(UUIDConverter.convert(kid));
+        } else {
+            byteBuffer.put(new byte[17]);
         }
         byteBuffer.rewind();
         return byteBuffer;
