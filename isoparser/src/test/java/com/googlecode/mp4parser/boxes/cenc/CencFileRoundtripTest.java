@@ -6,6 +6,7 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
@@ -29,23 +30,14 @@ public class CencFileRoundtripTest {
     String baseDir = CencFileRoundtripTest.class.getProtectionDomain().getCodeSource().getLocation().getFile();
 
     @Test
-    public void testOneKeyStdMp4() throws IOException {
+    public void testMultipleKeysStdMp4() throws IOException {
         testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4");
     }
 
-    @Test
-    public void testMultipleKeysStdMp4() {
-
-    }
 
     @Test
-    public void testOneKeyFragMp4() {
-
-    }
-
-    @Test
-    public void testMultipleKeysFragMp4() {
-
+    public void testMultipleKeysFragMp4() throws IOException {
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4");
     }
 
     public void testMultipleKeys(Mp4Builder builder, String testFile) throws IOException {

@@ -59,7 +59,7 @@ public class Mp4TrackImpl extends AbstractTrack {
         final long trackId = trackBox.getTrackHeaderBox().getTrackId();
         samples = new SampleList(trackBox, fragments);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
-        sampleGroups = getSampleGroups(stbl);
+
         handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
 
         List<TimeToSampleBox.Entry> decodingTimeEntries = new ArrayList<TimeToSampleBox.Entry>();
@@ -190,6 +190,17 @@ public class Mp4TrackImpl extends AbstractTrack {
                     }
                 }
             }
+            List<SampleGroupDescriptionBox> sgpds = new ArrayList<SampleGroupDescriptionBox>();
+            List<SampleToGroupBox> sbgps = new ArrayList<SampleToGroupBox>();
+            for (MovieFragmentBox movieFragmentBox : movieFragmentBoxes) {
+                for (TrackFragmentBox traf : movieFragmentBox.getBoxes(TrackFragmentBox.class)) {
+                    if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
+                        sampleGroups = getSampleGroups(Path.<SampleGroupDescriptionBox>getPaths((Container) traf, "sgpd"), Path.<SampleToGroupBox>getPaths((Container) traf, "sbgp"), sampleGroups);
+                    }
+                }
+            }
+        } else {
+            sampleGroups = getSampleGroups(stbl.getBoxes(SampleGroupDescriptionBox.class), stbl.getBoxes(SampleToGroupBox.class), sampleGroups);
         }
         decodingTimes = TimeToSampleBox.blowupTimeToSamples(decodingTimeEntries);
 
@@ -216,12 +227,11 @@ public class Mp4TrackImpl extends AbstractTrack {
 
     }
 
-    private Map<GroupEntry, long[]> getSampleGroups(SampleTableBox stbl) {
-        Map<GroupEntry, long[]> sampleGroups = new HashMap<GroupEntry, long[]>();
-        List<SampleGroupDescriptionBox> sgdbs = stbl.getBoxes(SampleGroupDescriptionBox.class);
+    private Map<GroupEntry, long[]> getSampleGroups(List<SampleGroupDescriptionBox> sgdbs, List<SampleToGroupBox> sbgps,
+                                                    Map<GroupEntry, long[]> sampleGroups) {
         for (SampleGroupDescriptionBox sgdb : sgdbs) {
             boolean found = false;
-            for (SampleToGroupBox sbgp : stbl.getBoxes(SampleToGroupBox.class)) {
+            for (SampleToGroupBox sbgp : sbgps) {
                 if (sbgp.getGroupingType().equals(sgdb.getGroupEntries().get(0).getType())) {
                     found = true;
                     int sampleNum = 0;
