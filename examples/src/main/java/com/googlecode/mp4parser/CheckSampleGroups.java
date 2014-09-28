@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -39,7 +40,10 @@ public class CheckSampleGroups {
         m.getTracks().get(0).getSampleGroups().put(cencGroupEntry, new long[]{5, 6, 50});
 
         DefaultMp4Builder builder = new DefaultMp4Builder();
-        m.setTracks(Collections.<Track>singletonList(new CencEncryptingTrackImpl(m.getTracks().get(0), uuid1, keys)));
+        Map<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation =
+                new HashMap<CencSampleEncryptionInformationGroupEntry, long[]>();
+        keyRotation.put(cencGroupEntry, new long[]{5, 6, 50});
+        m.setTracks(Collections.<Track>singletonList(new CencEncryptingTrackImpl(m.getTracks().get(0), uuid1, keys, keyRotation)));
         Container c = builder.build(m);
         c.writeContainer(new FileOutputStream("output.mp4").getChannel());
 
