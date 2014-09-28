@@ -91,7 +91,6 @@ public class CencFileRoundtripTest {
 
         int trackNo = 0;
         while (tracksPlainIter.hasNext() && roundTrippedTracksIter.hasNext()) {
-            System.err.println("Track: " + trackNo++);
             verifySampleEquality(
                     tracksPlainIter.next().getSamples(),
                     roundTrippedTracksIter.next().getSamples());
@@ -104,7 +103,6 @@ public class CencFileRoundtripTest {
         Iterator<Sample> roundTrippedIter = roundtripped.iterator();
         int sampleNo = 0;
         while (origIter.hasNext() && roundTrippedIter.hasNext()) {
-            System.err.println("Sample: " + sampleNo++);
             ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
             ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
             origIter.next().writeTo(Channels.newChannel(baos1));

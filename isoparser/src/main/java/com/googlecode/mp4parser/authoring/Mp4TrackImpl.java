@@ -202,6 +202,7 @@ public class Mp4TrackImpl extends AbstractTrack {
         } else {
             sampleGroups = getSampleGroups(stbl.getBoxes(SampleGroupDescriptionBox.class), stbl.getBoxes(SampleToGroupBox.class), sampleGroups);
         }
+
         decodingTimes = TimeToSampleBox.blowupTimeToSamples(decodingTimeEntries);
 
         MediaHeaderBox mdhd = trackBox.getMediaBox().getMediaHeaderBox();
