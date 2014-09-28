@@ -3,6 +3,13 @@ Java MP4 Parser
 
 A Java API to read, write and create MP4 container. Manipulating containers is different from encoding and decoding videos and audio. 
 
+Using the library
+------------------
+
+The library is published to Maven repositories. Each release is pushed to a staging repository which is published on the release page. On request specific releases can be pushed to maven central. 
+
+For projects that do not use a dependency management tool each release's artifacts (jar, javadoc-jar, source-jar) are attached to the release page. Please be aware that the project requires the aspectj-rt.jar library. 
+
 
 What can you do?
 --------------------
@@ -78,6 +85,7 @@ Remember: If someone is only 10 meters away the delay between audio and video is
         // removes the first sample and shortens the AAC track by ~22ms
 		CroppedTrack aacTrackShort = new CroppedTrack(aacTrackOriginal, 1, aacTrack.getSamples().size());
 {code}
+
 
 
 
