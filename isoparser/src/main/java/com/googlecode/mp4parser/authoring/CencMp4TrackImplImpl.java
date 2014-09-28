@@ -116,20 +116,39 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
 
             Container topLevel = ((MovieBox) trackBox.getParent()).getParent();
 
-            int currentSampleNo = 0;
-            for (int i = 0; i < chunkSizes.length; i++) {
-                long offset = saio.getOffsets()[i];
-                long size = 0;
-                for (int j = currentSampleNo; j < currentSampleNo + chunkSizes[i]; j++) {
-                    size += saiz.getSize(currentSampleNo + j);
+            if (saio.getOffsets().length == 1) {
+                long offset = saio.getOffsets()[0];
+                int sizeInTotal = 0;
+                for (short auxInfoSize : saiz.getSampleInfoSizes()) {
+                    sizeInTotal += auxInfoSize;
                 }
-                ByteBuffer chunksCencSampleAuxData = topLevel.getByteBuffer(offset, size);
-                for (int j = 0; j < chunkSizes[i]; j++) {
-                    long auxInfoSize = saiz.getSize(currentSampleNo + i);
+                ByteBuffer chunksCencSampleAuxData = topLevel.getByteBuffer(offset, sizeInTotal);
+                for (short auxInfoSize : saiz.getSampleInfoSizes()) {
                     sampleEncryptionEntries.add(
                             parseCencAuxDataFormat(tenc.getDefaultIvSize(), chunksCencSampleAuxData, auxInfoSize)
                     );
                 }
+
+            } else if (saio.getOffsets().length == chunkSizes.length) {
+                int currentSampleNo = 0;
+                for (int i = 0; i < chunkSizes.length; i++) {
+                    long offset = saio.getOffsets()[i];
+                    long size = 0;
+                    for (int j = 0; j < chunkSizes[i]; j++) {
+                        size += saiz.getSize(currentSampleNo + j);
+                    }
+                    ByteBuffer chunksCencSampleAuxData = topLevel.getByteBuffer(offset, size);
+                    for (int j = 0; j < chunkSizes[i]; j++) {
+                        long auxInfoSize = saiz.getSize(currentSampleNo + j);
+                        sampleEncryptionEntries.add(
+                                // should I use the iv size from the sample group?
+                                parseCencAuxDataFormat(tenc.getDefaultIvSize(), chunksCencSampleAuxData, auxInfoSize)
+                        );
+                    }
+                    currentSampleNo += chunkSizes[i];
+                }
+            } else {
+                throw new RuntimeException("Number of saio offsets must be either 1 or number of chunks");
             }
         }
     }

@@ -415,7 +415,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         long offset = senc.getOffsetToFirstIV();
         int index = 0;
-        long[] offsets = new long[track.getSamples().size()];
+        long[] offsets = new long[chunkSizes.length];
 
 
         for (int i = 0; i < chunkSizes.length; i++) {
