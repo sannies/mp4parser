@@ -8,25 +8,21 @@ import com.coremedia.iso.boxes.SchemeTypeBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
-import com.googlecode.mp4parser.authoring.*;
+import com.googlecode.mp4parser.authoring.AbstractTrack;
+import com.googlecode.mp4parser.authoring.Sample;
+import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.TrackMetaData;
+import com.googlecode.mp4parser.boxes.cenc.CencDecryptingSampleList;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 import com.googlecode.mp4parser.util.Path;
 import com.googlecode.mp4parser.util.RangeStartMap;
-import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 
-import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.SecretKey;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
-
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 public class CencDecryptingTrackImpl extends AbstractTrack {
     CencDecryptingSampleList samples;
@@ -85,7 +81,7 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
         }
 
 
-        samples = new CencDecryptingSampleList(indexToKey, original.getSamples(), original.getSampleEncryptionEntries());
+        samples = new CencDecryptingSampleList(indexToKey, original.getSamples(), original.getSampleEncryptionEntries(), "cenc");
     }
 
     public void close() throws IOException {
@@ -139,102 +135,6 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
 
     public List<Sample> getSamples() {
         return samples;
-    }
-
-    public static class CencDecryptingSampleList extends AbstractList<Sample> {
-
-        List<CencSampleAuxiliaryDataFormat> sencInfo;
-        RangeStartMap<Integer, SecretKey> keys = new RangeStartMap<Integer, SecretKey>();
-        List<Sample> parent;
-
-        public CencDecryptingSampleList(SecretKey secretKey, List<Sample> parent, List<CencSampleAuxiliaryDataFormat> sencInfo) {
-            this.sencInfo = sencInfo;
-            this.keys.put(0, secretKey);
-            this.parent = parent;
-
-        }
-
-        public CencDecryptingSampleList(RangeStartMap<Integer, SecretKey> keys, List<Sample> parent, List<CencSampleAuxiliaryDataFormat> sencInfo) {
-            this.sencInfo = sencInfo;
-            this.keys = keys;
-            this.parent = parent;
-        }
-
-
-        Cipher getCipher(SecretKey sk, byte[] iv) {
-            byte[] fullIv = new byte[16];
-            System.arraycopy(iv, 0, fullIv, 0, iv.length);
-            // The IV
-            try {
-                Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
-                cipher.init(Cipher.DECRYPT_MODE, sk, new IvParameterSpec(fullIv));
-                return cipher;
-            } catch (InvalidAlgorithmParameterException e) {
-                throw new RuntimeException(e);
-            } catch (InvalidKeyException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchPaddingException e) {
-                throw new RuntimeException(e);
-            }
-
-
-        }
-
-        @Override
-        public Sample get(int index) {
-            if (keys.get(index) != null) {
-                Sample encSample = parent.get(index);
-                final ByteBuffer encSampleBuffer = encSample.asByteBuffer();
-                encSampleBuffer.rewind();
-                final ByteBuffer decSampleBuffer = ByteBuffer.allocate(encSampleBuffer.limit());
-                final CencSampleAuxiliaryDataFormat sencEntry = sencInfo.get(index);
-                Cipher cipher = getCipher(keys.get(index), sencEntry.iv);
-                try {
-                    if (sencEntry.pairs != null && sencEntry.pairs.length > 0) {
-
-                        for (CencSampleAuxiliaryDataFormat.Pair pair : sencEntry.pairs) {
-                            final int clearBytes = pair.clear();
-                            final int encrypted = l2i(pair.encrypted());
-
-                            byte[] clears = new byte[clearBytes];
-                            encSampleBuffer.get(clears);
-                            decSampleBuffer.put(clears);
-                            if (encrypted > 0) {
-                                byte[] encs = new byte[encrypted];
-                                encSampleBuffer.get(encs);
-                                final byte[] decr = cipher.update(encs);
-                                decSampleBuffer.put(decr);
-                            }
-
-                        }
-                        if (encSampleBuffer.remaining() > 0) {
-                            System.err.println("Decrypted sample but still data remaining: " + encSample.getSize());
-                        }
-                        decSampleBuffer.put(cipher.doFinal());
-                    } else {
-                        byte[] fullyEncryptedSample = new byte[encSampleBuffer.limit()];
-                        encSampleBuffer.get(fullyEncryptedSample);
-                        decSampleBuffer.put(cipher.doFinal(fullyEncryptedSample));
-                    }
-                    encSampleBuffer.rewind();
-                } catch (IllegalBlockSizeException e) {
-                    throw new RuntimeException(e);
-                } catch (BadPaddingException e) {
-                    throw new RuntimeException(e);
-                }
-                decSampleBuffer.rewind();
-                return new SampleImpl(decSampleBuffer);
-            } else {
-                return parent.get(index);
-            }
-        }
-
-        @Override
-        public int size() {
-            return parent.size();
-        }
     }
 
 }

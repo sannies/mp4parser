@@ -3,7 +3,6 @@ package com.googlecode.mp4parser.boxes.cenc;
 import com.coremedia.iso.Hex;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.SampleImpl;
-import com.googlecode.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
 import com.googlecode.mp4parser.util.RangeStartMap;
 import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import org.junit.Assert;
@@ -86,7 +85,26 @@ public class CencSampleListsTest {
     }
 
     @Test
-    public void testMultipleKeys() throws IOException {
+    public void testMultipleKeysCencSubSample() throws IOException {
+        testMultipleKeys("cenc", true);
+    }
+
+    @Test
+    public void testMultipleKeysCbc1SubSample() throws IOException {
+        testMultipleKeys("cbc1", true);
+    }
+
+    @Test
+    public void testMultipleKeysCencFull() throws IOException {
+        testMultipleKeys("cenc", false);
+    }
+
+    @Test
+    public void testMultipleKeysCbc1Full() throws IOException {
+        testMultipleKeys("cbc1", false);
+    }
+
+    public void testMultipleKeys(String encAlgo, boolean subSampleEncryption) throws IOException {
 
         SecretKey cek1 = new SecretKeySpec(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, "AES");
         SecretKey cek2 = new SecretKeySpec(new byte[]{2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, "AES");
@@ -109,41 +127,46 @@ public class CencSampleListsTest {
                 new SampleImpl(ByteBuffer.wrap(new byte[1230]))
         );
 
+
         CencSampleAuxiliaryDataFormat cencAuxDef = new CencSampleAuxiliaryDataFormat();
-        cencAuxDef.pairs = new CencSampleAuxiliaryDataFormat.Pair[2];
-        cencAuxDef.pairs[0] = cencAuxDef.createPair(101, 384);
-        cencAuxDef.pairs[1] = cencAuxDef.createPair(105, 640);
+
+        if (subSampleEncryption) {
+            cencAuxDef.pairs = new CencSampleAuxiliaryDataFormat.Pair[2];
+            cencAuxDef.pairs[0] = cencAuxDef.createPair(101, 384);
+            cencAuxDef.pairs[1] = cencAuxDef.createPair(105, 640);
+        }
         cencAuxDef.iv = new byte[16];
 
         CencSampleAuxiliaryDataFormat cencAuxPlain = new CencSampleAuxiliaryDataFormat();
-
 
         List<CencSampleAuxiliaryDataFormat> auxInfos = Arrays.asList(
                 cencAuxDef, cencAuxDef, cencAuxDef,
                 cencAuxPlain, cencAuxPlain,
                 cencAuxDef, cencAuxDef, cencAuxDef, cencAuxDef);
 
+
         CencEncryptingSampleList cencSamples =
                 new CencEncryptingSampleList(
-                        keys, clearSamples, auxInfos);
+                        keys, clearSamples, auxInfos, encAlgo);
 
         Assert.assertEquals(9, cencSamples.size());
         for (int i = 0; i < cencSamples.size(); i++) {
 
-            CencDecryptingTrackImpl.CencDecryptingSampleList dec = new CencDecryptingTrackImpl.CencDecryptingSampleList(
-                    keys.get(i),
+            CencDecryptingSampleList dec = new CencDecryptingSampleList(
+                    new RangeStartMap<Integer, SecretKey>(0, keys.get(i)),
                     Collections.singletonList(cencSamples.get(i)),
-                    Collections.singletonList(auxInfos.get(i)));
+                    Collections.singletonList(auxInfos.get(i)), encAlgo);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             dec.get(0).writeTo(Channels.newChannel(baos));
             Assert.assertArrayEquals("Sample " + i + " can not be reconstructed", new byte[1230], baos.toByteArray());
         }
 
-        CencDecryptingTrackImpl.CencDecryptingSampleList decryptingSampleList = new CencDecryptingTrackImpl.CencDecryptingSampleList(
+        CencDecryptingSampleList decryptingSampleList = new CencDecryptingSampleList(
                 keys,
                 cencSamples,
-                auxInfos);
+                auxInfos,
+                encAlgo);
 
         for (int i = 0; i < cencSamples.size(); i++) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

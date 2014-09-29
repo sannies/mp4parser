@@ -12,6 +12,12 @@ public class RangeStartMap<K extends Comparable, V> implements Map<K, V> {
         }
     });
 
+    public RangeStartMap() {
+    }
+
+    public RangeStartMap(K k, V v) {
+        this.put(k, v);
+    }
 
     public int size() {
         return base.size();

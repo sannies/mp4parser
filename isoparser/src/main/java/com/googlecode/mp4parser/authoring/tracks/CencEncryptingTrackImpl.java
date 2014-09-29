@@ -261,9 +261,7 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
     }
 
     public List<Sample> getSamples() {
-
-
-        return new CencEncryptingSampleList(indexToKey, source.getSamples(), cencSampleAuxiliaryData);
+        return new CencEncryptingSampleList(indexToKey, source.getSamples(), cencSampleAuxiliaryData, "cenc");
     }
 
     public SubSampleInformationBox getSubsampleInformationBox() {

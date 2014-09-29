@@ -24,17 +24,8 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 public class CencEncryptingSampleList extends AbstractList<Sample> {
 
-    static Cipher cipher;
-    static {
-        try {
-            cipher = Cipher.getInstance("AES/CTR/NoPadding");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchPaddingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+    private final String encryptionAlgo;
+    Cipher cipher;
     List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats;
     RangeStartMap<Integer, SecretKey> ceks = new RangeStartMap<Integer, SecretKey>();
     List<Sample> parent;
@@ -43,18 +34,31 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
             SecretKey defaultCek,
             List<Sample> parent,
             List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats) {
-        this.auxiliaryDataFormats = auxiliaryDataFormats;
-        this.ceks.put(0, defaultCek);
-        this.parent = parent;
+        this(new RangeStartMap<Integer, SecretKey>(0, defaultCek), parent, auxiliaryDataFormats, "cenc");
     }
 
     public CencEncryptingSampleList(
             RangeStartMap<Integer, SecretKey> ceks,
             List<Sample> parent,
-            List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats) {
+            List<CencSampleAuxiliaryDataFormat> auxiliaryDataFormats,
+            String encryptionAlgo) {
         this.auxiliaryDataFormats = auxiliaryDataFormats;
         this.ceks = ceks;
+        this.encryptionAlgo = encryptionAlgo;
         this.parent = parent;
+        try {
+            if ("cenc".equals(encryptionAlgo)) {
+                this.cipher = Cipher.getInstance("AES/CTR/NoPadding");
+            } else if ("cbc1".equals(encryptionAlgo)) {
+                this.cipher = Cipher.getInstance("AES/CBC/NoPadding");
+            } else {
+                throw new RuntimeException("Only cenc & cbc1 is supported as encryptionAlgo");
+            }
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchPaddingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -127,7 +131,13 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
                 } else {
                     byte[] fullyEncryptedSample = new byte[sample.limit()];
                     sample.get(fullyEncryptedSample);
-                    channel.write(ByteBuffer.wrap(cipher.doFinal(fullyEncryptedSample)));
+                    if ("cbc1".equals(encryptionAlgo)) {
+                        int encryptedLength = fullyEncryptedSample.length / 16 * 16;
+                        channel.write(ByteBuffer.wrap(cipher.doFinal(fullyEncryptedSample, 0, encryptedLength)));
+                        channel.write(ByteBuffer.wrap(fullyEncryptedSample, encryptedLength, fullyEncryptedSample.length - encryptedLength));
+                    } else if ("cenc".equals(encryptionAlgo)) {
+                        channel.write(ByteBuffer.wrap(cipher.doFinal(fullyEncryptedSample)));
+                    }
                 }
                 sample.rewind();
             } catch (IllegalBlockSizeException e) {
@@ -166,9 +176,16 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
 
                     }
                 } else {
+
                     byte[] fullyEncryptedSample = new byte[sample.limit()];
                     sample.get(fullyEncryptedSample);
-                    encSample.put(cipher.doFinal(fullyEncryptedSample));
+                    if ("cbc1".equals(encryptionAlgo)) {
+                        int encryptedLength = fullyEncryptedSample.length / 16 * 16;
+                        encSample.put(cipher.doFinal(fullyEncryptedSample, 0, encryptedLength));
+                        encSample.put(fullyEncryptedSample, encryptedLength, fullyEncryptedSample.length - encryptedLength);
+                    } else if ("cenc".equals(encryptionAlgo)) {
+                        encSample.put(cipher.doFinal(fullyEncryptedSample));
+                    }
                 }
                 sample.rewind();
             } catch (IllegalBlockSizeException e) {
