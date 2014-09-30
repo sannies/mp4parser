@@ -111,7 +111,7 @@ public final class DashHelper {
         final AudioSpecificConfig audioSpecificConfig = decoderConfigDescriptor.getAudioSpecificInfo();
         ChannelConfiguration cc = new ChannelConfiguration();
         cc.schemeIdUri = "urn:mpeg:dash:23003:3:audio_channel_configuration:2011";
-        cc.value = String.valueOf(audioSpecificConfig.getChannelConfiguration());
+        cc.value = String.valueOf(audioSpecificConfig != null ? audioSpecificConfig.getChannelConfiguration() : "2");
         return cc;
     }
 
