@@ -2,7 +2,6 @@ package com.coremedia.iso.boxes.sampleentry;
 
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.boxes.OriginalFormatBox;
-import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.googlecode.mp4parser.boxes.AC3SpecificBox;
 import com.googlecode.mp4parser.boxes.DTSSpecificBox;
 import com.googlecode.mp4parser.boxes.EC3SpecificBox;
@@ -11,6 +10,7 @@ import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.AudioSpecificConfig;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderConfigDescriptor;
 import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 
 import java.util.List;
 
@@ -19,11 +19,6 @@ import java.util.List;
  * http://tools.ietf.org/html/rfc6381
  */
 public final class DashHelper {
-
-    public static class ChannelConfiguration {
-        public String schemeIdUri = "";
-        public String value = "";
-    }
 
     public static ChannelConfiguration getChannelConfiguration(AudioSampleEntry e) {
         DTSSpecificBox ddts = Path.getPath(e, "ddts");
@@ -233,7 +228,6 @@ public final class DashHelper {
         return cc;
     }
 
-
     /**
      * Gets the codec according to RFC 6381 from a <code>SampleEntry</code>.
      *
@@ -266,9 +260,9 @@ public final class DashHelper {
             }
             final DecoderConfigDescriptor decoderConfigDescriptor = esDescriptorBox.getEsDescriptor().getDecoderConfigDescriptor();
             final AudioSpecificConfig audioSpecificConfig = decoderConfigDescriptor.getAudioSpecificInfo();
-            if (audioSpecificConfig.getSbrPresentFlag() == 1) {
+            if (audioSpecificConfig != null && audioSpecificConfig.getSbrPresentFlag() == 1) {
                 return "mp4a.40.5";
-            } else if (audioSpecificConfig.getPsPresentFlag() == 1) {
+            } else if (audioSpecificConfig != null && audioSpecificConfig.getPsPresentFlag() == 1) {
                 return "mp4a.40.29";
             } else {
                 return "mp4a.40.2";
@@ -291,5 +285,10 @@ public final class DashHelper {
             throw new RuntimeException("I don't know how to get codec of type " + se.getType());
         }
 
+    }
+
+    public static class ChannelConfiguration {
+        public String schemeIdUri = "";
+        public String value = "";
     }
 }
