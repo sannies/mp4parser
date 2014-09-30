@@ -321,7 +321,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         SampleAuxiliaryInformationOffsetsBox saio = new SampleAuxiliaryInformationOffsetsBox();
         parent.addBox(saio);
         assert parent.getBoxes(TrackRunBox.class).size() == 1 : "Don't know how to deal with multiple Track Run Boxes when encrypting";
-        saio.setAuxInfoType(schm.getSchemeType());
+        saio.setAuxInfoType("cenc");
         saio.setFlags(1);
         long offset = 0;
         offset += 8; // traf header till 1st child box
@@ -354,7 +354,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         TrackEncryptionBox tenc = Path.getPath(sampleDescriptionBox, "enc.[0]/sinf[0]/schi[0]/tenc[0]");
 
         SampleAuxiliaryInformationSizesBox saiz = new SampleAuxiliaryInformationSizesBox();
-        saiz.setAuxInfoType(schm.getSchemeType());
+        saiz.setAuxInfoType("cenc");
         saiz.setFlags(1);
         if (track.hasSubSampleEncryption()) {
             short[] sizes = new short[l2i(endSample - startSample)];

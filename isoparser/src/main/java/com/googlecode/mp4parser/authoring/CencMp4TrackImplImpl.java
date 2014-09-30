@@ -42,7 +42,7 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedT
         super(name, trackBox, fragments);
 
         SchemeTypeBox schm = Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schm[0]");
-        assert schm != null && schm.getSchemeType().equals("cenc") : "Track must be CENC encrypted";
+        assert schm != null && (schm.getSchemeType().equals("cenc") || schm.getSchemeType().equals("cbc1")) : "Track must be CENC (cenc or cbc1) encrypted";
 
         sampleEncryptionEntries = new ArrayList<CencSampleAuxiliaryDataFormat>();
         long trackId = trackBox.getTrackHeaderBox().getTrackId();

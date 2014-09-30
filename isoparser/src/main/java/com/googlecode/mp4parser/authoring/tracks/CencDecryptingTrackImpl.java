@@ -38,8 +38,8 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
         super("dec(" + original.getName() + ")");
         this.original = original;
         SchemeTypeBox schm = Path.getPath(original.getSampleDescriptionBox(), "enc./sinf/schm");
-        if (!"cenc".equals(schm.getSchemeType())) {
-            throw new RuntimeException("You can only use the CencDecryptingTrackImpl with CENC encrypted tracks");
+        if (!("cenc".equals(schm.getSchemeType()) || "cbc1".equals(schm.getSchemeType()))) {
+            throw new RuntimeException("You can only use the CencDecryptingTrackImpl with CENC (cenc or cbc1) encrypted tracks");
         }
 
         List<CencSampleEncryptionInformationGroupEntry> groupEntries = new ArrayList<CencSampleEncryptionInformationGroupEntry>();
@@ -81,7 +81,7 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
         }
 
 
-        samples = new CencDecryptingSampleList(indexToKey, original.getSamples(), original.getSampleEncryptionEntries(), "cenc");
+        samples = new CencDecryptingSampleList(indexToKey, original.getSamples(), original.getSampleEncryptionEntries(), schm.getSchemeType());
     }
 
     public void close() throws IOException {

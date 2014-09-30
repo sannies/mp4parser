@@ -62,33 +62,62 @@ public class CencFileRoundtripTest {
     }
 
     @Test
-    public void testMultipleKeysStdMp4() throws IOException {
-        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1);
+    public void testSingleKeyMp4_cbc1() throws IOException {
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, null, "cbc1");
+    }
+
+    @Test
+    public void testSingleKeyMp4_cenc() throws IOException {
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, null, "cenc");
+    }
+
+    @Test
+    public void testMultipleKeysStdMp4_cbc1() throws IOException {
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cbc1");
     }
 
 
     @Test
-    public void testMultipleKeysFragMp4() throws IOException {
-        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1);
+    public void testMultipleKeysFragMp4_cbc1() throws IOException {
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cbc1");
     }
 
     @Test
-    public void testMultipleKeysStdMp4_2() throws IOException {
-        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2);
+    public void testMultipleKeysStdMp4_2_cbc1() throws IOException {
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cbc1");
     }
-
 
     @Test
-    public void testMultipleKeysFragMp4_2() throws IOException {
-        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2);
+    public void testMultipleKeysFragMp4_2_cbc1() throws IOException {
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cbc1");
     }
 
-    public void testMultipleKeys(Mp4Builder builder, String testFile, Map<UUID, SecretKey> keys, HashMap<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation) throws IOException {
+    @Test
+    public void testMultipleKeysStdMp4_cenc() throws IOException {
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cenc");
+    }
+
+    @Test
+    public void testMultipleKeysFragMp4_cenc() throws IOException {
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cenc");
+    }
+
+    @Test
+    public void testMultipleKeysStdMp4_2_cenc() throws IOException {
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cenc");
+    }
+
+    @Test
+    public void testMultipleKeysFragMp4_2_cenc() throws IOException {
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cenc");
+    }
+
+    public void testMultipleKeys(Mp4Builder builder, String testFile, Map<UUID, SecretKey> keys, HashMap<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation, String encAlgo) throws IOException {
         Movie m1 = MovieCreator.build(testFile);
         Movie m2 = new Movie();
         for (Track track : m1.getTracks()) {
 
-            CencEncryptingTrackImpl cencEncryptingTrack = new CencEncryptingTrackImpl(track, uuidDefault, keys, keyRotation);
+            CencEncryptingTrackImpl cencEncryptingTrack = new CencEncryptingTrackImpl(track, uuidDefault, keys, keyRotation, encAlgo);
             m2.addTrack(cencEncryptingTrack);
         }
         Container c = builder.build(m2);
@@ -113,7 +142,6 @@ public class CencFileRoundtripTest {
         Iterator<Track> tracksPlainIter = m1.getTracks().iterator();
         Iterator<Track> roundTrippedTracksIter = m5.getTracks().iterator();
 
-        int trackNo = 0;
         while (tracksPlainIter.hasNext() && roundTrippedTracksIter.hasNext()) {
             verifySampleEquality(
                     tracksPlainIter.next().getSamples(),

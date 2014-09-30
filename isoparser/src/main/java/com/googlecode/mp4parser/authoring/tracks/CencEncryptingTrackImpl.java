@@ -33,6 +33,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * Encrypts a given track with common encryption.
  */
 public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
+    private final String encryptionAlgo;
     Track source;
     Map<UUID, SecretKey> keys = new HashMap<UUID, SecretKey>();
     UUID defaultKeyId;
@@ -47,22 +48,27 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
 
     public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, SecretKey key) {
         this(source, defaultKeyId, Collections.singletonMap(defaultKeyId, key),
-                new HashMap<CencSampleEncryptionInformationGroupEntry, long[]>());
+                null,
+                "cenc");
     }
 
     public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, Map<UUID, SecretKey> keys,
-                                   Map<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation) {
+                                   Map<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation,
+                                   String encryptionAlgo) {
         this.source = source;
         this.keys = keys;
         this.defaultKeyId = defaultKeyId;
+        this.encryptionAlgo = encryptionAlgo;
         this.sampleGroups = new HashMap<GroupEntry, long[]>();
         for (Map.Entry<GroupEntry, long[]> entry : source.getSampleGroups().entrySet()) {
             if (!(entry.getKey() instanceof CencSampleEncryptionInformationGroupEntry)) {
                 sampleGroups.put(entry.getKey(), entry.getValue());
             }
         }
-        for (Map.Entry<CencSampleEncryptionInformationGroupEntry, long[]> entry : keyRotation.entrySet()) {
-            sampleGroups.put(entry.getKey(), entry.getValue());
+        if (keyRotation != null) {
+            for (Map.Entry<CencSampleEncryptionInformationGroupEntry, long[]> entry : keyRotation.entrySet()) {
+                sampleGroups.put(entry.getKey(), entry.getValue());
+            }
         }
         this.sampleGroups = new HashMap<GroupEntry, long[]>(sampleGroups) {
             @Override
@@ -88,7 +94,10 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
 
 
         List<CencSampleEncryptionInformationGroupEntry> groupEntries =
-                new ArrayList<CencSampleEncryptionInformationGroupEntry>(keyRotation.keySet());
+                new ArrayList<CencSampleEncryptionInformationGroupEntry>();
+        if (keyRotation != null) {
+            groupEntries.addAll(keyRotation.keySet());
+        }
         indexToKey = new RangeStartMap<Integer, SecretKey>();
         int lastSampleGroupDescriptionIndex = -1;
         for (int i = 0; i < source.getSamples().size(); i++) {
@@ -215,7 +224,7 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
         sinf.addBox(originalFormatBox);
 
         SchemeTypeBox schm = new SchemeTypeBox();
-        schm.setSchemeType("cenc");
+        schm.setSchemeType(encryptionAlgo);
         schm.setSchemeVersion(0x00010000);
         sinf.addBox(schm);
 
@@ -261,7 +270,7 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
     }
 
     public List<Sample> getSamples() {
-        return new CencEncryptingSampleList(indexToKey, source.getSamples(), cencSampleAuxiliaryData, "cenc");
+        return new CencEncryptingSampleList(indexToKey, source.getSamples(), cencSampleAuxiliaryData, encryptionAlgo);
     }
 
     public SubSampleInformationBox getSubsampleInformationBox() {
