@@ -43,7 +43,10 @@ public class CheckSampleGroups {
         Map<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation =
                 new HashMap<CencSampleEncryptionInformationGroupEntry, long[]>();
         keyRotation.put(cencGroupEntry, new long[]{5, 6, 50});
-        m.setTracks(Collections.<Track>singletonList(new CencEncryptingTrackImpl(m.getTracks().get(0), uuid1, keys, keyRotation)));
+        m.setTracks(Collections.<Track>singletonList(
+                new CencEncryptingTrackImpl(
+                        m.getTracks().get(0),
+                        uuid1, keys, keyRotation, "cenc"))); // cbc1 alternatively
         Container c = builder.build(m);
         c.writeContainer(new FileOutputStream("output.mp4").getChannel());
 
