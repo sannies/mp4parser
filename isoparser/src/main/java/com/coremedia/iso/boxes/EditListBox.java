@@ -57,8 +57,8 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * </ul>
  */
 public class EditListBox extends AbstractFullBox {
-    private List<Entry> entries = new LinkedList<Entry>();
     public static final String TYPE = "elst";
+    private List<Entry> entries = new LinkedList<Entry>();
 
     public EditListBox() {
         super(TYPE);
@@ -112,10 +112,10 @@ public class EditListBox extends AbstractFullBox {
     }
 
     public static class Entry {
+        EditListBox editListBox;
         private long segmentDuration;
         private long mediaTime;
         private double mediaRate;
-        EditListBox editListBox;
 
         /**
          * Creates a new <code>Entry</code> with all values set.
@@ -240,7 +240,7 @@ public class EditListBox extends AbstractFullBox {
         public void getContent(ByteBuffer bb) {
             if (editListBox.getVersion() == 1) {
                 IsoTypeWriter.writeUInt64(bb, segmentDuration);
-                IsoTypeWriter.writeUInt64(bb, mediaTime);
+                bb.putLong(mediaTime);
             } else {
                 IsoTypeWriter.writeUInt32(bb, l2i(segmentDuration));
                 bb.putInt(l2i(mediaTime));
