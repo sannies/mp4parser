@@ -41,7 +41,7 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
     List<CencSampleAuxiliaryDataFormat> cencSampleAuxiliaryData;
     boolean dummyIvs = false;
     boolean subSampleEncryption = false;
-
+    SampleDescriptionBox stsd = null;
 
     RangeStartMap<Integer, SecretKey> indexToKey;
     Map<GroupEntry, long[]> sampleGroups;
@@ -199,46 +199,47 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
         return cencSampleAuxiliaryData;
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        SampleDescriptionBox stsd;
-        try {
-            source.getSampleDescriptionBox().getBox(Channels.newChannel(baos));
-            stsd = (SampleDescriptionBox) new IsoFile(new MemoryDataSourceImpl(baos.toByteArray())).getBoxes().get(0);
-        } catch (IOException e) {
-            throw new RuntimeException("Dumping stsd to memory failed");
+    public synchronized SampleDescriptionBox getSampleDescriptionBox() {
+        if (stsd == null) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                source.getSampleDescriptionBox().getBox(Channels.newChannel(baos));
+                stsd = (SampleDescriptionBox) new IsoFile(new MemoryDataSourceImpl(baos.toByteArray())).getBoxes().get(0);
+            } catch (IOException e) {
+                throw new RuntimeException("Dumping stsd to memory failed");
+            }
+            // stsd is now a copy of the original stsd. Not very efficient but we don't have to do that a hundred times ...
+
+            OriginalFormatBox originalFormatBox = new OriginalFormatBox();
+            originalFormatBox.setDataFormat(stsd.getSampleEntry().getType());
+
+            if (stsd.getSampleEntry() instanceof AudioSampleEntry) {
+                ((AudioSampleEntry) stsd.getSampleEntry()).setType("enca");
+            } else if (stsd.getSampleEntry() instanceof VisualSampleEntry) {
+                ((VisualSampleEntry) stsd.getSampleEntry()).setType("encv");
+            } else {
+                throw new RuntimeException("I don't know how to cenc " + stsd.getSampleEntry().getType());
+            }
+            ProtectionSchemeInformationBox sinf = new ProtectionSchemeInformationBox();
+            sinf.addBox(originalFormatBox);
+
+            SchemeTypeBox schm = new SchemeTypeBox();
+            schm.setSchemeType(encryptionAlgo);
+            schm.setSchemeVersion(0x00010000);
+            sinf.addBox(schm);
+
+            SchemeInformationBox schi = new SchemeInformationBox();
+            TrackEncryptionBox trackEncryptionBox = new TrackEncryptionBox();
+            trackEncryptionBox.setDefaultIvSize(8);
+            trackEncryptionBox.setDefaultAlgorithmId(defaultKeyId == null ? 0x0 : 0x01);
+            trackEncryptionBox.setDefault_KID(defaultKeyId == null ? new UUID(0, 0) : defaultKeyId);
+            schi.addBox(trackEncryptionBox);
+
+            sinf.addBox(schi);
+            stsd.getSampleEntry().addBox(sinf);
         }
-        // stsd is now a copy of the original stsd. Not very efficient but we don't have to do that a hundred times ...
-
-        OriginalFormatBox originalFormatBox = new OriginalFormatBox();
-        originalFormatBox.setDataFormat(stsd.getSampleEntry().getType());
-
-        if (stsd.getSampleEntry() instanceof AudioSampleEntry) {
-            ((AudioSampleEntry) stsd.getSampleEntry()).setType("enca");
-        } else if (stsd.getSampleEntry() instanceof VisualSampleEntry) {
-            ((VisualSampleEntry) stsd.getSampleEntry()).setType("encv");
-        } else {
-            throw new RuntimeException("I don't know how to cenc " + stsd.getSampleEntry().getType());
-        }
-        ProtectionSchemeInformationBox sinf = new ProtectionSchemeInformationBox();
-        sinf.addBox(originalFormatBox);
-
-        SchemeTypeBox schm = new SchemeTypeBox();
-        schm.setSchemeType(encryptionAlgo);
-        schm.setSchemeVersion(0x00010000);
-        sinf.addBox(schm);
-
-        SchemeInformationBox schi = new SchemeInformationBox();
-        TrackEncryptionBox trackEncryptionBox = new TrackEncryptionBox();
-        trackEncryptionBox.setDefaultIvSize(8);
-        trackEncryptionBox.setDefaultAlgorithmId(0x01);
-        trackEncryptionBox.setDefault_KID(defaultKeyId);
-        schi.addBox(trackEncryptionBox);
-
-        sinf.addBox(schi);
-        stsd.getSampleEntry().addBox(sinf);
-
         return stsd;
+
     }
 
     public long[] getSampleDurations() {

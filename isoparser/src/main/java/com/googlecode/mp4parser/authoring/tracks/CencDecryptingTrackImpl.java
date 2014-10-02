@@ -64,6 +64,7 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
             }
             if (lastSampleGroupDescriptionIndex != index) {
                 if (index == 0) {
+                    // if default_encrypted == false then keys.get(original.getDefaultKeyId()) == null
                     indexToKey.put(i, keys.get(original.getDefaultKeyId()));
                 } else {
                     if (groupEntries.get(index - 1).isEncrypted()) {
