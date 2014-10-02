@@ -230,7 +230,7 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
 
             SchemeInformationBox schi = new SchemeInformationBox();
             TrackEncryptionBox trackEncryptionBox = new TrackEncryptionBox();
-            trackEncryptionBox.setDefaultIvSize(8);
+            trackEncryptionBox.setDefaultIvSize(defaultKeyId == null ? 0 : 8);
             trackEncryptionBox.setDefaultAlgorithmId(defaultKeyId == null ? 0x0 : 0x01);
             trackEncryptionBox.setDefault_KID(defaultKeyId == null ? new UUID(0, 0) : defaultKeyId);
             schi.addBox(trackEncryptionBox);
