@@ -412,7 +412,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         long startTime = 0;
         long[] times = track.getSampleDurations();
         for (int i = 1; i < startSample; i++) {
-            startTime += times[i];
+            startTime += times[i - 1];
         }
         tfdt.setBaseMediaDecodeTime(startTime);
         parent.addBox(tfdt);
