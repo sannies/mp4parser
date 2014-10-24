@@ -85,13 +85,13 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
         this.cencSampleAuxiliaryData = new ArrayList<CencSampleAuxiliaryDataFormat>();
 
         BigInteger one = new BigInteger("1");
-        byte[] init = new byte[]{};
-        BigInteger ivInt = new BigInteger(1, new byte[]{0, 0, 0, 0, 0, 0, 0, 0});
+        byte[] init = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
+
         if (!dummyIvs) {
             Random random = new SecureRandom();
             random.nextBytes(init);
         }
-
+        BigInteger ivInt = new BigInteger(1, init);
 
         List<CencSampleEncryptionInformationGroupEntry> groupEntries =
                 new ArrayList<CencSampleEncryptionInformationGroupEntry>();
