@@ -18,10 +18,7 @@ package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
-import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
-import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -36,6 +33,7 @@ import java.nio.ByteBuffer;
  */
 public class SampleFlags {
     private byte reserved;
+    private byte is_leading;
     private byte sampleDependsOn;
     private byte sampleIsDependedOn;
     private byte sampleHasRedundancy;
@@ -49,22 +47,28 @@ public class SampleFlags {
 
     public SampleFlags(ByteBuffer bb) {
         long a = IsoTypeReader.readUInt32(bb);
-        sampleDegradationPriority = (int) (a & 0xffff);
-        a = a >> 16;
-        sampleIsDependedOn = (byte) ((a & 0xc0) >> 6);
-        sampleHasRedundancy = (byte) ((a & 0x30) >> 4);
-        samplePaddingValue = (byte) ((a & 0x0e) >> 1);
-        sampleIsDifferenceSample = (a & 0x01) == 1;
-        a = a >> 8;
-        reserved   = (byte) ((a & 0xfc) >>2);
-        sampleDependsOn = (byte) (a & 0x03);
+        reserved = (byte) ((a & 0xF0000000) >> 28);
+        is_leading = (byte) ((a & 0x0C000000) >> 26);
+        sampleDependsOn = (byte) ((a & 0x03000000) >> 24);
+        sampleIsDependedOn = (byte) ((a & 0x00C00000) >> 22);
+        sampleHasRedundancy = (byte) ((a & 0x00300000) >> 20);
+        samplePaddingValue = (byte) ((a & 0x000e0000) >> 17);
+        sampleIsDifferenceSample = ((a & 0x00010000) >> 16) > 0;
+        sampleDegradationPriority = (int) (a & 0x0000ffff);
+
     }
 
 
     public void getContent(ByteBuffer os) {
-        long a = (((reserved << 2) & 0xfc) | (sampleDependsOn & 0x03)) << 24;
-        a |= (sampleIsDependedOn << 6 & 0xc0 | sampleHasRedundancy<<4 & 0x30 | samplePaddingValue << 1 & 0x0e | (sampleIsDifferenceSample?1:0)) << 16;
-        a |= (sampleDegradationPriority & 0xffff);
+        long a = 0;
+        a |= reserved << 28;
+        a |= is_leading << 26;
+        a |= sampleDependsOn << 24;
+        a |= sampleIsDependedOn << 22;
+        a |= sampleHasRedundancy << 20;
+        a |= samplePaddingValue << 17;
+        a |= (sampleIsDifferenceSample ? 1 : 0) << 16;
+        a |= sampleDegradationPriority;
         IsoTypeWriter.writeUInt32(os, a);
     }
 
@@ -195,7 +199,9 @@ public class SampleFlags {
     public String toString() {
         return "SampleFlags{" +
                 "reserved=" + reserved +
+                ", is_leading=" + is_leading +
                 ", sampleDependsOn=" + sampleDependsOn +
+                ", sampleIsDependedOn=" + sampleIsDependedOn +
                 ", sampleHasRedundancy=" + sampleHasRedundancy +
                 ", samplePaddingValue=" + samplePaddingValue +
                 ", sampleIsDifferenceSample=" + sampleIsDifferenceSample +
@@ -210,6 +216,7 @@ public class SampleFlags {
 
         SampleFlags that = (SampleFlags) o;
 
+        if (is_leading != that.is_leading) return false;
         if (reserved != that.reserved) return false;
         if (sampleDegradationPriority != that.sampleDegradationPriority) return false;
         if (sampleDependsOn != that.sampleDependsOn) return false;
@@ -223,11 +230,12 @@ public class SampleFlags {
 
     @Override
     public int hashCode() {
-        int result = reserved;
-        result = 31 * result + sampleDependsOn;
-        result = 31 * result + sampleIsDependedOn;
-        result = 31 * result + sampleHasRedundancy;
-        result = 31 * result + samplePaddingValue;
+        int result = (int) reserved;
+        result = 31 * result + (int) is_leading;
+        result = 31 * result + (int) sampleDependsOn;
+        result = 31 * result + (int) sampleIsDependedOn;
+        result = 31 * result + (int) sampleHasRedundancy;
+        result = 31 * result + (int) samplePaddingValue;
         result = 31 * result + (sampleIsDifferenceSample ? 1 : 0);
         result = 31 * result + sampleDegradationPriority;
         return result;
