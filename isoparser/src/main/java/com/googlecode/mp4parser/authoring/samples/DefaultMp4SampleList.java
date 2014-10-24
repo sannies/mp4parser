@@ -2,11 +2,8 @@ package com.googlecode.mp4parser.authoring.samples;
 
 import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.SampleImpl;
 
 import java.io.IOException;
-import java.lang.ref.SoftReference;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.AbstractList;
@@ -25,6 +22,8 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
     long[] chunkOffsets;
     int[] chunkSizes;
     SampleSizeBox ssb;
+    int lastChunk = 0;
+
 
     public DefaultMp4SampleList(long track, Container topLevel) {
         this.topLevel = topLevel;
@@ -114,9 +113,6 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
 
     }
 
-
-    int lastChunk = 0;
-
     synchronized int getChunkForSample(int index) {
         int sampleNum = index + 1;
         // we always look for the next chunk in the last one to make linear access fast
@@ -187,6 +183,10 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
                 return (ByteBuffer) ((ByteBuffer) finalChunk.position(finalOffsetWithinChunk)).slice().limit(l2i(sampleSize));
             }
 
+            @Override
+            public String toString() {
+                return "DefaultMp4Sample(size:" + sampleSize + ")";
+            }
         };
     }
 
