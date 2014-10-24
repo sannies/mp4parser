@@ -115,19 +115,22 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
             initCipher(cencSampleAuxiliaryDataFormat.iv, cek);
             try {
                 if (cencSampleAuxiliaryDataFormat.pairs != null && cencSampleAuxiliaryDataFormat.pairs.length > 0) {
+                    byte[] fullSample = new byte[sample.limit()];
+                    sample.get(fullSample);
+                    int offset = 0;
+
                     for (CencSampleAuxiliaryDataFormat.Pair pair : cencSampleAuxiliaryDataFormat.pairs) {
-                        byte[] clears = new byte[pair.clear()];
-                        sample.get(clears);
-                        channel.write(ByteBuffer.wrap(clears));
+                        offset += pair.clear();
                         if (pair.encrypted() > 0) {
-                            byte[] toBeEncrypted = new byte[l2i(pair.encrypted())];
-                            sample.get(toBeEncrypted);
-                            assert (toBeEncrypted.length % 16) == 0;
-                            byte[] encrypted = cipher.update(toBeEncrypted);
-                            assert encrypted.length == toBeEncrypted.length;
-                            channel.write(ByteBuffer.wrap(encrypted));
+                            cipher.update(fullSample,
+                                    offset,
+                                    l2i(pair.encrypted()),
+                                    fullSample,
+                                    offset);
+                            offset += pair.encrypted();
                         }
                     }
+                    channel.write(ByteBuffer.wrap(fullSample));
                 } else {
                     byte[] fullyEncryptedSample = new byte[sample.limit()];
                     sample.get(fullyEncryptedSample);
@@ -143,6 +146,8 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
             } catch (IllegalBlockSizeException e) {
                 throw new RuntimeException(e);
             } catch (BadPaddingException e) {
+                throw new RuntimeException(e);
+            } catch (ShortBufferException e) {
                 throw new RuntimeException(e);
             }
 
