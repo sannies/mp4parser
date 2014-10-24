@@ -60,7 +60,7 @@ public class ShortenExample {
         for (Track track : tracks) {
             long currentSample = 0;
             double currentTime = 0;
-            double lastTime = 0;
+            double lastTime = -1;
             long startSample1 = -1;
             long endSample1 = -1;
             long startSample2 = -1;
