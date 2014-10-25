@@ -1,6 +1,5 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
 import com.googlecode.mp4parser.authoring.Movie;
@@ -13,15 +12,11 @@ import org.junit.Test;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.nio.channels.Channels;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.*;
 
 public class CencTracksImplTest {
 
@@ -35,7 +30,7 @@ public class CencTracksImplTest {
 
         List<Track> encTracks = new LinkedList<Track>();
         for (Track track : m.getTracks()) {
-            encTracks.add(new CencEncryptingTrackImpl(track, UUID.randomUUID(), sk));
+            encTracks.add(new CencEncryptingTrackImpl(track, UUID.randomUUID(), sk, false));
         }
         m.setTracks(encTracks);
 
@@ -68,7 +63,7 @@ public class CencTracksImplTest {
 
         List<Track> encTracks = new LinkedList<Track>();
         for (Track track : m.getTracks()) {
-            encTracks.add(new CencEncryptingTrackImpl(track, UUID.randomUUID(), sk));
+            encTracks.add(new CencEncryptingTrackImpl(track, UUID.randomUUID(), sk, false));
         }
         m.setTracks(encTracks);
 

@@ -46,18 +46,19 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
     RangeStartMap<Integer, SecretKey> indexToKey;
     Map<GroupEntry, long[]> sampleGroups;
 
-    public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, SecretKey key) {
+    public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, SecretKey key, boolean dummyIvs) {
         this(source, defaultKeyId, Collections.singletonMap(defaultKeyId, key),
                 null,
-                "cenc");
+                "cenc", dummyIvs);
     }
 
     public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, Map<UUID, SecretKey> keys,
                                    Map<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation,
-                                   String encryptionAlgo) {
+                                   String encryptionAlgo, boolean dummyIvs) {
         this.source = source;
         this.keys = keys;
         this.defaultKeyId = defaultKeyId;
+        this.dummyIvs = dummyIvs;
         this.encryptionAlgo = encryptionAlgo;
         this.sampleGroups = new HashMap<GroupEntry, long[]>();
         for (Map.Entry<GroupEntry, long[]> entry : source.getSampleGroups().entrySet()) {
@@ -181,10 +182,6 @@ public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
         }
 
         System.err.println("");
-    }
-
-    public void setDummyIvs(boolean dummyIvs) {
-        this.dummyIvs = dummyIvs;
     }
 
     public UUID getDefaultKeyId() {

@@ -148,7 +148,7 @@ public class CencFileRoundtripTest {
         Movie m2 = new Movie();
         for (Track track : m1.getTracks()) {
 
-            CencEncryptingTrackImpl cencEncryptingTrack = new CencEncryptingTrackImpl(track, uuidDefault, keys, keyRotation, encAlgo);
+            CencEncryptingTrackImpl cencEncryptingTrack = new CencEncryptingTrackImpl(track, uuidDefault, keys, keyRotation, encAlgo, false);
             m2.addTrack(cencEncryptingTrack);
         }
         Container c = builder.build(m2);
