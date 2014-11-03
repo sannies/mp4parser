@@ -46,7 +46,7 @@ public class CheckSampleGroups {
         m.setTracks(Collections.<Track>singletonList(
                 new CencEncryptingTrackImpl(
                         m.getTracks().get(0),
-                        uuid1, keys, keyRotation, "cenc"))); // cbc1 alternatively
+                        uuid1, keys, keyRotation, "cenc", false))); // cbc1 alternatively
         Container c = builder.build(m);
         c.writeContainer(new FileOutputStream("output.mp4").getChannel());
 
