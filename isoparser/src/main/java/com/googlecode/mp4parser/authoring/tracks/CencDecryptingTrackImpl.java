@@ -29,12 +29,12 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
     Track original;
     RangeStartMap<Integer, SecretKey> indexToKey = new RangeStartMap<Integer, SecretKey>();
 
-    public CencDecryptingTrackImpl(CencEncyprtedTrack original, SecretKey sk) {
+    public CencDecryptingTrackImpl(CencEncryptedTrack original, SecretKey sk) {
         this(original, Collections.singletonMap(original.getDefaultKeyId(), sk));
 
     }
 
-    public CencDecryptingTrackImpl(CencEncyprtedTrack original, Map<UUID, SecretKey> keys) {
+    public CencDecryptingTrackImpl(CencEncryptedTrack original, Map<UUID, SecretKey> keys) {
         super("dec(" + original.getName() + ")");
         this.original = original;
         SchemeTypeBox schm = Path.getPath(original.getSampleDescriptionBox(), "enc./sinf/schm");

@@ -11,7 +11,7 @@ import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
-import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
+import com.googlecode.mp4parser.authoring.tracks.CencEncryptedTrack;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
 import org.junit.Assert;
 import org.junit.Before;
@@ -161,7 +161,7 @@ public class CencFileRoundtripTest {
         Movie m4 = new Movie();
         for (Track track : m3.getTracks()) {
             CencDecryptingTrackImpl cencDecryptingTrack =
-                    new CencDecryptingTrackImpl((CencEncyprtedTrack) track, keys);
+                    new CencDecryptingTrackImpl((CencEncryptedTrack) track, keys);
             m4.addTrack(cencDecryptingTrack);
         }
         Container c2 = builder.build(m4);
