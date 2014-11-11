@@ -199,13 +199,13 @@ public class SampleFlags {
     public String toString() {
         return "SampleFlags{" +
                 "reserved=" + reserved +
-                ", is_leading=" + is_leading +
-                ", sampleDependsOn=" + sampleDependsOn +
-                ", sampleIsDependedOn=" + sampleIsDependedOn +
-                ", sampleHasRedundancy=" + sampleHasRedundancy +
-                ", samplePaddingValue=" + samplePaddingValue +
-                ", sampleIsDifferenceSample=" + sampleIsDifferenceSample +
-                ", sampleDegradationPriority=" + sampleDegradationPriority +
+                ", isLeading=" + is_leading +
+                ", depOn=" + sampleDependsOn +
+                ", isDepOn=" + sampleIsDependedOn +
+                ", hasRedundancy=" + sampleHasRedundancy +
+                ", padValue=" + samplePaddingValue +
+                ", isDiffSample=" + sampleIsDifferenceSample +
+                ", degradPrio=" + sampleDegradationPriority +
                 '}';
     }
 

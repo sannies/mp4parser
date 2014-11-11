@@ -109,10 +109,10 @@ public class TrackRunBox extends AbstractFullBox {
         @Override
         public String toString() {
             return "Entry{" +
-                    "sampleDuration=" + sampleDuration +
-                    ", sampleSize=" + sampleSize +
-                    ", sampleFlags=" + sampleFlags +
-                    ", sampleCompositionTimeOffset=" + sampleCompositionTimeOffset +
+                    "duration=" + sampleDuration +
+                    ", size=" + sampleSize +
+                    ", dlags=" + sampleFlags +
+                    ", compTimeOffset=" + sampleCompositionTimeOffset +
                     '}';
         }
     }
