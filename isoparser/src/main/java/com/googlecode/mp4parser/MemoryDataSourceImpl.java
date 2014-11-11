@@ -21,6 +21,9 @@ public class MemoryDataSourceImpl implements DataSource {
     }
 
     public int read(ByteBuffer byteBuffer) throws IOException {
+        if (0 == data.remaining() && 0 != byteBuffer.remaining()) {
+            return -1;
+        }
         byte[] buf = new byte[Math.min(byteBuffer.remaining(), data.remaining())];
         data.get(buf);
         byteBuffer.put(buf);
