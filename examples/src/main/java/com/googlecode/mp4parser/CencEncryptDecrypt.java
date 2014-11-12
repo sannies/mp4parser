@@ -29,7 +29,7 @@ public class CencEncryptDecrypt {
         Movie mEncryptOut = new Movie();
         SecretKey sk = new SecretKeySpec(new byte[]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, "AES");
         for (Track track : mOrig.getTracks()) {
-            mEncryptOut.addTrack(new CencEncryptingTrackImpl(track, UUID.randomUUID(), sk));
+            mEncryptOut.addTrack(new CencEncryptingTrackImpl(track, UUID.randomUUID(), sk, false));
         }
 
         Container cEncrypted = mp4Builder.build(mEncryptOut);
