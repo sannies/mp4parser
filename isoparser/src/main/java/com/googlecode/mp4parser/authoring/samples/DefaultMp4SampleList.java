@@ -7,22 +7,23 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
-/**
- * Created by sannies on 25.05.13.
- */
+
 public class DefaultMp4SampleList extends AbstractList<Sample> {
+    //private static final long MAX_MAP_SIZE = 4096 * 1024;
+    private static final long MAX_MAP_SIZE = 1024 * 1024 * 256; // Limit maximum mem map to 512MB
+
     Container topLevel;
     TrackBox trackBox = null;
-    ByteBuffer[] cache = null;
+    ByteBuffer[][] cache = null;
     int[] chunkNumsStartSampleNum;
     long[] chunkOffsets;
-    int[] chunkSizes;
-    int[][] chunkSampleSizeSums;
+    long[] chunkSizes;
+    long[][] sampleOffsetsWithinChunks;
     SampleSizeBox ssb;
     int lastChunk = 0;
 
@@ -41,10 +42,10 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             throw new RuntimeException("This MP4 does not contain track " + track);
         }
         chunkOffsets = trackBox.getSampleTableBox().getChunkOffsetBox().getChunkOffsets();
-        chunkSizes = new int[chunkOffsets.length];
+        chunkSizes = new long[chunkOffsets.length];
 
-        cache = new ByteBuffer[chunkOffsets.length];
-        chunkSampleSizeSums = new int[chunkOffsets.length][];
+        cache = new ByteBuffer[chunkOffsets.length][];
+        sampleOffsetsWithinChunks = new long[chunkOffsets.length][];
         ssb = trackBox.getSampleTableBox().getSampleSizeBox();
         List<SampleToChunkBox.Entry> s2chunkEntries = trackBox.getSampleTableBox().getSampleToChunkBox().getEntries();
         SampleToChunkBox.Entry[] entries = s2chunkEntries.toArray(new SampleToChunkBox.Entry[s2chunkEntries.size()]);
@@ -76,7 +77,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
                     nextFirstChunk = Long.MAX_VALUE;
                 }
             }
-            chunkSampleSizeSums[currentChunkNo-1] = new int[currentSamplePerChunk];
+            sampleOffsetsWithinChunks[currentChunkNo - 1] = new long[currentSamplePerChunk];
 
         } while ((currentSampleNo += currentSamplePerChunk) <= lastSampleNo);
         chunkNumsStartSampleNum = new int[currentChunkNo + 1];
@@ -107,17 +108,17 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         } while ((currentSampleNo += currentSamplePerChunk) <= lastSampleNo);
         chunkNumsStartSampleNum[currentChunkNo] = Integer.MAX_VALUE;
 
-        currentChunkNo=0;
-        int sampleSum = 0;
-        for (int i = 1; i<= ssb.getSampleCount(); i++)  {
+        currentChunkNo = 0;
+        long sampleSum = 0;
+        for (int i = 1; i <= ssb.getSampleCount(); i++) {
             if (i == chunkNumsStartSampleNum[currentChunkNo]) {
                 currentChunkNo++;
                 sampleSum = 0;
 
             }
-            chunkSizes[currentChunkNo-1] += ssb.getSampleSizeAtIndex(i-1);
-            chunkSampleSizeSums[currentChunkNo-1][i - chunkNumsStartSampleNum[currentChunkNo-1]] = sampleSum;
-            sampleSum +=ssb.getSampleSizeAtIndex(i-1);
+            chunkSizes[currentChunkNo - 1] += ssb.getSampleSizeAtIndex(i - 1);
+            sampleOffsetsWithinChunks[currentChunkNo - 1][i - chunkNumsStartSampleNum[currentChunkNo - 1]] = sampleSum;
+            sampleSum += ssb.getSampleSizeAtIndex(i - 1);
         }
 
     }
@@ -154,28 +155,51 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             throw new IndexOutOfBoundsException();
         }
 
-        int currentChunkNoZeroBased = getChunkForSample(index);
+        int chunkNumber = getChunkForSample(index);
+        int chunkStartSample = chunkNumsStartSampleNum[chunkNumber] - 1;
+        long chunkOffset = chunkOffsets[l2i(chunkNumber)];
+        int sampleInChunk = index - chunkStartSample;
+        long[] sampleOffsetsWithinChunk = sampleOffsetsWithinChunks[l2i(chunkNumber)];
+        long offsetWithInChunk = sampleOffsetsWithinChunk[sampleInChunk];
 
-        int currentSampleNo = chunkNumsStartSampleNum[currentChunkNoZeroBased];
 
-        long offset = chunkOffsets[l2i(currentChunkNoZeroBased)];
-        ByteBuffer chunk = cache[l2i(currentChunkNoZeroBased)];
-        if (chunk == null) {
-
+        ByteBuffer[] chunkBuffers = cache[l2i(chunkNumber)];
+        if (chunkBuffers == null) {
+            List<ByteBuffer> _chunkBuffers = new ArrayList<ByteBuffer>();
+            long currentStart = 0;
             try {
-                chunk = topLevel.getByteBuffer(offset, chunkSizes[l2i(currentChunkNoZeroBased)] );
-                cache[l2i(currentChunkNoZeroBased)] = chunk;
+                for (int i = 0; i < sampleOffsetsWithinChunk.length; i++) {
+                    if (sampleOffsetsWithinChunk[i] + ssb.getSampleSizeAtIndex(i + chunkStartSample) - currentStart > MAX_MAP_SIZE) {
+                        _chunkBuffers.add(topLevel.getByteBuffer(
+                                chunkOffset + currentStart,
+                                sampleOffsetsWithinChunk[i] - currentStart));
+                        currentStart =sampleOffsetsWithinChunk[i];
+                    }
+                }
+                _chunkBuffers.add(topLevel.getByteBuffer(
+                        chunkOffset + currentStart,
+                        -currentStart + sampleOffsetsWithinChunk[sampleOffsetsWithinChunk.length - 1] + ssb.getSampleSizeAtIndex(chunkStartSample + sampleOffsetsWithinChunk.length -1)));
+                chunkBuffers = _chunkBuffers.toArray(new ByteBuffer[_chunkBuffers.size()]);
+                cache[l2i(chunkNumber)] = chunkBuffers;
             } catch (IOException e) {
                 throw new IndexOutOfBoundsException(e.getMessage());
             }
         }
 
+        ByteBuffer correctPartOfChunk = null;
 
-        int offsetWithinChunk = chunkSampleSizeSums[l2i(currentChunkNoZeroBased)][index - (currentSampleNo - 1)];
+        for (ByteBuffer chunkBuffer : chunkBuffers) {
+            if (offsetWithInChunk < chunkBuffer.limit()) {
+                correctPartOfChunk = chunkBuffer;
+                break;
+            }
+            offsetWithInChunk -= chunkBuffer.limit();
+        }
+
+
         final long sampleSize = ssb.getSampleSizeAtIndex(index);
-
-        final ByteBuffer finalChunk = chunk;
-        final int finalOffsetWithinChunk = offsetWithinChunk;
+        final ByteBuffer finalCorrectPartOfChunk = correctPartOfChunk;
+        final long finalOffsetWithInChunk = offsetWithInChunk;
         return new Sample() {
 
             public void writeTo(WritableByteChannel channel) throws IOException {
@@ -187,7 +211,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             }
 
             public ByteBuffer asByteBuffer() {
-                return (ByteBuffer) ((ByteBuffer) finalChunk.position(finalOffsetWithinChunk)).slice().limit(l2i(sampleSize));
+                return (ByteBuffer) ((ByteBuffer) finalCorrectPartOfChunk.position(l2i(finalOffsetWithInChunk))).slice().limit(l2i(sampleSize));
             }
 
             @Override
@@ -202,33 +226,4 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         return l2i(trackBox.getSampleTableBox().getSampleSizeBox().getSampleCount());
     }
 
-
-    private class Calc {
-        private int index;
-        private int currentSampleNo;
-        private int offsetWithinChunk;
-        private long sampleSize;
-
-        public Calc(int index, int currentSampleNo) {
-            this.index = index;
-            this.currentSampleNo = currentSampleNo;
-        }
-
-        public int getOffsetWithinChunk() {
-            return offsetWithinChunk;
-        }
-
-        public long getSampleSize() {
-            return sampleSize;
-        }
-
-        public Calc invoke() {
-            offsetWithinChunk = 0;
-            while (currentSampleNo < index + 1) {
-                offsetWithinChunk  += ssb.getSampleSizeAtIndex((currentSampleNo++) - 1);
-            }
-            sampleSize = ssb.getSampleSizeAtIndex(currentSampleNo - 1);
-            return this;
-        }
-    }
 }
