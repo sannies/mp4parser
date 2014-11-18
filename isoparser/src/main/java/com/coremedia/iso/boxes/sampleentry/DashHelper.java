@@ -271,6 +271,8 @@ public final class DashHelper {
             return type;
         } else if (type.equals("ec-3") || type.equals("ac-3") || type.equals("mlpa")) {
             return type;
+        } else if (type.equals("hev1") || type.equals("hvc1")) {
+            return type;
         } else if (type.equals("stpp")) {
             XMLSubtitleSampleEntry stpp = (XMLSubtitleSampleEntry) se;
             if (stpp.getSchemaLocation().contains("cff-tt-text-ttaf1-dfxp")) {
