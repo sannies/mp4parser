@@ -11,6 +11,7 @@ import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.AudioSpecificConfig;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderConfigDescriptor;
 import com.googlecode.mp4parser.util.Path;
 import com.mp4parser.iso14496.part15.AvcConfigurationBox;
+import com.mp4parser.iso14496.part15.HevcConfigurationBox;
 
 import java.util.List;
 
@@ -272,7 +273,78 @@ public final class DashHelper {
         } else if (type.equals("ec-3") || type.equals("ac-3") || type.equals("mlpa")) {
             return type;
         } else if (type.equals("hev1") || type.equals("hvc1")) {
-            return type;
+            int c;
+            HevcConfigurationBox hvcc = Path.getPath(se, "hvcC");
+
+            String codec = "";
+
+            codec += type + ".";
+
+            if (hvcc.getGeneral_profile_space() == 1) {
+                codec += "A";
+            } else if (hvcc.getGeneral_profile_space() == 2) {
+                codec += "B";
+            } else if (hvcc.getGeneral_profile_space() == 3) {
+                codec += "C";
+            }
+            //profile idc encoded as a decimal number
+            codec += hvcc.getGeneral_profile_idc();
+            //general profile compatibility flags: hexa, bit-reversed
+            {
+                long val = hvcc.getGeneral_profile_compatibility_flags();
+                long i, res = 0;
+                for (i = 0; i < 32; i++) {
+                    res |= val & 1;
+                    res <<= 1;
+                    val >>= 1;
+                }
+                codec += ".";
+                codec += Long.toHexString(res);
+            }
+
+            if (hvcc.isGeneral_tier_flag()) {
+                codec += ".H";
+            } else {
+                codec += ".L";
+            }
+            codec+= hvcc.getGeneral_level_idc();
+
+
+            long _general_constraint_indicator_flags = hvcc.getGeneral_constraint_indicator_flags();
+            if ( hvcc.getHevcDecoderConfigurationRecord().isFrame_only_constraint_flag()) {
+                _general_constraint_indicator_flags |= 1l << 47;
+            }
+            if (hvcc.getHevcDecoderConfigurationRecord().isNon_packed_constraint_flag()) {
+                _general_constraint_indicator_flags |= 1l << 46;
+            }
+            if ( hvcc.getHevcDecoderConfigurationRecord().isInterlaced_source_flag()) {
+                _general_constraint_indicator_flags |= 1l << 45;
+            }
+            if (hvcc.getHevcDecoderConfigurationRecord().isProgressive_source_flag()) {
+                _general_constraint_indicator_flags |= 1l << 44;
+            }
+
+            codec += "." + hexByte(_general_constraint_indicator_flags >> 40);
+
+
+            if ((_general_constraint_indicator_flags  & 0xFFFFFFFFFFL) > 0) {
+                codec += "." + hexByte(_general_constraint_indicator_flags >> 32);
+
+                if ((_general_constraint_indicator_flags & 0xFFFFFFFFL) > 0) {
+                    codec += "." + hexByte(_general_constraint_indicator_flags >> 24);
+                    if ((_general_constraint_indicator_flags & 0xFFFFFFL) > 0) {
+                        codec += "." + hexByte(_general_constraint_indicator_flags >> 16);
+                        if (((_general_constraint_indicator_flags & 0xFFFFL)) > 0) {
+                            codec += "." + hexByte(_general_constraint_indicator_flags >> 8);
+                            if (((_general_constraint_indicator_flags & 0xFFL)) > 0) {
+                                codec += "." + hexByte(_general_constraint_indicator_flags);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return codec;
         } else if (type.equals("stpp")) {
             XMLSubtitleSampleEntry stpp = (XMLSubtitleSampleEntry) se;
             if (stpp.getSchemaLocation().contains("cff-tt-text-ttaf1-dfxp")) {
@@ -287,6 +359,10 @@ public final class DashHelper {
             throw new RuntimeException("I don't know how to get codec of type " + se.getType());
         }
 
+    }
+
+    static String hexByte(long l) {
+        return Hex.encodeHex(new byte[]{(byte) (l & 0xFF)});
     }
 
     public static class ChannelConfiguration {

@@ -14,6 +14,7 @@
     </licenses>
     <modules>
         <module>isoparser</module>
+       <!-- <module>androidtest</module>-->
         <module>examples</module>
     </modules>
     <prerequisites>

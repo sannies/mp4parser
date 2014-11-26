@@ -45,6 +45,11 @@ public class HevcDecoderConfigurationRecord {
 
     List<Array> arrays;
 
+    boolean frame_only_constraint_flag;
+    boolean non_packed_constraint_flag;
+    boolean interlaced_source_flag;
+    boolean progressive_source_flag;
+
 
     public HevcDecoderConfigurationRecord() {
     }
@@ -66,8 +71,16 @@ public class HevcDecoderConfigurationRecord {
         /* unsigned int(32) general_profile_compatibility_flags; */
         general_profile_compatibility_flags = IsoTypeReader.readUInt32(content);
 
+
          /* unsigned int(48) general_constraint_indicator_flags; */
         general_constraint_indicator_flags = IsoTypeReader.readUInt48(content);
+
+        frame_only_constraint_flag = ((general_constraint_indicator_flags >> 44) & 0x08) > 0;
+        non_packed_constraint_flag = ((general_constraint_indicator_flags >> 44) & 0x04) > 0;
+        interlaced_source_flag = ((general_constraint_indicator_flags >> 44) & 0x02) > 0;
+        progressive_source_flag = ((general_constraint_indicator_flags >> 44) & 0x01) > 0;
+
+        general_constraint_indicator_flags &= 0x7fffffffffffL;
 
         /* unsigned int(8) general_level_idc; */
         general_level_idc = IsoTypeReader.readUInt8(content);
@@ -134,7 +147,21 @@ public class HevcDecoderConfigurationRecord {
         IsoTypeWriter.writeUInt8(byteBuffer, (general_profile_space << 6) + (general_tier_flag ? 0x20 : 0) + general_profile_idc);
 
         IsoTypeWriter.writeUInt32(byteBuffer, general_profile_compatibility_flags);
-        IsoTypeWriter.writeUInt48(byteBuffer, general_constraint_indicator_flags);
+        long _general_constraint_indicator_flags = general_constraint_indicator_flags;
+        if (frame_only_constraint_flag) {
+            _general_constraint_indicator_flags |= 1l << 47;
+        }
+        if (non_packed_constraint_flag) {
+            _general_constraint_indicator_flags |= 1l << 46;
+        }
+        if ( interlaced_source_flag) {
+            _general_constraint_indicator_flags |= 1l << 45;
+        }
+        if (progressive_source_flag) {
+            _general_constraint_indicator_flags |= 1l << 44;
+        }
+
+        IsoTypeWriter.writeUInt48(byteBuffer, _general_constraint_indicator_flags);
 
 
         IsoTypeWriter.writeUInt8(byteBuffer, general_level_idc);
@@ -411,6 +438,38 @@ public class HevcDecoderConfigurationRecord {
 
     public void setArrays(List<Array> arrays) {
         this.arrays = arrays;
+    }
+
+    public boolean isFrame_only_constraint_flag() {
+        return frame_only_constraint_flag;
+    }
+
+    public void setFrame_only_constraint_flag(boolean frame_only_constraint_flag) {
+        this.frame_only_constraint_flag = frame_only_constraint_flag;
+    }
+
+    public boolean isNon_packed_constraint_flag() {
+        return non_packed_constraint_flag;
+    }
+
+    public void setNon_packed_constraint_flag(boolean non_packed_constraint_flag) {
+        this.non_packed_constraint_flag = non_packed_constraint_flag;
+    }
+
+    public boolean isInterlaced_source_flag() {
+        return interlaced_source_flag;
+    }
+
+    public void setInterlaced_source_flag(boolean interlaced_source_flag) {
+        this.interlaced_source_flag = interlaced_source_flag;
+    }
+
+    public boolean isProgressive_source_flag() {
+        return progressive_source_flag;
+    }
+
+    public void setProgressive_source_flag(boolean progressive_source_flag) {
+        this.progressive_source_flag = progressive_source_flag;
     }
 
     public static class Array {
