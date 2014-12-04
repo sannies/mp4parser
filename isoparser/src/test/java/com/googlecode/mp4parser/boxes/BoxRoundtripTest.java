@@ -1,6 +1,7 @@
 package com.googlecode.mp4parser.boxes;
 
 
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.PropertyBoxParserImpl;
 import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.AbstractContainerBox;
@@ -108,8 +109,8 @@ public abstract class BoxRoundtripTest {
         wbc.close();
         baos.close();
 
-        DummyContainerBox singleBoxIsoFile = new DummyContainerBox(dummyParent);
-        singleBoxIsoFile.initContainer(new MemoryDataSourceImpl(baos.toByteArray()), baos.size(), new PropertyBoxParserImpl());
+        IsoFile singleBoxIsoFile = new IsoFile(new MemoryDataSourceImpl(baos.toByteArray()));
+
         Assert.assertEquals("Expected box and file size to be the same", boxUnderTest.getSize(), baos.size());
         Assert.assertEquals("Expected a single box in the IsoFile structure", 1, singleBoxIsoFile.getBoxes().size());
         Assert.assertEquals("Expected to find a box of different type ", boxUnderTest.getClass(), singleBoxIsoFile.getBoxes().get(0).getClass());

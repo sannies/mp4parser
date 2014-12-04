@@ -1,4 +1,4 @@
-package com.coremedia.iso.boxes.sampleentry;
+package com.mp4parser.iso14496.part30;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoTypeReader;
@@ -7,6 +7,7 @@ import com.coremedia.iso.IsoTypeWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.coremedia.iso.boxes.sampleentry.AbstractSampleEntry;
 import com.googlecode.mp4parser.DataSource;
 
 import java.nio.channels.WritableByteChannel;

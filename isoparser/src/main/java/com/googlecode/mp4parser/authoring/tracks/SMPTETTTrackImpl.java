@@ -3,7 +3,7 @@ package com.googlecode.mp4parser.authoring.tracks;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.SubSampleInformationBox;
-import com.coremedia.iso.boxes.sampleentry.XMLSubtitleSampleEntry;
+import com.mp4parser.iso14496.part30.XMLSubtitleSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.TrackMetaData;

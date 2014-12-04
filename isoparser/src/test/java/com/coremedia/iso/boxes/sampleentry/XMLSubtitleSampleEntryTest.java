@@ -2,6 +2,7 @@ package com.coremedia.iso.boxes.sampleentry;
 
 import com.coremedia.iso.boxes.FreeBox;
 import com.googlecode.mp4parser.boxes.BoxWriteReadBase;
+import com.mp4parser.iso14496.part30.XMLSubtitleSampleEntry;
 
 import java.util.Collections;
 import java.util.Map;

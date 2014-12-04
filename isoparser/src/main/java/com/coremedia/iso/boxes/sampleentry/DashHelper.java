@@ -12,6 +12,7 @@ import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderConfigDescrip
 import com.googlecode.mp4parser.util.Path;
 import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.mp4parser.iso14496.part15.HevcConfigurationBox;
+import com.mp4parser.iso14496.part30.XMLSubtitleSampleEntry;
 
 import java.util.List;
 
