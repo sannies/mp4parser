@@ -26,7 +26,7 @@ import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
+import com.googlecode.mp4parser.authoring.tracks.CencEncryptedTrack;
 import com.googlecode.mp4parser.boxes.dece.SampleEncryptionBox;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleGroupDescriptionBox;
@@ -258,10 +258,10 @@ public class FragmentedMp4Builder implements Mp4Builder {
         createTfdt(startSample, track, traf);
         createTrun(startSample, endSample, track, sequenceNumber, traf);
 
-        if (track instanceof CencEncyprtedTrack) {
-            createSaiz(startSample, endSample, (CencEncyprtedTrack) track, sequenceNumber, traf);
-            createSenc(startSample, endSample, (CencEncyprtedTrack) track, sequenceNumber, traf);
-            createSaio(startSample, endSample, (CencEncyprtedTrack) track, sequenceNumber, traf);
+        if (track instanceof CencEncryptedTrack) {
+            createSaiz(startSample, endSample, (CencEncryptedTrack) track, sequenceNumber, traf);
+            createSenc(startSample, endSample, (CencEncryptedTrack) track, sequenceNumber, traf);
+            createSaio(startSample, endSample, (CencEncryptedTrack) track, sequenceNumber, traf);
         }
 
 
@@ -308,14 +308,14 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     }
 
-    protected void createSenc(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
+    protected void createSenc(long startSample, long endSample, CencEncryptedTrack track, int sequenceNumber, TrackFragmentBox parent) {
         SampleEncryptionBox senc = new SampleEncryptionBox();
         senc.setSubSampleEncryption(track.hasSubSampleEncryption());
         senc.setEntries(track.getSampleEncryptionEntries().subList(l2i(startSample - 1), l2i(endSample - 1)));
         parent.addBox(senc);
     }
 
-    protected void createSaio(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
+    protected void createSaio(long startSample, long endSample, CencEncryptedTrack track, int sequenceNumber, TrackFragmentBox parent) {
         SchemeTypeBox schm = Path.getPath(track.getSampleDescriptionBox(), "enc.[0]/sinf[0]/schm[0]");
 
         SampleAuxiliaryInformationOffsetsBox saio = new SampleAuxiliaryInformationOffsetsBox();
@@ -348,7 +348,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     }
 
-    protected void createSaiz(long startSample, long endSample, CencEncyprtedTrack track, int sequenceNumber, TrackFragmentBox parent) {
+    protected void createSaiz(long startSample, long endSample, CencEncryptedTrack track, int sequenceNumber, TrackFragmentBox parent) {
         SampleDescriptionBox sampleDescriptionBox = track.getSampleDescriptionBox();
         SchemeTypeBox schm = Path.getPath(sampleDescriptionBox, "enc.[0]/sinf[0]/schm[0]");
         TrackEncryptionBox tenc = Path.getPath(sampleDescriptionBox, "enc.[0]/sinf[0]/schi[0]/tenc[0]");

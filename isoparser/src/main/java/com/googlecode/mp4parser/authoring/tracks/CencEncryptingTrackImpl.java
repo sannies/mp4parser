@@ -32,7 +32,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 /**
  * Encrypts a given track with common encryption.
  */
-public class CencEncryptingTrackImpl implements CencEncyprtedTrack {
+public class CencEncryptingTrackImpl implements CencEncryptedTrack {
     private final String encryptionAlgo;
     Track source;
     Map<UUID, SecretKey> keys = new HashMap<UUID, SecretKey>();

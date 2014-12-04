@@ -25,7 +25,7 @@ import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
+import com.googlecode.mp4parser.authoring.tracks.CencEncryptedTrack;
 import com.googlecode.mp4parser.boxes.dece.SampleEncryptionBox;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleGroupDescriptionBox;
@@ -376,8 +376,8 @@ public class DefaultMp4Builder implements Mp4Builder {
             stbl.addBox(sbgp);
         }
 
-        if (track instanceof CencEncyprtedTrack) {
-            createCencBoxes((CencEncyprtedTrack) track, stbl, chunks.get(track));
+        if (track instanceof CencEncryptedTrack) {
+            createCencBoxes((CencEncryptedTrack) track, stbl, chunks.get(track));
         }
         createSubs(track, stbl);
 
@@ -390,7 +390,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
     }
 
-    protected void createCencBoxes(CencEncyprtedTrack track, SampleTableBox stbl, int[] chunkSizes) {
+    protected void createCencBoxes(CencEncryptedTrack track, SampleTableBox stbl, int[] chunkSizes) {
 
         SampleAuxiliaryInformationSizesBox saiz = new SampleAuxiliaryInformationSizesBox();
 

@@ -7,7 +7,7 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
-import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
+import com.googlecode.mp4parser.authoring.tracks.CencEncryptedTrack;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -40,8 +40,8 @@ public class CencEncryptDecrypt {
         Movie mDecrypt = new Movie();
 
         for (Track track : mEncryptIn.getTracks()) {
-            if (track instanceof CencEncyprtedTrack) {
-                mDecrypt.addTrack(new CencDecryptingTrackImpl((CencEncyprtedTrack) track, sk));
+            if (track instanceof CencEncryptedTrack) {
+                mDecrypt.addTrack(new CencDecryptingTrackImpl((CencEncryptedTrack) track, sk));
             } else {
                 mDecrypt.addTrack(track);
             }

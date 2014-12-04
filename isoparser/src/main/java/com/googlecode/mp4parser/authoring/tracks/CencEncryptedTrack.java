@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Track encrypted with common (CENC). ISO/IEC 23001-7.
  */
-public interface CencEncyprtedTrack extends Track {
+public interface CencEncryptedTrack extends Track {
     List<CencSampleAuxiliaryDataFormat> getSampleEncryptionEntries();
 
     UUID getDefaultKeyId();

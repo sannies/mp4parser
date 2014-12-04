@@ -7,7 +7,7 @@ import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
-import com.googlecode.mp4parser.authoring.tracks.CencEncyprtedTrack;
+import com.googlecode.mp4parser.authoring.tracks.CencEncryptedTrack;
 import com.googlecode.mp4parser.util.Path;
 import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationOffsetsBox;
 import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationSizesBox;
@@ -23,7 +23,7 @@ import java.util.UUID;
 /**
  * This track implementation is to be used when MP4 track is CENC encrypted.
  */
-public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncyprtedTrack {
+public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedTrack {
 
     private List<CencSampleAuxiliaryDataFormat> sampleEncryptionEntries;
     private UUID defaultKeyId;
