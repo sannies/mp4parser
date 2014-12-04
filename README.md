@@ -30,25 +30,26 @@ Muxing Audio/Video
 The API and the process is straight-forward:
 
 1. You wrap each raw format file into an appropriate Track object. 
-
-        H264TrackImpl h264Track = new H264TrackImpl(new FileDataSourceImpl("video.h264"));
-        AACTrackImpl aacTrack = new AACTrackImpl(new FileDataSourceImpl("audio.aac"));
- 
+```java
+H264TrackImpl h264Track = new H264TrackImpl(new FileDataSourceImpl("video.h264"));
+AACTrackImpl aacTrack = new AACTrackImpl(new FileDataSourceImpl("audio.aac"));
+```
 2. These Track object are then added to a Movie object
-
-        Movie movie = new Movie();
-        movie.addTrack(h264Track);
-        movie.addTrack(aacTrack);
-
+```java
+Movie movie = new Movie();
+movie.addTrack(h264Track);
+movie.addTrack(aacTrack);
+```
 3. The Movie object is fed into an MP4Builder to create the container. 
-
-        Container mp4file = new DefaultMp4Builder().build(movie);
-
+```java
+Container mp4file = new DefaultMp4Builder().build(movie);
+```
 4. Write the container to an appropriate sink.
-
-        FileChannel fc = new FileOutputStream(new File("output.mp4")).getChannel();
-        mp4file.writeContainer(fc);
-        fc.close();
+```java
+FileChannel fc = new FileOutputStream(new File("output.mp4")).getChannel();
+mp4file.writeContainer(fc);
+fc.close();
+```
 
 There are cases where the frame rate is signalled out of band or is known in advance so that the H264 doesn't contain it literally. 
 In this case you will have to supply it to the constructor. 
@@ -63,12 +64,12 @@ There are Track implementations for the following formats:
 and additionally two subtitle tracks that do not directly wrap a raw format but they are conceptually similar.
 
 Typical Issues
-~~~~~~~~~~~~~~~
+--------------------
 
 Audio and video are not in sync. Whenever there are problems with timing possible make sure to start 
 
 Audio starts before video
-~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 In AAC there are always samplerate/1024 sample/s so each sample's duration is 1000 * 1024 / samplerate milliseconds. 
 
@@ -80,11 +81,11 @@ to match audio and video exactly with that but the human perception is more sens
 
 Remember: If someone is only 10 meters away the delay between audio and video is >30ms. The brain is used to that!
 
-{code}
-        AACTrackImpl aacTrackOriginal = new AACTrackImpl(new FileDataSourceImpl("audio.aac"));
-        // removes the first sample and shortens the AAC track by ~22ms
-		CroppedTrack aacTrackShort = new CroppedTrack(aacTrackOriginal, 1, aacTrack.getSamples().size());
-{code}
+```java
+AACTrackImpl aacTrackOriginal = new AACTrackImpl(new FileDataSourceImpl("audio.aac"));
+// removes the first sample and shortens the AAC track by ~22ms
+CroppedTrack aacTrackShort = new CroppedTrack(aacTrackOriginal, 1, aacTrack.getSamples().size());
+```
 
 
 
@@ -96,10 +97,7 @@ It is important to emphasize that you cannot append any two tracks with:
  
  * Different resolutions 
  * Different frame-rates
- 
 
- 
- as this leads to d 
 What can't you do?
 --------------------
 
