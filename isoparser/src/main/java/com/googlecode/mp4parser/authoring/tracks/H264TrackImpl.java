@@ -588,7 +588,7 @@ public class H264TrackImpl extends AbstractTrack {
         byte[] oldPpsSameId = ppsIdToPpsBytes.get(_pictureParameterSet.pic_parameter_set_id);
 
         String ppsHex = Hex.encodeHex(ppsBytes);
-        System.err.println(ppsHex);
+        //System.err.println(ppsHex);
         if (oldPpsSameId != null && !Arrays.equals(oldPpsSameId, ppsBytes)) {
             throw new RuntimeException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
         } else {
@@ -613,7 +613,7 @@ public class H264TrackImpl extends AbstractTrack {
 
         byte[] spsBytes = toArray((ByteBuffer) data.rewind());
         String spsHex = Hex.encodeHex(spsBytes);
-        System.err.println(spsHex);
+        //System.err.println(spsHex);
         byte[] oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
         if (oldSpsSameId != null && !Arrays.equals(oldSpsSameId, spsBytes)) {
             throw new RuntimeException("OMG - I got two SPS with same ID but different settings!");
