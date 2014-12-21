@@ -45,7 +45,6 @@ public class H264TrackImpl extends AbstractTrack {
     private DataSource dataSource;
 
     private List<Sample> samples;
-    boolean readSamples = false;
 
     List<CompositionTimeToSample.Entry> ctts;
     List<SampleDependencyTypeBox.Entry> sdtp;
@@ -160,7 +159,7 @@ public class H264TrackImpl extends AbstractTrack {
                         (firstSeqParameterSet.constraint_set_2_flag ? 32 : 0) +
                         (firstSeqParameterSet.constraint_set_3_flag ? 16 : 0) +
                         (firstSeqParameterSet.constraint_set_4_flag ? 8 : 0) +
-                        (int)(firstSeqParameterSet.reserved_zero_2bits&0x3)
+                        (int) (firstSeqParameterSet.reserved_zero_2bits & 0x3)
         );
 
         visualSampleEntry.addBox(avcConfigurationBox);
@@ -293,18 +292,11 @@ public class H264TrackImpl extends AbstractTrack {
                 buffer.position((int) (start - bufferStartPos));
                 Buffer sample = buffer.slice();
                 sample.limit((int) (inBufferPos - (start - bufferStartPos)));
-
-                int type = ((ByteBuffer) sample).get(0);
-                int nal_ref_idc = (type >> 5) & 3;
-                int nal_unit_type = type & 0x1f;
-                if (nal_unit_type == 7 || nal_unit_type == 8) {
-                    System.err.println("Got NAL @ " + start + " NALType = " + nal_unit_type);
-                }
-
                 return (ByteBuffer) sample;
             } else {
                 throw new RuntimeException("damn! NAL exceeds buffer");
                 // this can only happen if NAL is bigger than the buffer
+                // and that most likely cannot happen with correct inputs
             }
 
         }
@@ -339,7 +331,7 @@ public class H264TrackImpl extends AbstractTrack {
      * @param nals a list of NALs that form the sample
      * @return sample as it appears in the MP4 file
      */
-    protected Sample createSample(List<? extends ByteBuffer> nals) {
+    protected Sample createSampleObject(List<? extends ByteBuffer> nals) {
         byte[] sizeInfo = new byte[nals.size() * 4];
         ByteBuffer sizeBuf = ByteBuffer.wrap(sizeInfo);
         for (ByteBuffer b : nals) {
@@ -358,76 +350,216 @@ public class H264TrackImpl extends AbstractTrack {
 
 
     private boolean readSamples(LookAhead la) throws IOException {
-        if (readSamples) {
-            return true;
-        }
 
-        readSamples = true;
 
         List<ByteBuffer> buffered = new ArrayList<ByteBuffer>();
 
-        int frameNr = 0;
+
         ByteBuffer nal;
+
+
+        class FirstVclNalDetector {
+
+            public FirstVclNalDetector(ByteBuffer nal, int nal_ref_idc, int nal_unit_type) {
+                InputStream bs = cleanBuffer(new ByteBufferBackedInputStream(nal));
+                SliceHeader sh = new SliceHeader(bs, spsIdToSps, ppsIdToPps, nal_unit_type == 5);
+                this.frame_num = sh.frame_num;
+                this.pic_parameter_set_id = sh.pic_parameter_set_id;
+                this.field_pic_flag = sh.field_pic_flag;
+                this.bottom_field_flag = sh.bottom_field_flag;
+                this.nal_ref_idc = nal_ref_idc;
+                this.pic_order_cnt_type = spsIdToSps.get(ppsIdToPps.get(sh.pic_parameter_set_id).seq_parameter_set_id).pic_order_cnt_type;
+                this.delta_pic_order_cnt_bottom = sh.delta_pic_order_cnt_bottom;
+                this.pic_order_cnt_lsb = sh.pic_order_cnt_lsb;
+                this.delta_pic_order_cnt_0 = sh.delta_pic_order_cnt_0;
+                this.delta_pic_order_cnt_1 = sh.delta_pic_order_cnt_1;
+                this.idr_pic_id = sh.idr_pic_id;
+            }
+
+            int frame_num;
+            int pic_parameter_set_id;
+            boolean field_pic_flag;
+            boolean bottom_field_flag;
+            int nal_ref_idc;
+            int pic_order_cnt_type;
+            int delta_pic_order_cnt_bottom;
+            int pic_order_cnt_lsb;
+            int delta_pic_order_cnt_0;
+            int delta_pic_order_cnt_1;
+            boolean idrPicFlag;
+            int idr_pic_id;
+
+            boolean isFirstInNew(FirstVclNalDetector nu) {
+                if (nu.frame_num != frame_num) {
+                    return true;
+                }
+                if (nu.pic_parameter_set_id != pic_parameter_set_id) {
+                    return true;
+                }
+                if (nu.field_pic_flag != field_pic_flag) {
+                    return true;
+                }
+                if (nu.field_pic_flag) {
+                    if (nu.bottom_field_flag != bottom_field_flag) {
+                        return true;
+                    }
+                }
+                if (nu.nal_ref_idc != nal_ref_idc) {
+                    return true;
+                }
+                if (nu.pic_order_cnt_type == 0 && pic_order_cnt_type == 0) {
+                    if (nu.pic_order_cnt_lsb != pic_order_cnt_lsb) {
+                        return true;
+                    }
+                    if (nu.delta_pic_order_cnt_bottom != delta_pic_order_cnt_bottom) {
+                        return true;
+                    }
+                }
+                if (nu.pic_order_cnt_type == 1 && pic_order_cnt_type == 1) {
+                    if (nu.delta_pic_order_cnt_0 != delta_pic_order_cnt_0) {
+                        return true;
+                    }
+                    if (nu.delta_pic_order_cnt_1 != delta_pic_order_cnt_1) {
+                        return true;
+                    }
+                }
+                if (nu.idrPicFlag != idrPicFlag) {
+                    return true;
+                }
+                if (nu.idrPicFlag && idrPicFlag) {
+                    if (nu.idr_pic_id != idr_pic_id) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+        FirstVclNalDetector fvnd = null;
+
+
+        nal_loop:
         while ((nal = findNextNal(la)) != null) {
             int type = nal.get(0);
             int nal_ref_idc = (type >> 5) & 3;
             int nal_unit_type = type & 0x1f;
 
-            NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, nal, frameNr);
-            switch (action) {
-                case IGNORE:
+
+            NALActions action;
+
+            switch (nal_unit_type) {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                    FirstVclNalDetector current = new FirstVclNalDetector(nal, nal_ref_idc, nal_unit_type);
+                    if (fvnd == null) {
+                        fvnd = current;
+                    } else if (fvnd.isFirstInNew(current)) {
+                        //System.err.println("Wrapping up cause of first vcl nal is found");
+                        createSample(buffered);
+                        fvnd = null;
+                        fvnd = current;
+                    }
+                    buffered.add((ByteBuffer) nal.rewind());
+                    //System.err.println("NAL Unit Type: " + nal_unit_type + " " + fvnd.frame_num);
                     break;
 
-                case BUFFER:
+                case 6:
+                    if (fvnd != null) {
+                        System.err.println("Wrapping up cause of SEI after vcl marks new sample");
+                        createSample(buffered);
+                        fvnd = null;
+                    }
+                    seiMessage = new SEIMessage(cleanBuffer(new ByteBufferBackedInputStream(nal)), firstSeqParameterSet);
                     buffered.add(nal);
                     break;
-                case STORE:
 
-                    int stdpValue = 22;
-                    frameNr++;
+                case 9:
+                    if (buffered.size() > 0) {
+                        System.err.println("Wrapping up cause of AU after vcl marks new sample");
+                        createSample(buffered);
+                        fvnd = null;
+                    }
                     buffered.add(nal);
-                    boolean IdrPicFlag = false;
-                    if (nal_unit_type == 5) {
-                        stdpValue += 16;
-                        IdrPicFlag = true;
-                    }
-                    // cleans the buffer we just added
-                    InputStream bs = cleanBuffer(new ByteBufferBackedInputStream(buffered.get(buffered.size() - 1)));
-                    SliceHeader sh = new SliceHeader(bs, spsIdToSps, ppsIdToPps, IdrPicFlag);
-                    if (sh.slice_type == SliceHeader.SliceType.B) {
-                        stdpValue += 4;
-                    }
-                    Sample bb = createSample(buffered);
-//                    LOG.fine("Adding sample with size " + bb.capacity() + " and header " + sh);
-                    buffered = new ArrayList<ByteBuffer>();
-                    samples.add(bb);
-                    if (nal_unit_type == 5) { // IDR Picture
-                        stss.add(frameNr);
-                    }
-                    if (seiMessage == null || seiMessage.n_frames == 0) {
-                        frameNrInGop = 0;
-                    }
-                    int offset = 0;
-                    if (seiMessage != null && seiMessage.clock_timestamp_flag) {
-                        offset = seiMessage.n_frames - frameNrInGop;
-                    } else if (seiMessage != null && seiMessage.removal_delay_flag) {
-                        offset = seiMessage.dpb_removal_delay / 2;
-                    }
-                    ctts.add(new CompositionTimeToSample.Entry(1, offset * frametick));
-                    sdtp.add(new SampleDependencyTypeBox.Entry(stdpValue));
-                    frameNrInGop++;
                     break;
+                case 7:
+                    if (buffered.size() > 0) {
+                        //System.err.println("Wrapping up cause of SPS after vcl marks new sample");
+                        createSample(buffered);
+                        fvnd = null;
+                    }
+                    handleSPS(nal);
+                    break;
+                case 8:
+                    if (buffered.size() > 0) {
+                        //System.err.println("Wrapping up cause of PPS after vcl marks new sample");
+                        createSample(buffered);
+                        fvnd = null;
+                    }
+                    handlePPS(nal);
+                    break;
+                case 10:
+                case 11:
 
-                case END:
-                    return true;
+                    break nal_loop;
 
+                default:
+                    System.err.println("Unknown NAL unit type: " + nal_unit_type);
 
             }
 
+
+
         }
+        createSample(buffered);
         decodingTimes = new long[samples.size()];
         Arrays.fill(decodingTimes, frametick);
         return true;
+    }
+
+    private void createSample(List<ByteBuffer> buffered) throws IOException {
+
+        int stdpValue = 22;
+
+        boolean IdrPicFlag = false;
+        for (ByteBuffer nal : buffered) {
+            int type = nal.get(0);
+            int nal_unit_type = type & 0x1f;
+            if (nal_unit_type == 5) {
+                IdrPicFlag = true;
+            }
+        }
+
+        if (IdrPicFlag) {
+            stdpValue += 16;
+        }
+        // cleans the buffer we just added
+        InputStream bs = cleanBuffer(new ByteBufferBackedInputStream(buffered.get(buffered.size() - 1)));
+        SliceHeader sh = new SliceHeader(bs, spsIdToSps, ppsIdToPps, IdrPicFlag);
+        if (sh.slice_type == SliceHeader.SliceType.B) {
+            stdpValue += 4;
+        }
+        Sample bb = createSampleObject(buffered);
+//                    LOG.fine("Adding sample with size " + bb.capacity() + " and header " + sh);
+        buffered.clear();
+
+        if (IdrPicFlag) { // IDR Picture
+            stss.add(samples.size());
+        }
+        if (seiMessage == null || seiMessage.n_frames == 0) {
+            frameNrInGop = 0;
+        }
+        int offset = 0;
+        if (seiMessage != null && seiMessage.clock_timestamp_flag) {
+            offset = seiMessage.n_frames - frameNrInGop;
+        } else if (seiMessage != null && seiMessage.removal_delay_flag) {
+            offset = seiMessage.dpb_removal_delay / 2;
+        }
+        ctts.add(new CompositionTimeToSample.Entry(1, offset * frametick));
+        sdtp.add(new SampleDependencyTypeBox.Entry(stdpValue));
+        frameNrInGop++;
+        samples.add(bb);
     }
 
 
@@ -446,93 +578,57 @@ public class H264TrackImpl extends AbstractTrack {
         return b;
     }
 
-    private NALActions handleNALUnit(int nal_ref_idc, int nal_unit_type, ByteBuffer data, int frameNr) throws IOException {
-        NALActions action;
-        switch (nal_unit_type) {
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-                action = NALActions.STORE; // Will only work in single slice per frame mode!
-                break;
 
-            case 6:
-                seiMessage = new SEIMessage(cleanBuffer(new ByteBufferBackedInputStream(data)), firstSeqParameterSet);
-                action = NALActions.BUFFER;
-                break;
+    private void handlePPS(ByteBuffer data) throws IOException {
+        InputStream is = new ByteBufferBackedInputStream(data);
+        is.read();
 
-            case 9:
-                action = NALActions.BUFFER;
-                break;
+        PictureParameterSet _pictureParameterSet = PictureParameterSet.read(is);
+        if (firstPictureParameterSet == null) {
+            firstPictureParameterSet = _pictureParameterSet;
+        }
+        byte[] ppsBytes = toArray((ByteBuffer) data.rewind());
+        byte[] oldPpsSameId = ppsIdToPpsBytes.get(_pictureParameterSet.pic_parameter_set_id);
 
-
-            case 7:
-                InputStream spsInputStream = cleanBuffer(new ByteBufferBackedInputStream(data));
-                spsInputStream.read();
-                SeqParameterSet _seqParameterSet = SeqParameterSet.read(spsInputStream);
-                if (firstSeqParameterSet == null) {
-                    firstSeqParameterSet = _seqParameterSet;
-                    configureFramerate();
-                }
-
-                byte[] spsBytes = toArray((ByteBuffer) data.rewind());
-                String spsHex = Hex.encodeHex(spsBytes);
-                System.err.println("" + frameNr + " sps_id " + _seqParameterSet.seq_parameter_set_id + " " + spsHex);
-                byte[] oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
-                if (oldSpsSameId != null && !Arrays.equals(oldSpsSameId, spsBytes)) {
-                    throw new RuntimeException("OMG - I got two SPS with same ID but different settings!");
-                } else {
-                    if (oldSpsSameId != null) {
-                        seqParameterRangeMap.put(frameNr, spsBytes);
-                    }
-                    spsIdToSpsBytes.put(_seqParameterSet.seq_parameter_set_id, spsBytes);
-                    spsIdToSps.put(_seqParameterSet.seq_parameter_set_id, _seqParameterSet);
-
-                }
-                action = NALActions.IGNORE;
-                break;
-
-            case 8:
-                InputStream is = new ByteBufferBackedInputStream(data);
-                is.read();
-
-                PictureParameterSet _pictureParameterSet = PictureParameterSet.read(is);
-                if (firstPictureParameterSet == null) {
-                    firstPictureParameterSet = _pictureParameterSet;
-                }
-                byte[] ppsBytes = toArray((ByteBuffer) data.rewind());
-                byte[] oldPpsSameId = ppsIdToPpsBytes.get(_pictureParameterSet.pic_parameter_set_id);
-
-                String ppsHex = Hex.encodeHex(ppsBytes);
-                if (oldPpsSameId != null && !Arrays.equals(oldPpsSameId, ppsBytes)) {
-                    throw new RuntimeException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
-                } else {
-                    if (oldPpsSameId == null) {
-                        seqParameterRangeMap.put(frameNr, ppsBytes);
-                    }
-                    ppsIdToPpsBytes.put(_pictureParameterSet.pic_parameter_set_id, ppsBytes);
-                    ppsIdToPps.put(_pictureParameterSet.pic_parameter_set_id, _pictureParameterSet);
-                }
-                System.err.println("" + frameNr + " pps_id " + _pictureParameterSet.pic_parameter_set_id + " " + ppsHex);
+        String ppsHex = Hex.encodeHex(ppsBytes);
+        if (oldPpsSameId != null && !Arrays.equals(oldPpsSameId, ppsBytes)) {
+            throw new RuntimeException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
+        } else {
+            if (oldPpsSameId == null) {
+                seqParameterRangeMap.put(samples.size(), ppsBytes);
+            }
+            ppsIdToPpsBytes.put(_pictureParameterSet.pic_parameter_set_id, ppsBytes);
+            ppsIdToPps.put(_pictureParameterSet.pic_parameter_set_id, _pictureParameterSet);
+        }
 
 
-                pictureParameterRangeMap.put(frameNr, toArray((ByteBuffer) data.rewind()));
-                action = NALActions.IGNORE;
-                break;
+        pictureParameterRangeMap.put(samples.size(), toArray((ByteBuffer) data.rewind()));
+    }
 
-            case 10:
-            case 11:
-                action = NALActions.END;
-                break;
+    private void handleSPS(ByteBuffer data) throws IOException {
+        InputStream spsInputStream = cleanBuffer(new ByteBufferBackedInputStream(data));
+        spsInputStream.read();
+        SeqParameterSet _seqParameterSet = SeqParameterSet.read(spsInputStream);
+        if (firstSeqParameterSet == null) {
+            firstSeqParameterSet = _seqParameterSet;
+            configureFramerate();
+        }
 
-            default:
-                System.err.println("Unknown NAL unit type: " + nal_unit_type);
-                action = NALActions.IGNORE;
+        byte[] spsBytes = toArray((ByteBuffer) data.rewind());
+        String spsHex = Hex.encodeHex(spsBytes);
+        byte[] oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
+        if (oldSpsSameId != null && !Arrays.equals(oldSpsSameId, spsBytes)) {
+            throw new RuntimeException("OMG - I got two SPS with same ID but different settings!");
+        } else {
+            if (oldSpsSameId != null) {
+                seqParameterRangeMap.put(samples.size(), spsBytes);
+            }
+            spsIdToSpsBytes.put(_seqParameterSet.seq_parameter_set_id, spsBytes);
+            spsIdToSps.put(_seqParameterSet.seq_parameter_set_id, _seqParameterSet);
 
         }
 
-        return action;
+
     }
 
     public byte[] toByteArray(InputStream is) {
@@ -584,63 +680,79 @@ public class H264TrackImpl extends AbstractTrack {
         public int idr_pic_id;
         public int pic_order_cnt_lsb;
         public int delta_pic_order_cnt_bottom;
+        public int delta_pic_order_cnt_0;
+        public int delta_pic_order_cnt_1;
 
-        public SliceHeader(InputStream is, Map<Integer, SeqParameterSet> spss, Map<Integer, PictureParameterSet> ppss, boolean IdrPicFlag) throws IOException {
-            is.read();
-            CAVLCReader reader = new CAVLCReader(is);
-            first_mb_in_slice = reader.readUE("SliceHeader: first_mb_in_slice");
-            int sliceTypeInt = reader.readUE("SliceHeader: slice_type");
-            switch (sliceTypeInt) {
-                case 0:
-                case 5:
-                    slice_type = SliceType.P;
-                    break;
+        public SliceHeader(InputStream is, Map<Integer, SeqParameterSet> spss, Map<Integer, PictureParameterSet> ppss, boolean IdrPicFlag) {
+            try {
+                is.read();
+                CAVLCReader reader = new CAVLCReader(is);
+                first_mb_in_slice = reader.readUE("SliceHeader: first_mb_in_slice");
+                int sliceTypeInt = reader.readUE("SliceHeader: slice_type");
+                switch (sliceTypeInt) {
+                    case 0:
+                    case 5:
+                        slice_type = SliceType.P;
+                        break;
 
-                case 1:
-                case 6:
-                    slice_type = SliceType.B;
-                    break;
+                    case 1:
+                    case 6:
+                        slice_type = SliceType.B;
+                        break;
 
-                case 2:
-                case 7:
-                    slice_type = SliceType.I;
-                    break;
+                    case 2:
+                    case 7:
+                        slice_type = SliceType.I;
+                        break;
 
-                case 3:
-                case 8:
-                    slice_type = SliceType.SP;
-                    break;
+                    case 3:
+                    case 8:
+                        slice_type = SliceType.SP;
+                        break;
 
-                case 4:
-                case 9:
-                    slice_type = SliceType.SI;
-                    break;
+                    case 4:
+                    case 9:
+                        slice_type = SliceType.SI;
+                        break;
 
-            }
-
-            pic_parameter_set_id = reader.readUE("SliceHeader: pic_parameter_set_id");
-            PictureParameterSet pps = ppss.get(pic_parameter_set_id);
-            SeqParameterSet sps = spss.get(pps.seq_parameter_set_id);
-            if (sps.residual_color_transform_flag) {
-                colour_plane_id = reader.readU(2, "SliceHeader: colour_plane_id");
-            }
-            frame_num = reader.readU(sps.log2_max_frame_num_minus4 + 4, "SliceHeader: frame_num");
-            System.err.println("sliceTypeInt: " + sliceTypeInt + " frameNum " + frame_num);
-            if (!sps.frame_mbs_only_flag) {
-                field_pic_flag = reader.readBool("SliceHeader: field_pic_flag");
-                if (field_pic_flag) {
-                    bottom_field_flag = reader.readBool("SliceHeader: bottom_field_flag");
                 }
-            }
-            if (IdrPicFlag) {
-                idr_pic_id = reader.readUE("SliceHeader: idr_pic_id");
+
+                pic_parameter_set_id = reader.readUE("SliceHeader: pic_parameter_set_id");
+                PictureParameterSet pps = ppss.get(pic_parameter_set_id);
+                SeqParameterSet sps = spss.get(pps.seq_parameter_set_id);
+                if (sps.residual_color_transform_flag) {
+                    colour_plane_id = reader.readU(2, "SliceHeader: colour_plane_id");
+                }
+                frame_num = reader.readU(sps.log2_max_frame_num_minus4 + 4, "SliceHeader: frame_num");
+
+                if (!sps.frame_mbs_only_flag) {
+                    field_pic_flag = reader.readBool("SliceHeader: field_pic_flag");
+                    if (field_pic_flag) {
+                        bottom_field_flag = reader.readBool("SliceHeader: bottom_field_flag");
+                    }
+                }
+                if (IdrPicFlag) {
+
+                    idr_pic_id = reader.readUE("SliceHeader: idr_pic_id");
+                }
                 if (sps.pic_order_cnt_type == 0) {
                     pic_order_cnt_lsb = reader.readU(sps.log2_max_pic_order_cnt_lsb_minus4 + 4, "SliceHeader: pic_order_cnt_lsb");
-                    if (pps.pic_order_present_flag && !field_pic_flag) {
+                    if (pps.bottom_field_pic_order_in_frame_present_flag && !field_pic_flag) {
                         delta_pic_order_cnt_bottom = reader.readSE("SliceHeader: delta_pic_order_cnt_bottom");
                     }
                 }
+
+                if (sps.pic_order_cnt_type == 1 && !sps.delta_pic_order_always_zero_flag) {
+
+                    delta_pic_order_cnt_0 = reader.readSE("delta_pic_order_cnt_0");
+                    if (pps.bottom_field_pic_order_in_frame_present_flag && !field_pic_flag) {
+                        delta_pic_order_cnt_1 = reader.readSE("delta_pic_order_cnt_1");
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
+
         }
 
         @Override

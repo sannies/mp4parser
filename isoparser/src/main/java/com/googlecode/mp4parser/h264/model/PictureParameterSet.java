@@ -61,7 +61,7 @@ public class PictureParameterSet extends BitstreamElement {
     public int slice_group_change_rate_minus1;
     public int pic_parameter_set_id;
     public int seq_parameter_set_id;
-    public boolean pic_order_present_flag;
+    public boolean bottom_field_pic_order_in_frame_present_flag;
     public int num_slice_groups_minus1;
     public int slice_group_map_type;
     public boolean weighted_pred_flag;
@@ -91,7 +91,7 @@ public class PictureParameterSet extends BitstreamElement {
         pps.seq_parameter_set_id = reader.readUE("PPS: seq_parameter_set_id");
         pps.entropy_coding_mode_flag = reader
                 .readBool("PPS: entropy_coding_mode_flag");
-        pps.pic_order_present_flag = reader
+        pps.bottom_field_pic_order_in_frame_present_flag = reader
                 .readBool("PPS: pic_order_present_flag");
         pps.num_slice_groups_minus1 = reader
                 .readUE("PPS: num_slice_groups_minus1");
@@ -193,7 +193,7 @@ public class PictureParameterSet extends BitstreamElement {
         writer.writeUE(seq_parameter_set_id, "PPS: seq_parameter_set_id");
         writer.writeBool(entropy_coding_mode_flag,
                 "PPS: entropy_coding_mode_flag");
-        writer.writeBool(pic_order_present_flag, "PPS: pic_order_present_flag");
+        writer.writeBool(bottom_field_pic_order_in_frame_present_flag, "PPS: pic_order_present_flag");
         writer.writeUE(num_slice_groups_minus1, "PPS: num_slice_groups_minus1");
         if (num_slice_groups_minus1 > 0) {
             writer.writeUE(slice_group_map_type, "PPS: slice_group_map_type");
@@ -297,7 +297,7 @@ public class PictureParameterSet extends BitstreamElement {
         result = prime * result + num_slice_groups_minus1;
         result = prime * result + pic_init_qp_minus26;
         result = prime * result + pic_init_qs_minus26;
-        result = prime * result + (pic_order_present_flag ? 1231 : 1237);
+        result = prime * result + (bottom_field_pic_order_in_frame_present_flag ? 1231 : 1237);
         result = prime * result + pic_parameter_set_id;
         result = prime * result
                 + (redundant_pic_cnt_present_flag ? 1231 : 1237);
@@ -348,7 +348,7 @@ public class PictureParameterSet extends BitstreamElement {
             return false;
         if (pic_init_qs_minus26 != other.pic_init_qs_minus26)
             return false;
-        if (pic_order_present_flag != other.pic_order_present_flag)
+        if (bottom_field_pic_order_in_frame_present_flag != other.bottom_field_pic_order_in_frame_present_flag)
             return false;
         if (pic_parameter_set_id != other.pic_parameter_set_id)
             return false;
@@ -384,7 +384,7 @@ public class PictureParameterSet extends BitstreamElement {
                 ",\n       slice_group_change_rate_minus1=" + slice_group_change_rate_minus1 +
                 ",\n       pic_parameter_set_id=" + pic_parameter_set_id +
                 ",\n       seq_parameter_set_id=" + seq_parameter_set_id +
-                ",\n       pic_order_present_flag=" + pic_order_present_flag +
+                ",\n       pic_order_present_flag=" + bottom_field_pic_order_in_frame_present_flag +
                 ",\n       num_slice_groups_minus1=" + num_slice_groups_minus1 +
                 ",\n       slice_group_map_type=" + slice_group_map_type +
                 ",\n       weighted_pred_flag=" + weighted_pred_flag +
