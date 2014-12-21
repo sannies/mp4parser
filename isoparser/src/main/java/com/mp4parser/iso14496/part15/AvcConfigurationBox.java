@@ -168,6 +168,11 @@ public final class AvcConfigurationBox extends AbstractBox {
         return avcDecoderConfigurationRecord;
     }
 
-
+    @Override
+    public String toString() {
+        return "AvcConfigurationBox{" +
+                "avcDecoderConfigurationRecord=" + avcDecoderConfigurationRecord +
+                '}';
+    }
 }
 

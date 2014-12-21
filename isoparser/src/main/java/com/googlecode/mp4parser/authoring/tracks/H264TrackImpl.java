@@ -142,8 +142,8 @@ public class H264TrackImpl extends AbstractTrack {
 
         AvcConfigurationBox avcConfigurationBox = new AvcConfigurationBox();
 
-        avcConfigurationBox.setSequenceParameterSets(new ArrayList<byte[]>(seqParameterRangeMap.values()));
-        avcConfigurationBox.setPictureParameterSets(new ArrayList<byte[]>(pictureParameterRangeMap.values()));
+        avcConfigurationBox.setSequenceParameterSets(new ArrayList<byte[]>(spsIdToSpsBytes.values()));
+        avcConfigurationBox.setPictureParameterSets(new ArrayList<byte[]>(ppsIdToPpsBytes.values()));
         avcConfigurationBox.setAvcLevelIndication(firstSeqParameterSet.level_idc);
         avcConfigurationBox.setAvcProfileIndication(firstSeqParameterSet.profile_idc);
         avcConfigurationBox.setBitDepthLumaMinus8(firstSeqParameterSet.bit_depth_luma_minus8);
@@ -320,10 +320,6 @@ public class H264TrackImpl extends AbstractTrack {
 
     }
 
-    private enum NALActions {
-        IGNORE, BUFFER, STORE, END
-    }
-
     /**
      * Builds an MP4 sample from a list of NALs. Each NAL will be preceded by its
      * 4 byte (unit32) length.
@@ -444,7 +440,6 @@ public class H264TrackImpl extends AbstractTrack {
             int nal_unit_type = type & 0x1f;
 
 
-            NALActions action;
 
             switch (nal_unit_type) {
                 case 1:
@@ -476,28 +471,28 @@ public class H264TrackImpl extends AbstractTrack {
                     break;
 
                 case 9:
-                    if (buffered.size() > 0) {
-                        System.err.println("Wrapping up cause of AU after vcl marks new sample");
+                    if (fvnd != null) {
+                        //System.err.println("Wrapping up cause of AU after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
                     buffered.add(nal);
                     break;
                 case 7:
-                    if (buffered.size() > 0) {
+                    if (fvnd != null) {
                         //System.err.println("Wrapping up cause of SPS after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
-                    handleSPS(nal);
+                    handleSPS((ByteBuffer) nal.rewind());
                     break;
                 case 8:
-                    if (buffered.size() > 0) {
+                    if (fvnd != null) {
                         //System.err.println("Wrapping up cause of PPS after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
-                    handlePPS(nal);
+                    handlePPS((ByteBuffer) nal.rewind());
                     break;
                 case 10:
                 case 11:
@@ -544,9 +539,6 @@ public class H264TrackImpl extends AbstractTrack {
 //                    LOG.fine("Adding sample with size " + bb.capacity() + " and header " + sh);
         buffered.clear();
 
-        if (IdrPicFlag) { // IDR Picture
-            stss.add(samples.size());
-        }
         if (seiMessage == null || seiMessage.n_frames == 0) {
             frameNrInGop = 0;
         }
@@ -559,7 +551,12 @@ public class H264TrackImpl extends AbstractTrack {
         ctts.add(new CompositionTimeToSample.Entry(1, offset * frametick));
         sdtp.add(new SampleDependencyTypeBox.Entry(stdpValue));
         frameNrInGop++;
+
         samples.add(bb);
+        if (IdrPicFlag) { // IDR Picture
+            stss.add(samples.size());
+        }
+
     }
 
 
@@ -591,18 +588,18 @@ public class H264TrackImpl extends AbstractTrack {
         byte[] oldPpsSameId = ppsIdToPpsBytes.get(_pictureParameterSet.pic_parameter_set_id);
 
         String ppsHex = Hex.encodeHex(ppsBytes);
+        System.err.println(ppsHex);
         if (oldPpsSameId != null && !Arrays.equals(oldPpsSameId, ppsBytes)) {
             throw new RuntimeException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
         } else {
             if (oldPpsSameId == null) {
-                seqParameterRangeMap.put(samples.size(), ppsBytes);
+                pictureParameterRangeMap.put(samples.size(), ppsBytes);
             }
             ppsIdToPpsBytes.put(_pictureParameterSet.pic_parameter_set_id, ppsBytes);
             ppsIdToPps.put(_pictureParameterSet.pic_parameter_set_id, _pictureParameterSet);
         }
 
 
-        pictureParameterRangeMap.put(samples.size(), toArray((ByteBuffer) data.rewind()));
     }
 
     private void handleSPS(ByteBuffer data) throws IOException {
@@ -616,6 +613,7 @@ public class H264TrackImpl extends AbstractTrack {
 
         byte[] spsBytes = toArray((ByteBuffer) data.rewind());
         String spsHex = Hex.encodeHex(spsBytes);
+        System.err.println(spsHex);
         byte[] oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
         if (oldSpsSameId != null && !Arrays.equals(oldSpsSameId, spsBytes)) {
             throw new RuntimeException("OMG - I got two SPS with same ID but different settings!");

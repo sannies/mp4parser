@@ -208,4 +208,23 @@ public class AvcDecoderConfigurationRecord {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "AvcDecoderConfigurationRecord{" +
+                "configurationVersion=" + configurationVersion +
+                ", avcProfileIndication=" + avcProfileIndication +
+                ", profileCompatibility=" + profileCompatibility +
+                ", avcLevelIndication=" + avcLevelIndication +
+                ", lengthSizeMinusOne=" + lengthSizeMinusOne +
+                ", hasExts=" + hasExts +
+                ", chromaFormat=" + chromaFormat +
+                ", bitDepthLumaMinus8=" + bitDepthLumaMinus8 +
+                ", bitDepthChromaMinus8=" + bitDepthChromaMinus8 +
+                ", lengthSizeMinusOnePaddingBits=" + lengthSizeMinusOnePaddingBits +
+                ", numberOfSequenceParameterSetsPaddingBits=" + numberOfSequenceParameterSetsPaddingBits +
+                ", chromaFormatPaddingBits=" + chromaFormatPaddingBits +
+                ", bitDepthLumaMinus8PaddingBits=" + bitDepthLumaMinus8PaddingBits +
+                ", bitDepthChromaMinus8PaddingBits=" + bitDepthChromaMinus8PaddingBits +
+                '}';
+    }
 }
