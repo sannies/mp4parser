@@ -52,6 +52,7 @@ public class SeqParameterSet extends BitstreamElement {
     public int bit_depth_chroma_minus8;
     public boolean qpprime_y_zero_transform_bypass_flag;
     public int profile_idc;
+    public long reserved_zero_2bits;
     public boolean constraint_set_0_flag;
     public boolean constraint_set_1_flag;
     public boolean constraint_set_2_flag;
@@ -94,7 +95,7 @@ public class SeqParameterSet extends BitstreamElement {
         sps.constraint_set_5_flag = reader
                 .readBool("SPS: constraint_set_5_flag");
 
-        reader.readNBit(2, "SPS: reserved_zero_2bits");
+        sps.reserved_zero_2bits = reader.readNBit(2, "SPS: reserved_zero_2bits");
         sps.level_idc = (int) reader.readNBit(8, "SPS: level_idc");
         sps.seq_parameter_set_id = reader.readUE("SPS: seq_parameter_set_id");
 

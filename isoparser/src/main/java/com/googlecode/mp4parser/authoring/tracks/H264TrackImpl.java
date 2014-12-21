@@ -1,6 +1,8 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
+import com.coremedia.iso.Hex;
 import com.coremedia.iso.boxes.*;
+import com.googlecode.mp4parser.util.RangeStartMap;
 import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.DataSource;
@@ -15,8 +17,12 @@ import com.googlecode.mp4parser.h264.read.CAVLCReader;
 import java.io.*;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
+
+import static java.security.MessageDigest.getInstance;
 
 /**
  * The <code>H264TrackImpl</code> creates a <code>Track</code> from an H.264
@@ -26,6 +32,12 @@ public class H264TrackImpl extends AbstractTrack {
     private static final Logger LOG = Logger.getLogger(H264TrackImpl.class.getName());
     // not final to allow test decreasing it
     static int BUFFER = 65535 << 10;
+    MessageDigest hash;
+
+    Map<Integer, byte[]> spsIdToSpsBytes = new HashMap<Integer, byte[]>();
+    Map<Integer, SeqParameterSet> spsIdToSps = new HashMap<Integer, SeqParameterSet>();
+    Map<Integer, byte[]> ppsIdToPpsBytes = new HashMap<Integer, byte[]>();
+    Map<Integer, PictureParameterSet> ppsIdToPps = new HashMap<Integer, PictureParameterSet>();
 
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
@@ -39,10 +51,10 @@ public class H264TrackImpl extends AbstractTrack {
     List<SampleDependencyTypeBox.Entry> sdtp;
     List<Integer> stss;
 
-    SeqParameterSet seqParameterSet = null;
-    PictureParameterSet pictureParameterSet = null;
-    LinkedList<byte[]> seqParameterSetList = new LinkedList<byte[]>();
-    LinkedList<byte[]> pictureParameterSetList = new LinkedList<byte[]>();
+    SeqParameterSet firstSeqParameterSet = null;
+    PictureParameterSet firstPictureParameterSet = null;
+    RangeStartMap<Integer, byte[]> seqParameterRangeMap = new RangeStartMap<Integer, byte[]>();
+    RangeStartMap<Integer, byte[]> pictureParameterRangeMap = new RangeStartMap<Integer, byte[]>();
 
     private int width;
     private int height;
@@ -68,10 +80,10 @@ public class H264TrackImpl extends AbstractTrack {
      * <li>30 FPS: timescale = 30; frametick = 1</li>
      * </ul>
      *
-     * @param dataSource        the source file of the H264 samples
-     * @param lang      language of the movie (in doubt: use "eng")
-     * @param timescale number of time units (ticks) in one second
-     * @param frametick number of time units (ticks) that pass while showing exactly one frame
+     * @param dataSource the source file of the H264 samples
+     * @param lang       language of the movie (in doubt: use "eng")
+     * @param timescale  number of time units (ticks) in one second
+     * @param frametick  number of time units (ticks) that pass while showing exactly one frame
      * @throws IOException in case of problems whiel reading from the <code>DataSource</code>
      */
     public H264TrackImpl(DataSource dataSource, String lang, long timescale, int frametick) throws IOException {
@@ -83,6 +95,11 @@ public class H264TrackImpl extends AbstractTrack {
         if ((timescale > 0) && (frametick > 0)) {
             this.determineFrameRate = false;
         }
+        try {
+            hash = getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
         parse(new LookAhead(dataSource));
     }
 
@@ -91,19 +108,15 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     public H264TrackImpl(DataSource dataSource, String lang) throws IOException {
-        super(dataSource.toString());
-        this.lang = lang;
-        this.dataSource = dataSource;
-        parse(new LookAhead(dataSource));
+        this(dataSource, lang, -1, -1);
     }
 
     public H264TrackImpl(DataSource dataSource) throws IOException {
-        super(dataSource.toString());
-        this.dataSource = dataSource;
-        parse(new LookAhead(dataSource));
+        this(dataSource, "eng");
     }
 
     private void parse(LookAhead la) throws IOException {
+
         ctts = new LinkedList<CompositionTimeToSample.Entry>();
         sdtp = new LinkedList<SampleDependencyTypeBox.Entry>();
         stss = new LinkedList<Integer>();
@@ -130,16 +143,25 @@ public class H264TrackImpl extends AbstractTrack {
 
         AvcConfigurationBox avcConfigurationBox = new AvcConfigurationBox();
 
-        avcConfigurationBox.setSequenceParameterSets(seqParameterSetList);
-        avcConfigurationBox.setPictureParameterSets(pictureParameterSetList);
-        avcConfigurationBox.setAvcLevelIndication(seqParameterSet.level_idc);
-        avcConfigurationBox.setAvcProfileIndication(seqParameterSet.profile_idc);
-        avcConfigurationBox.setBitDepthLumaMinus8(seqParameterSet.bit_depth_luma_minus8);
-        avcConfigurationBox.setBitDepthChromaMinus8(seqParameterSet.bit_depth_chroma_minus8);
-        avcConfigurationBox.setChromaFormat(seqParameterSet.chroma_format_idc.getId());
+        avcConfigurationBox.setSequenceParameterSets(new ArrayList<byte[]>(seqParameterRangeMap.values()));
+        avcConfigurationBox.setPictureParameterSets(new ArrayList<byte[]>(pictureParameterRangeMap.values()));
+        avcConfigurationBox.setAvcLevelIndication(firstSeqParameterSet.level_idc);
+        avcConfigurationBox.setAvcProfileIndication(firstSeqParameterSet.profile_idc);
+        avcConfigurationBox.setBitDepthLumaMinus8(firstSeqParameterSet.bit_depth_luma_minus8);
+        avcConfigurationBox.setBitDepthChromaMinus8(firstSeqParameterSet.bit_depth_chroma_minus8);
+        avcConfigurationBox.setChromaFormat(firstSeqParameterSet.chroma_format_idc.getId());
         avcConfigurationBox.setConfigurationVersion(1);
         avcConfigurationBox.setLengthSizeMinusOne(3);
-        avcConfigurationBox.setProfileCompatibility(seqParameterSetList.get(0)[1]);
+
+
+        avcConfigurationBox.setProfileCompatibility(
+                (firstSeqParameterSet.constraint_set_0_flag ? 128 : 0) +
+                        (firstSeqParameterSet.constraint_set_1_flag ? 64 : 0) +
+                        (firstSeqParameterSet.constraint_set_2_flag ? 32 : 0) +
+                        (firstSeqParameterSet.constraint_set_3_flag ? 16 : 0) +
+                        (firstSeqParameterSet.constraint_set_4_flag ? 8 : 0) +
+                        (int)(firstSeqParameterSet.reserved_zero_2bits&0x3)
+        );
 
         visualSampleEntry.addBox(avcConfigurationBox);
         sampleDescriptionBox.addBox(visualSampleEntry);
@@ -185,26 +207,26 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
     private boolean readVariables() {
-        width = (seqParameterSet.pic_width_in_mbs_minus1 + 1) * 16;
+        width = (firstSeqParameterSet.pic_width_in_mbs_minus1 + 1) * 16;
         int mult = 2;
-        if (seqParameterSet.frame_mbs_only_flag) {
+        if (firstSeqParameterSet.frame_mbs_only_flag) {
             mult = 1;
         }
-        height = 16 * (seqParameterSet.pic_height_in_map_units_minus1 + 1) * mult;
-        if (seqParameterSet.frame_cropping_flag) {
+        height = 16 * (firstSeqParameterSet.pic_height_in_map_units_minus1 + 1) * mult;
+        if (firstSeqParameterSet.frame_cropping_flag) {
             int chromaArrayType = 0;
-            if (!seqParameterSet.residual_color_transform_flag) {
-                chromaArrayType = seqParameterSet.chroma_format_idc.getId();
+            if (!firstSeqParameterSet.residual_color_transform_flag) {
+                chromaArrayType = firstSeqParameterSet.chroma_format_idc.getId();
             }
             int cropUnitX = 1;
             int cropUnitY = mult;
             if (chromaArrayType != 0) {
-                cropUnitX = seqParameterSet.chroma_format_idc.getSubWidth();
-                cropUnitY = seqParameterSet.chroma_format_idc.getSubHeight() * mult;
+                cropUnitX = firstSeqParameterSet.chroma_format_idc.getSubWidth();
+                cropUnitY = firstSeqParameterSet.chroma_format_idc.getSubHeight() * mult;
             }
 
-            width -= cropUnitX * (seqParameterSet.frame_crop_left_offset + seqParameterSet.frame_crop_right_offset);
-            height -= cropUnitY * (seqParameterSet.frame_crop_top_offset + seqParameterSet.frame_crop_bottom_offset);
+            width -= cropUnitX * (firstSeqParameterSet.frame_crop_left_offset + firstSeqParameterSet.frame_crop_right_offset);
+            height -= cropUnitY * (firstSeqParameterSet.frame_crop_top_offset + firstSeqParameterSet.frame_crop_bottom_offset);
         }
         return true;
     }
@@ -267,9 +289,18 @@ public class H264TrackImpl extends AbstractTrack {
 
         public ByteBuffer getNal() {
             if (start >= bufferStartPos) {
+
                 buffer.position((int) (start - bufferStartPos));
                 Buffer sample = buffer.slice();
                 sample.limit((int) (inBufferPos - (start - bufferStartPos)));
+
+                int type = ((ByteBuffer) sample).get(0);
+                int nal_ref_idc = (type >> 5) & 3;
+                int nal_unit_type = type & 0x1f;
+                if (nal_unit_type == 7 || nal_unit_type == 8) {
+                    System.err.println("Got NAL @ " + start + " NALType = " + nal_unit_type);
+                }
+
                 return (ByteBuffer) sample;
             } else {
                 throw new RuntimeException("damn! NAL exceeds buffer");
@@ -341,7 +372,8 @@ public class H264TrackImpl extends AbstractTrack {
             int type = nal.get(0);
             int nal_ref_idc = (type >> 5) & 3;
             int nal_unit_type = type & 0x1f;
-            NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, nal);
+
+            NALActions action = handleNALUnit(nal_ref_idc, nal_unit_type, nal, frameNr);
             switch (action) {
                 case IGNORE:
                     break;
@@ -349,8 +381,8 @@ public class H264TrackImpl extends AbstractTrack {
                 case BUFFER:
                     buffered.add(nal);
                     break;
-
                 case STORE:
+
                     int stdpValue = 22;
                     frameNr++;
                     buffered.add(nal);
@@ -361,7 +393,7 @@ public class H264TrackImpl extends AbstractTrack {
                     }
                     // cleans the buffer we just added
                     InputStream bs = cleanBuffer(new ByteBufferBackedInputStream(buffered.get(buffered.size() - 1)));
-                    SliceHeader sh = new SliceHeader(bs, seqParameterSet, pictureParameterSet, IdrPicFlag);
+                    SliceHeader sh = new SliceHeader(bs, spsIdToSps, ppsIdToPps, IdrPicFlag);
                     if (sh.slice_type == SliceHeader.SliceType.B) {
                         stdpValue += 4;
                     }
@@ -414,7 +446,7 @@ public class H264TrackImpl extends AbstractTrack {
         return b;
     }
 
-    private NALActions handleNALUnit(int nal_ref_idc, int nal_unit_type, ByteBuffer data) throws IOException {
+    private NALActions handleNALUnit(int nal_ref_idc, int nal_unit_type, ByteBuffer data, int frameNr) throws IOException {
         NALActions action;
         switch (nal_unit_type) {
             case 1:
@@ -426,7 +458,7 @@ public class H264TrackImpl extends AbstractTrack {
                 break;
 
             case 6:
-                seiMessage = new SEIMessage(cleanBuffer(new ByteBufferBackedInputStream(data)), seqParameterSet);
+                seiMessage = new SEIMessage(cleanBuffer(new ByteBufferBackedInputStream(data)), firstSeqParameterSet);
                 action = NALActions.BUFFER;
                 break;
 
@@ -436,24 +468,56 @@ public class H264TrackImpl extends AbstractTrack {
 
 
             case 7:
-                if (seqParameterSet == null) {
-                    InputStream is = cleanBuffer(new ByteBufferBackedInputStream(data));
-                    is.read();
-                    seqParameterSet = SeqParameterSet.read(is);
-                    // make a copy
-                    seqParameterSetList.add(toArray(data));
+                InputStream spsInputStream = cleanBuffer(new ByteBufferBackedInputStream(data));
+                spsInputStream.read();
+                SeqParameterSet _seqParameterSet = SeqParameterSet.read(spsInputStream);
+                if (firstSeqParameterSet == null) {
+                    firstSeqParameterSet = _seqParameterSet;
                     configureFramerate();
+                }
+
+                byte[] spsBytes = toArray((ByteBuffer) data.rewind());
+                String spsHex = Hex.encodeHex(spsBytes);
+                System.err.println("" + frameNr + " sps_id " + _seqParameterSet.seq_parameter_set_id + " " + spsHex);
+                byte[] oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
+                if (oldSpsSameId != null && !Arrays.equals(oldSpsSameId, spsBytes)) {
+                    throw new RuntimeException("OMG - I got two SPS with same ID but different settings!");
+                } else {
+                    if (oldSpsSameId != null) {
+                        seqParameterRangeMap.put(frameNr, spsBytes);
+                    }
+                    spsIdToSpsBytes.put(_seqParameterSet.seq_parameter_set_id, spsBytes);
+                    spsIdToSps.put(_seqParameterSet.seq_parameter_set_id, _seqParameterSet);
+
                 }
                 action = NALActions.IGNORE;
                 break;
 
             case 8:
-                if (pictureParameterSet == null) {
-                    InputStream is = new ByteBufferBackedInputStream(data);
-                    is.read();
-                    pictureParameterSet = PictureParameterSet.read(is);
-                    pictureParameterSetList.add(toArray(data));
+                InputStream is = new ByteBufferBackedInputStream(data);
+                is.read();
+
+                PictureParameterSet _pictureParameterSet = PictureParameterSet.read(is);
+                if (firstPictureParameterSet == null) {
+                    firstPictureParameterSet = _pictureParameterSet;
                 }
+                byte[] ppsBytes = toArray((ByteBuffer) data.rewind());
+                byte[] oldPpsSameId = ppsIdToPpsBytes.get(_pictureParameterSet.pic_parameter_set_id);
+
+                String ppsHex = Hex.encodeHex(ppsBytes);
+                if (oldPpsSameId != null && !Arrays.equals(oldPpsSameId, ppsBytes)) {
+                    throw new RuntimeException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
+                } else {
+                    if (oldPpsSameId == null) {
+                        seqParameterRangeMap.put(frameNr, ppsBytes);
+                    }
+                    ppsIdToPpsBytes.put(_pictureParameterSet.pic_parameter_set_id, ppsBytes);
+                    ppsIdToPps.put(_pictureParameterSet.pic_parameter_set_id, _pictureParameterSet);
+                }
+                System.err.println("" + frameNr + " pps_id " + _pictureParameterSet.pic_parameter_set_id + " " + ppsHex);
+
+
+                pictureParameterRangeMap.put(frameNr, toArray((ByteBuffer) data.rewind()));
                 action = NALActions.IGNORE;
                 break;
 
@@ -471,11 +535,26 @@ public class H264TrackImpl extends AbstractTrack {
         return action;
     }
 
+    public byte[] toByteArray(InputStream is) {
+        byte[] result = new byte[0];
+        byte[] buffer = new byte[32];
+        int n = 0;
+        try {
+            while ((n = is.read(buffer)) != -1) {
+                Arrays.copyOf(result, result.length + n);
+                System.arraycopy(buffer, 0, result, result.length - n - 1, n);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+
     private void configureFramerate() {
         if (determineFrameRate) {
-            if (seqParameterSet.vuiParams != null) {
-                timescale = seqParameterSet.vuiParams.time_scale >> 1; // Not sure why, but I found this in several places, and it works...
-                frametick = seqParameterSet.vuiParams.num_units_in_tick;
+            if (firstSeqParameterSet.vuiParams != null) {
+                timescale = firstSeqParameterSet.vuiParams.time_scale >> 1; // Not sure why, but I found this in several places, and it works...
+                frametick = firstSeqParameterSet.vuiParams.num_units_in_tick;
                 if (timescale == 0 || frametick == 0) {
                     System.err.println("Warning: vuiParams contain invalid values: time_scale: " + timescale + " and frame_tick: " + frametick + ". Setting frame rate to 25fps");
                     timescale = 90000;
@@ -506,11 +585,12 @@ public class H264TrackImpl extends AbstractTrack {
         public int pic_order_cnt_lsb;
         public int delta_pic_order_cnt_bottom;
 
-        public SliceHeader(InputStream is, SeqParameterSet sps, PictureParameterSet pps, boolean IdrPicFlag) throws IOException {
+        public SliceHeader(InputStream is, Map<Integer, SeqParameterSet> spss, Map<Integer, PictureParameterSet> ppss, boolean IdrPicFlag) throws IOException {
             is.read();
             CAVLCReader reader = new CAVLCReader(is);
             first_mb_in_slice = reader.readUE("SliceHeader: first_mb_in_slice");
-            switch (reader.readUE("SliceHeader: slice_type")) {
+            int sliceTypeInt = reader.readUE("SliceHeader: slice_type");
+            switch (sliceTypeInt) {
                 case 0:
                 case 5:
                     slice_type = SliceType.P;
@@ -537,12 +617,15 @@ public class H264TrackImpl extends AbstractTrack {
                     break;
 
             }
+
             pic_parameter_set_id = reader.readUE("SliceHeader: pic_parameter_set_id");
+            PictureParameterSet pps = ppss.get(pic_parameter_set_id);
+            SeqParameterSet sps = spss.get(pps.seq_parameter_set_id);
             if (sps.residual_color_transform_flag) {
                 colour_plane_id = reader.readU(2, "SliceHeader: colour_plane_id");
             }
             frame_num = reader.readU(sps.log2_max_frame_num_minus4 + 4, "SliceHeader: frame_num");
-
+            System.err.println("sliceTypeInt: " + sliceTypeInt + " frameNum " + frame_num);
             if (!sps.frame_mbs_only_flag) {
                 field_pic_flag = reader.readBool("SliceHeader: field_pic_flag");
                 if (field_pic_flag) {
