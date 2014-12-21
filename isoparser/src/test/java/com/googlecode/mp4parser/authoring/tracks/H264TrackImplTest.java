@@ -46,9 +46,9 @@ public class H264TrackImplTest {
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
         Container isoFile = mp4Builder.build(m);
 
-        WritableByteChannel fcOut = new FileOutputStream("h264-sample.mp4").getChannel();
+/*        WritableByteChannel fcOut = new FileOutputStream("h264-sample.mp4").getChannel();
         isoFile.writeContainer(fcOut);
-        fcOut.close();
+        fcOut.close();*/
 
 
         IsoFile isoFileReference = new IsoFile(getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "com/googlecode/mp4parser/authoring/tracks/h264-sample.mp4");
