@@ -13,6 +13,10 @@ public class BitReaderBuffer {
         initialPos = buffer.position();
     }
 
+    public boolean readBool() {
+        return readBits(1)==1;
+    }
+
     public int readBits(int i) {
         byte b = buffer.get(initialPos + position / 8);
         int v = b < 0 ? b + 256 : b;
