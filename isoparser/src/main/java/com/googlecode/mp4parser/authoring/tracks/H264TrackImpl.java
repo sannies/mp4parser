@@ -28,11 +28,8 @@ import static java.security.MessageDigest.getInstance;
  * The <code>H264TrackImpl</code> creates a <code>Track</code> from an H.264
  * Annex B file.
  */
-public class H264TrackImpl extends AbstractTrack {
+public class H264TrackImpl extends AbstractH26XTrack {
     private static final Logger LOG = Logger.getLogger(H264TrackImpl.class.getName());
-    // not final to allow test decreasing it
-    static int BUFFER = 65535 << 10;
-    MessageDigest hash;
 
     Map<Integer, byte[]> spsIdToSpsBytes = new HashMap<Integer, byte[]>();
     Map<Integer, SeqParameterSet> spsIdToSps = new HashMap<Integer, SeqParameterSet>();
@@ -42,16 +39,15 @@ public class H264TrackImpl extends AbstractTrack {
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
 
-    private DataSource dataSource;
-
     private List<Sample> samples;
 
-    List<CompositionTimeToSample.Entry> ctts;
-    List<SampleDependencyTypeBox.Entry> sdtp;
-    List<Integer> stss;
 
     SeqParameterSet firstSeqParameterSet = null;
     PictureParameterSet firstPictureParameterSet = null;
+
+    SeqParameterSet currentSeqParameterSet = null;
+    PictureParameterSet currentPictureParameterSet = null;
+
     RangeStartMap<Integer, byte[]> seqParameterRangeMap = new RangeStartMap<Integer, byte[]>();
     RangeStartMap<Integer, byte[]> pictureParameterRangeMap = new RangeStartMap<Integer, byte[]>();
 
@@ -65,7 +61,10 @@ public class H264TrackImpl extends AbstractTrack {
     int frameNrInGop = 0;
     private boolean determineFrameRate = true;
     private String lang = "eng";
-    private long[] decodingTimes;
+
+
+
+
 
     /**
      * Creates a new <code>Track</code> object from a raw H264 source (<code>DataSource dataSource1</code>).
@@ -86,7 +85,7 @@ public class H264TrackImpl extends AbstractTrack {
      * @throws IOException in case of problems whiel reading from the <code>DataSource</code>
      */
     public H264TrackImpl(DataSource dataSource, String lang, long timescale, int frametick) throws IOException {
-        super(dataSource.toString());
+        super(dataSource);
         this.lang = lang;
         this.timescale = timescale; //e.g. 23976
         this.frametick = frametick;
@@ -94,11 +93,7 @@ public class H264TrackImpl extends AbstractTrack {
         if ((timescale > 0) && (frametick > 0)) {
             this.determineFrameRate = false;
         }
-        try {
-            hash = getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+
         parse(new LookAhead(dataSource));
     }
 
@@ -116,9 +111,7 @@ public class H264TrackImpl extends AbstractTrack {
 
     private void parse(LookAhead la) throws IOException {
 
-        ctts = new LinkedList<CompositionTimeToSample.Entry>();
-        sdtp = new LinkedList<SampleDependencyTypeBox.Entry>();
-        stss = new LinkedList<Integer>();
+
 
         samples = new LinkedList<Sample>();
         if (!readSamples(la)) {
@@ -177,21 +170,8 @@ public class H264TrackImpl extends AbstractTrack {
         return sampleDescriptionBox;
     }
 
-    public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {
-        return ctts;
-    }
 
-    public long[] getSyncSamples() {
-        long[] returns = new long[stss.size()];
-        for (int i = 0; i < stss.size(); i++) {
-            returns[i] = stss.get(i);
-        }
-        return returns;
-    }
 
-    public List<SampleDependencyTypeBox.Entry> getSampleDependencies() {
-        return sdtp;
-    }
 
     public TrackMetaData getTrackMetaData() {
         return trackMetaData;
@@ -230,119 +210,11 @@ public class H264TrackImpl extends AbstractTrack {
         return true;
     }
 
-    class LookAhead {
-        long bufferStartPos = 0;
-        int inBufferPos = 0;
-        DataSource dataSource;
-        ByteBuffer buffer;
-
-        long start;
-
-        public void fillBuffer() throws IOException {
-            buffer = dataSource.map(bufferStartPos, Math.min(dataSource.size() - bufferStartPos, BUFFER));
-        }
 
 
-        LookAhead(DataSource dataSource) throws IOException {
-            this.dataSource = dataSource;
-            fillBuffer();
-        }
-
-        boolean nextThreeEquals001() throws IOException {
-            if (buffer.limit() - inBufferPos >= 3) {
-                return (buffer.get(inBufferPos) == 0 &&
-                        buffer.get(inBufferPos + 1) == 0 &&
-                        buffer.get(inBufferPos + 2) == 1);
-            }
-            if (bufferStartPos + inBufferPos + 3 >= dataSource.size()) {
-                throw new EOFException();
-            }
-            return false;
-        }
-
-        boolean nextThreeEquals000or001orEof() throws IOException {
-            if (buffer.limit() - inBufferPos >= 3) {
-                return ((buffer.get(inBufferPos) == 0 &&
-                        buffer.get(inBufferPos + 1) == 0 &&
-                        (buffer.get(inBufferPos + 2) == 0 || buffer.get(inBufferPos + 2) == 1)));
-            } else {
-                if (bufferStartPos + inBufferPos + 3 > dataSource.size()) {
-                    return bufferStartPos + inBufferPos == dataSource.size();
-                } else {
-                    bufferStartPos = start;
-                    inBufferPos = 0;
-                    fillBuffer();
-                    return nextThreeEquals000or001orEof();
-                }
-            }
-        }
-
-        void discardByte() {
-            inBufferPos++;
-        }
-
-        void discardNext3AndMarkStart() {
-            inBufferPos += 3;
-            start = bufferStartPos + inBufferPos;
-        }
-
-        public ByteBuffer getNal() {
-            if (start >= bufferStartPos) {
-
-                buffer.position((int) (start - bufferStartPos));
-                Buffer sample = buffer.slice();
-                sample.limit((int) (inBufferPos - (start - bufferStartPos)));
-                return (ByteBuffer) sample;
-            } else {
-                throw new RuntimeException("damn! NAL exceeds buffer");
-                // this can only happen if NAL is bigger than the buffer
-                // and that most likely cannot happen with correct inputs
-            }
-
-        }
-    }
 
 
-    private ByteBuffer findNextNal(LookAhead la) throws IOException {
-        try {
-            while (!la.nextThreeEquals001()) {
-                la.discardByte();
-            }
-            la.discardNext3AndMarkStart();
 
-            while (!la.nextThreeEquals000or001orEof()) {
-                la.discardByte();
-            }
-            return la.getNal();
-        } catch (EOFException e) {
-            return null;
-        }
-
-    }
-
-    /**
-     * Builds an MP4 sample from a list of NALs. Each NAL will be preceded by its
-     * 4 byte (unit32) length.
-     *
-     * @param nals a list of NALs that form the sample
-     * @return sample as it appears in the MP4 file
-     */
-    protected Sample createSampleObject(List<? extends ByteBuffer> nals) {
-        byte[] sizeInfo = new byte[nals.size() * 4];
-        ByteBuffer sizeBuf = ByteBuffer.wrap(sizeInfo);
-        for (ByteBuffer b : nals) {
-            sizeBuf.putInt(b.remaining());
-        }
-
-        ByteBuffer[] data = new ByteBuffer[nals.size() * 2];
-
-        for (int i = 0; i < nals.size(); i++) {
-            data[2 * i] = ByteBuffer.wrap(sizeInfo, i * 4, 4);
-            data[2 * i + 1] = nals.get(i);
-        }
-
-        return new SampleImpl(data);
-    }
 
 
     private boolean readSamples(LookAhead la) throws IOException {
@@ -466,7 +338,7 @@ public class H264TrackImpl extends AbstractTrack {
                         createSample(buffered);
                         fvnd = null;
                     }
-                    seiMessage = new SEIMessage(cleanBuffer(new ByteBufferBackedInputStream(nal)), firstSeqParameterSet);
+                    seiMessage = new SEIMessage(cleanBuffer(new ByteBufferBackedInputStream(nal)), currentSeqParameterSet);
                     buffered.add(nal);
                     break;
 
@@ -560,20 +432,7 @@ public class H264TrackImpl extends AbstractTrack {
     }
 
 
-    protected InputStream cleanBuffer(InputStream is) {
-        return new CleanInputStream(is);
-    }
 
-    public long[] getSampleDurations() {
-        return decodingTimes;
-    }
-
-    static byte[] toArray(ByteBuffer buf) {
-        buf = buf.duplicate();
-        byte[] b = new byte[buf.remaining()];
-        buf.get(b, 0, b.length);
-        return b;
-    }
 
 
     private void handlePPS(ByteBuffer data) throws IOException {
@@ -584,11 +443,13 @@ public class H264TrackImpl extends AbstractTrack {
         if (firstPictureParameterSet == null) {
             firstPictureParameterSet = _pictureParameterSet;
         }
+
+        currentPictureParameterSet = _pictureParameterSet;
+
         byte[] ppsBytes = toArray((ByteBuffer) data.rewind());
         byte[] oldPpsSameId = ppsIdToPpsBytes.get(_pictureParameterSet.pic_parameter_set_id);
 
-        String ppsHex = Hex.encodeHex(ppsBytes);
-        //System.err.println(ppsHex);
+
         if (oldPpsSameId != null && !Arrays.equals(oldPpsSameId, ppsBytes)) {
             throw new RuntimeException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
         } else {
@@ -610,10 +471,9 @@ public class H264TrackImpl extends AbstractTrack {
             firstSeqParameterSet = _seqParameterSet;
             configureFramerate();
         }
+        currentSeqParameterSet = _seqParameterSet;
 
         byte[] spsBytes = toArray((ByteBuffer) data.rewind());
-        String spsHex = Hex.encodeHex(spsBytes);
-        //System.err.println(spsHex);
         byte[] oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
         if (oldSpsSameId != null && !Arrays.equals(oldSpsSameId, spsBytes)) {
             throw new RuntimeException("OMG - I got two SPS with same ID but different settings!");
@@ -629,20 +489,6 @@ public class H264TrackImpl extends AbstractTrack {
 
     }
 
-    public byte[] toByteArray(InputStream is) {
-        byte[] result = new byte[0];
-        byte[] buffer = new byte[32];
-        int n = 0;
-        try {
-            while ((n = is.read(buffer)) != -1) {
-                Arrays.copyOf(result, result.length + n);
-                System.arraycopy(buffer, 0, result, result.length - n - 1, n);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return result;
-    }
 
     private void configureFramerate() {
         if (determineFrameRate) {
