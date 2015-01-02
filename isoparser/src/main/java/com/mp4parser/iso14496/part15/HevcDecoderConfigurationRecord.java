@@ -43,7 +43,7 @@ public class HevcDecoderConfigurationRecord {
     boolean temporalIdNested;
     int lengthSizeMinusOne;
 
-    List<Array> arrays;
+    List<Array> arrays = new ArrayList<Array>();
 
     boolean frame_only_constraint_flag;
     boolean non_packed_constraint_flag;

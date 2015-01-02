@@ -1,28 +1,23 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.Hex;
-import com.coremedia.iso.boxes.*;
-import com.googlecode.mp4parser.util.RangeStartMap;
-import com.mp4parser.iso14496.part15.AvcConfigurationBox;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.DataSource;
-import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.SampleImpl;
-import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.h264.model.PictureParameterSet;
 import com.googlecode.mp4parser.h264.model.SeqParameterSet;
 import com.googlecode.mp4parser.h264.read.CAVLCReader;
+import com.googlecode.mp4parser.util.RangeStartMap;
+import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 
-import java.io.*;
-import java.nio.Buffer;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
-
-import static java.security.MessageDigest.getInstance;
 
 /**
  * The <code>H264TrackImpl</code> creates a <code>Track</code> from an H.264
@@ -36,7 +31,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
     Map<Integer, byte[]> ppsIdToPpsBytes = new HashMap<Integer, byte[]>();
     Map<Integer, PictureParameterSet> ppsIdToPps = new HashMap<Integer, PictureParameterSet>();
 
-    TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
 
     private List<Sample> samples;
@@ -89,7 +83,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
         this.lang = lang;
         this.timescale = timescale; //e.g. 23976
         this.frametick = frametick;
-        this.dataSource = dataSource;
         if ((timescale > 0) && (frametick > 0)) {
             this.determineFrameRate = false;
         }
@@ -97,9 +90,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
         parse(new LookAhead(dataSource));
     }
 
-    public void close() throws IOException {
-        dataSource.close();
-    }
+
 
     public H264TrackImpl(DataSource dataSource, String lang) throws IOException {
         this(dataSource, lang, -1, -1);
@@ -172,10 +163,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
 
 
-
-    public TrackMetaData getTrackMetaData() {
-        return trackMetaData;
-    }
 
     public String getHandler() {
         return "vide";

@@ -6,6 +6,7 @@ import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.SampleImpl;
+import com.googlecode.mp4parser.authoring.TrackMetaData;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -21,15 +22,18 @@ import java.util.List;
 public abstract class AbstractH26XTrack extends AbstractTrack {
 
     static int BUFFER = 65535 << 10;
-    DataSource dataSource;
+    private DataSource dataSource;
 
 
-    long[] decodingTimes;
-    List<CompositionTimeToSample.Entry> ctts = new ArrayList<CompositionTimeToSample.Entry>();
-    List<SampleDependencyTypeBox.Entry> sdtp = new ArrayList<SampleDependencyTypeBox.Entry>();
-    List<Integer> stss = new ArrayList<Integer>();
+    protected long[] decodingTimes;
+    protected List<CompositionTimeToSample.Entry> ctts = new ArrayList<CompositionTimeToSample.Entry>();
+    protected List<SampleDependencyTypeBox.Entry> sdtp = new ArrayList<SampleDependencyTypeBox.Entry>();
+    protected List<Integer> stss = new ArrayList<Integer>();
+    TrackMetaData trackMetaData = new TrackMetaData();
 
-
+    public TrackMetaData getTrackMetaData() {
+        return trackMetaData;
+    }
 
 
 
@@ -40,7 +44,7 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
 
     }
 
-    class LookAhead {
+    protected class LookAhead {
         long bufferStartPos = 0;
         int inBufferPos = 0;
         DataSource dataSource;
@@ -53,7 +57,7 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
         }
 
 
-        LookAhead(DataSource dataSource) throws IOException {
+        public LookAhead(DataSource dataSource) throws IOException {
             this.dataSource = dataSource;
             fillBuffer();
         }
@@ -112,7 +116,7 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
         }
     }
 
-    ByteBuffer findNextNal(LookAhead la) throws IOException {
+    protected ByteBuffer findNextNal(LookAhead la) throws IOException {
         try {
             while (!la.nextThreeEquals001()) {
                 la.discardByte();
@@ -178,10 +182,14 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
         return new CleanInputStream(is);
     }
 
-    static byte[] toArray(ByteBuffer buf) {
+    protected static byte[] toArray(ByteBuffer buf) {
         buf = buf.duplicate();
         byte[] b = new byte[buf.remaining()];
         buf.get(b, 0, b.length);
         return b;
+    }
+
+    public void close() throws IOException {
+        dataSource.close();
     }
 }

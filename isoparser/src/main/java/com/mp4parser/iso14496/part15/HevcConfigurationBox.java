@@ -15,6 +15,7 @@ public class HevcConfigurationBox extends AbstractBox {
 
     public HevcConfigurationBox() {
         super(TYPE);
+        hevcDecoderConfigurationRecord = new HevcDecoderConfigurationRecord();
     }
 
     @Override
@@ -29,7 +30,6 @@ public class HevcConfigurationBox extends AbstractBox {
 
     @Override
     protected void _parseDetails(ByteBuffer content) {
-        hevcDecoderConfigurationRecord = new HevcDecoderConfigurationRecord();
         hevcDecoderConfigurationRecord.parse(content);
     }
 

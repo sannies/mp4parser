@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Created by sannies on 08.09.2014.
  */
-public class H265TrackImpl {
+public class H265TrackImplOld {
     public static final int VPS_NUT = 32;
     public static final int SPS_NUT = 33;
     public static final int PPS_NUT = 34;
@@ -56,6 +56,7 @@ public class H265TrackImpl {
     private static final int IDR_W_RADL = 19;
     private static final int IDR_N_LP = 20;
     private static final int CRA_NUT = 21;
+
     private static final long BUFFER = 1024 * 1024;
     LinkedHashMap<Long, ByteBuffer> videoParamterSets = new LinkedHashMap<Long, ByteBuffer>();
     LinkedHashMap<Long, ByteBuffer> sequenceParamterSets = new LinkedHashMap<Long, ByteBuffer>();
@@ -63,7 +64,7 @@ public class H265TrackImpl {
     List<Long> syncSamples = new ArrayList<Long>();
     List<Sample> samples = new ArrayList<Sample>();
 
-    public H265TrackImpl(DataSource ds) throws IOException {
+    public H265TrackImplOld(DataSource ds) throws IOException {
         LookAhead la = new LookAhead(ds);
 
         long sampleNo = 1;
@@ -123,7 +124,7 @@ public class H265TrackImpl {
     }
 
     public static void main(String[] args) throws IOException {
-        new H265TrackImpl(new FileDataSourceImpl("c:\\dev\\hevc\\surfing.265"));
+        new H265TrackImplOld(new FileDataSourceImpl("c:\\content\\test-UHD-HEVC_01_FMV_Med_track1.hvc"));
     }
 
     private ByteBuffer findNextNal(LookAhead la) throws IOException {
