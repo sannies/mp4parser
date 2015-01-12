@@ -8,6 +8,14 @@ Using the library
 
 The library is published to Maven repositories. Each release is pushed to a staging repository which is published on the release page. On request specific releases can be pushed to maven central. 
 
+```
+  <dependency>
+    <groupId>com.googlecode.mp4parser</groupId>
+    <artifactId>isoparser</artifactId>
+    <version>1.0.5.4</version>
+  </dependency>
+```
+
 For projects that do not use a dependency management tool each release's artifacts (jar, javadoc-jar, source-jar) are attached to the release page. Please be aware that the project requires the aspectj-rt.jar library. 
 
 
