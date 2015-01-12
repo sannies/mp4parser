@@ -192,9 +192,9 @@ public class AppendTrack extends AbstractTrack {
     private AudioSampleEntry mergeAudioSampleEntries(AudioSampleEntry ase1, AudioSampleEntry ase2) {
         AudioSampleEntry ase = new AudioSampleEntry(ase2.getType());
         if (ase1.getBytesPerFrame() == ase2.getBytesPerFrame()) {
-            LOG.logError("BytesPerFrame differ");
             ase.setBytesPerFrame(ase1.getBytesPerFrame());
         } else {
+            LOG.logError("BytesPerFrame differ");
             return null;
         }
         if (ase1.getBytesPerPacket() == ase2.getBytesPerPacket()) {
@@ -203,13 +203,12 @@ public class AppendTrack extends AbstractTrack {
             return null;
         }
         if (ase1.getBytesPerSample() == ase2.getBytesPerSample()) {
-            LOG.logError("BytesPerSample differ");
             ase.setBytesPerSample(ase1.getBytesPerSample());
         } else {
+            LOG.logError("BytesPerSample differ");
             return null;
         }
         if (ase1.getChannelCount() == ase2.getChannelCount()) {
-            LOG.logError("ChannelCount differ");
             ase.setChannelCount(ase1.getChannelCount());
         } else {
             return null;
@@ -217,6 +216,7 @@ public class AppendTrack extends AbstractTrack {
         if (ase1.getPacketSize() == ase2.getPacketSize()) {
             ase.setPacketSize(ase1.getPacketSize());
         } else {
+            LOG.logError("ChannelCount differ");
             return null;
         }
         if (ase1.getCompressionId() == ase2.getCompressionId()) {
