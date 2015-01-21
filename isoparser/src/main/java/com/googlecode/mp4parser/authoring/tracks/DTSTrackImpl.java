@@ -794,34 +794,40 @@ public class DTSTrackImpl extends AbstractTrack {
     }
 
     private List<Sample> readSamples() throws IOException {
-        ArrayList<Sample> mySamples = new  ArrayList<Sample>(l2i(dataSource.size() / frameSize));
-        int position = dataOffset;
-        while (position + frameSize < dataSource.size()) {
 
-            final int currentPosition = position;
-            mySamples.add(new Sample() {
-                public void writeTo(WritableByteChannel channel) throws IOException {
-                    dataSource.transferTo(currentPosition, frameSize, channel);
-                }
-
-                public long getSize() {
-                    return frameSize;
-                }
-
-                public ByteBuffer asByteBuffer() {
-                    try {
-                        return dataSource.map(currentPosition, frameSize);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
-            position += frameSize;
-
-        }
-        sampleDurations = new long[mySamples.size()];
+        final long size = (dataSource.size() - dataOffset)/ frameSize;
+        sampleDurations = new long[l2i(size)];
         Arrays.fill(sampleDurations, samplesPerFrame * samplerate / trackMetaData.getTimescale());
-        return mySamples;
+        return new AbstractList<Sample>() {
+
+            @Override
+            public int size() {
+                return l2i(size);
+            }
+
+            @Override
+            public Sample get(final int index) {
+                return new Sample() {
+                    public void writeTo(WritableByteChannel channel) throws IOException {
+                        dataSource.transferTo((long)dataOffset + (long)index * frameSize, frameSize, channel);
+                    }
+
+                    public long getSize() {
+                        return frameSize;
+                    }
+
+                    public ByteBuffer asByteBuffer() {
+                        try {
+                            return dataSource.map(dataOffset + index * frameSize, frameSize);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                };
+            }
+        };
+
+
     }
 
 

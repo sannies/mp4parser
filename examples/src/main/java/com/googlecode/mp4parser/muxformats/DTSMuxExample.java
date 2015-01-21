@@ -18,7 +18,7 @@ import java.nio.channels.FileChannel;
 public class DTSMuxExample {
     public static void main(String[] args) throws IOException {
         Movie movie = new Movie();
-        Track track = new DTSTrackImpl(new FileDataSourceImpl("C:\\dev\\cff-creator\\src\\test\\resources\\RIO_Trailer_DTSExpress_256kbps.dtshd"));
+        Track track = new DTSTrackImpl(new FileDataSourceImpl("C:\\Users\\sannies\\Downloads\\Big_Dom_Thl_ENG_5.1_HD_Lossless_1510.dtshd"));
         movie.addTrack(track);
 
         DefaultMp4Builder builder = new DefaultMp4Builder();

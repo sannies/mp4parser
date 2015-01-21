@@ -20,7 +20,7 @@ import java.nio.channels.FileChannel;
  */
 public class H264Example {
     public static void main(String[] args) throws IOException {
-        H264TrackImpl h264Track = new H264TrackImpl(new FileDataSourceImpl("C:\\Users\\sannies\\Downloads\\dump.h264"));
+        H264TrackImpl h264Track = new H264TrackImpl(new FileDataSourceImpl("C:\\dev\\mp4parser\\isoparser\\src\\test\\resources\\count.h264"));
         //AACTrackImpl aacTrack = new AACTrackImpl(new FileInputStream("/home/sannies2/Downloads/lv.aac").getChannel());
         Movie m = new Movie();
         m.addTrack(h264Track);

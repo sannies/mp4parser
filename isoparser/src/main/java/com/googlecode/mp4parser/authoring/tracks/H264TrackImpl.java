@@ -321,7 +321,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
                 case 6:
                     if (fvnd != null) {
-                        System.err.println("Wrapping up cause of SEI after vcl marks new sample");
+                        //System.err.println("Wrapping up cause of SEI after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -357,6 +357,9 @@ public class H264TrackImpl extends AbstractH26XTrack {
                 case 11:
 
                     break nal_loop;
+
+                case 13:
+                    throw new RuntimeException("Sequence parameter set extension is not yet handled. Needs TLC.");
 
                 default:
                     System.err.println("Unknown NAL unit type: " + nal_unit_type);
