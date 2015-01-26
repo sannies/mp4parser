@@ -171,7 +171,7 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
         frameCount = IsoTypeReader.readUInt16(content);
         int compressornameDisplayAbleData = IsoTypeReader.readUInt8(content);
         if (compressornameDisplayAbleData > 31) {
-            System.out.println("invalid compressor name displayable data: " + compressornameDisplayAbleData);
+            //System.out.println("invalid compressor name displayable data: " + compressornameDisplayAbleData);
             compressornameDisplayAbleData = 31;
         }
         byte[] bytes = new byte[compressornameDisplayAbleData];
