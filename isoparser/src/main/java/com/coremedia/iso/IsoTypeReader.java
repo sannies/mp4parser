@@ -20,6 +20,7 @@ import com.googlecode.mp4parser.util.IntHashMap;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 public final class IsoTypeReader {
 
@@ -155,33 +156,20 @@ public final class IsoTypeReader {
         return result.toString();
     }
 
-
-    private static IntHashMap codeCache = new IntHashMap();
-    private static byte[] codeBytes = new byte[4];
-
+    private static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");  
+    
     public static String read4cc(ByteBuffer bb) {
-        bb.get(codeBytes);
-
-        int result = ((codeBytes[0] << 24) & 0xFF000000);
-        result |= ((codeBytes[1] << 16) & 0xFF0000);
-        result |= ((codeBytes[2] << 8) & 0xFF00);
-        result |= ((codeBytes[3]) & 0xFF);
-
-        String code;
-        if ((code = (String) codeCache.get(result)) != null) {
-            return code;
+        if (bb.hasArray()) {
+            String cc = new String(bb.array(), 0, 4, ISO_8859_1);
+            bb.position(bb.position() + 4);
+            return cc;             
         } else {
-            try {
-                code = new String(codeBytes, "ISO-8859-1");
-                codeCache.put(result, code);
-                return code;
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
-
+            byte[] codeBytes = new byte[4];
+            bb.get(codeBytes);
+            return new String(codeBytes, ISO_8859_1);
         }
     }
-
+    
     public static long readUInt48(ByteBuffer byteBuffer) {
         long result = (long)readUInt16(byteBuffer) << 32;
         if (result < 0) {
