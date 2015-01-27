@@ -15,6 +15,7 @@ import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInf
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 import com.googlecode.mp4parser.util.RangeStartMap;
 import com.mp4parser.iso14496.part15.AvcConfigurationBox;
+import com.mp4parser.iso14496.part15.HevcConfigurationBox;
 import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.mp4parser.iso23001.part7.TrackEncryptionBox;
 
@@ -130,12 +131,19 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
         }
 
 
-        AvcConfigurationBox avcC = null;
+
         List<Box> boxes = source.getSampleDescriptionBox().getSampleEntry().getBoxes();
+        int nalLengthSize = -1;
         for (Box box : boxes) {
             if (box instanceof AvcConfigurationBox) {
-                avcC = (AvcConfigurationBox) box;
+                AvcConfigurationBox avcC = (AvcConfigurationBox) box;
                 subSampleEncryption = true;
+                nalLengthSize = avcC.getLengthSizeMinusOne() + 1;
+            }
+            if (box instanceof HevcConfigurationBox) {
+                HevcConfigurationBox hvcC = (HevcConfigurationBox) box;
+                subSampleEncryption = true;
+                nalLengthSize = hvcC.getLengthSizeMinusOne() + 1;
             }
         }
 
@@ -159,8 +167,7 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
                 ByteBuffer sample = (ByteBuffer) origSample.asByteBuffer().rewind();
 
 
-                if (avcC != null) {
-                    int nalLengthSize = avcC.getLengthSizeMinusOne() + 1;
+                if (subSampleEncryption) {
                     List<CencSampleAuxiliaryDataFormat.Pair> pairs = new ArrayList<CencSampleAuxiliaryDataFormat.Pair>(5);
                     while (sample.remaining() > 0) {
                         int nalLength = l2i(IsoTypeReaderVariable.read(sample, nalLengthSize));
