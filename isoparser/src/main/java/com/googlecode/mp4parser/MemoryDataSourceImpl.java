@@ -47,7 +47,12 @@ public class MemoryDataSourceImpl implements DataSource {
     }
 
     public ByteBuffer map(long startPosition, long size) throws IOException {
-        return (ByteBuffer) ((ByteBuffer) data.position(l2i(startPosition))).slice().limit(l2i(size));
+        int oldPosition = data.position();
+        data.position(l2i(startPosition));
+        ByteBuffer result = data.slice();
+        result.limit(l2i(size));
+        data.position(oldPosition);
+        return result;
     }
 
     public void close() throws IOException {
