@@ -191,7 +191,19 @@ public class DefaultMp4Builder implements Mp4Builder {
         long duration = 0;
 
         for (Track track : movie.getTracks()) {
-            long tracksDuration = track.getDuration() * movieTimeScale / track.getTrackMetaData().getTimescale();
+            long tracksDuration = 0;
+
+            if (track.getEdits() == null || track.getEdits().isEmpty()) {
+                tracksDuration = (track.getDuration() * getTimescale(movie) / track.getTrackMetaData().getTimescale());
+            } else {
+                long d = 0;
+                for (Edit edit : track.getEdits()) {
+                    d += (long) edit.getSegmentDuration();
+                }
+                tracksDuration = (d * getTimescale(movie));
+            }
+
+
             if (tracksDuration > duration) {
                 duration = tracksDuration;
             }
@@ -244,10 +256,18 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
         tkhd.setCreationTime(track.getTrackMetaData().getCreationTime());
-        // We need to take edit list box into account in trackheader duration
-        // but as long as I don't support edit list boxes it is sufficient to
-        // just translate media duration to movie timescale
-        tkhd.setDuration(track.getDuration() * getTimescale(movie) / track.getTrackMetaData().getTimescale());
+
+        if (track.getEdits() == null || track.getEdits().isEmpty()) {
+            tkhd.setDuration(track.getDuration() * getTimescale(movie) / track.getTrackMetaData().getTimescale());
+        } else {
+            long d = 0;
+            for (Edit edit : track.getEdits()) {
+                d += (long) edit.getSegmentDuration();
+            }
+            tkhd.setDuration(d * track.getTrackMetaData().getTimescale());
+        }
+
+
         tkhd.setHeight(track.getTrackMetaData().getHeight());
         tkhd.setWidth(track.getTrackMetaData().getWidth());
         tkhd.setLayer(track.getTrackMetaData().getLayer());

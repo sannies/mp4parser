@@ -45,8 +45,8 @@ public interface Track extends Closeable {
     long[] getSampleDurations();
 
     /**
-     * The duration of the track in track timescale. It's typically the
-     * sum of all samples' duration.
+     * The duration of the track in track timescale. It's the sum of all samples' duration and does NOT include
+     * any edits.
      * @return the track's duration
      */
     long getDuration();
