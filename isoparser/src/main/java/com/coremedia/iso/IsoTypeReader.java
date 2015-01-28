@@ -160,7 +160,7 @@ public final class IsoTypeReader {
     
     public static String read4cc(ByteBuffer bb) {
         if (bb.hasArray()) {
-            String cc = new String(bb.array(), 0, 4, ISO_8859_1);
+            String cc = new String(bb.array(), bb.position(), 4, ISO_8859_1);
             bb.position(bb.position() + 4);
             return cc;             
         } else {
