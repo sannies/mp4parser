@@ -24,10 +24,16 @@ public class MemoryDataSourceImpl implements DataSource {
         if (0 == data.remaining() && 0 != byteBuffer.remaining()) {
             return -1;
         }
-        byte[] buf = new byte[Math.min(byteBuffer.remaining(), data.remaining())];
-        data.get(buf);
-        byteBuffer.put(buf);
-        return buf.length;
+        int size = Math.min(byteBuffer.remaining(), data.remaining());
+        if (byteBuffer.hasArray()) {
+            byteBuffer.put(data.array(), data.position(), size);
+            data.position(data.position() + size);
+        } else {
+            byte[] buf = new byte[size];
+            data.get(buf);
+            byteBuffer.put(buf);
+        }
+        return size;
     }
 
     public long size() throws IOException {
