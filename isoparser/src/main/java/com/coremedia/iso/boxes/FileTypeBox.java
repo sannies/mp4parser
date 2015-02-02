@@ -100,7 +100,7 @@ public class FileTypeBox extends AbstractBox {
      *
      * @param minorVersion the version number of the major brand
      */
-    public void setMinorVersion(int minorVersion) {
+    public void setMinorVersion(long minorVersion) {
         this.minorVersion = minorVersion;
     }
 

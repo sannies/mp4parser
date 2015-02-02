@@ -20,7 +20,6 @@ import com.googlecode.mp4parser.util.IntHashMap;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 
 public final class IsoTypeReader {
 
@@ -156,22 +155,22 @@ public final class IsoTypeReader {
         return result.toString();
     }
 
-    private static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");  
-    
+
     public static String read4cc(ByteBuffer bb) {
-        if (bb.hasArray()) {
-            String cc = new String(bb.array(), bb.position(), 4, ISO_8859_1);
-            bb.position(bb.position() + 4);
-            return cc;             
-        } else {
-            byte[] codeBytes = new byte[4];
-            bb.get(codeBytes);
-            return new String(codeBytes, ISO_8859_1);
+        byte[] codeBytes = new byte[4];
+        bb.get(codeBytes);
+
+        try {
+            return new String(codeBytes, "ISO-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
+
+
     }
-    
+
     public static long readUInt48(ByteBuffer byteBuffer) {
-        long result = (long)readUInt16(byteBuffer) << 32;
+        long result = (long) readUInt16(byteBuffer) << 32;
         if (result < 0) {
             throw new RuntimeException("I don't know how to deal with UInt64! long is not sufficient and I don't want to use BigInt");
         }
