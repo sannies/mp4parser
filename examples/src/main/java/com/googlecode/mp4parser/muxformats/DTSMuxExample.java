@@ -23,7 +23,7 @@ public class DTSMuxExample {
 
         DefaultMp4Builder builder = new DefaultMp4Builder();
         Container container = builder.build(movie);
-        FileOutputStream fos = new FileOutputStream("output.mp4");
+        FileOutputStream fos = new FileOutputStream("c:\\dev\\isoparser-dtshd.mp4");
         FileChannel fc = fos.getChannel();
         container.writeContainer(fc);
         fos.close();
