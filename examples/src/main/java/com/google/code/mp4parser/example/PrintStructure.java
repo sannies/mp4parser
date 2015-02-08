@@ -22,33 +22,57 @@ import java.util.List;
  */
 public class PrintStructure {
     public static void main(String[] args) throws IOException {
+        System.out.println("PWD: " + System.getProperty("user.dir"));
+        System.out.println("Input: " + args[0]);
         FileInputStream fis = new FileInputStream(new File(args[0]));
+        System.out.println("input size: " + fis.getChannel().size());
 
         PrintStructure ps = new PrintStructure();
-        ps.print(fis.getChannel(), 0, 0);
+        ps.print(fis.getChannel(), 0, 0, 0);
     }
 
 
-    private void print(FileChannel fc, int level, long baseoffset) throws IOException {
-
-        while (fc.size() - fc.position() > 8) {
-            long start = fc.position();
+    /** Parses the FileChannel, in the range [start, end) and prints the elements found
+     *
+     * Elements are printed, indented by "level" number of spaces.  If an element is
+     * a container, then its contents will be, recursively, printed, with a greater
+     * indentation.
+     *
+     * @param fc
+     * @param level
+     * @param start
+     * @param end
+     * @throws IOException
+     */
+    private void print(FileChannel fc, int level, long start, long end) throws IOException {
+        fc.position(start);
+        if(end <= 0) {
+            end = start + fc.size();
+            System.out.println("Setting END to " + end);
+        }
+        while (end - fc.position() > 8) {
+            long begin = fc.position();
             ByteBuffer bb = ByteBuffer.allocate(8);
             fc.read(bb);
             bb.rewind();
             long size = IsoTypeReader.readUInt32(bb);
             String type = IsoTypeReader.read4cc(bb);
-            long end = start + size;
+            long fin = begin + size;
+            // indent by the required number of spaces
             for (int i = 0; i < level; i++) {
                 System.out.print(" ");
             }
 
-            System.out.println(type + "@" + (baseoffset + start) + " size: " + size);
+            System.out.println(type + "@" + (begin) + " size: " + size);
             if (containers.contains(type)) {
-                print(fc, level + 1, baseoffset + start + 8);
+                print(fc, level + 1, begin + 8, fin);
+                if(fc.position() != fin) {
+                    System.out.println("End of container contents at " + fc.position());
+                    System.out.println("  FIN = " + fin);
+                }
             }
 
-            fc.position(end);
+            fc.position(fin);
 
         }
     }
