@@ -74,7 +74,7 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
                 return new Sample() {
 
                     public void writeTo(WritableByteChannel channel) throws IOException {
-                        System.err.println("writeTo: " + index + " size: " + this.getSize());
+
                         for (byte[] bytes : avcC.getSequenceParameterSets()) {
                             IsoTypeWriterVariable.write(bytes.length, (ByteBuffer) buf.rewind(), len);
                             channel.write((ByteBuffer) buf.rewind());
@@ -94,7 +94,7 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
                     }
 
                     public long getSize() {
-                        System.err.println("getSize: " + index);
+
                         int spsPpsSize = 0;
                         for (byte[] bytes : avcC.getSequenceParameterSets()) {
                             spsPpsSize += len + bytes.length;
@@ -109,7 +109,7 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
                     }
 
                     public ByteBuffer asByteBuffer() {
-                        System.err.println("asByteBuffer: " + index);
+
                         int spsPpsSize = 0;
                         for (byte[] bytes : avcC.getSequenceParameterSets()) {
                             spsPpsSize += len + bytes.length;
