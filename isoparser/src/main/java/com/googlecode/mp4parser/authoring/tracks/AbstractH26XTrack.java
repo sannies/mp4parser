@@ -44,7 +44,7 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
 
     }
 
-    protected class LookAhead {
+    public static class LookAhead {
         long bufferStartPos = 0;
         int inBufferPos = 0;
         DataSource dataSource;
@@ -62,7 +62,7 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
             fillBuffer();
         }
 
-        boolean nextThreeEquals001() throws IOException {
+        public boolean nextThreeEquals001() throws IOException {
             if (buffer.limit() - inBufferPos >= 3) {
                 return (buffer.get(inBufferPos) == 0 &&
                         buffer.get(inBufferPos + 1) == 0 &&
@@ -74,7 +74,7 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
             return false;
         }
 
-        boolean nextThreeEquals000or001orEof() throws IOException {
+        public boolean nextThreeEquals000or001orEof() throws IOException {
             if (buffer.limit() - inBufferPos >= 3) {
                 return ((buffer.get(inBufferPos) == 0 &&
                         buffer.get(inBufferPos + 1) == 0 &&
@@ -91,11 +91,11 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
             }
         }
 
-        void discardByte() {
+        public void discardByte() {
             inBufferPos++;
         }
 
-        void discardNext3AndMarkStart() {
+        public void discardNext3AndMarkStart() {
             inBufferPos += 3;
             start = bufferStartPos + inBufferPos;
         }
