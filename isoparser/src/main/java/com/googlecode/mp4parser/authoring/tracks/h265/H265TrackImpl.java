@@ -12,6 +12,9 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.tracks.AbstractH26XTrack;
+import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
+import com.googlecode.mp4parser.h264.read.BitstreamReader;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.mp4parser.iso14496.part15.HevcConfigurationBox;
 import com.mp4parser.iso14496.part15.HevcDecoderConfigurationRecord;
@@ -19,6 +22,7 @@ import com.mp4parser.iso14496.part15.HevcDecoderConfigurationRecord;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -57,11 +61,11 @@ public class H265TrackImpl extends AbstractH26XTrack implements NalUnitTypes {
                     }
                 } else {
                     switch (unitHeader.nalUnitType) {
+                        case NAL_TYPE_PREFIX_SEI_NUT:
                         case NAL_TYPE_AUD_NUT:
                         case NAL_TYPE_PPS_NUT:
                         case NAL_TYPE_VPS_NUT:
                         case NAL_TYPE_SPS_NUT:
-                        case NAL_TYPE_PREFIX_SEI_NUT:
                         case NAL_TYPE_RSV_NVCL41:
                         case NAL_TYPE_RSV_NVCL42:
                         case NAL_TYPE_RSV_NVCL43:
@@ -97,7 +101,12 @@ public class H265TrackImpl extends AbstractH26XTrack implements NalUnitTypes {
                 case NAL_TYPE_SPS_NUT:
                     nal.position(2);
                     sps.add(nal.slice());
+                    nal.position(1);
+                    new SequenceParameterSetRbsp(Channels.newInputStream(new ByteBufferByteChannel(nal.slice())));
                     System.err.println("Stored SPS");
+                    break;
+                case NAL_TYPE_PREFIX_SEI_NUT:
+                    new SEIMessage(new BitReaderBuffer(nal.slice()));
                     break;
             }
 
@@ -109,6 +118,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements NalUnitTypes {
                 case NAL_TYPE_EOB_NUT:
                 case NAL_TYPE_EOS_NUT:
                 case NAL_TYPE_AUD_NUT:
+                case NAL_TYPE_FD_NUT:
                     // ignore these
                     break;
                 default:

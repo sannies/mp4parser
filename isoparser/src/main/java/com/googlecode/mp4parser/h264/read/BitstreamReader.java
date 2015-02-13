@@ -45,6 +45,10 @@ public class BitstreamReader {
         nextByte = is.read();
     }
 
+    public boolean readBool() throws IOException {
+        return read1Bit() == 1;
+    }
+
     /*
       * (non-Javadoc)
       *
