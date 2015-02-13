@@ -75,7 +75,14 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
             }
             last = fragments[i];
         }
-        return fragments;
+        long[] cleanedFragments = new long[0];
+        for (long fragment : fragments) {
+            if (cleanedFragments.length == 0 || cleanedFragments[cleanedFragments.length - 1] != fragment) {
+                cleanedFragments = Arrays.copyOf(cleanedFragments, cleanedFragments.length + 1);
+                cleanedFragments[cleanedFragments.length - 1] = fragment;
+            }
+        }
+        return cleanedFragments;
 
     }
 
