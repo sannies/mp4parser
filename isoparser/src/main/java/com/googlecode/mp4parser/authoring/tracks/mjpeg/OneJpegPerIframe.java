@@ -1,16 +1,15 @@
 package com.googlecode.mp4parser.authoring.tracks.mjpeg;
 
 import com.coremedia.iso.Hex;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.sampleentry.MpegSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
-import com.googlecode.mp4parser.authoring.AbstractTrack;
-import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.TrackMetaData;
+import com.googlecode.mp4parser.authoring.*;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderConfigDescriptor;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ESDescriptor;
+import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ObjectDescriptorFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -22,6 +21,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -29,21 +30,24 @@ import java.util.List;
  */
 public class OneJpegPerIframe extends AbstractTrack {
     File[] jpegs;
-    Track alignTo;
     TrackMetaData trackMetaData = new TrackMetaData();
     long[] sampleDurations;
     SampleDescriptionBox stsd;
+    long[] syncSamples;
+
 
     public OneJpegPerIframe(String name, File[] jpegs, Track alignTo) throws IOException {
         super(name);
         this.jpegs = jpegs;
         if (alignTo.getSyncSamples().length != jpegs.length) {
-            throw new RuntimeException("Number of sync samples doesn't match the number of stills (" + alignTo.getSyncSamples().length  +" vs. " + jpegs.length + ")");
+            throw new RuntimeException("Number of sync samples doesn't match the number of stills (" + alignTo.getSyncSamples().length + " vs. " + jpegs.length + ")");
         }
         BufferedImage a = ImageIO.read(jpegs[0]);
         trackMetaData.setWidth(a.getWidth());
         trackMetaData.setHeight(a.getHeight());
         trackMetaData.setTimescale(alignTo.getTrackMetaData().getTimescale());
+
+
 
         long[] sampleDurationsToiAlignTo = alignTo.getSampleDurations();
         long[] syncSamples = alignTo.getSyncSamples();
@@ -53,20 +57,63 @@ public class OneJpegPerIframe extends AbstractTrack {
 
         for (int i = 1; i < sampleDurationsToiAlignTo.length; i++) {
             if (currentSyncSample < syncSamples.length && i == syncSamples[currentSyncSample]) {
-                sampleDurations[currentSyncSample] = duration;
+                sampleDurations[currentSyncSample-1] = duration;
                 duration = 0;
                 currentSyncSample++;
             }
             duration += sampleDurationsToiAlignTo[i];
         }
-        sampleDurations[sampleDurations.length-1] = duration;
+        sampleDurations[sampleDurations.length - 1] = duration;
 
         stsd = new SampleDescriptionBox();
         VisualSampleEntry mp4v = new VisualSampleEntry("mp4v");
         stsd.addBox(mp4v);
         ESDescriptorBox esds = new ESDescriptorBox();
         esds.setData(ByteBuffer.wrap(Hex.decodeHex("038080801B000100048080800D6C11000000000A1CB4000A1CB4068080800102")));
+        esds.setEsDescriptor((ESDescriptor) ObjectDescriptorFactory.createFrom(-1,ByteBuffer.wrap(Hex.decodeHex("038080801B000100048080800D6C11000000000A1CB4000A1CB4068080800102"))));
         mp4v.addBox(esds);
+        this.syncSamples = new long[jpegs.length];
+        for (int i = 0; i < this.syncSamples.length; i++) {
+            this.syncSamples[i] = i;
+
+        }
+
+        double earliestTrackPresentationTime = 0;
+        boolean acceptDwell = true;
+        boolean acceptEdit = true;
+        for (Edit edit : alignTo.getEdits()) {
+            if (edit.getMediaTime() == -1 && !acceptDwell) {
+                throw new RuntimeException("Cannot accept edit list for processing (1)");
+            }
+            if (edit.getMediaTime() >= 0 && !acceptEdit) {
+                throw new RuntimeException("Cannot accept edit list for processing (2)");
+            }
+            if (edit.getMediaTime() == -1) {
+                earliestTrackPresentationTime += edit.getSegmentDuration();
+            } else /* if edit.getMediaTime() >= 0 */ {
+                earliestTrackPresentationTime -= (double) edit.getMediaTime() / edit.getTimeScale();
+                acceptEdit = false;
+                acceptDwell = false;
+            }
+        }
+        if (alignTo.getCompositionTimeEntries() != null && alignTo.getCompositionTimeEntries().size() > 0) {
+            long currentTime = 0;
+            int[] ptss = Arrays.copyOfRange(CompositionTimeToSample.blowupCompositionTimes(alignTo.getCompositionTimeEntries()), 0, 50);
+            for (int j = 0; j < ptss.length; j++) {
+                ptss[j] += currentTime;
+                currentTime += alignTo.getSampleDurations()[j];
+            }
+            Arrays.sort(ptss);
+            earliestTrackPresentationTime += (double) ptss[0] / alignTo.getTrackMetaData().getTimescale();
+
+        }
+
+        if (earliestTrackPresentationTime < 0) {
+            getEdits().add(new Edit((long) (-earliestTrackPresentationTime * getTrackMetaData().getTimescale()), getTrackMetaData().getTimescale(), 1.0, (double) getDuration() / getTrackMetaData().getTimescale()));
+        } else if (earliestTrackPresentationTime > 0) {
+            getEdits().add(new Edit(-1, getTrackMetaData().getTimescale(), 1.0, earliestTrackPresentationTime));
+            getEdits().add(new Edit(0, getTrackMetaData().getTimescale(), 1.0, (double) getDuration() / getTrackMetaData().getTimescale()));
+        }
 
     }
 
@@ -86,6 +133,12 @@ public class OneJpegPerIframe extends AbstractTrack {
         return "vide";
     }
 
+    @Override
+    public long[] getSyncSamples() {
+        return syncSamples;
+    }
+
+
     public List<Sample> getSamples() {
         return new AbstractList<Sample>() {
 
@@ -98,6 +151,7 @@ public class OneJpegPerIframe extends AbstractTrack {
             public Sample get(final int index) {
                 return new Sample() {
                     ByteBuffer sample = null;
+
                     public void writeTo(WritableByteChannel channel) throws IOException {
                         RandomAccessFile raf = new RandomAccessFile(jpegs[index], "r");
                         raf.getChannel().transferTo(0, raf.length(), channel);
@@ -109,7 +163,7 @@ public class OneJpegPerIframe extends AbstractTrack {
                     }
 
                     public ByteBuffer asByteBuffer() {
-                        if (sample==null) {
+                        if (sample == null) {
                             try {
                                 RandomAccessFile raf = new RandomAccessFile(jpegs[index], "r");
                                 sample = raf.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, raf.length());
