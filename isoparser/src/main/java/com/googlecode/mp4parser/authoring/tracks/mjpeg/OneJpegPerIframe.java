@@ -74,7 +74,7 @@ public class OneJpegPerIframe extends AbstractTrack {
         mp4v.addBox(esds);
         this.syncSamples = new long[jpegs.length];
         for (int i = 0; i < this.syncSamples.length; i++) {
-            this.syncSamples[i] = i;
+            this.syncSamples[i] = i +1;
 
         }
 
