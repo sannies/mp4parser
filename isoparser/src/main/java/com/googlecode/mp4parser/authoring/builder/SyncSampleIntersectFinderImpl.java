@@ -279,11 +279,11 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
 
         final long scalingFactor = calculateTracktimesScalingFactor(m, track);
 
-        while (currentSample < syncSamples[syncSamples.length - 1]) {
+        while (currentSample <= syncSamples[syncSamples.length - 1]) {
             if (currentSample == syncSamples[currentSyncSampleIndex]) {
                 syncSampleTimes[currentSyncSampleIndex++] = currentDuration * scalingFactor;
             }
-            currentDuration += track.getSampleDurations()[currentSample++];
+            currentDuration += track.getSampleDurations()[-1 + currentSample++];
         }
         return syncSampleTimes;
     }
