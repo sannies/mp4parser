@@ -828,7 +828,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
             for (Edit edit : track.getEdits()) {
                 entries.add(new EditListBox.Entry(elst,
-                        (long) (edit.getSegmentDuration() * movie.getTimescale()),
+                        Math.round(edit.getSegmentDuration() * movie.getTimescale()),
                         edit.getMediaTime() * track.getTrackMetaData().getTimescale() / edit.getTimeScale(),
                         edit.getMediaRate()));
             }
