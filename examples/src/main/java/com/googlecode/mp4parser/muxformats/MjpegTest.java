@@ -30,10 +30,6 @@ public class MjpegTest {
         Movie mRef = MovieCreator.build("C:\\content\\bbb-small\\output_320x180_150.mp4");
         Track refTrack = mRef.getTracks().get(0);
 
-        for (long l : refTrack.getSyncSamples()) {
-            System.err.println(String.format("ffmpeg -i C:\\content\\bbb-small\\output_320x180_150.mp4 -y -f image2 -vf select=eq(n\\," + (l-1) + ")   -vsync vfr  C:\\content\\bbb-small\\output_320x180_thumbs_%04d.jpg\n", l-1));
-        }
-
         File baseDir = new File("C:\\content\\bbb-small");
         File[] iFrameJpegs = baseDir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
