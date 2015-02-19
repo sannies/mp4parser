@@ -184,8 +184,8 @@ public class DTSTrackImpl extends AbstractTrack {
     }
 
     private boolean parseAuprhdr(int size, ByteBuffer bb) {
-        int audioPresIndex = bb.get();
-        int bitwAupresData = bb.getShort();
+        int audioPresIndex = bb.get();  // Audio_Pres_Index
+        int bitwAupresData = bb.getShort(); // Bitw_Aupres_Metadata
         int a = bb.get();
         int b = bb.getShort();
         maxSampleRate = (a << 16) | (b & 0xffff);
@@ -220,6 +220,9 @@ public class DTSTrackImpl extends AbstractTrack {
         return true;
     }
 
+    /**
+     * EXTSS_MD
+     */
     private boolean parseExtssmd(int size, ByteBuffer bb) {
         int a = bb.get();
         int b = bb.getShort();
@@ -246,25 +249,25 @@ public class DTSTrackImpl extends AbstractTrack {
         ByteBuffer bb = dataSource.map(0, 25000);
         int testHeader1 = bb.getInt();
         int testHeader2 = bb.getInt();
-        if (testHeader1 != 0x44545348 || (testHeader2 != 0x44484452)) { // This is NOT a DTSHD file that has some extra metadata
-            return false;
+        if (testHeader1 != 0x44545348 || (testHeader2 != 0x44484452)) { // ASCII: DTSHDHDR
+        throw new IOException("data does not start with 'DTSHDHDR' as required for a DTS-HD file");
         }
 
-        while ((testHeader1 != 0x5354524d || testHeader2 != 0x44415441) && bb.remaining() > 100) {
+        while ((testHeader1 != 0x5354524d || testHeader2 != 0x44415441) && bb.remaining() > 100) { // ASCII: STRMDATA
             int size = (int) bb.getLong();
-            if (testHeader1 == 0x44545348 && testHeader2 == 0x44484452) {
+            if (testHeader1 == 0x44545348 && testHeader2 == 0x44484452) { // ASCII: DTSHDHDR
                 if (!parseDtshdhdr(size, bb)) {
                     return false;
                 }
-            } else if (testHeader1 == 0x434f5245 && testHeader2 == 0x53534d44) {
+            } else if (testHeader1 == 0x434f5245 && testHeader2 == 0x53534d44) { // ASCII: CORESSMD
                 if (!parseCoressmd(size, bb)) {
                     return false;
                 }
-            } else if (testHeader1 == 0x41555052 && testHeader2 == 0x2d484452) {
+            } else if (testHeader1 == 0x41555052 && testHeader2 == 0x2d484452) { // ASCII: AUPR-HDR
                 if (!parseAuprhdr(size, bb)) {
                     return false;
                 }
-            } else if (testHeader1 == 0x45585453 && testHeader2 == 0x535f4d44) {
+            } else if (testHeader1 == 0x45585453 && testHeader2 == 0x535f4d44) { // ASCII: EXTSS_MD
                 if (!parseExtssmd(size, bb)) {
                     return false;
                 }
@@ -276,7 +279,7 @@ public class DTSTrackImpl extends AbstractTrack {
             testHeader1 = bb.getInt();
             testHeader2 = bb.getInt();
         }
-        bb.getLong(); // Data size, not needed here
+        long dataSize = bb.getLong(); // Data size, not needed here
         dataOffset = bb.position();
 
         int amode = -1;
@@ -298,7 +301,7 @@ public class DTSTrackImpl extends AbstractTrack {
         while (!done) {
             int offset = bb.position();
             int sync = bb.getInt();
-            if (sync == 0x7ffe8001) {
+            if (sync == 0x7ffe8001) { // DTS_SYNCWORD_CORE
                 if (corePresent == 1) {
                     done = true;
                 } else {
@@ -550,7 +553,7 @@ public class DTSTrackImpl extends AbstractTrack {
                     }
                     bb.position(offset + fsize + 1);
                 }
-            } else if (sync == 0x64582025) {
+            } else if (sync == 0x64582025) { // DTS_SYNCWORD_SUBSTREAM
                 if (corePresent == -1) {
                     corePresent = 0;
                     samplesPerFrame = samplesPerFrameAtMaxFs;
@@ -611,8 +614,9 @@ public class DTSTrackImpl extends AbstractTrack {
                 }
                 bb.position(offset + nuExtSSFsize);
             } else {
-                done = true;
+                throw new IOException("No DTS_SYNCWORD_* found at " + bb.position());
             }
+
         }
         int fd = -1;
         switch (samplesPerFrame)

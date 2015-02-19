@@ -24,7 +24,7 @@ import com.googlecode.mp4parser.authoring.Track;
 public interface FragmentIntersectionFinder {
     /**
      * Gets the ordinal number of the samples which will be the first sample
-     * in each fragment.
+     * in each fragment (First sample == 1).
      *
      * @param track concerned track
      * @return an array containing the ordinal of each fragment's first sample
