@@ -1,16 +1,18 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
+import com.coremedia.iso.Hex;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.DTSSpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 
+import java.io.EOFException;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
@@ -102,7 +104,7 @@ public class DTSTrackImpl extends AbstractTrack {
         trackMetaData.setLanguage(lang);
         trackMetaData.setTimescale(samplerate); // Audio tracks always use samplerate as timescale
 
-        samples = readSamples();
+
     }
 
 
@@ -139,7 +141,7 @@ public class DTSTrackImpl extends AbstractTrack {
         return "soun";
     }
 
-    private boolean parseDtshdhdr(int size, ByteBuffer bb) {
+    private void parseDtshdhdr(int size, ByteBuffer bb) {
         int hdrVersion = bb.getInt();
         int timeCodeHigh = bb.get();
         int timeCode = bb.getInt();
@@ -165,7 +167,6 @@ public class DTSTrackImpl extends AbstractTrack {
             bb.get();
             i++;
         }
-        return true;
     }
 
     private boolean parseCoressmd(int size, ByteBuffer bb) {
@@ -250,15 +251,13 @@ public class DTSTrackImpl extends AbstractTrack {
         int testHeader1 = bb.getInt();
         int testHeader2 = bb.getInt();
         if (testHeader1 != 0x44545348 || (testHeader2 != 0x44484452)) { // ASCII: DTSHDHDR
-        throw new IOException("data does not start with 'DTSHDHDR' as required for a DTS-HD file");
+            throw new IOException("data does not start with 'DTSHDHDR' as required for a DTS-HD file");
         }
 
         while ((testHeader1 != 0x5354524d || testHeader2 != 0x44415441) && bb.remaining() > 100) { // ASCII: STRMDATA
             int size = (int) bb.getLong();
             if (testHeader1 == 0x44545348 && testHeader2 == 0x44484452) { // ASCII: DTSHDHDR
-                if (!parseDtshdhdr(size, bb)) {
-                    return false;
-                }
+                parseDtshdhdr(size, bb);
             } else if (testHeader1 == 0x434f5245 && testHeader2 == 0x53534d44) { // ASCII: CORESSMD
                 if (!parseCoressmd(size, bb)) {
                     return false;
@@ -298,6 +297,7 @@ public class DTSTrackImpl extends AbstractTrack {
 
         boolean done = false;
 
+
         while (!done) {
             int offset = bb.position();
             int sync = bb.getInt();
@@ -323,163 +323,12 @@ public class DTSTrackImpl extends AbstractTrack {
                     frameSize += fsize + 1;
                     amode = brb.readBits(6); // Calc channel layout from this
                     int sfreq = brb.readBits(4);
-                    switch (sfreq)
 
-                    {
-                        case 1:
-                            samplerate = 8000;
-                            break;
-
-                        case 2:
-                            samplerate = 16000;
-                            break;
-
-                        case 3:
-                            samplerate = 32000;
-                            break;
-
-                        case 6:
-                            samplerate = 11025;
-                            break;
-
-                        case 7:
-                            samplerate = 22050;
-                            break;
-
-                        case 8:
-                            samplerate = 44100;
-                            break;
-
-                        case 11:
-                            samplerate = 12000;
-                            break;
-
-                        case 12:
-                            samplerate = 24000;
-                            break;
-
-                        case 13:
-                            samplerate = 48000;
-                            break;
-
-                        default: // No other base samplerates allowed
-                            return false;
-
-                    }
+                    samplerate = getSampleRate(sfreq);
 
                     int rate = brb.readBits(5);
 
-                    switch (rate)
-
-                    {
-                        case 0:
-                            bitrate = 32;
-                            break;
-
-                        case 1:
-                            bitrate = 56;
-                            break;
-
-                        case 2:
-                            bitrate = 64;
-                            break;
-
-                        case 3:
-                            bitrate = 96;
-                            break;
-
-                        case 4:
-                            bitrate = 112;
-                            break;
-
-                        case 5:
-                            bitrate = 128;
-                            break;
-
-                        case 6:
-                            bitrate = 192;
-                            break;
-
-                        case 7:
-                            bitrate = 224;
-                            break;
-
-                        case 8:
-                            bitrate = 256;
-                            break;
-
-                        case 9:
-                            bitrate = 320;
-                            break;
-
-                        case 10:
-                            bitrate = 384;
-                            break;
-
-                        case 11:
-                            bitrate = 448;
-                            break;
-
-                        case 12:
-                            bitrate = 512;
-                            break;
-
-                        case 13:
-                            bitrate = 576;
-                            break;
-
-                        case 14:
-                            bitrate = 640;
-                            break;
-
-                        case 15:
-                            bitrate = 768;
-                            break;
-
-                        case 16:
-                            bitrate = 960;
-                            break;
-
-                        case 17:
-                            bitrate = 1024;
-                            break;
-
-                        case 18:
-                            bitrate = 1152;
-                            break;
-
-                        case 19:
-                            bitrate = 1280;
-                            break;
-
-                        case 20:
-                            bitrate = 1344;
-                            break;
-
-                        case 21:
-                            bitrate = 1408;
-                            break;
-
-                        case 22:
-                            bitrate = 1411;
-                            break;
-
-                        case 23:
-                            bitrate = 1472;
-                            break;
-
-                        case 24:
-                            bitrate = 1536;
-                            break;
-
-                        case 25:
-                            bitrate = -1; // Open, some other bitrate....
-                            break;
-
-                        default:
-                            return false;
-
-                    }
+                    bitrate = getBitRate(rate);
 
                     int fixedBit = brb.readBits(1);
                     if (fixedBit != 0)
@@ -794,44 +643,305 @@ public class DTSTrackImpl extends AbstractTrack {
                 }
             }
         }
+        samples = generateSamples(dataSource, dataOffset);
+        sampleDurations = new long[samples.size()];
+        Arrays.fill(sampleDurations, samplesPerFrame );
+
         return true;
     }
 
-    private List<Sample> readSamples() throws IOException {
+    private List<Sample> generateSamples(DataSource dataSource, int dataOffset) throws IOException {
+        LookAhead la = new LookAhead(dataSource, dataOffset);
+        ByteBuffer sample;
+        List<Sample> mySamples = new ArrayList<Sample>();
 
-        final long size = (dataSource.size() - dataOffset)/ frameSize;
-        sampleDurations = new long[l2i(size)];
-        Arrays.fill(sampleDurations, samplesPerFrame * samplerate / trackMetaData.getTimescale());
-        return new AbstractList<Sample>() {
+        while ((sample = la.findNextStart()) != null) {
+            final ByteBuffer finalSample = sample;
+            mySamples.add(new Sample() {
+                public void writeTo(WritableByteChannel channel) throws IOException {
+                    channel.write((ByteBuffer) finalSample.rewind());
+                }
 
-            @Override
-            public int size() {
-                return l2i(size);
+                public long getSize() {
+                    return finalSample.rewind().remaining();
+                }
+
+                public ByteBuffer asByteBuffer() {
+                    return finalSample;
+                }
+            });
+            //System.err.println(finalSample.remaining());
+        }
+        System.err.println("all samples found");
+        return mySamples;
+    }
+
+    private int getBitRate(int rate) throws IOException {
+        int bitrate;
+        switch (rate)
+
+        {
+            case 0:
+                bitrate = 32;
+                break;
+
+            case 1:
+                bitrate = 56;
+                break;
+
+            case 2:
+                bitrate = 64;
+                break;
+
+            case 3:
+                bitrate = 96;
+                break;
+
+            case 4:
+                bitrate = 112;
+                break;
+
+            case 5:
+                bitrate = 128;
+                break;
+
+            case 6:
+                bitrate = 192;
+                break;
+
+            case 7:
+                bitrate = 224;
+                break;
+
+            case 8:
+                bitrate = 256;
+                break;
+
+            case 9:
+                bitrate = 320;
+                break;
+
+            case 10:
+                bitrate = 384;
+                break;
+
+            case 11:
+                bitrate = 448;
+                break;
+
+            case 12:
+                bitrate = 512;
+                break;
+
+            case 13:
+                bitrate = 576;
+                break;
+
+            case 14:
+                bitrate = 640;
+                break;
+
+            case 15:
+                bitrate = 768;
+                break;
+
+            case 16:
+                bitrate = 960;
+                break;
+
+            case 17:
+                bitrate = 1024;
+                break;
+
+            case 18:
+                bitrate = 1152;
+                break;
+
+            case 19:
+                bitrate = 1280;
+                break;
+
+            case 20:
+                bitrate = 1344;
+                break;
+
+            case 21:
+                bitrate = 1408;
+                break;
+
+            case 22:
+                bitrate = 1411;
+                break;
+
+            case 23:
+                bitrate = 1472;
+                break;
+
+            case 24:
+                bitrate = 1536;
+                break;
+
+            case 25:
+                bitrate = -1; // Open, some other bitrate....
+                break;
+
+            default:
+                throw new IOException("Unknown bitrate value");
+
+        }
+        return bitrate;
+    }
+
+    private int getSampleRate(int sfreq) throws IOException {
+        int samplerate;
+        switch (sfreq)
+
+        {
+            case 1:
+                samplerate = 8000;
+                break;
+
+            case 2:
+                samplerate = 16000;
+                break;
+
+            case 3:
+                samplerate = 32000;
+                break;
+
+            case 6:
+                samplerate = 11025;
+                break;
+
+            case 7:
+                samplerate = 22050;
+                break;
+
+            case 8:
+                samplerate = 44100;
+                break;
+
+            case 11:
+                samplerate = 12000;
+                break;
+
+            case 12:
+                samplerate = 24000;
+                break;
+
+            case 13:
+                samplerate = 48000;
+                break;
+
+            default: // No other base samplerates allowed
+                throw new IOException("Unknown Sample Rate");
+
+        }
+        return samplerate;
+    }
+
+
+
+    private static int BUFFER = 1024 * 1024 * 64;
+
+    class LookAhead {
+        long bufferStartPos;
+        int inBufferPos = 0;
+        DataSource dataSource;
+        ByteBuffer buffer;
+
+        long start;
+
+        LookAhead(DataSource dataSource, long bufferStartPos) throws IOException {
+            this.dataSource = dataSource;
+            this.bufferStartPos = bufferStartPos;
+            fillBuffer();
+        }
+
+        public ByteBuffer findNextStart() throws IOException {
+            try {
+                while (!this.nextFourEquals0x7FFE8001()) {
+                    this.discardByte();
+                }
+                this.discardNext4AndMarkStart();
+
+                while (!this.nextFourEquals0x7FFE8001orEof()) {
+                    this.discardQWord();
+                }
+                return this.getSample();
+            } catch (EOFException e) {
+                return null;
+            }
+        }
+
+        private void fillBuffer() throws IOException {
+            System.err.println("Fill Buffer");
+            buffer = dataSource.map(bufferStartPos, Math.min(dataSource.size() - bufferStartPos, BUFFER));
+        }
+
+        private boolean nextFourEquals0x7FFE8001() throws IOException {
+            if (buffer.limit() - inBufferPos >= 4) {
+                return ((buffer.get(inBufferPos) ==  127 /*0x7F */&&
+                        buffer.get(inBufferPos + 1) == -2/*0xfe*/ &&
+                        buffer.get(inBufferPos + 2) == -128 /*0x80*/ &&
+                        (buffer.get(inBufferPos + 3) == 0x01)));
+            }
+            if (bufferStartPos + inBufferPos + 4 >= dataSource.size()) {
+                throw new EOFException();
+            }
+            return false;
+        }
+
+        private boolean nextFourEquals0x7FFE8001orEof() throws IOException {
+            if (buffer.limit() - inBufferPos >= 4) {
+/*                byte[] code = new byte[]{buffer.get(inBufferPos), buffer.get(inBufferPos + 1),
+                        buffer.get(inBufferPos + 2),
+                        buffer.get(inBufferPos + 3)};*/
+                if (((bufferStartPos + inBufferPos) % (1024 * 1024)) == 0) {
+                    System.err.println("" + ((bufferStartPos + inBufferPos) / 1024 / 1024));
+                }
+                return ((buffer.get(inBufferPos) ==  127 /*0x7F */&&
+                        buffer.get(inBufferPos + 1) == -2/*0xfe*/ &&
+                        buffer.get(inBufferPos + 2) == -128 /*0x80*/ &&
+                        (buffer.get(inBufferPos + 3) == 0x01)));
+            } else {
+                if (bufferStartPos + inBufferPos + 4 > dataSource.size()) {
+                    return bufferStartPos + inBufferPos == dataSource.size();
+                } else {
+                    bufferStartPos = start;
+                    inBufferPos = 0;
+                    fillBuffer();
+                    return nextFourEquals0x7FFE8001();
+                }
+            }
+        }
+
+
+        private void discardByte() {
+            inBufferPos += 1;
+        }
+        private void discardQWord() {
+            inBufferPos += 4;
+        }
+
+
+        private void discardNext4AndMarkStart() {
+            start = bufferStartPos + inBufferPos;
+            inBufferPos += 4;
+        }
+
+        private ByteBuffer getSample() {
+            if (start >= bufferStartPos) {
+                buffer.position((int) (start - bufferStartPos));
+                Buffer sample = buffer.slice();
+                sample.limit((int) (inBufferPos - (start - bufferStartPos)));
+                return (ByteBuffer) sample;
+            } else {
+                throw new RuntimeException("damn! NAL exceeds buffer");
+                // this can only happen if NAL is bigger than the buffer
             }
 
-            @Override
-            public Sample get(final int index) {
-                return new Sample() {
-                    public void writeTo(WritableByteChannel channel) throws IOException {
-                        dataSource.transferTo((long)dataOffset + (long)index * frameSize, frameSize, channel);
-                    }
-
-                    public long getSize() {
-                        return frameSize;
-                    }
-
-                    public ByteBuffer asByteBuffer() {
-                        try {
-                            return dataSource.map(dataOffset + index * frameSize, frameSize);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                };
-            }
-        };
-
-
+        }
     }
 
 
