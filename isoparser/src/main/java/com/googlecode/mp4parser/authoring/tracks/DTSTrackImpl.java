@@ -1,6 +1,5 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.Hex;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.googlecode.mp4parser.DataSource;
@@ -16,8 +15,6 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
-
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 
 public class DTSTrackImpl extends AbstractTrack {
@@ -278,7 +275,7 @@ public class DTSTrackImpl extends AbstractTrack {
             testHeader1 = bb.getInt();
             testHeader2 = bb.getInt();
         }
-        long dataSize = bb.getLong(); // Data size, not needed here
+        long dataSize = bb.getLong();
         dataOffset = bb.position();
 
         int amode = -1;
@@ -643,15 +640,15 @@ public class DTSTrackImpl extends AbstractTrack {
                 }
             }
         }
-        samples = generateSamples(dataSource, dataOffset);
+        samples = generateSamples(dataSource, dataOffset, dataSize, corePresent);
         sampleDurations = new long[samples.size()];
         Arrays.fill(sampleDurations, samplesPerFrame );
 
         return true;
     }
 
-    private List<Sample> generateSamples(DataSource dataSource, int dataOffset) throws IOException {
-        LookAhead la = new LookAhead(dataSource, dataOffset);
+    private List<Sample> generateSamples(DataSource dataSource, int dataOffset, long dataSize, int corePresent) throws IOException {
+        LookAhead la = new LookAhead(dataSource, dataOffset, dataSize , corePresent);
         ByteBuffer sample;
         List<Sample> mySamples = new ArrayList<Sample>();
 
@@ -842,30 +839,36 @@ public class DTSTrackImpl extends AbstractTrack {
 
 
 
-    private static int BUFFER = 1024 * 1024 * 64;
+    private static final int BUFFER = 1024 * 1024 * 64;
 
     class LookAhead {
+        private final int corePresent;
         long bufferStartPos;
         int inBufferPos = 0;
         DataSource dataSource;
+        long dataEnd;
         ByteBuffer buffer;
 
         long start;
 
-        LookAhead(DataSource dataSource, long bufferStartPos) throws IOException {
+        LookAhead(DataSource dataSource, long bufferStartPos, long dataSize, int corePresent) throws IOException {
             this.dataSource = dataSource;
             this.bufferStartPos = bufferStartPos;
+            this.dataEnd = dataSize + bufferStartPos;
+            this.corePresent = corePresent;
             fillBuffer();
         }
 
         public ByteBuffer findNextStart() throws IOException {
             try {
-                while (!this.nextFourEquals0x7FFE8001()) {
+                // If core DTS stream is present then sync word is 0x7FFE8001
+                // otherwise 0x64582025
+                while (corePresent==1?!this.nextFourEquals0x7FFE8001():!nextFourEquals0x64582025()) {
                     this.discardByte();
                 }
                 this.discardNext4AndMarkStart();
 
-                while (!this.nextFourEquals0x7FFE8001orEof()) {
+                while (corePresent==1?!this.nextFourEquals0x7FFE8001orEof():!nextFourEquals0x64582025orEof()) {
                     this.discardQWord();
                 }
                 return this.getSample();
@@ -874,39 +877,52 @@ public class DTSTrackImpl extends AbstractTrack {
             }
         }
 
+
         private void fillBuffer() throws IOException {
             System.err.println("Fill Buffer");
-            buffer = dataSource.map(bufferStartPos, Math.min(dataSource.size() - bufferStartPos, BUFFER));
+            buffer = dataSource.map(bufferStartPos, Math.min(dataEnd - bufferStartPos, BUFFER));
+        }
+
+        private boolean nextFourEquals0x64582025() throws IOException {
+            return nextFourEquals((byte) 100, (byte) 88, (byte) 32, (byte) 37);
         }
 
         private boolean nextFourEquals0x7FFE8001() throws IOException {
+            return nextFourEquals((byte) 127, (byte) -2, (byte) -128, (byte) 1);
+        }
+
+        private boolean nextFourEquals(byte a, byte b, byte c, byte d) throws IOException {
             if (buffer.limit() - inBufferPos >= 4) {
-                return ((buffer.get(inBufferPos) ==  127 /*0x7F */&&
-                        buffer.get(inBufferPos + 1) == -2/*0xfe*/ &&
-                        buffer.get(inBufferPos + 2) == -128 /*0x80*/ &&
-                        (buffer.get(inBufferPos + 3) == 0x01)));
+                return ((buffer.get(inBufferPos) ==  a &&
+                        buffer.get(inBufferPos + 1) == b &&
+                        buffer.get(inBufferPos + 2) == c &&
+                        (buffer.get(inBufferPos + 3) == d)));
             }
             if (bufferStartPos + inBufferPos + 4 >= dataSource.size()) {
                 throw new EOFException();
             }
             return false;
         }
+        private boolean nextFourEquals0x64582025orEof() throws IOException {
+            return nextFourEqualsOrEof((byte) 100, (byte) 88, (byte) 32, (byte) 37);
+        }
+
 
         private boolean nextFourEquals0x7FFE8001orEof() throws IOException {
+            return nextFourEqualsOrEof((byte) 127, (byte) -2, (byte) -128, (byte) 1);
+        }
+        private boolean nextFourEqualsOrEof(byte a, byte b, byte c, byte d) throws IOException {
             if (buffer.limit() - inBufferPos >= 4) {
-/*                byte[] code = new byte[]{buffer.get(inBufferPos), buffer.get(inBufferPos + 1),
-                        buffer.get(inBufferPos + 2),
-                        buffer.get(inBufferPos + 3)};*/
                 if (((bufferStartPos + inBufferPos) % (1024 * 1024)) == 0) {
                     System.err.println("" + ((bufferStartPos + inBufferPos) / 1024 / 1024));
                 }
-                return ((buffer.get(inBufferPos) ==  127 /*0x7F */&&
-                        buffer.get(inBufferPos + 1) == -2/*0xfe*/ &&
-                        buffer.get(inBufferPos + 2) == -128 /*0x80*/ &&
-                        (buffer.get(inBufferPos + 3) == 0x01)));
+                return ((buffer.get(inBufferPos) ==  a /*0x7F */&&
+                        buffer.get(inBufferPos + 1) == b/*0xfe*/ &&
+                        buffer.get(inBufferPos + 2) == c /*0x80*/ &&
+                        (buffer.get(inBufferPos + 3) == d)));
             } else {
-                if (bufferStartPos + inBufferPos + 4 > dataSource.size()) {
-                    return bufferStartPos + inBufferPos == dataSource.size();
+                if (bufferStartPos + inBufferPos + 4 > dataEnd) {
+                    return bufferStartPos + inBufferPos == dataEnd;
                 } else {
                     bufferStartPos = start;
                     inBufferPos = 0;
