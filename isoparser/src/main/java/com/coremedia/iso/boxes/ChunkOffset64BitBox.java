@@ -25,6 +25,11 @@ public class ChunkOffset64BitBox extends ChunkOffsetBox {
     }
 
     @Override
+    public void setChunkOffsets(long[] chunkOffsets) {
+        this.chunkOffsets = chunkOffsets;
+    }
+
+    @Override
     protected long getContentSize() {
         return 8 + 8 * chunkOffsets.length;
     }

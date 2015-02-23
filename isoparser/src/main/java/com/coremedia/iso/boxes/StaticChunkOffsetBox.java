@@ -44,6 +44,7 @@ public class StaticChunkOffsetBox extends ChunkOffsetBox {
         return 8 + chunkOffsets.length * 4;
     }
 
+    @Override
     public void setChunkOffsets(long[] chunkOffsets) {
         this.chunkOffsets = chunkOffsets;
     }
