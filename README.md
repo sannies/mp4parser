@@ -1,5 +1,8 @@
 ![MWC](https://raw.githubusercontent.com/castlabs/dashencrypt/master/mwc.png)
 
+I'm at the MWC with castLabs. Visit us and say hello. I'd like to meet some people using the software. 
+
+
 Java MP4 Parser
 ====================
 
