@@ -1,3 +1,5 @@
+![MWC](https://raw.githubusercontent.com/castlabs/dashencrypt/master/mwc.png)
+
 Java MP4 Parser
 ====================
 
