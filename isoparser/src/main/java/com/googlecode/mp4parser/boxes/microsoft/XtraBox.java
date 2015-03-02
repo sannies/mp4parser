@@ -17,12 +17,16 @@
 package com.googlecode.mp4parser.boxes.microsoft;
 
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Date;
 import java.util.Vector;
 
+import org.apache.commons.io.HexDump;
+
+import com.coremedia.iso.Utf8;
 import com.googlecode.mp4parser.AbstractBox;
 
 
@@ -107,6 +111,13 @@ public class XtraBox extends AbstractBox {
     	return b.toString();
     }
 
+    private static void dumpByteBuffer( ByteBuffer input ) throws ArrayIndexOutOfBoundsException, IllegalArgumentException, IOException {
+    	input = input.slice();
+    	byte bytes[] = new byte[input.remaining()];
+    	input.get( bytes );
+    	HexDump.dump( bytes, 0, System.out, 0 );
+    }
+    
     @Override
     public void _parseDetails(ByteBuffer content) {
         int boxSize = content.remaining();
@@ -119,14 +130,16 @@ public class XtraBox extends AbstractBox {
 	        	tag.parse( content );
 	        	tags.addElement( tag );
 	        }
-	        if( boxSize != detailSize() ) {
-        		throw new RuntimeException( "Improperly handled Xtra tag: Overall sizes don't match ( " + boxSize + "/" + detailSize() + ")" );
+	        int calcSize = detailSize();
+	        if( boxSize != calcSize ) {
+        		throw new RuntimeException( "Improperly handled Xtra tag: Calculated sizes don't match ( " + boxSize + "/" + calcSize + ")" );
 	        }
 	        successfulParse = true;
     	}
     	catch( Exception e ) {
     		successfulParse = false;
     		System.err.println( "Malformed Xtra Tag detected: " + e.toString() );
+    		e.printStackTrace();
             content.position(content.position() + content.remaining());
     	}
     	finally {
@@ -370,7 +383,6 @@ public class XtraBox extends AbstractBox {
 
     
     private static class XtraValue {
-    	public int length;
     	public int type;
 
     	public String stringValue;
@@ -410,7 +422,7 @@ public class XtraBox extends AbstractBox {
     	}
     	
 		private void parse(ByteBuffer content) {
-    		length = content.getInt() - 6;
+    		int length = content.getInt() - 6; //length + type are included in length
     		type = content.getShort();
         	content.order( ByteOrder.LITTLE_ENDIAN);
     		switch( type ) {
@@ -436,6 +448,7 @@ public class XtraBox extends AbstractBox {
     	
 		private void getContent( ByteBuffer b ) {
 			try {
+				int length = getContentSize();
 				b.putInt( length );
 				b.putShort( (short)type );
 	        	b.order( ByteOrder.LITTLE_ENDIAN);
@@ -484,14 +497,14 @@ public class XtraBox extends AbstractBox {
     	public String toString() {
     		switch( type ) {
 				case MP4_XTRA_BT_UNICODE:
-					return stringValue;
+					return "[string]" + stringValue;
 				case MP4_XTRA_BT_INT64:
-					return String.valueOf( longValue );
+					return "[long]" + String.valueOf( longValue );
 				case MP4_XTRA_BT_FILETIME:
-					return fileTimeValue.toString();
+					return "[filetime]" + fileTimeValue.toString();
 				case MP4_XTRA_BT_GUID:
 				default:
-					return "(nonParsed)";
+					return "[GUID](nonParsed)";
     		
     		}
     	}
