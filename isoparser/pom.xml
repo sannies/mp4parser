@@ -176,8 +176,8 @@
     </mailingLists>
 
     <issueManagement>
-        <system>google-code</system>
-        <url>http://code.google.com/p/mp4parser/issues/list</url>
+        <system>github</system>
+        <url>https://github.com/sannies/mp4parser/issues</url>
     </issueManagement>
 
     <developers>
@@ -212,7 +212,7 @@
 
     <licenses>
         <license>
-            <name>Apache 2</name>
+            <name>Apache Software License - Version 2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
             <comments>A business-friendly OSS license</comments>

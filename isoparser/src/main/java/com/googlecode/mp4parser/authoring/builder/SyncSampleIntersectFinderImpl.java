@@ -36,8 +36,6 @@ import static com.googlecode.mp4parser.util.Math.lcm;
 public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder {
 
     private static Logger LOG = Logger.getLogger(SyncSampleIntersectFinderImpl.class.getName());
-    private static Map<CacheTuple, long[]> getTimesCache = new ConcurrentHashMap<CacheTuple, long[]>();
-    private static Map<CacheTuple, long[]> getSampleNumbersCache = new ConcurrentHashMap<CacheTuple, long[]>();
 
     private final int minFragmentDurationSeconds;
     private Movie movie;
@@ -76,18 +74,11 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
      * @return an array containing the ordinal of each fragment's first sample
      */
     public long[] sampleNumbers(Track track) {
-        final CacheTuple key = new CacheTuple(track, movie);
-        final long[] result = getSampleNumbersCache.get(key);
-        if (result != null) {
-            return result;
-        }
 
         if ("vide".equals(track.getHandler())) {
             if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
                 List<long[]> times = getSyncSamplesTimestamps(movie, track);
-                final long[] commonIndices = getCommonIndices(track.getSyncSamples(), getTimes(track, movie), track.getTrackMetaData().getTimescale(), times.toArray(new long[times.size()][]));
-                getSampleNumbersCache.put(key, commonIndices);
-                return commonIndices;
+                return getCommonIndices(track.getSyncSamples(), getTimes(track, movie), track.getTrackMetaData().getTimescale(), times.toArray(new long[times.size()][]));
             } else {
                 throw new RuntimeException("Video Tracks need sync samples. Only tracks other than video may have no sync samples.");
             }
@@ -137,7 +128,6 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                 for (int i = 0; i < syncSamples.length; i++) {
                     syncSamples[i] = (long) (1 + syncSamples[i] * factor / (double) samplesPerFrame);
                 }
-                getSampleNumbersCache.put(key, syncSamples);
                 return syncSamples;
             }
             throw new RuntimeException("There was absolutely no Track with sync samples. I can't work with that!");
@@ -157,7 +147,6 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
                         syncSamples[i] = start;
                         // The Stretch makes sure that there are as much audio and video chunks!
                     }
-                    getSampleNumbersCache.put(key, syncSamples);
                     return syncSamples;
                 }
             }
@@ -300,33 +289,4 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
         return timeScale;
     }
 
-    public static class CacheTuple {
-        Track track;
-        Movie movie;
-
-        public CacheTuple(Track track, Movie movie) {
-            this.track = track;
-            this.movie = movie;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            CacheTuple that = (CacheTuple) o;
-
-            if (movie != null ? !movie.equals(that.movie) : that.movie != null) return false;
-            if (track != null ? !track.equals(that.track) : that.track != null) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = track != null ? track.hashCode() : 0;
-            result = 31 * result + (movie != null ? movie.hashCode() : 0);
-            return result;
-        }
-    }
 }
