@@ -111,13 +111,15 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         currentChunkNo = 0;
         long sampleSum = 0;
         for (int i = 1; i <= ssb.getSampleCount(); i++) {
-            if (i == chunkNumsStartSampleNum[currentChunkNo]) {
+            while (i == chunkNumsStartSampleNum[currentChunkNo]) {
+                // you might think that an if statement is enough but unfortunately you might as well declare chunks without any samples!
                 currentChunkNo++;
                 sampleSum = 0;
-
             }
             chunkSizes[currentChunkNo - 1] += ssb.getSampleSizeAtIndex(i - 1);
-            sampleOffsetsWithinChunks[currentChunkNo - 1][i - chunkNumsStartSampleNum[currentChunkNo - 1]] = sampleSum;
+            long[] sampleOffsetsWithinChunkscurrentChunkNo = sampleOffsetsWithinChunks[currentChunkNo - 1];
+            int chunkNumsStartSampleNumcurrentChunkNo = chunkNumsStartSampleNum[currentChunkNo - 1];
+            sampleOffsetsWithinChunkscurrentChunkNo[i - chunkNumsStartSampleNumcurrentChunkNo] = sampleSum;
             sampleSum += ssb.getSampleSizeAtIndex(i - 1);
         }
 
@@ -173,12 +175,12 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
                         _chunkBuffers.add(topLevel.getByteBuffer(
                                 chunkOffset + currentStart,
                                 sampleOffsetsWithinChunk[i] - currentStart));
-                        currentStart =sampleOffsetsWithinChunk[i];
+                        currentStart = sampleOffsetsWithinChunk[i];
                     }
                 }
                 _chunkBuffers.add(topLevel.getByteBuffer(
                         chunkOffset + currentStart,
-                        -currentStart + sampleOffsetsWithinChunk[sampleOffsetsWithinChunk.length - 1] + ssb.getSampleSizeAtIndex(chunkStartSample + sampleOffsetsWithinChunk.length -1)));
+                        -currentStart + sampleOffsetsWithinChunk[sampleOffsetsWithinChunk.length - 1] + ssb.getSampleSizeAtIndex(chunkStartSample + sampleOffsetsWithinChunk.length - 1)));
                 chunkBuffers = _chunkBuffers.toArray(new ByteBuffer[_chunkBuffers.size()]);
                 cache[l2i(chunkNumber)] = chunkBuffers;
             } catch (IOException e) {
