@@ -34,6 +34,8 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * Encrypts a given track with common encryption.
  */
 public class CencEncryptingTrackImpl implements CencEncryptedTrack {
+    public boolean encryptButAllClear = false;
+
     private final String encryptionAlgo;
     Track source;
     Map<UUID, SecretKey> keys = new HashMap<UUID, SecretKey>();
@@ -56,12 +58,19 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
     public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, Map<UUID, SecretKey> keys,
                                    Map<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation,
                                    String encryptionAlgo, boolean dummyIvs) {
+        this(source, defaultKeyId, keys, keyRotation, encryptionAlgo, dummyIvs, false);
+    }
+    
+    public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, Map<UUID, SecretKey> keys,
+                                   Map<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation,
+                                   String encryptionAlgo, boolean dummyIvs, boolean encryptButAllClear) {
         this.source = source;
         this.keys = keys;
         this.defaultKeyId = defaultKeyId;
         this.dummyIvs = dummyIvs;
         this.encryptionAlgo = encryptionAlgo;
         this.sampleGroups = new HashMap<GroupEntry, long[]>();
+        this.encryptButAllClear = encryptButAllClear;
         for (Map.Entry<GroupEntry, long[]> entry : source.getSampleGroups().entrySet()) {
             if (!(entry.getKey() instanceof CencSampleEncryptionInformationGroupEntry)) {
                 sampleGroups.put(entry.getKey(), entry.getValue());
@@ -168,20 +177,24 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
 
 
                 if (subSampleEncryption) {
-                    List<CencSampleAuxiliaryDataFormat.Pair> pairs = new ArrayList<CencSampleAuxiliaryDataFormat.Pair>(5);
-                    while (sample.remaining() > 0) {
-                        int nalLength = l2i(IsoTypeReaderVariable.read(sample, nalLengthSize));
-                        int clearBytes;
-                        int nalGrossSize = nalLength + nalLengthSize;
-                        if (nalGrossSize >= 112) {
-                            clearBytes = 96 + nalGrossSize % 16;
-                        } else {
-                            clearBytes = nalGrossSize;
+                    if (encryptButAllClear) {
+                        e.pairs = new CencSampleAuxiliaryDataFormat.Pair[]{e.createPair(sample.remaining(), 0)};
+                    }else {
+                        List<CencSampleAuxiliaryDataFormat.Pair> pairs = new ArrayList<CencSampleAuxiliaryDataFormat.Pair>(5);
+                        while (sample.remaining() > 0) {
+                            int nalLength = l2i(IsoTypeReaderVariable.read(sample, nalLengthSize));
+                            int clearBytes;
+                            int nalGrossSize = nalLength + nalLengthSize;
+                            if (nalGrossSize >= 112) {
+                                clearBytes = 96 + nalGrossSize % 16;
+                            } else {
+                                clearBytes = nalGrossSize;
+                            }
+                            pairs.add(e.createPair(clearBytes, nalGrossSize - clearBytes));
+                            sample.position(sample.position() + nalLength);
                         }
-                        pairs.add(e.createPair(clearBytes, nalGrossSize - clearBytes));
-                        sample.position(sample.position() + nalLength);
+                        e.pairs = pairs.toArray(new CencSampleAuxiliaryDataFormat.Pair[pairs.size()]);
                     }
-                    e.pairs = pairs.toArray(new CencSampleAuxiliaryDataFormat.Pair[pairs.size()]);
                 }
 
                 ivInt = ivInt.add(one);
