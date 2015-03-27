@@ -67,10 +67,10 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
      * @param source unencrypted source file
      * @param defaultKeyId the default key ID - might be null if sample are not encrypted by default
      * @param keys key ID -> key map
-     * @param keyRotation
-     * @param encryptionAlgo
-     * @param dummyIvs
-     * @param encryptButAllClear
+     * @param keyRotation assigns an encryption group to a number of samples
+     * @param encryptionAlgo cenc or cbc1 (don't use cbc1)
+     * @param dummyIvs disables RNG for IVs and use IVs starting with 0x00...000
+     * @param encryptButAllClear will cause sub sample encryption format to keep full sample in clear (clear/encrypted pair will be len(sample)/0
      */
     public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, Map<UUID, SecretKey> keys,
                                    Map<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation,
