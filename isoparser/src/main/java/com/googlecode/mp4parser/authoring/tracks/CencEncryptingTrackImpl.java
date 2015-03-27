@@ -34,7 +34,6 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * Encrypts a given track with common encryption.
  */
 public class CencEncryptingTrackImpl implements CencEncryptedTrack {
-    public boolean encryptButAllClear = false;
 
     private final String encryptionAlgo;
     Track source;
@@ -59,8 +58,20 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
                                    Map<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation,
                                    String encryptionAlgo, boolean dummyIvs) {
         this(source, defaultKeyId, keys, keyRotation, encryptionAlgo, dummyIvs, false);
+
     }
-    
+
+    /**
+     * Encrypts a given source track.
+     *
+     * @param source unencrypted source file
+     * @param defaultKeyId the default key ID - might be null if sample are not encrypted by default
+     * @param keys key ID -> key map
+     * @param keyRotation
+     * @param encryptionAlgo
+     * @param dummyIvs
+     * @param encryptButAllClear
+     */
     public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, Map<UUID, SecretKey> keys,
                                    Map<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation,
                                    String encryptionAlgo, boolean dummyIvs, boolean encryptButAllClear) {
@@ -70,7 +81,6 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
         this.dummyIvs = dummyIvs;
         this.encryptionAlgo = encryptionAlgo;
         this.sampleGroups = new HashMap<GroupEntry, long[]>();
-        this.encryptButAllClear = encryptButAllClear;
         for (Map.Entry<GroupEntry, long[]> entry : source.getSampleGroups().entrySet()) {
             if (!(entry.getKey() instanceof CencSampleEncryptionInformationGroupEntry)) {
                 sampleGroups.put(entry.getKey(), entry.getValue());

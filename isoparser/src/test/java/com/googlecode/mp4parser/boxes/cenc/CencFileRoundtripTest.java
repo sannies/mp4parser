@@ -20,6 +20,7 @@ import org.junit.Test;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.*;
@@ -72,89 +73,96 @@ public class CencFileRoundtripTest {
 
     @Test
     public void testDefaultPlainFragMp4_cbc1() throws IOException {
-        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation3, "cbc1", null);
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation3, "cbc1", null, false);
     }
 
     @Test
     public void testDefaultPlainFragMp4_cenc() throws IOException {
-        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation3, "cenc", null);
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation3, "cenc", null, false);
     }
 
     @Test
     public void testDefaultPlainStdMp4_cbc1() throws IOException {
-        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation3, "cbc1", null);
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation3, "cbc1", null, false);
     }
 
     @Test
     public void testDefaultPlainStdMp4_cenc() throws IOException {
-        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation3, "cenc", null);
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation3, "cenc", null, false);
     }
 
     @Test
     public void testSingleKeyMp4_cbc1() throws IOException {
-        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, null, "cbc1", uuidDefault);
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, null, "cbc1", uuidDefault, false);
     }
 
     @Test
     public void testSingleKeyMp4_cenc() throws IOException {
-        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, null, "cenc", uuidDefault);
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, null, "cenc", uuidDefault, false);
     }
 
     @Test
     public void testMultipleKeysStdMp4_cbc1() throws IOException {
-        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cbc1", uuidDefault);
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cbc1", uuidDefault, false);
     }
 
 
     @Test
     public void testMultipleKeysFragMp4_cbc1() throws IOException {
-        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cbc1", uuidDefault);
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cbc1", uuidDefault, false);
     }
 
     @Test
     public void testMultipleKeysStdMp4_2_cbc1() throws IOException {
-        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cbc1", uuidDefault);
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cbc1", uuidDefault, false);
     }
 
     @Test
     public void testMultipleKeysFragMp4_2_cbc1() throws IOException {
-        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cbc1", uuidDefault);
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cbc1", uuidDefault, false);
     }
 
     @Test
     public void testMultipleKeysStdMp4_cenc() throws IOException {
-        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cenc", uuidDefault);
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cenc", uuidDefault, false);
     }
 
     @Test
     public void testMultipleKeysFragMp4_cenc() throws IOException {
-        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cenc", uuidDefault);
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cenc", uuidDefault, false);
     }
 
     @Test
     public void testMultipleKeysStdMp4_2_cenc() throws IOException {
-        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cenc", uuidDefault);
+        testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cenc", uuidDefault, false);
     }
 
     @Test
     public void testMultipleKeysFragMp4_2_cenc() throws IOException {
-        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cenc", uuidDefault);
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cenc", uuidDefault, false);
+    }
+
+
+    @Test
+    public void testMultipleKeysFragMp4_2_cenc_pseudo_encrypted() throws IOException {
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation2, "cenc", uuidDefault, true);
     }
 
     public void testMultipleKeys(Mp4Builder builder, String testFile, Map<UUID, SecretKey> keys,
                                  HashMap<CencSampleEncryptionInformationGroupEntry, long[]> keyRotation,
-                                 String encAlgo, UUID uuidDefault) throws IOException {
+                                 String encAlgo, UUID uuidDefault, boolean encryptButClear) throws IOException {
         Movie m1 = MovieCreator.build(testFile);
         Movie m2 = new Movie();
         for (Track track : m1.getTracks()) {
 
-            CencEncryptingTrackImpl cencEncryptingTrack = new CencEncryptingTrackImpl(track, uuidDefault, keys, keyRotation, encAlgo, false);
+            CencEncryptingTrackImpl cencEncryptingTrack = new CencEncryptingTrackImpl(track, uuidDefault, keys, keyRotation, encAlgo, false, encryptButClear);
             m2.addTrack(cencEncryptingTrack);
         }
         Container c = builder.build(m2);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         c.writeContainer(Channels.newChannel(baos));
+       // new FileOutputStream("c:\\dev\\mp4parser\\m2.mp4").write(baos.toByteArray());
 
         Movie m3 = MovieCreator.build(new MemoryDataSourceImpl(baos.toByteArray()));
 
