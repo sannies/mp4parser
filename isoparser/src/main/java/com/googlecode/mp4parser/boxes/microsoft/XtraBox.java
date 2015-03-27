@@ -27,22 +27,21 @@ import java.util.Vector;
 
 
 /**
+ * <h1>4cc = "{@value #TYPE}"</h1>
+ * Windows Media Xtra Box.
+ *
+ * I can't find definitive documentation on this from Microsoft so it's cobbled together from
+ * various sources. Mostly ExifTool for Perl.
+ *
+ * Various references:
+ * https://msdn.microsoft.com/en-us/library/windows/desktop/dd743066(v=vs.85).aspx
+ * https://metacpan.org/source/EXIFTOOL/Image-ExifTool-9.76/lib/Image/ExifTool/Microsoft.pm
+ * http://www.ventismedia.com/mantis/view.php?id=12017
+ * http://www.hydrogenaudio.org/forums/index.php?showtopic=75123&st=250
+ * http://www.mediamonkey.com/forum/viewtopic.php?f=1&t=76321
+ * https://code.google.com/p/mp4v2/issues/detail?id=113
+ *
  * @author marwatk
- *         <h1>4cc = "{@value #TYPE}"</h1>
- *         Windows Media Xtra Box.
- *         <p/>
- *         I can't find definitive documentation on this from Microsoft so it's cobbled together from
- *         various sources. Mostly ExifTool for Perl.
- *         <p/>
- *         Various references:
- *         https://msdn.microsoft.com/en-us/library/windows/desktop/dd743066(v=vs.85).aspx
- *         https://metacpan.org/source/EXIFTOOL/Image-ExifTool-9.76/lib/Image/ExifTool/Microsoft.pm
- *         http://www.ventismedia.com/mantis/view.php?id=12017
- *         http://www.hydrogenaudio.org/forums/index.php?showtopic=75123&st=250
- *         http://www.mediamonkey.com/forum/viewtopic.php?f=1&t=76321
- *         https://code.google.com/p/mp4v2/issues/detail?id=113
- *         <p/>
- *         Basic structure:
  */
 
 public class XtraBox extends AbstractBox {
