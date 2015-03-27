@@ -37,8 +37,8 @@ import java.util.Vector;
  * https://msdn.microsoft.com/en-us/library/windows/desktop/dd743066(v=vs.85).aspx
  * https://metacpan.org/source/EXIFTOOL/Image-ExifTool-9.76/lib/Image/ExifTool/Microsoft.pm
  * http://www.ventismedia.com/mantis/view.php?id=12017
- * http://www.hydrogenaudio.org/forums/index.php?showtopic=75123&st=250
- * http://www.mediamonkey.com/forum/viewtopic.php?f=1&t=76321
+ * http://www.hydrogenaudio.org/forums/index.php?showtopic=75123&amp;st=250
+ * http://www.mediamonkey.com/forum/viewtopic.php?f=1&amp;t=76321
  * https://code.google.com/p/mp4v2/issues/detail?id=113
  *
  * @author marwatk
