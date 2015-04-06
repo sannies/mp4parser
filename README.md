@@ -29,7 +29,7 @@ Typical tasks for the MP4 Parser are:
 - Muxing audio/video into an MP4 file
 - Append recordings that use same encode settings
 - Adding/Changing metadata
-- Shorten recordings by ommiting frames. 
+- Shorten recordings by omitting frames
 
 My examples will all use H264 and AAC as these two codecs are most typical for MP4 files. AC-3 is also not uncommon as the codec is well known from DVD. 
 There are also MP4 files with H263/MPEG-2 video tracks but they are no longer used widespread as most android phones. You can also
