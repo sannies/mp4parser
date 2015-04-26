@@ -140,6 +140,10 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
         return profileLevelIndicationDescriptors;
     }
 
+    public void setDecoderSpecificInfo(DecoderSpecificInfo decoderSpecificInfo) {
+        this.decoderSpecificInfo = decoderSpecificInfo;
+    }
+
     public int getObjectTypeIndication() {
         return objectTypeIndication;
     }

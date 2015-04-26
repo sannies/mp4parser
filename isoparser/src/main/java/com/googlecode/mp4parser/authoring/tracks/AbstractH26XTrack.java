@@ -35,13 +35,17 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
         return trackMetaData;
     }
 
+    boolean tripleZeroIsEndOfSequence = true;
 
-
-    public AbstractH26XTrack(DataSource dataSource) {
+    public AbstractH26XTrack(DataSource dataSource, boolean tripleZeroIsEndOfSequence) {
 
         super(dataSource.toString());
         this.dataSource = dataSource;
+        this.tripleZeroIsEndOfSequence = tripleZeroIsEndOfSequence;
+    }
 
+    public AbstractH26XTrack(DataSource dataSource) {
+        this(dataSource, true);
     }
 
     public static class LookAhead {
@@ -74,11 +78,11 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
             return false;
         }
 
-        public boolean nextThreeEquals000or001orEof() throws IOException {
+        public boolean nextThreeEquals000or001orEof(boolean tripleZeroIsEndOfSequence) throws IOException {
             if (buffer.limit() - inBufferPos >= 3) {
                 return ((buffer.get(inBufferPos) == 0 &&
                         buffer.get(inBufferPos + 1) == 0 &&
-                        (buffer.get(inBufferPos + 2) == 0 || buffer.get(inBufferPos + 2) == 1)));
+                        ((buffer.get(inBufferPos + 2) == 0 && tripleZeroIsEndOfSequence) || buffer.get(inBufferPos + 2) == 1)));
             } else {
                 if (bufferStartPos + inBufferPos + 3 > dataSource.size()) {
                     return bufferStartPos + inBufferPos == dataSource.size();
@@ -86,7 +90,7 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
                     bufferStartPos = start;
                     inBufferPos = 0;
                     fillBuffer();
-                    return nextThreeEquals000or001orEof();
+                    return nextThreeEquals000or001orEof(tripleZeroIsEndOfSequence);
                 }
             }
         }
@@ -123,7 +127,7 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
             }
             la.discardNext3AndMarkStart();
 
-            while (!la.nextThreeEquals000or001orEof()) {
+            while (!la.nextThreeEquals000or001orEof(tripleZeroIsEndOfSequence)) {
                 la.discardByte();
             }
             return la.getNal();

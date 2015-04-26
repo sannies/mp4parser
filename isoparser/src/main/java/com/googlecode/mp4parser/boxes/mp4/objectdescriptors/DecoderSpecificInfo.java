@@ -41,6 +41,10 @@ public class DecoderSpecificInfo extends BaseDescriptor {
         }
     }
 
+    public void setData(byte[] bytes) {
+        this.bytes = bytes;
+    }
+
     public int serializedSize() {
         return bytes.length;
     }

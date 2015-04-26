@@ -22,7 +22,7 @@ public class ParseMdatByHand {
             }
             la.discardNext3AndMarkStart();
 
-            while (!la.nextThreeEquals000or001orEof()) {
+            while (!la.nextThreeEquals000or001orEof(true)) {
                 la.discardByte();
             }
             return la.getNal();
