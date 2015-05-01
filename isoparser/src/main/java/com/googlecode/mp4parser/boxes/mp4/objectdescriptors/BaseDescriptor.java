@@ -19,6 +19,7 @@ package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 import com.coremedia.iso.IsoTypeReader;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /*
@@ -39,7 +40,7 @@ sizeOfInstance = sizeOfInstance<<7 | sizeByte;
 public abstract class BaseDescriptor {
     int tag;
     int sizeOfInstance;
-    int sizeBytes;
+    private int sizeBytes;
 
     public BaseDescriptor() {
     }
@@ -48,18 +49,38 @@ public abstract class BaseDescriptor {
         return tag;
     }
 
+    public void writeSize(ByteBuffer bb, int size) {
+        int pos = bb.position();
+
+        int i = 0;
+        while (size > 0 || i < sizeBytes) {
+            i++;
+            if (size > 0) {
+                bb.put(pos + getSizeSize() - i, (byte) (size & 0x7f));
+            } else {
+                bb.put(pos + getSizeSize() - i, (byte) (0x80));
+            }
+            size >>>= 7;
+
+        }
+
+        bb.position(pos + getSizeSize());
+
+    }
+
+    public int getSizeSize() {
+        int size = getContentSize();
+        int i = 0;
+        while (size > 0 || i < sizeBytes) {
+            size >>>= 7;
+            i++;
+        }
+        return i;
+    }
+
+
     public int getSize() {
-        return sizeOfInstance
-                + 1//1 for the tag
-                + sizeBytes;
-    }
-
-    public int getSizeOfInstance() {
-        return sizeOfInstance;
-    }
-
-    public int getSizeBytes() {
-        return sizeBytes;
+        return getContentSize() + getSizeSize() + 1;
     }
 
     public final void parse(int tag, ByteBuffer bb) throws IOException {
@@ -79,13 +100,20 @@ public abstract class BaseDescriptor {
         ByteBuffer detailSource = bb.slice();
         detailSource.limit(sizeOfInstance);
         parseDetail(detailSource);
-        assert detailSource.remaining() == 0: this.getClass().getSimpleName() + " has not been fully parsed";
+        assert detailSource.remaining() == 0 : this.getClass().getSimpleName() + " has not been fully parsed";
         bb.position(bb.position() + sizeOfInstance);
     }
-    
+
     public abstract void parseDetail(ByteBuffer bb) throws IOException;
 
+    public abstract Buffer serialize();
 
+    /**
+     * without tag and size
+     *
+     * @return
+     */
+    abstract int getContentSize();
 
     @Override
     public String toString() {

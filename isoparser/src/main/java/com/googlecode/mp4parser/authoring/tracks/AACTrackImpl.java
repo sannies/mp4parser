@@ -204,9 +204,7 @@ public class AACTrackImpl extends AbstractTrack {
 
         descriptor.setDecoderConfigDescriptor(decoderConfigDescriptor);
 
-        ByteBuffer data = descriptor.serialize();
         esds.setEsDescriptor(descriptor);
-        esds.setData(data);
         audioSampleEntry.addBox(esds);
         sampleDescriptionBox.addBox(audioSampleEntry);
 

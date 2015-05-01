@@ -50,25 +50,20 @@ ExtensionDescriptor extDescr[0 .. 255];
 }
 */
 //@Descriptor(tags = {0x02, 0x10})
-public class InitialObjectDescriptor extends ObjectDescriptorBase {
-    private int objectDescriptorId;
+public abstract class InitialObjectDescriptor extends ObjectDescriptorBase {
     int urlFlag;
     int includeInlineProfileLevelFlag;
-
     int urlLength;
     String urlString;
-
     int oDProfileLevelIndication;
     int sceneProfileLevelIndication;
     int audioProfileLevelIndication;
     int visualProfileLevelIndication;
     int graphicsProfileLevelIndication;
-
     List<ESDescriptor> esDescriptors = new ArrayList<ESDescriptor>();
-
     List<ExtensionDescriptor> extensionDescriptors = new ArrayList<ExtensionDescriptor>();
-
     List<BaseDescriptor> unknownDescriptors = new ArrayList<BaseDescriptor>();
+    private int objectDescriptorId;
 
     @Override
     public void parseDetail(ByteBuffer bb) throws IOException {

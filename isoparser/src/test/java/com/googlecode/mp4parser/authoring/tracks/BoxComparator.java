@@ -8,6 +8,7 @@ import org.junit.Assert;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**

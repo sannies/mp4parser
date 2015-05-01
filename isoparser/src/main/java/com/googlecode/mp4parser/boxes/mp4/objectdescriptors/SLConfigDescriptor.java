@@ -60,6 +60,10 @@ import java.nio.ByteBuffer;
 public class SLConfigDescriptor extends BaseDescriptor {
     int predefined;
 
+    public SLConfigDescriptor() {
+        tag = 0x06;
+    }
+
     public int getPredefined() {
         return predefined;
     }
@@ -70,17 +74,17 @@ public class SLConfigDescriptor extends BaseDescriptor {
 
     @Override
     public void parseDetail(ByteBuffer bb) throws IOException {
-        predefined =  IsoTypeReader.readUInt8(bb);
+        predefined = IsoTypeReader.readUInt8(bb);
     }
 
-    public int serializedSize() {
-        return 3;
+    int getContentSize() {
+        return 1;
     }
 
     public ByteBuffer serialize() {
-        ByteBuffer out = ByteBuffer.allocate(3);
+        ByteBuffer out = ByteBuffer.allocate(getSize());
         IsoTypeWriter.writeUInt8(out, 6);
-        IsoTypeWriter.writeUInt8(out, 1);
+        writeSize(out, getContentSize());
         IsoTypeWriter.writeUInt8(out, predefined);
         return out;
     }

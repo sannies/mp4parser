@@ -21,12 +21,12 @@ import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
 public class UnknownDescriptor extends BaseDescriptor {
-    private ByteBuffer data;
     private static Logger log = Logger.getLogger(UnknownDescriptor.class.getName());
+    private ByteBuffer data;
 
     @Override
     public void parseDetail(ByteBuffer bb) throws IOException {
-        data = (ByteBuffer) bb.slice().limit(this.getSizeOfInstance());
+        data = bb.slice();
     }
 
     @Override
@@ -38,5 +38,15 @@ public class UnknownDescriptor extends BaseDescriptor {
         sb.append(", data=").append(data);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public ByteBuffer serialize() {
+        throw new RuntimeException("sdjlhfl");
+    }
+
+    @Override
+    int getContentSize() {
+        throw new RuntimeException("sdjlhfl");
     }
 }

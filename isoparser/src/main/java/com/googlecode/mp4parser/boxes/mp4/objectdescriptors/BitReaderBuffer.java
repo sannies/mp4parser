@@ -4,9 +4,9 @@ import java.nio.ByteBuffer;
 
 public class BitReaderBuffer {
 
-    private ByteBuffer buffer;
     int initialPos;
     int position;
+    private ByteBuffer buffer;
 
     public BitReaderBuffer(ByteBuffer buffer) {
         this.buffer = buffer;
@@ -14,7 +14,7 @@ public class BitReaderBuffer {
     }
 
     public boolean readBool() {
-        return readBits(1)==1;
+        return readBits(1) == 1;
     }
 
     public int readBits(int i) {

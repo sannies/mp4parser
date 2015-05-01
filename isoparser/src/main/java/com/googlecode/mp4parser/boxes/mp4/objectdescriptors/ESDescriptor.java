@@ -61,24 +61,22 @@ ExtensionDescriptor extDescr[0 .. 255];
 @Descriptor(tags = {0x03})
 public class ESDescriptor extends BaseDescriptor {
     private static Logger log = Logger.getLogger(ESDescriptor.class.getName());
-
     int esId;
     int streamDependenceFlag;
     int URLFlag;
     int oCRstreamFlag;
     int streamPriority;
-
-
     int URLLength = 0;
     String URLString;
     int remoteODFlag;
-
     int dependsOnEsId;
     int oCREsId;
-
     DecoderConfigDescriptor decoderConfigDescriptor;
     SLConfigDescriptor slConfigDescriptor;
     List<BaseDescriptor> otherDescriptors = new ArrayList<BaseDescriptor>();
+    public ESDescriptor() {
+        tag = 0x3;
+    }
 
     @Override
     public void parseDetail(ByteBuffer bb) throws IOException {
@@ -101,61 +99,22 @@ public class ESDescriptor extends BaseDescriptor {
             oCREsId = IsoTypeReader.readUInt16(bb);
         }
 
-        int baseSize = 1 /*tag*/ + getSizeBytes() + 2 + 1 + (streamDependenceFlag == 1 ? 2 : 0) + (URLFlag == 1 ? 1 + URLLength : 0) + (oCRstreamFlag == 1 ? 2 : 0);
-
-        int begin = bb.position();
-        if (getSize() > baseSize + 2) {
+        while (bb.remaining() > 1) {
             BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, bb);
-            final long read = bb.position() - begin;
-            log.finer(descriptor + " - ESDescriptor1 read: " + read + ", size: " + (descriptor != null ? descriptor.getSize() : null));
-            if (descriptor != null) {
-                final int size = descriptor.getSize();
-                bb.position(begin + size);
-                baseSize += size;
-            } else {
-                baseSize += read;
-            }
             if (descriptor instanceof DecoderConfigDescriptor) {
                 decoderConfigDescriptor = (DecoderConfigDescriptor) descriptor;
-            }
-        }
-
-        begin = bb.position();
-        if (getSize() > baseSize + 2) {
-            BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, bb);
-            final long read = bb.position() - begin;
-            log.finer(descriptor + " - ESDescriptor2 read: " + read + ", size: " + (descriptor != null ? descriptor.getSize() : null));
-            if (descriptor != null) {
-                final int size = descriptor.getSize();
-                bb.position(begin + size);
-                baseSize += size;
-            } else {
-                baseSize += read;
-            }
-            if (descriptor instanceof SLConfigDescriptor) {
+            } else if (descriptor instanceof SLConfigDescriptor) {
                 slConfigDescriptor = (SLConfigDescriptor) descriptor;
+            } else {
+                otherDescriptors.add(descriptor);
             }
-        } else {
-            log.warning("SLConfigDescriptor is missing!");
         }
 
-        while (getSize() - baseSize > 2) {
-            begin = bb.position();
-            BaseDescriptor descriptor = ObjectDescriptorFactory.createFrom(-1, bb);
-            final long read = bb.position() - begin;
-            log.finer(descriptor + " - ESDescriptor3 read: " + read + ", size: " + (descriptor != null ? descriptor.getSize() : null));
-            if (descriptor != null) {
-                final int size = descriptor.getSize();
-                bb.position(begin + size);
-                baseSize += size;
-            } else {
-                baseSize += read;
-            }
-            otherDescriptors.add(descriptor);
-        }
+
     }
-    public int serializedSize() {
-        int out = 5;
+
+    int getContentSize() {
+        int out = 3;
         if (streamDependenceFlag > 0) {
             out += 2;
         }
@@ -166,18 +125,20 @@ public class ESDescriptor extends BaseDescriptor {
             out += 2;
         }
 
-        out += decoderConfigDescriptor.serializedSize();
-        out += slConfigDescriptor.serializedSize();
+        out += decoderConfigDescriptor.getSize();
+        out += slConfigDescriptor.getSize();
 
-        // Doesn't handle other descriptors yet
+        if (otherDescriptors.size() > 0) {
+            throw new RuntimeException(" Doesn't handle other descriptors yet");
+        }
 
         return out;
     }
 
     public ByteBuffer serialize() {
-        ByteBuffer out = ByteBuffer.allocate(serializedSize()); // Usually is around 30 bytes, so 200 should be enough...
+        ByteBuffer out = ByteBuffer.allocate(getSize()); // Usually is around 30 bytes, so 200 should be enough...
         IsoTypeWriter.writeUInt8(out, 3);
-        IsoTypeWriter.writeUInt8(out, serializedSize() - 2); // Not OK for longer sizes!
+        writeSize(out, getContentSize());
         IsoTypeWriter.writeUInt16(out, esId);
         int flags = (streamDependenceFlag << 7) | (URLFlag << 6) | (oCRstreamFlag << 5) | (streamPriority & 0x1f);
         IsoTypeWriter.writeUInt8(out, flags);
@@ -202,23 +163,17 @@ public class ESDescriptor extends BaseDescriptor {
         return out;
     }
 
-//  @Override
-//  public int getSize() {
-//    return 3 + (streamDependenceFlag == 1 ? 2 : 0) +
-//            (URLFlag == 1 ? 1 + 8 * URLLength : 0) +
-//            (oCRstreamFlag == 1 ? 2 : 0);
-//  }
 
     public DecoderConfigDescriptor getDecoderConfigDescriptor() {
         return decoderConfigDescriptor;
     }
 
-    public SLConfigDescriptor getSlConfigDescriptor() {
-        return slConfigDescriptor;
-    }
-
     public void setDecoderConfigDescriptor(DecoderConfigDescriptor decoderConfigDescriptor) {
         this.decoderConfigDescriptor = decoderConfigDescriptor;
+    }
+
+    public SLConfigDescriptor getSlConfigDescriptor() {
+        return slConfigDescriptor;
     }
 
     public void setSlConfigDescriptor(SLConfigDescriptor slConfigDescriptor) {

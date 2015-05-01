@@ -18,6 +18,8 @@ package com.googlecode.mp4parser.boxes.mp4;
 
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ESDescriptor;
 
+import java.nio.ByteBuffer;
+
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
  * ES Descriptor Box.
@@ -52,5 +54,15 @@ public class ESDescriptorBox extends AbstractDescriptorBox {
     @Override
     public int hashCode() {
         return data != null ? data.hashCode() : 0;
+    }
+
+    protected long getContentSize() {
+        return 4 + getEsDescriptor().getSize();
+    }
+
+    @Override
+    protected void getContent(ByteBuffer byteBuffer) {
+        writeVersionAndFlags(byteBuffer);
+        byteBuffer.put((ByteBuffer) getEsDescriptor().serialize().rewind());
     }
 }

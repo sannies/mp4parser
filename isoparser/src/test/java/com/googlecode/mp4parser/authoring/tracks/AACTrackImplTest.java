@@ -15,18 +15,23 @@
  */
 package com.googlecode.mp4parser.authoring.tracks;
 
+import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
+import com.googlecode.mp4parser.util.Path;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channel;
+import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -43,10 +48,21 @@ public class AACTrackImplTest {
 
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
         Container c = mp4Builder.build(m);
-        //WritableByteChannel fc  = new FileOutputStream("aac-sample.mp4").getChannel();
-        //c.writeContainer(fc);
-        //fc.close();
+        WritableByteChannel fc = new FileOutputStream("aac-sample.mp4").getChannel();
+        c.writeContainer(fc);
+        fc.close();
         IsoFile isoFileReference = new IsoFile(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.mp4");
         BoxComparator.check(c, isoFileReference, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]", "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stco[0]");
+    }
+
+    public static void main(String[] args) throws IOException {
+        ESDescriptorBox esds = Path.getPath(new IsoFile("C:\\dev\\mp4parer\\aac-sample.mp4"), "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stsd[0]/mp4v[0]/esds[0]");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        esds.getBox(Channels.newChannel(baos));
+        System.err.println(Hex.encodeHex(baos.toByteArray()));
+        System.err.println(esds.getEsDescriptor());
+        baos = new ByteArrayOutputStream();
+        esds.getBox(Channels.newChannel(baos));
+        System.err.println(Hex.encodeHex(baos.toByteArray()));
     }
 }

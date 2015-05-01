@@ -45,19 +45,19 @@ import java.util.logging.Logger;
 @Descriptor(tags = {0x04})
 public class DecoderConfigDescriptor extends BaseDescriptor {
     private static Logger log = Logger.getLogger(DecoderConfigDescriptor.class.getName());
-
-
     int objectTypeIndication;
     int streamType;
     int upStream;
     int bufferSizeDB;
     long maxBitRate;
     long avgBitRate;
-
     DecoderSpecificInfo decoderSpecificInfo;
     AudioSpecificConfig audioSpecificInfo;
     List<ProfileLevelIndicationDescriptor> profileLevelIndicationDescriptors = new ArrayList<ProfileLevelIndicationDescriptor>();
     byte[] configDescriptorDeadBytes;
+    public DecoderConfigDescriptor() {
+        tag = 0x04;
+    }
 
     @Override
     public void parseDetail(ByteBuffer bb) throws IOException {
@@ -72,9 +72,8 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
         avgBitRate = IsoTypeReader.readUInt32(bb);
 
 
-
         BaseDescriptor descriptor;
-        if (bb.remaining() > 2) { //1byte tag + at least 1byte size
+        while (bb.remaining() > 2) { //1byte tag + at least 1byte size
             final int begin = bb.position();
             descriptor = ObjectDescriptorFactory.createFrom(objectTypeIndication, bb);
             final int read = bb.position() - begin;
@@ -89,43 +88,56 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
             }
             if (descriptor instanceof DecoderSpecificInfo) {
                 decoderSpecificInfo = (DecoderSpecificInfo) descriptor;
-            }
-            if (descriptor instanceof AudioSpecificConfig) {
+            } else if (descriptor instanceof AudioSpecificConfig) {
                 audioSpecificInfo = (AudioSpecificConfig) descriptor;
-            }
-        }
-
-        while (bb.remaining() > 2) {
-            final long begin = bb.position();
-            descriptor = ObjectDescriptorFactory.createFrom(objectTypeIndication, bb);
-            final long read = bb.position() - begin;
-            log.finer(descriptor + " - DecoderConfigDescr2 read: " + read + ", size: " + (descriptor != null ? descriptor.getSize() : null));
-            if (descriptor instanceof ProfileLevelIndicationDescriptor) {
+            } else if (descriptor instanceof ProfileLevelIndicationDescriptor) {
                 profileLevelIndicationDescriptors.add((ProfileLevelIndicationDescriptor) descriptor);
             }
+
         }
+
     }
-    public int serializedSize() {
-        return 15 + (audioSpecificInfo == null ? 0 : audioSpecificInfo.serializedSize());
+
+    int getContentSize() {
+        int out = 13 +
+                (audioSpecificInfo == null ? 0 : audioSpecificInfo.getSize()) +
+                (decoderSpecificInfo == null ? 0 : decoderSpecificInfo.getSize());
+        for (ProfileLevelIndicationDescriptor profileLevelIndicationDescriptor : profileLevelIndicationDescriptors) {
+            out += profileLevelIndicationDescriptor.getSize();
+        }
+        return out;
     }
 
     public ByteBuffer serialize() {
-        ByteBuffer out = ByteBuffer.allocate(serializedSize());
-        IsoTypeWriter.writeUInt8(out, 4);
-        IsoTypeWriter.writeUInt8(out, serializedSize() - 2);
+        ByteBuffer out = ByteBuffer.allocate(getSize());
+        IsoTypeWriter.writeUInt8(out, tag);
+        writeSize(out, getContentSize());
         IsoTypeWriter.writeUInt8(out, objectTypeIndication);
         int flags = (streamType << 2) | (upStream << 1) | 1;
         IsoTypeWriter.writeUInt8(out, flags);
         IsoTypeWriter.writeUInt24(out, bufferSizeDB);
         IsoTypeWriter.writeUInt32(out, maxBitRate);
         IsoTypeWriter.writeUInt32(out, avgBitRate);
-        if (audioSpecificInfo != null)
-            out.put(audioSpecificInfo.serialize().array());
+        if (decoderSpecificInfo != null) {
+            ByteBuffer bb = decoderSpecificInfo.serialize();
+            out.put(bb);
+        }
+        if (audioSpecificInfo != null) {
+            ByteBuffer bb = audioSpecificInfo.serialize();
+            out.put(bb);
+        }
+        for (ProfileLevelIndicationDescriptor profileLevelIndicationDescriptor : profileLevelIndicationDescriptors) {
+            out.put(profileLevelIndicationDescriptor.serialize());
+        }
         return out;
     }
 
     public DecoderSpecificInfo getDecoderSpecificInfo() {
         return decoderSpecificInfo;
+    }
+
+    public void setDecoderSpecificInfo(DecoderSpecificInfo decoderSpecificInfo) {
+        this.decoderSpecificInfo = decoderSpecificInfo;
     }
 
     public AudioSpecificConfig getAudioSpecificInfo() {
@@ -138,10 +150,6 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
 
     public List<ProfileLevelIndicationDescriptor> getProfileLevelIndicationDescriptors() {
         return profileLevelIndicationDescriptors;
-    }
-
-    public void setDecoderSpecificInfo(DecoderSpecificInfo decoderSpecificInfo) {
-        this.decoderSpecificInfo = decoderSpecificInfo;
     }
 
     public int getObjectTypeIndication() {

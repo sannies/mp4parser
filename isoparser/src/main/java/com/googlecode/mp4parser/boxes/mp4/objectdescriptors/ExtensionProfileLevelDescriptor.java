@@ -32,12 +32,26 @@ import java.nio.ByteBuffer;
 public class ExtensionProfileLevelDescriptor extends BaseDescriptor {
     byte[] bytes;
 
+    public ExtensionProfileLevelDescriptor() {
+        tag = 0x13;
+    }
+
     @Override
     public void parseDetail(ByteBuffer bb) throws IOException {
         if (getSize() > 0) {
             bytes = new byte[getSize()];
             bb.get(bytes);
         }
+    }
+
+    @Override
+    public ByteBuffer serialize() {
+        throw new RuntimeException("Not Implemented");
+    }
+
+    @Override
+    int getContentSize() {
+        throw new RuntimeException("Not Implemented");
     }
 
     @Override
