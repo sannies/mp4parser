@@ -3,16 +3,13 @@ package com.googlecode.mp4parser.authoring.tracks.mjpeg;
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.sampleentry.MpegSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.authoring.*;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
-import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderConfigDescriptor;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ESDescriptor;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ObjectDescriptorFactory;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +18,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,7 +44,6 @@ public class OneJpegPerIframe extends AbstractTrack {
         trackMetaData.setTimescale(alignTo.getTrackMetaData().getTimescale());
 
 
-
         long[] sampleDurationsToiAlignTo = alignTo.getSampleDurations();
         long[] syncSamples = alignTo.getSyncSamples();
         int currentSyncSample = 1;
@@ -57,7 +52,7 @@ public class OneJpegPerIframe extends AbstractTrack {
 
         for (int i = 1; i < sampleDurationsToiAlignTo.length; i++) {
             if (currentSyncSample < syncSamples.length && i == syncSamples[currentSyncSample]) {
-                sampleDurations[currentSyncSample-1] = duration;
+                sampleDurations[currentSyncSample - 1] = duration;
                 duration = 0;
                 currentSyncSample++;
             }
@@ -70,11 +65,11 @@ public class OneJpegPerIframe extends AbstractTrack {
         stsd.addBox(mp4v);
         ESDescriptorBox esds = new ESDescriptorBox();
         esds.setData(ByteBuffer.wrap(Hex.decodeHex("038080801B000100048080800D6C11000000000A1CB4000A1CB4068080800102")));
-        esds.setEsDescriptor((ESDescriptor) ObjectDescriptorFactory.createFrom(-1,ByteBuffer.wrap(Hex.decodeHex("038080801B000100048080800D6C11000000000A1CB4000A1CB4068080800102"))));
+        esds.setEsDescriptor((ESDescriptor) ObjectDescriptorFactory.createFrom(-1, ByteBuffer.wrap(Hex.decodeHex("038080801B000100048080800D6C11000000000A1CB4000A1CB4068080800102"))));
         mp4v.addBox(esds);
         this.syncSamples = new long[jpegs.length];
         for (int i = 0; i < this.syncSamples.length; i++) {
-            this.syncSamples[i] = i +1;
+            this.syncSamples[i] = i + 1;
 
         }
 
@@ -98,8 +93,8 @@ public class OneJpegPerIframe extends AbstractTrack {
         }
         if (alignTo.getCompositionTimeEntries() != null && alignTo.getCompositionTimeEntries().size() > 0) {
             long currentTime = 0;
-            int[] ptss = Arrays.copyOfRange(CompositionTimeToSample.blowupCompositionTimes(alignTo.getCompositionTimeEntries()), 0, 50);
-            for (int j = 0; j < ptss.length; j++) {
+            int[] ptss = CompositionTimeToSample.blowupCompositionTimes(alignTo.getCompositionTimeEntries());
+            for (int j = 0; j < ptss.length && j < 50; j++) {
                 ptss[j] += currentTime;
                 currentTime += alignTo.getSampleDurations()[j];
             }

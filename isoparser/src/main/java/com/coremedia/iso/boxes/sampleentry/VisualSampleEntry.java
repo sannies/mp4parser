@@ -180,7 +180,7 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
         if (compressornameDisplayAbleData < 31) {
             byte[] zeros = new byte[31 - compressornameDisplayAbleData];
             content.get(zeros);
-            //assert Arrays.equals(zeros, new byte[zeros.length]) : "The compressor name length was not filled up with zeros";
+            //assert Mp4Arrays.equals(zeros, new byte[zeros.length]) : "The compressor name length was not filled up with zeros";
         }
         depth = IsoTypeReader.readUInt16(content);
         tmp = IsoTypeReader.readUInt16(content);

@@ -15,7 +15,7 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.*;
-import com.googlecode.mp4parser.util.Arrays;
+import com.googlecode.mp4parser.util.Mp4Arrays;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.ByteArrayOutputStream;
@@ -63,8 +63,6 @@ public class H263TrackImpl extends AbstractH26XTrack {
         long last_sync_point = 0;
         long last_time_code = 0;
 
-
-        nal_loop:
         while ((nal = findNextNal(la)) != null) {
             ByteBuffer origNal = nal.duplicate();
             int type = IsoTypeReader.readUInt8(nal);
@@ -103,7 +101,7 @@ public class H263TrackImpl extends AbstractH26XTrack {
                 }
                 int vop_time_increment = brb.readBits(i);
                 long time_code = (last_sync_point * vop_time_increment_resolution + (vop_time_increment % vop_time_increment_resolution));
-                decodingTimes = Arrays.copyOfAndAppend(decodingTimes, new long[]{time_code - last_time_code});
+                decodingTimes = Mp4Arrays.copyOfAndAppend(decodingTimes, new long[]{time_code - last_time_code});
                 last_time_code = time_code;
                 nalsInSample.add(origNal);
                 samples.add(createSampleObject(nalsInSample));

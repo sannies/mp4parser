@@ -3,8 +3,8 @@ package com.googlecode.mp4parser.util;
 /**
  * Created by sannies on 02.05.2015.
  */
-public final class Arrays {
-    private Arrays() {
+public final class Mp4Arrays {
+    private Mp4Arrays() {
     }
 
     public static long[] copyOfAndAppend(long[] original, long[] toAppend) {

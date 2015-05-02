@@ -95,7 +95,6 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
         sampleCount = l2i(IsoTypeReader.readUInt32(content));
 
 
-
         if (defaultSampleInfoSize == 0) {
             sampleInfoSizes = new short[sampleCount];
             for (int i = 0; i < sampleCount; i++) {
@@ -130,11 +129,14 @@ public class SampleAuxiliaryInformationSizesBox extends AbstractFullBox {
     }
 
     public short[] getSampleInfoSizes() {
-        return Arrays.copyOf(sampleInfoSizes, sampleInfoSizes.length);
+        short copy[] = new short[sampleInfoSizes.length];
+        System.arraycopy(sampleInfoSizes, 0, copy, 0, sampleInfoSizes.length);
+        return copy;
     }
 
     public void setSampleInfoSizes(short[] sampleInfoSizes) {
-        this.sampleInfoSizes = Arrays.copyOf(sampleInfoSizes, sampleInfoSizes.length);
+        this.sampleInfoSizes = new short[sampleInfoSizes.length];
+        System.arraycopy(sampleInfoSizes, 0, this.sampleInfoSizes, 0, sampleInfoSizes.length);
     }
 
     public int getSampleCount() {

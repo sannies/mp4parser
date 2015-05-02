@@ -101,7 +101,7 @@ public abstract class AbstractBoxParser implements BoxParser {
         Box box = createBox(type, usertype, (parent instanceof Box) ? ((Box) parent).getType() : "");
         box.setParent(parent);
         //LOG.finest("Parsing " + box.getType());
-        // System.out.println("parsing " + Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
+        // System.out.println("parsing " + Mp4Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
         header.get().rewind();
 
         box.parse(byteChannel, header.get(), contentSize, this);

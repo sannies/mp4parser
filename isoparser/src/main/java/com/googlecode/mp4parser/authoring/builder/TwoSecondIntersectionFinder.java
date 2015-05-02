@@ -17,6 +17,7 @@ package com.googlecode.mp4parser.authoring.builder;
 
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.util.Mp4Arrays;
 
 import java.util.Arrays;
 
@@ -78,8 +79,7 @@ public class TwoSecondIntersectionFinder implements FragmentIntersectionFinder {
         long[] cleanedFragments = new long[0];
         for (long fragment : fragments) {
             if (cleanedFragments.length == 0 || cleanedFragments[cleanedFragments.length - 1] != fragment) {
-                cleanedFragments = Arrays.copyOf(cleanedFragments, cleanedFragments.length + 1);
-                cleanedFragments[cleanedFragments.length - 1] = fragment;
+                cleanedFragments = Mp4Arrays.copyOfAndAppend(cleanedFragments, new long[]{fragment});
             }
         }
         return cleanedFragments;
