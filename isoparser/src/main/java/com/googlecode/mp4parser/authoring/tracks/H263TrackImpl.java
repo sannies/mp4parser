@@ -8,6 +8,7 @@ import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.FileDataSourceImpl;
+import com.googlecode.mp4parser.MultiFileDataSourceImpl;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.SampleImpl;
@@ -19,11 +20,13 @@ import com.googlecode.mp4parser.util.Mp4Arrays;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -61,7 +64,7 @@ public class H263TrackImpl extends AbstractH26XTrack {
         stsd.addBox(mp4v);
 
         long last_sync_point = 0;
-        long last_time_code = 0;
+        long last_time_code = -1;
 
         while ((nal = findNextNal(la)) != null) {
             ByteBuffer origNal = nal.duplicate();
@@ -101,7 +104,10 @@ public class H263TrackImpl extends AbstractH26XTrack {
                 }
                 int vop_time_increment = brb.readBits(i);
                 long time_code = (last_sync_point * vop_time_increment_resolution + (vop_time_increment % vop_time_increment_resolution));
-                decodingTimes = Mp4Arrays.copyOfAndAppend(decodingTimes, new long[]{time_code - last_time_code});
+                if (last_time_code != -1) {
+                    decodingTimes = Mp4Arrays.copyOfAndAppend(decodingTimes, new long[]{time_code - last_time_code});
+                }
+                System.err.println("Frame increment: " + (time_code - last_time_code) + " vop time increment: " + vop_time_increment + " last_sync_point: " + last_sync_point + " time_code: " + time_code);
                 last_time_code = time_code;
                 nalsInSample.add(origNal);
                 samples.add(createSampleObject(nalsInSample));
@@ -110,7 +116,11 @@ public class H263TrackImpl extends AbstractH26XTrack {
                 throw new RuntimeException("Got start code I don't know. Ask Sebastian via mp4parser mailing list what to do");
             }
 
+
         }
+        // I cannot know the decoding time of the last sample therefore I'll just assume it's as long on the screen as
+        // the sample before. I must have lots fantasy to imagine an edge that will make it noticeable.
+        decodingTimes = Mp4Arrays.copyOfAndAppend(decodingTimes, new long[]{decodingTimes[decodingTimes.length - 1]});
 
         ESDescriptor esDescriptor = new ESDescriptor();
         esDescriptor.setEsId(1);
@@ -372,6 +382,18 @@ public class H263TrackImpl extends AbstractH26XTrack {
 
     public List<Sample> getSamples() {
         return samples;
+    }
+
+    public static void main1(String[] args) throws IOException {
+        File[] files = new File("C:\\dev\\mp4parser\\frames").listFiles();
+        Arrays.sort(files);
+        Movie m = new Movie();
+        Track track = new H263TrackImpl(new MultiFileDataSourceImpl(files));
+        m.addTrack(track);
+        DefaultMp4Builder builder = new DefaultMp4Builder();
+        Container c = builder.build(m);
+        FileOutputStream fos = new FileOutputStream("output.mp4");
+        c.writeContainer(Channels.newChannel(fos));
     }
 
     public static void main(String[] args) throws IOException {
