@@ -310,18 +310,18 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     if (fvnd == null) {
                         fvnd = current;
                     } else if (fvnd.isFirstInNew(current)) {
-                        //System.err.println("Wrapping up cause of first vcl nal is found");
+                        System.err.println("Wrapping up cause of first vcl nal is found");
                         createSample(buffered);
                         fvnd = null;
                         fvnd = current;
                     }
                     buffered.add((ByteBuffer) nal.rewind());
-                    //System.err.println("NAL Unit Type: " + nal_unit_type + " " + fvnd.frame_num);
+                    System.err.println("NAL Unit Type: " + nal_unit_type + " " + fvnd.frame_num);
                     break;
 
                 case 6:
                     if (fvnd != null) {
-                        //System.err.println("Wrapping up cause of SEI after vcl marks new sample");
+                        System.err.println("Wrapping up cause of SEI after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -331,7 +331,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
                 case 9:
                     if (fvnd != null) {
-                        //System.err.println("Wrapping up cause of AU after vcl marks new sample");
+                        System.err.println("Wrapping up cause of AU after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -339,7 +339,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     break;
                 case 7:
                     if (fvnd != null) {
-                        //System.err.println("Wrapping up cause of SPS after vcl marks new sample");
+                        System.err.println("Wrapping up cause of SPS after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -347,7 +347,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     break;
                 case 8:
                     if (fvnd != null) {
-                        //System.err.println("Wrapping up cause of PPS after vcl marks new sample");
+                        System.err.println("Wrapping up cause of PPS after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -362,14 +362,16 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     throw new RuntimeException("Sequence parameter set extension is not yet handled. Needs TLC.");
 
                 default:
-                    System.err.println("Unknown NAL unit type: " + nal_unit_type);
+                 //   System.err.println("Unknown NAL unit type: " + nal_unit_type);
 
             }
 
 
 
         }
-        createSample(buffered);
+        if (buffered.size()>0) {
+            createSample(buffered);
+        }
         decodingTimes = new long[samples.size()];
         Arrays.fill(decodingTimes, frametick);
         return true;
