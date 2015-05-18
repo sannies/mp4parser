@@ -217,8 +217,6 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
                 ivInt = ivInt.add(one);
             }
         }
-
-        System.err.println("");
     }
 
     public UUID getDefaultKeyId() {
