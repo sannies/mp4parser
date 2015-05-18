@@ -21,7 +21,7 @@ import java.util.List;
  */
 public abstract class AbstractH26XTrack extends AbstractTrack {
 
-    static int BUFFER = 65535 << 10;
+    public static int BUFFER = 65535 << 10;
     private DataSource dataSource;
 
 
@@ -29,7 +29,7 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
     protected List<CompositionTimeToSample.Entry> ctts = new ArrayList<CompositionTimeToSample.Entry>();
     protected List<SampleDependencyTypeBox.Entry> sdtp = new ArrayList<SampleDependencyTypeBox.Entry>();
     protected List<Integer> stss = new ArrayList<Integer>();
-    TrackMetaData trackMetaData = new TrackMetaData();
+    protected TrackMetaData trackMetaData = new TrackMetaData();
 
     public TrackMetaData getTrackMetaData() {
         return trackMetaData;
@@ -182,7 +182,7 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
     }
 
 
-    static InputStream cleanBuffer(InputStream is) {
+    protected static InputStream cleanBuffer(InputStream is) {
         return new CleanInputStream(is);
     }
 

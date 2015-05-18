@@ -1,4 +1,4 @@
-package com.googlecode.mp4parser.authoring.tracks;
+package com.googlecode.mp4parser.authoring.tracks.h265;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.googlecode.mp4parser.DataSource;

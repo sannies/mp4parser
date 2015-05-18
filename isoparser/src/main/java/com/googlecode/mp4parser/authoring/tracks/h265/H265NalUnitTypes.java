@@ -3,7 +3,7 @@ package com.googlecode.mp4parser.authoring.tracks.h265;
 /**
  * Created by sannies on 02.01.2015.
  */
-public interface NalUnitTypes {
+public interface H265NalUnitTypes {
     final int NAL_TYPE_TRAIL_N = 0;
     final int NAL_TYPE_TRAIL_R = 1;
     final int NAL_TYPE_TSA_N = 2;

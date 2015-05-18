@@ -9,13 +9,10 @@ import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.tracks.AbstractH26XTrack;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
-import com.googlecode.mp4parser.h264.read.BitstreamReader;
 import com.googlecode.mp4parser.util.ByteBufferByteChannel;
-import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.mp4parser.iso14496.part15.HevcConfigurationBox;
 import com.mp4parser.iso14496.part15.HevcDecoderConfigurationRecord;
 
@@ -25,13 +22,12 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**
  * Created by sannies on 02.01.2015.
  */
-public class H265TrackImpl extends AbstractH26XTrack implements NalUnitTypes {
+public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes {
 
     ArrayList<ByteBuffer> sps = new ArrayList<ByteBuffer>();
     ArrayList<ByteBuffer> pps = new ArrayList<ByteBuffer>();
@@ -51,7 +47,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements NalUnitTypes {
 
         while ((nal = findNextNal(la)) != null) {
 
-            NalUnitHeader unitHeader = getNalUnitHeader(nal);
+            H265NalUnitHeader unitHeader = getNalUnitHeader(nal);
             //
             if (vclNalUnitSeenInAU[0]) { // we need at least 1 VCL per AU
                 // This branch checks if we encountered the start of a samples/AU
@@ -222,16 +218,16 @@ public class H265TrackImpl extends AbstractH26XTrack implements NalUnitTypes {
     }
 
 
-    boolean isVcl(NalUnitHeader nalUnitHeader) {
+    boolean isVcl(H265NalUnitHeader nalUnitHeader) {
         return nalUnitHeader.nalUnitType >= 0 && nalUnitHeader.nalUnitType <= 31;
     }
 
-    public NalUnitHeader getNalUnitHeader(ByteBuffer nal) {
+    public static H265NalUnitHeader getNalUnitHeader(ByteBuffer nal) {
         nal.position(0);
         int nal_unit_header = IsoTypeReader.readUInt16(nal);
 
 
-        NalUnitHeader nalUnitHeader = new NalUnitHeader();
+        H265NalUnitHeader nalUnitHeader = new H265NalUnitHeader();
         nalUnitHeader.forbiddenZeroFlag = (nal_unit_header & 0x8000) >> 15;
         nalUnitHeader.nalUnitType = (nal_unit_header & 0x7E00) >> 9;
         nalUnitHeader.nuhLayerId = (nal_unit_header & 0x1F8) >> 3;

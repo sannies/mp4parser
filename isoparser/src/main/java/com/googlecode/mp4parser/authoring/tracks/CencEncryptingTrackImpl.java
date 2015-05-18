@@ -10,6 +10,12 @@ import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
+import com.googlecode.mp4parser.authoring.tracks.h264.H264NalUnitHeader;
+import com.googlecode.mp4parser.authoring.tracks.h264.H264NalUnitTypes;
+import com.googlecode.mp4parser.authoring.tracks.h264.H264TrackImpl;
+import com.googlecode.mp4parser.authoring.tracks.h265.H265NalUnitHeader;
+import com.googlecode.mp4parser.authoring.tracks.h265.H265NalUnitTypes;
+import com.googlecode.mp4parser.authoring.tracks.h265.H265TrackImpl;
 import com.googlecode.mp4parser.boxes.cenc.CencEncryptingSampleList;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
@@ -48,6 +54,8 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
     RangeStartMap<Integer, SecretKey> indexToKey;
     Map<GroupEntry, long[]> sampleGroups;
 
+    Object configurationBox;
+
     public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, SecretKey key, boolean dummyIvs) {
         this(source, defaultKeyId, Collections.singletonMap(defaultKeyId, key),
                 null,
@@ -64,12 +72,12 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
     /**
      * Encrypts a given source track.
      *
-     * @param source unencrypted source file
-     * @param defaultKeyId the default key ID - might be null if sample are not encrypted by default
-     * @param keys key ID to key map
-     * @param keyRotation assigns an encryption group to a number of samples
-     * @param encryptionAlgo cenc or cbc1 (don't use cbc1)
-     * @param dummyIvs disables RNG for IVs and use IVs starting with 0x00...000
+     * @param source             unencrypted source file
+     * @param defaultKeyId       the default key ID - might be null if sample are not encrypted by default
+     * @param keys               key ID to key map
+     * @param keyRotation        assigns an encryption group to a number of samples
+     * @param encryptionAlgo     cenc or cbc1 (don't use cbc1)
+     * @param dummyIvs           disables RNG for IVs and use IVs starting with 0x00...000
      * @param encryptButAllClear will cause sub sample encryption format to keep full sample in clear (clear/encrypted pair will be len(sample)/0
      */
     public CencEncryptingTrackImpl(Track source, UUID defaultKeyId, Map<UUID, SecretKey> keys,
@@ -150,17 +158,16 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
         }
 
 
-
         List<Box> boxes = source.getSampleDescriptionBox().getSampleEntry().getBoxes();
         int nalLengthSize = -1;
         for (Box box : boxes) {
             if (box instanceof AvcConfigurationBox) {
-                AvcConfigurationBox avcC = (AvcConfigurationBox) box;
+                AvcConfigurationBox avcC = (AvcConfigurationBox) (configurationBox = box);
                 subSampleEncryption = true;
                 nalLengthSize = avcC.getLengthSizeMinusOne() + 1;
             }
             if (box instanceof HevcConfigurationBox) {
-                HevcConfigurationBox hvcC = (HevcConfigurationBox) box;
+                HevcConfigurationBox hvcC = (HevcConfigurationBox) (configurationBox = box);
                 subSampleEncryption = true;
                 nalLengthSize = hvcC.getLengthSizeMinusOne() + 1;
             }
@@ -189,13 +196,13 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
                 if (subSampleEncryption) {
                     if (encryptButAllClear) {
                         e.pairs = new CencSampleAuxiliaryDataFormat.Pair[]{e.createPair(sample.remaining(), 0)};
-                    }else {
+                    } else {
                         List<CencSampleAuxiliaryDataFormat.Pair> pairs = new ArrayList<CencSampleAuxiliaryDataFormat.Pair>(5);
                         while (sample.remaining() > 0) {
                             int nalLength = l2i(IsoTypeReaderVariable.read(sample, nalLengthSize));
                             int clearBytes;
                             int nalGrossSize = nalLength + nalLengthSize;
-                            if (nalGrossSize >= 112) {
+                            if (nalGrossSize >= 112 && !isClearNal(sample.duplicate())) {
                                 clearBytes = 96 + nalGrossSize % 16;
                             } else {
                                 clearBytes = nalGrossSize;
@@ -320,4 +327,31 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
     public Map<GroupEntry, long[]> getSampleGroups() {
         return sampleGroups;
     }
+
+    public boolean isClearNal(ByteBuffer s) {
+        if (configurationBox instanceof HevcConfigurationBox) {
+            H265NalUnitHeader nuh = H265TrackImpl.getNalUnitHeader(s.slice());
+            return !( // These ranges are all slices --> NOT CLEAR
+                    (nuh.nalUnitType >= H265NalUnitTypes.NAL_TYPE_TRAIL_N && (nuh.nalUnitType <= H265NalUnitTypes.NAL_TYPE_RASL_R)) ||
+                    (nuh.nalUnitType >= H265NalUnitTypes.NAL_TYPE_BLA_W_LP && (nuh.nalUnitType <= H265NalUnitTypes.NAL_TYPE_CRA_NUT)) ||
+                    (nuh.nalUnitType >= H265NalUnitTypes.NAL_TYPE_BLA_W_LP && (nuh.nalUnitType <= H265NalUnitTypes.NAL_TYPE_CRA_NUT))
+                    );
+        } else if (configurationBox instanceof AvcConfigurationBox) {
+            // only encrypt
+            H264NalUnitHeader nuh = H264TrackImpl.getNalUnitHeader(s.slice());
+            return !(nuh.nal_unit_type == H264NalUnitTypes.CODED_SLICE_AUX_PIC ||
+                    nuh.nal_unit_type == H264NalUnitTypes.CODED_SLICE_DATA_PART_A ||
+                    nuh.nal_unit_type == H264NalUnitTypes.CODED_SLICE_DATA_PART_B ||
+                    nuh.nal_unit_type == H264NalUnitTypes.CODED_SLICE_DATA_PART_C ||
+                    nuh.nal_unit_type == H264NalUnitTypes.CODED_SLICE_EXT ||
+                    nuh.nal_unit_type == H264NalUnitTypes.CODED_SLICE_IDR ||
+                    nuh.nal_unit_type == H264NalUnitTypes.CODED_SLICE_NON_IDR
+            );
+
+        } else {
+            throw new RuntimeException("Subsample encryption is activated but the CencEncryptingTrackImpl can't say if this sample is to be encrypted or not!");
+    }
+}
+
+
 }

@@ -1,11 +1,14 @@
-package com.googlecode.mp4parser.authoring.tracks;
+package com.googlecode.mp4parser.authoring.tracks.h264;
 
+import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.authoring.Sample;
+import com.googlecode.mp4parser.authoring.tracks.AbstractH26XTrack;
+import com.googlecode.mp4parser.authoring.tracks.h265.H265TrackImplOld;
 import com.googlecode.mp4parser.h264.model.PictureParameterSet;
 import com.googlecode.mp4parser.h264.model.SeqParameterSet;
 import com.googlecode.mp4parser.h264.read.CAVLCReader;
@@ -57,9 +60,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
     private String lang = "eng";
 
 
-
-
-
     /**
      * Creates a new <code>Track</code> object from a raw H264 source (<code>DataSource dataSource1</code>).
      * Whenever the timescale and frametick are set to negative value (e.g. -1) the H264TrackImpl
@@ -91,7 +91,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
     }
 
 
-
     public H264TrackImpl(DataSource dataSource, String lang) throws IOException {
         this(dataSource, lang, -1, -1);
     }
@@ -101,7 +100,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
     }
 
     private void parse(LookAhead la) throws IOException {
-
 
 
         samples = new LinkedList<Sample>();
@@ -162,8 +160,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
     }
 
 
-
-
     public String getHandler() {
         return "vide";
     }
@@ -196,12 +192,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
         }
         return true;
     }
-
-
-
-
-
-
 
 
     private boolean readSamples(LookAhead la) throws IOException {
@@ -294,32 +284,26 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
         nal_loop:
         while ((nal = findNextNal(la)) != null) {
-            int type = nal.get(0);
-            int nal_ref_idc = (type >> 5) & 3;
-            int nal_unit_type = type & 0x1f;
+            H264NalUnitHeader nalUnitHeader = getNalUnitHeader(nal);
 
-
-
-            switch (nal_unit_type) {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                    FirstVclNalDetector current = new FirstVclNalDetector(nal, nal_ref_idc, nal_unit_type);
-                    if (fvnd == null) {
-                        fvnd = current;
-                    } else if (fvnd.isFirstInNew(current)) {
+            switch (nalUnitHeader.nal_unit_type) {
+                case H264NalUnitTypes.CODED_SLICE_NON_IDR:
+                case H264NalUnitTypes.CODED_SLICE_DATA_PART_A:
+                case H264NalUnitTypes.CODED_SLICE_DATA_PART_B:
+                case H264NalUnitTypes.CODED_SLICE_DATA_PART_C:
+                case H264NalUnitTypes.CODED_SLICE_IDR:
+                    FirstVclNalDetector current = new FirstVclNalDetector(nal,
+                            nalUnitHeader.nal_ref_idc, nalUnitHeader.nal_unit_type);
+                    if (fvnd != null && fvnd.isFirstInNew(current)) {
                         System.err.println("Wrapping up cause of first vcl nal is found");
                         createSample(buffered);
-                        fvnd = null;
-                        fvnd = current;
                     }
+                    fvnd = current;
                     buffered.add((ByteBuffer) nal.rewind());
-                    System.err.println("NAL Unit Type: " + nal_unit_type + " " + fvnd.frame_num);
+                    System.err.println("NAL Unit Type: " + nalUnitHeader.nal_unit_type + " " + fvnd.frame_num);
                     break;
 
-                case 6:
+                case H264NalUnitTypes.SEI:
                     if (fvnd != null) {
                         System.err.println("Wrapping up cause of SEI after vcl marks new sample");
                         createSample(buffered);
@@ -329,7 +313,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     buffered.add(nal);
                     break;
 
-                case 9:
+                case H264NalUnitTypes.AU_UNIT_DELIMITER:
                     if (fvnd != null) {
                         System.err.println("Wrapping up cause of AU after vcl marks new sample");
                         createSample(buffered);
@@ -337,7 +321,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     }
                     buffered.add(nal);
                     break;
-                case 7:
+                case H264NalUnitTypes.SEQ_PARAMETER_SET:
                     if (fvnd != null) {
                         System.err.println("Wrapping up cause of SPS after vcl marks new sample");
                         createSample(buffered);
@@ -353,23 +337,23 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     }
                     handlePPS((ByteBuffer) nal.rewind());
                     break;
-                case 10:
-                case 11:
+                case H264NalUnitTypes.END_OF_SEQUENCE:
+                case H264NalUnitTypes.END_OF_STREAM:
 
                     break nal_loop;
 
-                case 13:
+                case H264NalUnitTypes.SEQ_PARAMETER_SET_EXT:
                     throw new RuntimeException("Sequence parameter set extension is not yet handled. Needs TLC.");
 
                 default:
-                 //   System.err.println("Unknown NAL unit type: " + nal_unit_type);
+                    //  buffered.add(nal);
+                    LOG.warning("Unknown NAL unit type: " + nalUnitHeader.nal_unit_type);
 
             }
 
 
-
         }
-        if (buffered.size()>0) {
+        if (buffered.size() > 0) {
             createSample(buffered);
         }
         decodingTimes = new long[samples.size()];
@@ -422,9 +406,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
         }
 
     }
-
-
-
 
 
     private void handlePPS(ByteBuffer data) throws IOException {
@@ -815,4 +796,15 @@ public class H264TrackImpl extends AbstractH26XTrack {
             return out;
         }
     }
+
+
+    public static H264NalUnitHeader getNalUnitHeader(ByteBuffer nal) {
+        H264NalUnitHeader nalUnitHeader = new H264NalUnitHeader();
+        int type = nal.get(0);
+        nalUnitHeader.nal_ref_idc = (type >> 5) & 3;
+        nalUnitHeader.nal_unit_type = type & 0x1f;
+
+        return nalUnitHeader;
+    }
+
 }
