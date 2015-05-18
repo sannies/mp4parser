@@ -154,7 +154,6 @@ public class CroppedTrack extends AbstractTrack {
                 j--;
             }
             long[] syncSampleArray = new long[j - i];
-            Arrays.copyOfRange(origTrack.getSyncSamples(), i, j);
             System.arraycopy(origTrack.getSyncSamples(), i, syncSampleArray, 0, j - i);
             for (int k = 0; k < syncSampleArray.length; k++) {
                 syncSampleArray[k] -= fromSample;
