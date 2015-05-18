@@ -963,6 +963,10 @@ public class AudioSpecificConfig extends BaseDescriptor {
         return samplingFrequencyIndex == 0xf ? samplingFrequency : samplingFrequencyIndexMap.get(samplingFrequencyIndex);
     }
 
+    public int getExtensionSamplingFrequency() {
+        return extensionSamplingFrequencyIndex == 0xf ? extensionSamplingFrequency : samplingFrequencyIndexMap.get(extensionSamplingFrequencyIndex);
+    }
+
     public void setSamplingFrequency(int samplingFrequency) {
         this.samplingFrequency = samplingFrequency;
     }
