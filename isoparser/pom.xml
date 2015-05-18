@@ -191,7 +191,7 @@
         <snapshotRepository>
             <id>release</id>
             <name>Sonatype Nexus Snapshots</name>
-            <url>https://repository.castlabs.com/content/repositories/snapshots/</url>
+            <url>http://repository.castlabs.com/content/repositories/snapshots/</url>
         </snapshotRepository>
         <repository>
             <id>sonatype-nexus-staging</id>
