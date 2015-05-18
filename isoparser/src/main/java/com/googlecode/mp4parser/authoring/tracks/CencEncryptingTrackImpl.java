@@ -202,10 +202,10 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
                             int nalLength = l2i(IsoTypeReaderVariable.read(sample, nalLengthSize));
                             int clearBytes;
                             int nalGrossSize = nalLength + nalLengthSize;
-                            if (nalGrossSize >= 112 && !isClearNal(sample.duplicate())) {
-                                clearBytes = 96 + nalGrossSize % 16;
-                            } else {
+                            if (nalGrossSize < 112 || isClearNal(sample.duplicate())) {
                                 clearBytes = nalGrossSize;
+                            } else {
+                                clearBytes = 96 + nalGrossSize % 16;
                             }
                             pairs.add(e.createPair(clearBytes, nalGrossSize - clearBytes));
                             sample.position(sample.position() + nalLength);
