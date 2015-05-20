@@ -3,7 +3,7 @@
     <groupId>com.googlecode.mp4parser</groupId>
     <artifactId>mp4parser-project</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.7.1</version>
+    <version>1.0.7.2-SNAPSHOT</version>
     <name>MP4 Parser Project</name>
     <url>http://code.google.com/p/mp4parser/</url>
     <licenses>
@@ -83,6 +83,6 @@
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
         <connection>scm:git:git@github.com:sannies/mp4parser.git</connection>
-        <tag> mp4parser-project-1.0.7.1</tag>
+        <tag> mp4parser-project-1.0.7-SNAPSHOT-4</tag>
     </scm>
 </project>
