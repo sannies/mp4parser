@@ -129,7 +129,7 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
         for (ProfileLevelIndicationDescriptor profileLevelIndicationDescriptor : profileLevelIndicationDescriptors) {
             out.put(profileLevelIndicationDescriptor.serialize());
         }
-        return out;
+        return (ByteBuffer) out.rewind();
     }
 
     public DecoderSpecificInfo getDecoderSpecificInfo() {

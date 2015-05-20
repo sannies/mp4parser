@@ -468,20 +468,24 @@ public class AudioSpecificConfig extends BaseDescriptor {
 
     public ELDSpecificConfig eldSpecificConfig;
     public int audioObjectType;
+    public int originalAudioObjectType;
     public int samplingFrequencyIndex;
     public int samplingFrequency;
     public int channelConfiguration;
     public int extensionAudioObjectType;
+    public int origExtensionAudioObjectType;
     public boolean sbrPresentFlag;
     public boolean psPresentFlag;
-    public int extensionSamplingFrequencyIndex;
+    public int extensionSamplingFrequencyIndex = -1;
     public int extensionSamplingFrequency;
     public int extensionChannelConfiguration;
     public int sacPayloadEmbedding;
     public int fillBits;
     public int epConfig;
     public int directMapping;
-    public int syncExtensionType;
+    public int syncExtensionType = -1;
+    public int innerSyncExtensionType = -1;
+    public int outerSyncExtensionType = -1;
     //GASpecificConfig
     public int frameLengthFlag;
     public int dependsOnCoreCoder;
@@ -517,8 +521,11 @@ public class AudioSpecificConfig extends BaseDescriptor {
         tag = 0x5;
     }
 
+    boolean parsed = false;
+
     @Override
     public void parseDetail(ByteBuffer bb) throws IOException {
+        parsed = true;
         ByteBuffer configBytes = bb.slice();
         configBytes.limit(sizeOfInstance);
         bb.position(bb.position() + sizeOfInstance);
@@ -529,7 +536,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         configBytes.rewind();
 
         BitReaderBuffer bitReaderBuffer = new BitReaderBuffer(configBytes);
-        audioObjectType = getAudioObjectType(bitReaderBuffer);
+        originalAudioObjectType = audioObjectType = getAudioObjectType(bitReaderBuffer);
         samplingFrequencyIndex = bitReaderBuffer.readBits(4);
 
         if (samplingFrequencyIndex == 0xf) {
@@ -671,7 +678,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         }
 
         if (extensionAudioObjectType != 5 && bitReaderBuffer.remainingBits() >= 16) {
-            syncExtensionType = bitReaderBuffer.readBits(11);
+            outerSyncExtensionType = syncExtensionType = bitReaderBuffer.readBits(11);
             if (syncExtensionType == 0x2b7) {
                 extensionAudioObjectType = getAudioObjectType(bitReaderBuffer);
                 if (extensionAudioObjectType == 5) {
@@ -682,7 +689,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
                             extensionSamplingFrequency = bitReaderBuffer.readBits(24);
                         }
                         if (bitReaderBuffer.remainingBits() >= 12) {
-                            syncExtensionType = bitReaderBuffer.readBits(11); //10101001000
+                            innerSyncExtensionType = syncExtensionType = bitReaderBuffer.readBits(11); //10101001000
                             if (syncExtensionType == 0x548) {
                                 psPresentFlag = bitReaderBuffer.readBool();
                             }
@@ -704,34 +711,296 @@ public class AudioSpecificConfig extends BaseDescriptor {
     }
 
     private int gaSpecificConfigSize() {
-        return 0;
+        int n = 0;
+        n += 1; // frameLengthFlag = in.readBits(1);
+        n += 1; //dependsOnCoreCoder = in.readBits(1);
+        if (dependsOnCoreCoder == 1) {
+            n += 14; // coreCoderDelay = in.readBits(14);
+        }
+        n += 1; // extensionFlag = in.readBits(1);
+        if (channelConfiguration == 0) {
+            throw new UnsupportedOperationException("can't parse program_config_element yet");
+            //program_config_element ();
+        }
+        if ((audioObjectType == 6) || (audioObjectType == 20)) {
+            n += 3; // layerNr = in.readBits(3);
+        }
+        if (extensionFlag == 1) {
+            if (audioObjectType == 22) {
+                n += 5; // numOfSubFrame = in.readBits(5);
+                n += 11; //layer_length = in.readBits(11);
+            }
+            if (audioObjectType == 17 || audioObjectType == 19 ||
+                    audioObjectType == 20 || audioObjectType == 23) {
+                n += 1; // aacSectionDataResilienceFlag = in.readBool();
+                n += 1; //aacScalefactorDataResilienceFlag = in.readBool();
+                n += 1; //aacSpectralDataResilienceFlag = in.readBool();
+            }
+            n += 1; //extensionFlag3 = in.readBits(1);
+            if (extensionFlag3 == 1) {
+                throw new RuntimeException("Not implemented");
+            }
+        }
+        return n;
     }
 
     int getContentSize() {
-        int out = 2;
-        if (audioObjectType == 2) {
-            out += gaSpecificConfigSize();
-        } else {
-            throw new UnsupportedOperationException("can't serialize that yet");
+        int sizeInBits = 5;
+        if (originalAudioObjectType > 30) {
+            sizeInBits += 6; // extended type
         }
-        return out;
+        sizeInBits += 4; // samplingFrequencyIndex
+        if (samplingFrequencyIndex == 0xf) {
+            sizeInBits += 24;
+        }
+        sizeInBits += 4; // channelConfiguration
+        if (audioObjectType == 5 ||
+                audioObjectType == 29) {
+            sizeInBits += 4; // extensionSamplingFrequencyIndex = bitReaderBuffer.readBits(4);
+            if (extensionSamplingFrequencyIndex == 0xf) {
+                // extensionSamplingFrequency = bitReaderBuffer.readBits(24);
+                sizeInBits += 24;
+            }
+        }
+
+        if (audioObjectType == 22) {
+            sizeInBits += 4; //   extensionChannelConfiguration
+        }
+
+
+        if (gaSpecificConfig) {
+            sizeInBits += gaSpecificConfigSize();
+        }
+        if (outerSyncExtensionType >= 0) {
+            sizeInBits += 11; //outerSyncExtensionType = syncExtensionType = bitReaderBuffer.readBits(11);
+            if (outerSyncExtensionType == 0x2b7) {
+                sizeInBits += 5;
+                if (extensionAudioObjectType > 30) {
+                    sizeInBits += 6; // extended type
+                } // extensionAudioObjectType = getAudioObjectType(bitReaderBuffer);
+                if (extensionAudioObjectType == 5) {
+                    sizeInBits += 1;
+                    if (sbrPresentFlag) {
+                        sizeInBits += 4; // extensionSamplingFrequencyIndex = bitReaderBuffer.readBits(4);
+                        if (extensionSamplingFrequencyIndex == 0xf) {
+                            sizeInBits += 24; // extensionSamplingFrequency = bitReaderBuffer.readBits(24);
+                        }
+                        if (innerSyncExtensionType >= 0) {
+                            sizeInBits += 11;   // innerSyncExtensionType = syncExtensionType = bitReaderBuffer.readBits(11); //10101001000
+                            if (innerSyncExtensionType == 0x548) {
+                                sizeInBits += 1; // psPresentFlag = bitReaderBuffer.readBool();
+                            }
+                        }
+                    }
+                }
+                if (extensionAudioObjectType == 22) {
+                    sizeInBits += 1; //sbrPresentFlag = bitReaderBuffer.readBool();
+                    if (sbrPresentFlag) {
+                        sizeInBits += 4; // extensionSamplingFrequencyIndex = bitReaderBuffer.readBits(4);
+                        if (extensionSamplingFrequencyIndex == 0xf) {
+                            sizeInBits += 24; //extensionSamplingFrequency = bitReaderBuffer.readBits(24);
+                        }
+                    }
+                    sizeInBits += 4; //extensionChannelConfiguration = bitReaderBuffer.readBits(4);
+                }
+            }
+        }
+        return (int) Math.ceil(((double) sizeInBits) / 8);
     }
 
     public ByteBuffer serialize() {
         ByteBuffer out = ByteBuffer.allocate(getSize());
-        IsoTypeWriter.writeUInt8(out, 5);
+        IsoTypeWriter.writeUInt8(out, tag);
         writeSize(out, getContentSize());
-        BitWriterBuffer bwb = new BitWriterBuffer(out);
-        bwb.writeBits(audioObjectType, 5);
-        bwb.writeBits(samplingFrequencyIndex, 4);
-        if (samplingFrequencyIndex == 0xf) {
-            throw new UnsupportedOperationException("can't serialize that yet");
-        }
-        bwb.writeBits(channelConfiguration, 4);
+        out.put(serializeConfigBytes());
+        return (ByteBuffer) out.rewind();
+    }
 
-        // Don't support any extensions, unusual GASpecificConfig other than the default or anything...
+    private ByteBuffer serializeConfigBytes() {
+        ByteBuffer out = ByteBuffer.wrap(new byte[getContentSize()]);
+        BitWriterBuffer bitWriterBuffer = new BitWriterBuffer(out);
+        writeAudioObjectType(originalAudioObjectType, bitWriterBuffer);
+        bitWriterBuffer.writeBits(samplingFrequencyIndex, 4);
+
+        if (samplingFrequencyIndex == 0xf) {
+            bitWriterBuffer.writeBits(samplingFrequency, 24);
+        }
+
+        bitWriterBuffer.writeBits(channelConfiguration, 4);
+
+        if (audioObjectType == 5 ||
+                audioObjectType == 29) {
+            extensionAudioObjectType = 5;
+            sbrPresentFlag = true;
+            if (audioObjectType == 29) {
+                psPresentFlag = true;
+            }
+            bitWriterBuffer.writeBits(extensionSamplingFrequencyIndex, 4);
+            if (extensionSamplingFrequencyIndex == 0xf)
+                bitWriterBuffer.writeBits(extensionSamplingFrequency, 24);
+            writeAudioObjectType(audioObjectType, bitWriterBuffer);
+            if (audioObjectType == 22)
+                bitWriterBuffer.writeBits(extensionChannelConfiguration, 4);
+        }
+        switch (audioObjectType) {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 6:
+            case 7:
+            case 17:
+            case 19:
+            case 20:
+            case 21:
+            case 22:
+            case 23:
+                writeGaSpecificConfig(bitWriterBuffer);
+                //GASpecificConfig();
+                break;
+            case 8:
+                throw new UnsupportedOperationException("can't write CelpSpecificConfig yet");
+                //CelpSpecificConfig();
+                //break;
+            case 9:
+                throw new UnsupportedOperationException("can't write HvxcSpecificConfig yet");
+                //HvxcSpecificConfig();
+                //break;
+            case 12:
+                throw new UnsupportedOperationException("can't write TTSSpecificConfig yet");
+                //TTSSpecificConfig();
+                //break;
+            case 13:
+            case 14:
+            case 15:
+            case 16:
+                throw new UnsupportedOperationException("can't write StructuredAudioSpecificConfig yet");
+                //StructuredAudioSpecificConfig();
+                //break;
+            case 24:
+                throw new UnsupportedOperationException("can't write ErrorResilientCelpSpecificConfig yet");
+                //ErrorResilientCelpSpecificConfig();
+                //break;
+            case 25:
+                throw new UnsupportedOperationException("can't write ErrorResilientHvxcSpecificConfig yet");
+                //ErrorResilientHvxcSpecificConfig();
+                //break;
+            case 26:
+            case 27:
+                throw new UnsupportedOperationException("can't write parseParametricSpecificConfig yet");
+                // parseParametricSpecificConfig(samplingFrequencyIndex, channelConfiguration, audioObjectType, bitWriterBuffer);
+                // ParametricSpecificConfig();
+                // break;
+            case 28:
+                throw new UnsupportedOperationException("can't write SSCSpecificConfig yet");
+                //SSCSpecificConfig();
+                //break;
+            case 30:
+                bitWriterBuffer.writeBits(sacPayloadEmbedding, 1);
+                throw new UnsupportedOperationException("can't write SpatialSpecificConfig yet");
+                //SpatialSpecificConfig();
+                //break;
+            case 32:
+            case 33:
+            case 34:
+                throw new UnsupportedOperationException("can't write MPEG_1_2_SpecificConfig yet");
+                //MPEG_1_2_SpecificConfig();
+                //break;
+            case 35:
+                throw new UnsupportedOperationException("can't write DSTSpecificConfig yet");
+                //DSTSpecificConfig();
+                //break;
+            case 36:
+                bitWriterBuffer.writeBits(fillBits, 5);
+                throw new UnsupportedOperationException("can't write ALSSpecificConfig yet");
+                //ALSSpecificConfig();
+                //break;
+            case 37:
+            case 38:
+                throw new UnsupportedOperationException("can't write SLSSpecificConfig yet");
+                //SLSSpecificConfig();
+                //break;
+            case 39:
+                throw new UnsupportedOperationException("can't write ELDSpecificConfig yet");
+                //eldSpecificConfig = new ELDSpecificConfig(channelConfiguration, bitWriterBuffer);
+                // break;
+            case 40:
+            case 41:
+                throw new UnsupportedOperationException("can't parse SymbolicMusicSpecificConfig yet");
+                //SymbolicMusicSpecificConfig();
+                //break;
+            default:
+                /* reserved */
+        }
+
+        switch (audioObjectType) {
+            case 17:
+            case 19:
+            case 20:
+            case 21:
+            case 22:
+            case 23:
+            case 24:
+            case 25:
+            case 26:
+            case 27:
+            case 39:
+                bitWriterBuffer.writeBits(epConfig, 2);
+                if (epConfig == 2 || epConfig == 3) {
+                    throw new UnsupportedOperationException("can't parse ErrorProtectionSpecificConfig yet");
+                    //ErrorProtectionSpecificConfig();
+                }
+                if (epConfig == 3) {
+                    bitWriterBuffer.writeBits(directMapping, 1);
+                    if (directMapping == 0) {
+                        /* tbd */
+                        throw new RuntimeException("not implemented");
+                    }
+                }
+        }
+
+        if (outerSyncExtensionType >= 0) {
+            bitWriterBuffer.writeBits(outerSyncExtensionType, 11);
+            if (outerSyncExtensionType == 0x2b7) {// 695
+                writeAudioObjectType(extensionAudioObjectType, bitWriterBuffer);
+                if (extensionAudioObjectType == 5) {
+                    bitWriterBuffer.writeBool(sbrPresentFlag);
+                    if (sbrPresentFlag) {
+                        bitWriterBuffer.writeBits(extensionSamplingFrequencyIndex, 4);
+                        if (extensionSamplingFrequencyIndex == 0xf) {
+                            bitWriterBuffer.writeBits(extensionSamplingFrequency, 24);
+                        }
+                        if (innerSyncExtensionType >= 0) {
+                            bitWriterBuffer.writeBits(innerSyncExtensionType, 11); //10101001000
+                            if (syncExtensionType == 0x548) {
+                                bitWriterBuffer.writeBool(psPresentFlag);
+                            }
+                        }
+                    }
+                }
+                if (extensionAudioObjectType == 22) {
+                    bitWriterBuffer.writeBool(sbrPresentFlag);
+                    if (sbrPresentFlag) {
+                        bitWriterBuffer.writeBits(extensionSamplingFrequencyIndex, 4);
+                        if (extensionSamplingFrequencyIndex == 0xf) {
+                            bitWriterBuffer.writeBits(extensionSamplingFrequency, 24);
+                        }
+                    }
+                    bitWriterBuffer.writeBits(extensionChannelConfiguration, 4);
+                }
+            }
+        }
 
         return (ByteBuffer) out.rewind();
+    }
+
+    private void writeAudioObjectType(int audioObjectType, BitWriterBuffer bitWriterBuffer) {
+        if (audioObjectType >= 32) {
+            bitWriterBuffer.writeBits(31, 5);
+            bitWriterBuffer.writeBits(audioObjectType - 32, 6);
+        } else {
+            bitWriterBuffer.writeBits(audioObjectType, 5);
+        }
     }
 
     private int getAudioObjectType(BitReaderBuffer in) throws IOException {
@@ -773,11 +1042,47 @@ public class AudioSpecificConfig extends BaseDescriptor {
             }
             extensionFlag3 = in.readBits(1);
             if (extensionFlag3 == 1) {
-                /* tbd in version 3 */
+                throw new RuntimeException("not yet implemented");
             }
         }
 //    }
         gaSpecificConfig = true;
+    }
+
+    private void writeGaSpecificConfig(BitWriterBuffer out) {
+//    GASpecificConfig (samplingFrequencyIndex,
+//            channelConfiguration,
+//            audioObjectType)
+//    {
+        out.writeBits(frameLengthFlag, 1); // frameLengthFlag = in.readBits(1);
+        out.writeBits(dependsOnCoreCoder, 1); //= in.readBits(1);
+        if (dependsOnCoreCoder == 1) {
+            out.writeBits(coreCoderDelay, 14); // = in.readBits(14);
+        }
+        out.writeBits(extensionFlag, 1); // = in.readBits(1);
+        if (channelConfiguration == 0) {
+            throw new UnsupportedOperationException("can't parse program_config_element yet");
+            //program_config_element ();
+        }
+        if ((audioObjectType == 6) || (audioObjectType == 20)) {
+            out.writeBits(layerNr, 3);// = in.readBits(3);
+        }
+        if (extensionFlag == 1) {
+            if (audioObjectType == 22) {
+                out.writeBits(numOfSubFrame, 5); // = in.readBits(5);
+                out.writeBits(layer_length, 11); // = in.readBits(11);
+            }
+            if (audioObjectType == 17 || audioObjectType == 19 ||
+                    audioObjectType == 20 || audioObjectType == 23) {
+                out.writeBool(aacSectionDataResilienceFlag); // = in.readBool();
+                out.writeBool(aacScalefactorDataResilienceFlag); // = in.readBool();
+                out.writeBool(aacSpectralDataResilienceFlag); // = in.readBool();
+            }
+            out.writeBits(extensionFlag3, 1); // = in.readBits(1);
+            if (extensionFlag3 == 1) {
+                throw new RuntimeException("not yet implemented");
+            }
+        }
     }
 
     private void parseParametricSpecificConfig(int samplingFrequencyIndex, int channelConfiguration, int audioObjectType, BitReaderBuffer in) throws IOException {
@@ -885,7 +1190,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
     }
 
     public byte[] getConfigBytes() {
-        return configBytes;
+        return serializeConfigBytes().array();
     }
 
     public int getAudioObjectType() {
@@ -894,6 +1199,10 @@ public class AudioSpecificConfig extends BaseDescriptor {
 
     public void setAudioObjectType(int audioObjectType) {
         this.audioObjectType = audioObjectType;
+    }
+
+    public void setOriginalAudioObjectType(int originalAudioObjectType) {
+        this.originalAudioObjectType = originalAudioObjectType;
     }
 
     public int getExtensionAudioObjectType() {

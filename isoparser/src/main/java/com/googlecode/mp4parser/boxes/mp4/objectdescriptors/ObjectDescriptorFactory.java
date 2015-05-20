@@ -183,7 +183,14 @@ public class ObjectDescriptorFactory {
                 throw new RuntimeException(e);
             }
         }
+
+        //ByteBuffer orig = bb.slice();
         baseDescriptor.parse(tag, bb);
+        //byte[] b1 = new byte[baseDescriptor.sizeOfInstance + baseDescriptor.sizeBytes];
+        //orig.get(b1);
+        //byte[] b2 = baseDescriptor.serialize().array();
+        //System.err.println(baseDescriptor.getClass().getName() + " orig: " + Hex.encodeHex(b1) + " serialized: " + Hex.encodeHex(b2));
+
         return baseDescriptor;
     }
 }

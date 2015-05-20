@@ -197,7 +197,7 @@ public class AACTrackImpl extends AbstractTrack {
         decoderConfigDescriptor.setAvgBitRate(avgBitRate);
 
         AudioSpecificConfig audioSpecificConfig = new AudioSpecificConfig();
-        audioSpecificConfig.setAudioObjectType(2); // AAC LC
+        audioSpecificConfig.setOriginalAudioObjectType(2); // AAC LC
         audioSpecificConfig.setSamplingFrequencyIndex(firstHeader.sampleFrequencyIndex);
         audioSpecificConfig.setChannelConfiguration(firstHeader.channelconfig);
         decoderConfigDescriptor.setAudioSpecificInfo(audioSpecificConfig);

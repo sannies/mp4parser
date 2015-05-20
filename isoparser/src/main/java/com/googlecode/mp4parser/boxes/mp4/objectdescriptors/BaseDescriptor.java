@@ -40,7 +40,7 @@ sizeOfInstance = sizeOfInstance<<7 | sizeByte;
 public abstract class BaseDescriptor {
     int tag;
     int sizeOfInstance;
-    private int sizeBytes;
+    int sizeBytes;
 
     public BaseDescriptor() {
     }
@@ -106,7 +106,7 @@ public abstract class BaseDescriptor {
 
     public abstract void parseDetail(ByteBuffer bb) throws IOException;
 
-    public abstract Buffer serialize();
+    public abstract ByteBuffer serialize();
 
     /**
      * without tag and size

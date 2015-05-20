@@ -26,15 +26,19 @@ public class CencEncryptDecrypt {
 
         Movie mOrig = MovieCreator.build(CencEncryptDecrypt.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/1365070268951.mp4");
 
+
         Movie mEncryptOut = new Movie();
         SecretKey sk = new SecretKeySpec(new byte[]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, "AES");
         for (Track track : mOrig.getTracks()) {
-            mEncryptOut.addTrack(new CencEncryptingTrackImpl(track, UUID.randomUUID(), sk, false));
+            mEncryptOut.addTrack(new CencEncryptingTrackImpl(track, UUID.randomUUID(), sk, true));
         }
 
         Container cEncrypted = mp4Builder.build(mEncryptOut);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         cEncrypted.writeContainer(Channels.newChannel(baos));
+
+        FileOutputStream fos = new FileOutputStream("output-enc.mp4");
+        fos.write(baos.toByteArray());
 
         Movie mEncryptIn = MovieCreator.build (new MemoryDataSourceImpl(baos.toByteArray()));
         Movie mDecrypt = new Movie();
@@ -48,8 +52,8 @@ public class CencEncryptDecrypt {
         }
 
         Container cDecrypted = mp4Builder.build(mDecrypt);
-        FileOutputStream fos = new FileOutputStream("output.mp4");
-        cDecrypted.writeContainer(fos.getChannel());
+        FileOutputStream fos2 = new FileOutputStream("output.mp4");
+        cDecrypted.writeContainer(fos2.getChannel());
 
     }
 }

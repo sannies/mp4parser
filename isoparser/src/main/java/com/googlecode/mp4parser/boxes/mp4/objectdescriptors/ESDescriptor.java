@@ -136,7 +136,8 @@ public class ESDescriptor extends BaseDescriptor {
     }
 
     public ByteBuffer serialize() {
-        ByteBuffer out = ByteBuffer.allocate(getSize()); // Usually is around 30 bytes, so 200 should be enough...
+        byte[] aaa = new byte[getSize()];
+        ByteBuffer out = ByteBuffer.wrap(aaa); // Usually is around 30 bytes, so 200 should be enough...
         IsoTypeWriter.writeUInt8(out, 3);
         writeSize(out, getContentSize());
         IsoTypeWriter.writeUInt16(out, esId);

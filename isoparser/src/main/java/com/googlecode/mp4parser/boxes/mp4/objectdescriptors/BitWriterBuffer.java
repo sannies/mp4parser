@@ -13,6 +13,10 @@ public class BitWriterBuffer {
         this.initialPos = buffer.position();
     }
 
+    public void writeBool(boolean b) {
+        writeBits(b ? 1 : 0, 1);
+    }
+
     public void writeBits(int i, int numBits) {
         assert i <= ((1 << numBits) - 1) : String.format("Trying to write a value bigger (%s) than the number bits (%s) allows. " +
                 "Please mask the value before writing it and make your code is really working as intended.", i, (1 << numBits) - 1);
