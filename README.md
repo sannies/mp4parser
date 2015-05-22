@@ -40,26 +40,29 @@ Muxing Audio/Video
 The API and the process is straight-forward:
 
 1. You wrap each raw format file into an appropriate Track object. 
-```java
+  ```java
 H264TrackImpl h264Track = new H264TrackImpl(new FileDataSourceImpl("video.h264"));
 AACTrackImpl aacTrack = new AACTrackImpl(new FileDataSourceImpl("audio.aac"));
-```
+  ```
+
 2. These Track object are then added to a Movie object
-```java
+  ```java
 Movie movie = new Movie();
 movie.addTrack(h264Track);
 movie.addTrack(aacTrack);
-```
+  ```
+
 3. The Movie object is fed into an MP4Builder to create the container. 
-```java
+  ```java
 Container mp4file = new DefaultMp4Builder().build(movie);
-```
+  ```
+
 4. Write the container to an appropriate sink.
-```java
+  ```java
 FileChannel fc = new FileOutputStream(new File("output.mp4")).getChannel();
 mp4file.writeContainer(fc);
 fc.close();
-```
+  ```
 
 There are cases where the frame rate is signalled out of band or is known in advance so that the H264 doesn't contain it literally. 
 In this case you will have to supply it to the constructor. 
