@@ -1,17 +1,11 @@
 package com.mp4parser.streaming;
 
-import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TrackHeaderBox;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
-public interface StreamingSampleSource {
-    boolean isSyncSampleAware();
-
-    boolean isCttsAware();
-
+public interface StreamingTrack {
     long getTimescale();
 
     BlockingQueue<StreamingSample> getSamples();
@@ -24,6 +18,11 @@ public interface StreamingSampleSource {
      */
     boolean hasMoreSamples();
 
+    /**
+     * Returns the original TrackHeaderBox. Changes on the returned box should always
+     * be visible. Do not return a copy or create on the fly.
+     * @return the original TrackHeaderBox
+     */
     TrackHeaderBox getTrackHeaderBox();
 
     String getHandler();
@@ -31,4 +30,6 @@ public interface StreamingSampleSource {
     String getLanguage();
 
     SampleDescriptionBox getSampleDescriptionBox();
+
+    TrackExtension[] getExtensions();
 }

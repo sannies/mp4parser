@@ -20,12 +20,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
     private final OutputStream outputStream;
-    StreamingSampleSource source;
+    StreamingTrack source;
     Date creationTime;
 
     private long currentFragmentStartTime = 0;
 
-    public SingleTrackFragmentedMp4Writer(StreamingSampleSource source, OutputStream outputStream) {
+    public SingleTrackFragmentedMp4Writer(StreamingTrack source, OutputStream outputStream) {
         this.source = source;
         this.outputStream = outputStream;
         this.creationTime = new Date();
@@ -198,9 +198,9 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
 
     private void consumeSample(StreamingSample ss, WritableByteChannel out) {
-        if (ss.getPresentationTime() > currentFragmentStartTime + 3 * source.getTimescale() &&
+/*        if (ss.getPresentationTime() > currentFragmentStartTime + 3 * source.getTimescale() &&
                 (!source.isSyncSampleAware() || (ss.getSampleDependency() & 0x30) == 0x20)) { // I-frame!
 
-        }
+        }*/
     }
 }

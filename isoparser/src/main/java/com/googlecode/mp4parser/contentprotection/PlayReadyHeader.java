@@ -23,7 +23,7 @@ import java.util.UUID;
  * ASF_StreamType_PlayReady_Encrypted_Command_Media
  * 8683973A-6639-463A-ABD764F1CE3EEAE0</p>
  * <p>
- * Specifications &gt; Microsoft PlayReady Format Specification &gt; 2. PlayReady Media Format &gt; 2.5. Data Objects &gt; 2.5.1. Payload Extension for AES in Counter Mode</p>
+ * Specifications &gt; Microsoft PlayReady Format Specification &gt; 2. PlayReady Media Format &gt; 2.5. Data Objects &gt; 2.5.1. Payload TrackExtension for AES in Counter Mode</p>
  * <p>
  * The sample Id is used as the IV in CTR mode. Block offset, starting at 0 and incremented by 1 after every 16 bytes, from the beginning of the sample is used as the Counter.</p>
  * <p>

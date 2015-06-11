@@ -15,7 +15,7 @@ import com.googlecode.mp4parser.AbstractContainerBox;
  * <ul>
  * <li>Size - An unsigned 32-bit integer holding the size of the decompression parameters atom</li>
  * <li>Type - An unsigned 32-bit field containing the four-character code 'wave'</li>
- * <li>Extension atoms - Atoms containing the necessary out-of-band decompression parameters for the sound decompressor.
+ * <li>TrackExtension atoms - Atoms containing the necessary out-of-band decompression parameters for the sound decompressor.
  * For MPEG-4 audio ('mp4a'), this includes elementary stream descriptor ('esds'), format ('frma'), and terminator atoms.</li>
  * </ul>
  * <p>Possible paths: /moov/trak/mdia/minf/stbl/stsd/mp4a/wave/esds or /moov/trak/mdia/minf/stbl/stsd/mp4a/wave/mp4a/esds</p>
