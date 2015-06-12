@@ -19,6 +19,7 @@ package com.coremedia.drm.packager.isoparser;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.AbstractBox;
+import com.googlecode.mp4parser.util.Path;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -88,7 +89,7 @@ public final class Walk {
 
             }
             if (b instanceof AbstractBox) {
-                assert ((AbstractBox) b).isParsed();
+                assert ((AbstractBox) b).isParsed(): "Box " + Path.createPath(b) + "(" + b.getClass().getSimpleName() + ") is not parsed.";
             }
 
         }

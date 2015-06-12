@@ -17,15 +17,22 @@ package com.googlecode.mp4parser.boxes.apple;
 
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import com.googlecode.mp4parser.AbstractBox;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
  */
-public class TimeCodeBox extends AbstractBox implements SampleEntry {
+public class TimeCodeBox extends AbstractBox implements SampleEntry, Container {
     public static final String TYPE = "tmcd";
 
     int timeScale;
@@ -153,5 +160,29 @@ public class TimeCodeBox extends AbstractBox implements SampleEntry {
 
     public void setRest(byte[] rest) {
         this.rest = rest;
+    }
+
+
+    public List<Box> getBoxes() {
+        return Collections.emptyList();
+    }
+
+    public void setBoxes(List<Box> boxes) {
+        throw new RuntimeException("Time Code Box doesn't accept any children");
+    }
+
+    public <T extends Box> List<T> getBoxes(Class<T> clazz) {
+        return Collections.emptyList();
+    }
+
+    public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
+        return Collections.emptyList();
+    }
+
+    public ByteBuffer getByteBuffer(long start, long size) throws IOException {
+        return null;
+    }
+
+    public void writeContainer(WritableByteChannel bb) throws IOException {
     }
 }

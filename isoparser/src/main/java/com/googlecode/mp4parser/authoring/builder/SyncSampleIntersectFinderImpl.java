@@ -16,6 +16,7 @@
 package com.googlecode.mp4parser.authoring.builder;
 
 import com.coremedia.iso.boxes.OriginalFormatBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import com.googlecode.mp4parser.authoring.Movie;
@@ -56,13 +57,13 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
     }
 
     static String getFormat(Track track) {
-        SampleEntry se = track.getSampleDescriptionBox().getSampleEntry();
-        String type = se.getType();
-        if (type.equals("encv") || type.equals("enca") || type.equals("encv")) {
-            OriginalFormatBox frma = Path.getPath(se, "sinf/frma");
-            type = frma.getDataFormat();
+        SampleDescriptionBox stsd = track.getSampleDescriptionBox();
+        OriginalFormatBox frma = Path.getPath(stsd, "enc./sinf/frma");
+        if (frma!=null) {
+            return frma.getDataFormat();
+        } else {
+            return stsd.getSampleEntry().getType();
         }
-        return type;
     }
 
 
