@@ -121,7 +121,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
             IsoTypeWriter.writeUInt8(byteBuffer, ivSize);
             byteBuffer.put(kid);
         }
-        IsoTypeWriter.writeUInt32(byteBuffer, entries.size());
+        IsoTypeWriter.writeUInt32(byteBuffer, getNonEmptyEntriesNum());
         for (CencSampleAuxiliaryDataFormat entry : entries) {
             if (entry.getSize() > 0) {
                 if (entry.iv.length != 8 && entry.iv.length != 16) {
@@ -137,6 +137,17 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
                 }
             }
         }
+    }
+
+    private int getNonEmptyEntriesNum() {
+        int n = 0;
+        for (CencSampleAuxiliaryDataFormat entry : entries) {
+            if (entry.getSize() > 0) {
+                n++;
+            }
+        }
+
+        return n;
     }
 
     @Override
