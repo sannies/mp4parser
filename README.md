@@ -1,4 +1,5 @@
-<a href='https://pledgie.com/campaigns/28717'><img alt='Click here to lend your support to: MP4Parser and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/28717.png?skin_name=chrome' border='0' ></a>
+<a href='https://pledgie.com/campaigns/28717'><img alt='Click here to lend your support to: MP4Parser and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/28717.png?skin_name=chrome' border='0' ></a> 
+[![Build Status](https://travis-ci.org/sannies/mp4parser.svg?branch=master)](https://travis-ci.org/sannies/mp4parser)
 
 Java MP4 Parser
 ====================
