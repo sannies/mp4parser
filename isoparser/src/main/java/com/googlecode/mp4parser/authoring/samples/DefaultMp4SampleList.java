@@ -4,6 +4,8 @@ import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.authoring.Sample;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.AbstractList;
@@ -19,7 +21,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
 
     Container topLevel;
     TrackBox trackBox = null;
-    ByteBuffer[][] cache = null;
+    SoftReference<ByteBuffer[]>[] cache = null;
     int[] chunkNumsStartSampleNum;
     long[] chunkOffsets;
     long[] chunkSizes;
@@ -44,7 +46,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         chunkOffsets = trackBox.getSampleTableBox().getChunkOffsetBox().getChunkOffsets();
         chunkSizes = new long[chunkOffsets.length];
 
-        cache = new ByteBuffer[chunkOffsets.length][];
+        cache = (SoftReference<ByteBuffer[]>[]) Array.newInstance(SoftReference.class, chunkOffsets.length);
         sampleOffsetsWithinChunks = new long[chunkOffsets.length][];
         ssb = trackBox.getSampleTableBox().getSampleSizeBox();
         List<SampleToChunkBox.Entry> s2chunkEntries = trackBox.getSampleTableBox().getSampleToChunkBox().getEntries();
@@ -165,7 +167,8 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         long offsetWithInChunk = sampleOffsetsWithinChunk[sampleInChunk];
 
 
-        ByteBuffer[] chunkBuffers = cache[l2i(chunkNumber)];
+        SoftReference<ByteBuffer[]> chunkBuffersSr = cache[l2i(chunkNumber)];
+        ByteBuffer[] chunkBuffers = chunkBuffersSr != null ? chunkBuffersSr.get() : null;
         if (chunkBuffers == null) {
             List<ByteBuffer> _chunkBuffers = new ArrayList<ByteBuffer>();
             long currentStart = 0;
@@ -182,7 +185,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
                         chunkOffset + currentStart,
                         -currentStart + sampleOffsetsWithinChunk[sampleOffsetsWithinChunk.length - 1] + ssb.getSampleSizeAtIndex(chunkStartSample + sampleOffsetsWithinChunk.length - 1)));
                 chunkBuffers = _chunkBuffers.toArray(new ByteBuffer[_chunkBuffers.size()]);
-                cache[l2i(chunkNumber)] = chunkBuffers;
+                cache[l2i(chunkNumber)] = new SoftReference<ByteBuffer[]>(chunkBuffers);
             } catch (IOException e) {
                 throw new IndexOutOfBoundsException(e.getMessage());
             }
