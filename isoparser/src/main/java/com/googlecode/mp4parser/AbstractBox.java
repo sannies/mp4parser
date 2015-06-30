@@ -63,11 +63,13 @@ public abstract class AbstractBox implements Box {
 
     private synchronized void readContent() {
         if (!isRead) {
+
             try {
                 LOG.logDebug("mem mapping " + this.getType());
-                content = dataSource.map( contentStartPosition, memMapSize);
+                content = dataSource.map(contentStartPosition, memMapSize);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException(
+                        "contentStartPosition: " + contentStartPosition + " memMapSize: " + memMapSize, e);
             }
             isRead = true;
         }

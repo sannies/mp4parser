@@ -127,7 +127,7 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
     public Box createFtyp() {
         List<String> minorBrands = new LinkedList<String>();
         minorBrands.add("isom");
-        minorBrands.add("iso5");
+        minorBrands.add("iso6");
         minorBrands.add("avc1");
         return new FileTypeBox("isom", 0, minorBrands);
     }

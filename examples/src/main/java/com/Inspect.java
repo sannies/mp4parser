@@ -11,10 +11,14 @@ import java.io.IOException;
  */
 public class Inspect {
     public static void main(String[] args) throws IOException {
-        IsoFile isoFile  = new IsoFile("C:\\Users\\sannies\\Downloads\\video20592-4800.mp4");
+        IsoFile isoFile  = new IsoFile("C:\\Users\\sannies\\sound-b.mp4");
         TrackRunBox trun = Path.getPath(isoFile, "/moof[0]/traf[0]/trun[0]");
+        int i = 0;
+        long duration = 0;
         for (TrackRunBox.Entry entry : trun.getEntries()) {
-            System.err.println(entry.getSampleDuration());
+            duration += (entry.getSampleDuration());
+            i++;
         }
+        System.err.println((double)duration / i);
     }
 }

@@ -81,9 +81,9 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     public Box createBox(String type, byte[] userType, String parent) {
 
         invoke(type, userType, parent);
-
+        String[] param = this.param.get();
         try {
-            Class<Box> clazz = (Class<Box>) Class.forName(clazzName);
+            Class<Box> clazz = (Class<Box>) Class.forName(clazzName.get());
             if (param.length > 0) {
                 Class[] constructorArgsClazz = new Class[param.length];
                 Object[] constructorArgs = new Object[param.length];
@@ -123,8 +123,8 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
 
 
     StringBuilder buildLookupStrings = new StringBuilder();
-    String clazzName;
-    String param[];
+    ThreadLocal<String> clazzName = new ThreadLocal<String>();
+    ThreadLocal<String[]> param = new ThreadLocal<String[]>();
     static String[] EMPTY_STRING_ARRAY = new String[0];
 
     public void invoke(String type, byte[] userType, String parent) {
@@ -156,19 +156,19 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
             throw new RuntimeException("No box object found for " + type);
         }
         if (!constructor.endsWith(")")) {
-            param = EMPTY_STRING_ARRAY;
-            clazzName = constructor;
+            param.set( EMPTY_STRING_ARRAY);
+            clazzName.set(constructor);
         } else {
             Matcher m = constuctorPattern.matcher(constructor);
             boolean matches = m.matches();
             if (!matches) {
                 throw new RuntimeException("Cannot work with that constructor: " + constructor);
             }
-            clazzName = m.group(1);
+            clazzName.set( m.group(1));
             if (m.group(2).length() == 0) {
-                param = EMPTY_STRING_ARRAY;
+                param.set(EMPTY_STRING_ARRAY);
             } else {
-                param = m.group(2).length() > 0 ? m.group(2).split(",") : new String[]{};
+                param.set(m.group(2).length() > 0 ? m.group(2).split(",") : new String[]{});
             }
         }
 

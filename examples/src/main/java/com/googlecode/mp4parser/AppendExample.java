@@ -21,14 +21,14 @@ public class AppendExample {
     public static void main(String[] args) throws IOException {
 
 
-        String f1 = AppendExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/1365070268951.mp4";
-        String f2 = AppendExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/1365070285923.mp4";
-        String f3 = AppendExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/1365070453555.mp4";
+        String f1 = "C:\\Users\\sannies\\Downloads\\merge_73677.mp4";
+        String f2 = "C:\\Users\\sannies\\Downloads\\rsmedia-test(1).mp4";
+        //String f2 = AppendExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/1365070285923.mp4";
+        //String f3 = AppendExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/1365070453555.mp4";
 
         Movie[] inMovies = new Movie[]{
                 MovieCreator.build(f1),
-                MovieCreator.build(f2),
-                MovieCreator.build(f3)};
+                MovieCreator.build(f2)};
 
         List<Track> videoTracks = new LinkedList<Track>();
         List<Track> audioTracks = new LinkedList<Track>();

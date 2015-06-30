@@ -11,6 +11,8 @@ import java.util.List;
 public class HevcConfigurationBox extends AbstractBox {
     public static final String TYPE = "hvcC";
 
+
+
     private HevcDecoderConfigurationRecord hevcDecoderConfigurationRecord;
 
     public HevcConfigurationBox() {

@@ -35,10 +35,17 @@ public class ProtectionSystemSpecificHeaderBox extends AbstractFullBox {
     public static final String TYPE = "pssh";
 
     public static byte[] OMA2_SYSTEM_ID = UUIDConverter.convert(UUID.fromString("A2B55680-6F43-11E0-9A3F-0002A5D5C51B"));
+    public static byte[] WIDEVINE = UUIDConverter.convert(UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"));
     public static byte[] PLAYREADY_SYSTEM_ID = UUIDConverter.convert(UUID.fromString("9A04F079-9840-4286-AB92-E65BE0885F95"));
 
     byte[] content;
     byte[] systemId;
+
+    public ProtectionSystemSpecificHeaderBox(byte[] systemId, byte[] content) {
+        super(TYPE);
+        this.content = content;
+        this.systemId = systemId;
+    }
 
     public List<UUID> getKeyIds() {
         return keyIds;
@@ -74,7 +81,7 @@ public class ProtectionSystemSpecificHeaderBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        long l = 24 + content.length ;
+        long l = 24 + content.length;
         if (getVersion() > 0) {
             l += 4;
             l += 16 * keyIds.size();
@@ -105,7 +112,7 @@ public class ProtectionSystemSpecificHeaderBox extends AbstractFullBox {
         content.get(systemId);
         if (getVersion() > 0) {
             int count = l2i(IsoTypeReader.readUInt32(content));
-            while (count-->0) {
+            while (count-- > 0) {
                 byte[] k = new byte[16];
                 content.get(k);
                 keyIds.add(UUIDConverter.convert(k));

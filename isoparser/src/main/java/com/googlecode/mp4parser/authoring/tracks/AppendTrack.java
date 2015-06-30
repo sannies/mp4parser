@@ -423,15 +423,17 @@ public class AppendTrack extends AbstractTrack {
         if (tracks[0].getSyncSamples() != null && tracks[0].getSyncSamples().length > 0) {
             int numSyncSamples = 0;
             for (Track track : tracks) {
-                numSyncSamples += track.getSyncSamples().length;
+                numSyncSamples += track.getSyncSamples()!=null?track.getSyncSamples().length:0;
             }
             long[] returnSyncSamples = new long[numSyncSamples];
 
             int pos = 0;
             long samplesBefore = 0;
             for (Track track : tracks) {
-                for (long l : track.getSyncSamples()) {
-                    returnSyncSamples[pos++] = samplesBefore + l;
+                if (track.getSyncSamples()!=null) {
+                    for (long l : track.getSyncSamples()) {
+                        returnSyncSamples[pos++] = samplesBefore + l;
+                    }
                 }
                 samplesBefore += track.getSamples().size();
             }
