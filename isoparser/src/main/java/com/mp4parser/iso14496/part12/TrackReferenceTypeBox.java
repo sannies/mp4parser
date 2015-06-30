@@ -17,9 +17,7 @@ import java.nio.ByteBuffer;
  * the track containing the track reference. The referenced tracks shall be hint tracks. The 'hind' dependency
  * can, for example, be used for indicating the dependencies between hint tracks documenting layered IP
  * multicast over RTP.
- * <p/>
  * Exactly one Track Reference Box can be contained within the Track Box.
- * <p/>
  * If this box is not present, the track is not referencing anyother track in any way. The reference array is sized
  * to fill the reference type box.
  */
