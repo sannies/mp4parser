@@ -40,8 +40,8 @@ public class TrackHeaderBox extends AbstractFullBox {
 
     public static final String TYPE = "tkhd";
 
-    private Date creationTime;
-    private Date modificationTime;
+    private Date creationTime = new Date(0);
+    private Date modificationTime = new Date(0);
     private long trackId;
     private long duration;
     private int layer;

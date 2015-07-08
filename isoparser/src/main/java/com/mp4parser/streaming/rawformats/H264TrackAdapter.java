@@ -2,10 +2,14 @@ package com.mp4parser.streaming.rawformats;
 
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.tracks.h264.H264TrackImpl;
 import com.mp4parser.streaming.*;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -18,7 +22,6 @@ public class H264TrackAdapter extends AbstractStreamingTrack {
 
     H264TrackImpl h264Track;
     ArrayBlockingQueue<StreamingSample> samples;
-
 
 
     public H264TrackAdapter(final H264TrackImpl h264Track) {
@@ -37,10 +40,10 @@ public class H264TrackAdapter extends AbstractStreamingTrack {
                 final Sample sample = oldsamples.get(i);
                 samples.put(new StreamingSample() {
                     public ByteBuffer getContent() {
-                        return sample.asByteBuffer();
+                        return sample.asByteBuffer().duplicate();
                     }
 
-                    public long getPresentationTime() {
+                    public long getDuration() {
                         return myPTime;
                     }
 
@@ -68,4 +71,9 @@ public class H264TrackAdapter extends AbstractStreamingTrack {
     }
 
 
+    public static void main(String[] args) throws IOException {
+        StreamingTrack streamingTrack = new H264TrackAdapter(new H264TrackImpl(new FileDataSourceImpl("c:\\content\\big_buck_bunny_1080p_h264-2min.h264")));
+        SingleTrackFragmentedMp4Writer singleTrackFragmentedMp4Writer = new SingleTrackFragmentedMp4Writer(streamingTrack, new FileOutputStream("output.mp4"));
+        singleTrackFragmentedMp4Writer.write();
+    }
 }

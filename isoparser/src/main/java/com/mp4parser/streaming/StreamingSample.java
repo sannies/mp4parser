@@ -9,6 +9,6 @@ import java.nio.ByteBuffer;
  */
 public interface StreamingSample {
     ByteBuffer getContent();
-    long getPresentationTime();
+    long getDuration();
     SampleExtension[] getExtensions();
 }

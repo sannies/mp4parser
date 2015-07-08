@@ -33,7 +33,7 @@ import java.nio.ByteBuffer;
  */
 public class SampleFlags {
     private byte reserved;
-    private byte is_leading;
+    private byte isLeading;
     private byte sampleDependsOn;
     private byte sampleIsDependedOn;
     private byte sampleHasRedundancy;
@@ -48,7 +48,7 @@ public class SampleFlags {
     public SampleFlags(ByteBuffer bb) {
         long a = IsoTypeReader.readUInt32(bb);
         reserved = (byte) ((a & 0xF0000000) >> 28);
-        is_leading = (byte) ((a & 0x0C000000) >> 26);
+        isLeading = (byte) ((a & 0x0C000000) >> 26);
         sampleDependsOn = (byte) ((a & 0x03000000) >> 24);
         sampleIsDependedOn = (byte) ((a & 0x00C00000) >> 22);
         sampleHasRedundancy = (byte) ((a & 0x00300000) >> 20);
@@ -62,7 +62,7 @@ public class SampleFlags {
     public void getContent(ByteBuffer os) {
         long a = 0;
         a |= reserved << 28;
-        a |= is_leading << 26;
+        a |= isLeading << 26;
         a |= sampleDependsOn << 24;
         a |= sampleIsDependedOn << 22;
         a |= sampleHasRedundancy << 20;
@@ -78,6 +78,14 @@ public class SampleFlags {
 
     public void setReserved(int reserved) {
         this.reserved = (byte) reserved;
+    }
+
+    public byte getIsLeading() {
+        return isLeading;
+    }
+
+    public void setIsLeading(byte isLeading) {
+        this.isLeading = isLeading;
     }
 
     /**
@@ -199,7 +207,7 @@ public class SampleFlags {
     public String toString() {
         return "SampleFlags{" +
                 "reserved=" + reserved +
-                ", isLeading=" + is_leading +
+                ", isLeading=" + isLeading +
                 ", depOn=" + sampleDependsOn +
                 ", isDepOn=" + sampleIsDependedOn +
                 ", hasRedundancy=" + sampleHasRedundancy +
@@ -216,7 +224,7 @@ public class SampleFlags {
 
         SampleFlags that = (SampleFlags) o;
 
-        if (is_leading != that.is_leading) return false;
+        if (isLeading != that.isLeading) return false;
         if (reserved != that.reserved) return false;
         if (sampleDegradationPriority != that.sampleDegradationPriority) return false;
         if (sampleDependsOn != that.sampleDependsOn) return false;
@@ -231,7 +239,7 @@ public class SampleFlags {
     @Override
     public int hashCode() {
         int result = (int) reserved;
-        result = 31 * result + (int) is_leading;
+        result = 31 * result + (int) isLeading;
         result = 31 * result + (int) sampleDependsOn;
         result = 31 * result + (int) sampleIsDependedOn;
         result = 31 * result + (int) sampleHasRedundancy;
