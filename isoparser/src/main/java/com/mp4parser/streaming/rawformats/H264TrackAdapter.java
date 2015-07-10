@@ -21,40 +21,48 @@ import java.util.concurrent.BlockingQueue;
 public class H264TrackAdapter extends AbstractStreamingTrack {
 
     H264TrackImpl h264Track;
-    ArrayBlockingQueue<StreamingSample> samples;
 
 
-    public H264TrackAdapter(final H264TrackImpl h264Track) {
+    public H264TrackAdapter(final H264TrackImpl h264Track) throws InterruptedException {
         this.h264Track = h264Track;
-        samples = new ArrayBlockingQueue<StreamingSample>(1000, true);
-
+        samples = new ArrayBlockingQueue<StreamingSample>(100, true);
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    parse();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     public void parse() throws InterruptedException {
-        {
-            long pTime = 0;
-            List<Sample> oldsamples = h264Track.getSamples();
 
-            for (int i = 0; i < oldsamples.size(); i++) {
-                final long myPTime = pTime;
-                final Sample sample = oldsamples.get(i);
-                samples.put(new StreamingSample() {
-                    public ByteBuffer getContent() {
-                        return sample.asByteBuffer().duplicate();
-                    }
+        List<Sample> oldsamples = h264Track.getSamples();
 
-                    public long getDuration() {
-                        return myPTime;
-                    }
+        for (int i = 0; i < oldsamples.size(); i++) {
+            System.err.println("Jo! " + i + " of " + oldsamples.size());
+            final long duration = h264Track.getSampleDurations()[i];
+            final Sample sample = oldsamples.get(i);
 
-                    public SampleExtension[] getExtensions() {
-                        return new SampleExtension[0];
-                    }
-                });
-                pTime += h264Track.getSampleDurations()[i];
+            samples.put(new StreamingSample() {
+                public ByteBuffer getContent() {
+                    return sample.asByteBuffer().duplicate();
+                }
 
-            }
+                public long getDuration() {
+                    return duration;
+                }
+
+                public SampleExtension[] getExtensions() {
+                    return new SampleExtension[0];
+                }
+            });
+
         }
+        System.err.println("Jo!");
 
     }
 
@@ -71,8 +79,9 @@ public class H264TrackAdapter extends AbstractStreamingTrack {
     }
 
 
-    public static void main(String[] args) throws IOException {
-        StreamingTrack streamingTrack = new H264TrackAdapter(new H264TrackImpl(new FileDataSourceImpl("c:\\content\\big_buck_bunny_1080p_h264-2min.h264")));
+    public static void main(String[] args) throws IOException, InterruptedException {
+        H264TrackImpl h264Track = new H264TrackImpl(new FileDataSourceImpl("c:\\content\\big_buck_bunny_1080p_h264-2min.h264"));
+        final StreamingTrack streamingTrack = new H264TrackAdapter(h264Track);
         SingleTrackFragmentedMp4Writer singleTrackFragmentedMp4Writer = new SingleTrackFragmentedMp4Writer(streamingTrack, new FileOutputStream("output.mp4"));
         singleTrackFragmentedMp4Writer.write();
     }

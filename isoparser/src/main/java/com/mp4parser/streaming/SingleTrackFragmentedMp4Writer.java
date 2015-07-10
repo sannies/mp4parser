@@ -49,6 +49,7 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
     List<StreamingSample> fragment = new ArrayList<StreamingSample>();
     private long sequenceNumber;
     private long currentFragmentStartTime = 0;
+    private long currentTime = 0;
 
     public SingleTrackFragmentedMp4Writer(StreamingTrack source, OutputStream outputStream) {
         this.source = source;
@@ -239,17 +240,18 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
                 compositionTimeSampleExtension = (CompositionTimeSampleExtension) sampleExtension;
             }
         }
-
+        currentTime += ss.getDuration();
         // 3 seconds = 3 * source.getTimescale()
-        if (ss.getDuration() > currentFragmentStartTime + 3 * source.getTimescale() &&
+        fragment.add(ss);
+        if (currentTime > currentFragmentStartTime + 3 * source.getTimescale() &&
                 fragment.size() > 0 &&
                 (sampleDependencyTrackExtension == null ||
                         sampleDependencySampleExtension == null ||
                         sampleDependencySampleExtension.isSyncSample())) {
             createMoof().getBox(out);
             createMdat().getBox(out);
-
-
+            currentFragmentStartTime = currentTime;
+            fragment.clear();
         }
     }
 
@@ -420,6 +422,7 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
                 ByteBuffer bb = ByteBuffer.allocate(8);
                 IsoTypeWriter.writeUInt32(bb, l);
                 bb.put(IsoFile.fourCCtoBytes(getType()));
+                writableByteChannel.write((ByteBuffer) bb.rewind());
 
                 for (ByteBuffer sampleContent : sampleContents) {
                     writableByteChannel.write(sampleContent);
