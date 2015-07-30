@@ -36,6 +36,7 @@ public class H264TrackAdapter extends AbstractStreamingTrack {
                 }
             }
         }.start();
+        stsd = h264Track.getSampleDescriptionBox();
     }
 
     public void parse() throws InterruptedException {

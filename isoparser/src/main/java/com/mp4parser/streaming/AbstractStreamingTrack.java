@@ -6,13 +6,15 @@ import com.coremedia.iso.boxes.TrackHeaderBox;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-/**
- * Created by sannies on 31.05.2015.
- */
 public abstract class AbstractStreamingTrack implements StreamingTrack {
     protected BlockingQueue<StreamingSample> samples = new ArrayBlockingQueue<StreamingSample>(1000);
-    protected TrackHeaderBox tkhd = new TrackHeaderBox();
-    protected SampleDescriptionBox stsd = new SampleDescriptionBox();
+    protected TrackHeaderBox tkhd;
+    protected SampleDescriptionBox stsd;
+
+    public AbstractStreamingTrack() {
+        tkhd = new TrackHeaderBox();
+        tkhd.setTrackId(1);
+    }
 
     public BlockingQueue<StreamingSample> getSamples() {
         return samples;

@@ -300,7 +300,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     }
                     fvnd = current;
                     buffered.add((ByteBuffer) nal.rewind());
-                    System.err.println("NAL Unit Type: " + nalUnitHeader.nal_unit_type + " " + fvnd.frame_num);
+                    //System.err.println("NAL Unit Type: " + nalUnitHeader.nal_unit_type + " " + fvnd.frame_num);
                     break;
 
                 case H264NalUnitTypes.SEI:

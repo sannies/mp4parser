@@ -180,7 +180,7 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
     protected Box createTrex() {
         TrackExtendsBox trex = new TrackExtendsBox();
-        trex.setTrackId(1);
+        trex.setTrackId(source.getTrackHeaderBox().getTrackId());
         trex.setDefaultSampleDescriptionIndex(1);
         trex.setDefaultSampleDuration(0);
         trex.setDefaultSampleSize(0);
