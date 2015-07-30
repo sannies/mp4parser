@@ -23,6 +23,13 @@ public class Math {
         return a * (b / gcd(a, b));
     }
 
+    public static long lcm(long[] input)
+    {
+        long result = input[0];
+        for(int i = 1; i < input.length; i++) result = lcm(result, input[i]);
+        return result;
+    }
+
     public static int lcm(int a, int b) {
         return a * (b / gcd(a, b));
     }

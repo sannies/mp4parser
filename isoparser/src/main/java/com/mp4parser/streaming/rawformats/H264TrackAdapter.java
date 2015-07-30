@@ -83,7 +83,8 @@ public class H264TrackAdapter extends AbstractStreamingTrack {
     public static void main(String[] args) throws IOException, InterruptedException {
         H264TrackImpl h264Track = new H264TrackImpl(new FileDataSourceImpl("c:\\content\\big_buck_bunny_1080p_h264-2min.h264"));
         final StreamingTrack streamingTrack = new H264TrackAdapter(h264Track);
-        SingleTrackFragmentedMp4Writer singleTrackFragmentedMp4Writer = new SingleTrackFragmentedMp4Writer(streamingTrack, new FileOutputStream("output.mp4"));
-        singleTrackFragmentedMp4Writer.write();
+        MultiTrackFragmentedMp4Writer mp4Writer
+                = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{streamingTrack}, new FileOutputStream("output.mp4"));
+        mp4Writer.write();
     }
 }

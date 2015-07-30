@@ -2,6 +2,7 @@ package com.mp4parser.streaming;
 
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.googlecode.mp4parser.authoring.Track;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -21,6 +22,7 @@ public interface StreamingTrack {
     /**
      * Returns the original TrackHeaderBox. Changes on the returned box should always
      * be visible. Do not return a copy or create on the fly.
+     *
      * @return the original TrackHeaderBox
      */
     TrackHeaderBox getTrackHeaderBox();
@@ -31,7 +33,10 @@ public interface StreamingTrack {
 
     SampleDescriptionBox getSampleDescriptionBox();
 
-    TrackExtension[] getExtensions();
+    <T extends TrackExtension> T getTrackExtension(Class<T> clazz);
 
+    void addTrackExtension(TrackExtension trackExtension);
+
+    void removeTrackExtension(Class<? extends TrackExtension> clazz);
 
 }
