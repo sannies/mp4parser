@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -20,7 +21,7 @@ public class SampleAuxiliaryInformationSizesBoxTest {
         saiz1.getBox(fc);
         fc.close();
 
-        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
+        IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
         SampleAuxiliaryInformationSizesBox saiz2 = (SampleAuxiliaryInformationSizesBox) isoFile.getBoxes().get(0);
 
         Assert.assertEquals(saiz1.getDefaultSampleInfoSize(), saiz2.getDefaultSampleInfoSize());
@@ -43,7 +44,7 @@ public class SampleAuxiliaryInformationSizesBoxTest {
         saiz1.getBox(fc);
         fc.close();
 
-        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
+        IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
         SampleAuxiliaryInformationSizesBox saiz2 = (SampleAuxiliaryInformationSizesBox) isoFile.getBoxes().get(0);
 
         Assert.assertEquals(saiz1.getDefaultSampleInfoSize(), saiz2.getDefaultSampleInfoSize());

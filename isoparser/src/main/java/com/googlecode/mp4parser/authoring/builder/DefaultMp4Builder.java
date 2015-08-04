@@ -15,12 +15,10 @@
  */
 package com.googlecode.mp4parser.authoring.builder;
 
-import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.BasicContainer;
-import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.authoring.Edit;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Sample;
@@ -30,10 +28,12 @@ import com.googlecode.mp4parser.boxes.dece.SampleEncryptionBox;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleGroupDescriptionBox;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleToGroupBox;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.tools.Path;
+import com.mp4parser.LightBox;
 import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationOffsetsBox;
 import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationSizesBox;
 import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
+import com.mp4parser.tools.Offsets;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -83,6 +83,8 @@ public class DefaultMp4Builder implements Mp4Builder {
         this.intersectionFinder = intersectionFinder;
     }
 
+
+
     /**
      * {@inheritDoc}
      */
@@ -123,13 +125,18 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
 
         InterleaveChunkMdat mdat = new InterleaveChunkMdat(movie, chunks, contentSize);
+
+        long dataOffset = 16;
+        for (LightBox lightBox : isoFile.getBoxes()) {
+            dataOffset += lightBox.getSize();
+        }
         isoFile.addBox(mdat);
 
         /*
         dataOffset is where the first sample starts. In this special mdat the samples always start
         at offset 16 so that we can use the same offset for large boxes and small boxes
          */
-        long dataOffset = mdat.getDataOffset();
+
         for (StaticChunkOffsetBox chunkOffsetBox : chunkOffsetBoxes) {
             long[] offsets = chunkOffsetBox.getChunkOffsets();
             for (int i = 0; i < offsets.length; i++) {
@@ -140,19 +147,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             long offset = saio.getSize(); // the calculation is systematically wrong by 4, I don't want to debug why. Just a quick correction --san 14.May.13
             offset += 4 + 4 + 4 + 4 + 4 + 24;
             // size of all header we were missing otherwise (moov, trak, mdia, minf, stbl)
-            Object b = saio;
-            do {
-                Object current = b;
-                b = ((Box) b).getParent();
-
-                for (Box box : ((Container) b).getBoxes()) {
-                    if (box == current) {
-                        break;
-                    }
-                    offset += box.getSize();
-                }
-
-            } while (b instanceof Box);
+            offset = Offsets.find(isoFile, saio, offset);
 
             long[] saioOffsets = saio.getOffsets();
             for (int i = 0; i < saioOffsets.length; i++) {
@@ -191,7 +186,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         long duration = 0;
 
         for (Track track : movie.getTracks()) {
-            long tracksDuration = 0;
+            long tracksDuration;
 
             if (track.getEdits() == null || track.getEdits().isEmpty()) {
                 tracksDuration = (track.getDuration() * getTimescale(movie) / track.getTrackMetaData().getTimescale());
@@ -612,7 +607,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         return timescale;
     }
 
-    private class InterleaveChunkMdat implements Box {
+    private class InterleaveChunkMdat implements LightBox {
         List<Track> tracks;
         List<List<Sample>> chunkList = new ArrayList<List<Sample>>();
         Container parent;
@@ -651,23 +646,6 @@ public class DefaultMp4Builder implements Mp4Builder {
             throw new RuntimeException("Doesn't have any meaning for programmatically created boxes");
         }
 
-        public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        }
-
-        public long getDataOffset() {
-            Object b = this;
-            long offset = 16;
-            while (b instanceof Box) {
-                for (Box box : ((Box) b).getParent().getBoxes()) {
-                    if (b == box) {
-                        break;
-                    }
-                    offset += box.getSize();
-                }
-                b = ((Box) b).getParent();
-            }
-            return offset;
-        }
 
 
         public String getType() {

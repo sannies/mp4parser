@@ -3,23 +3,37 @@ package com.googlecode.mp4parser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReaderVariable;
 import com.coremedia.iso.boxes.TrackBox;
+import com.mp4parser.FileRandomAccessSourceImpl;
 import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
 import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.tools.Path;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.List;
 
 
 public class ExtractRawH264 {
     public static void main(String[] args) throws IOException {
         IsoFile isoFile = new IsoFile("D:\\downloads\\cracked.s01e01.hdtv.x264-2hd.mp4");
 
-        TrackBox trackBox = (TrackBox) Path.getPath(isoFile, "/moov/trak/mdia/minf/stbl/stsd/avc1/../../../../../");
-        SampleList sl = new SampleList(trackBox);
+        List<TrackBox> trackBoxes = Path.getPath(isoFile, "moov/trak/");
+        long trackId = -1;
+        TrackBox trackBox = null;
+        for (TrackBox _trackBox : trackBoxes) {
+            if (Path.getPath(_trackBox, "mdia/minf/stbl/stsd/avc1")!=null) {
+                trackId = _trackBox.getTrackHeaderBox().getTrackId();
+                trackBox = _trackBox;
+            }
+
+        }
+
+        SampleList sl = new SampleList(trackId, isoFile, new FileRandomAccessSourceImpl(
+                new RandomAccessFile("D:\\downloads\\cracked.s01e01.hdtv.x264-2hd.mp4", "r")));
 
 
         FileChannel fc = new FileOutputStream("out.h264").getChannel();

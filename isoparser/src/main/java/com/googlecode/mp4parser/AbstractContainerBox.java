@@ -23,6 +23,7 @@ import com.coremedia.iso.boxes.Container;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 
@@ -34,20 +35,12 @@ public class AbstractContainerBox extends BasicContainer implements Box {
     Container parent;
     protected String type;
     protected boolean largeBox;
-    private long offset;
 
 
     public AbstractContainerBox(String type) {
         this.type = type;
     }
 
-    public Container getParent() {
-        return parent;
-    }
-
-    public long getOffset() {
-        return offset;
-    }
 
     public void setParent(Container parent) {
         this.parent = parent;
@@ -76,8 +69,7 @@ public class AbstractContainerBox extends BasicContainer implements Box {
         return header;
     }
 
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        this.offset = dataSource.position() - header.remaining();
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         this.largeBox = header.remaining() == 16; // sometime people use large boxes without requiring them
         initContainer(dataSource, contentSize, boxParser);
     }
@@ -86,15 +78,6 @@ public class AbstractContainerBox extends BasicContainer implements Box {
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         writableByteChannel.write(getHeader());
         writeContainer(writableByteChannel);
-    }
-
-    public void initContainer(DataSource dataSource, long containerSize, BoxParser boxParser) throws IOException {
-        this.dataSource = dataSource;
-        this.parsePosition = dataSource.position();
-        this.startPosition =  parsePosition - (((largeBox || (containerSize + 8) >= (1L << 32)) ? 16 : 8));
-        dataSource.position(dataSource.position() + containerSize);
-        this.endPosition = dataSource.position();
-        this.boxParser = boxParser;
     }
 
 }

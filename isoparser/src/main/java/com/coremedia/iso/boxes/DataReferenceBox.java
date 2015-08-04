@@ -25,6 +25,9 @@ import com.googlecode.mp4parser.AbstractContainerBox;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -69,7 +72,7 @@ public class DataReferenceBox extends AbstractContainerBox implements FullBox {
 
 
     @Override
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer versionFlagNumOfChildBoxes = ByteBuffer.allocate(8);
         dataSource.read(versionFlagNumOfChildBoxes);
         versionFlagNumOfChildBoxes.rewind();

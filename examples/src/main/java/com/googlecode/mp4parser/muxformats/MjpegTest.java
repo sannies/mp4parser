@@ -8,7 +8,7 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.mjpeg.OneJpegPerIframe;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.tools.Path;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,9 +16,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
-/**
- * Created by sannies on 13.02.2015.
- */
 public class MjpegTest {
     public static void main(String[] args) throws IOException {
         IsoFile isofile = new IsoFile("C:\\content\\bbb-small\\output_320x180-mjpeg.mp4");

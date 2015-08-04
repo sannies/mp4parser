@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 
 import com.googlecode.mp4parser.DataSource;
 
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,11 +51,6 @@ public class FreeBox implements Box {
     public FreeBox(int size) {
         this.data = ByteBuffer.allocate(size);
     }
-
-    public long getOffset() {
-        return offset;
-    }
-
     public ByteBuffer getData() {
         if (data != null) {
             return (ByteBuffer) data.duplicate().rewind();
@@ -83,14 +79,6 @@ public class FreeBox implements Box {
 
     }
 
-    public Container getParent() {
-        return parent;
-    }
-
-    public void setParent(Container parent) {
-        this.parent = parent;
-    }
-
     public long getSize() {
         long size = 8;
         for (Box replacer : replacers) {
@@ -104,16 +92,13 @@ public class FreeBox implements Box {
         return TYPE;
     }
 
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        this.offset = dataSource.position() - header.remaining();
-        if (contentSize > 1024 * 1024) {
-            // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
-            data = dataSource.map(dataSource.position(), contentSize);
-            dataSource.position(dataSource.position() + contentSize);
-        } else {
-            assert contentSize < Integer.MAX_VALUE;
-            data = ByteBuffer.allocate(l2i(contentSize));
-            dataSource.read(data);
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        data = ByteBuffer.allocate(l2i(contentSize));
+
+        int bytesRead = 0;
+        int b;
+        while (((((b = dataSource.read(data))) + bytesRead) < contentSize)) {
+            bytesRead += b;
         }
     }
 

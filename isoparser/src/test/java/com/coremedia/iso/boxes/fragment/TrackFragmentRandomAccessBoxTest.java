@@ -7,6 +7,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -64,7 +65,7 @@ public class TrackFragmentRandomAccessBoxTest {
         fc.close();
 
 
-        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
+        IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
         TrackFragmentRandomAccessBox traf2 = (TrackFragmentRandomAccessBox) isoFile.getBoxes().get(0);
         Assert.assertEquals(traf.getNumberOfEntries(), traf2.getNumberOfEntries());
         Assert.assertEquals(traf.getReserved(), traf2.getReserved());

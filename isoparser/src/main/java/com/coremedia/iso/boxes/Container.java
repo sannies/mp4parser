@@ -16,6 +16,8 @@
 
 package com.coremedia.iso.boxes;
 
+import com.mp4parser.LightBox;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -31,14 +33,14 @@ public interface Container {
      *
      * @return an array of boxes, empty array in case of no children.
      */
-    List<Box> getBoxes();
+    List<LightBox> getBoxes();
 
     /**
      * Sets all boxes and removes all previous child boxes.
      *
      * @param boxes the new list of children
      */
-    void setBoxes(List<Box> boxes);
+    void setBoxes(List<? extends LightBox> boxes);
 
     /**
      * Gets all child boxes of the given type. May not return <code>null</code>.
@@ -47,7 +49,7 @@ public interface Container {
      * @param <T> type of boxes to get
      * @return an array of boxes, empty array in case of no children.
      */
-    <T extends Box> List<T> getBoxes(Class<T> clazz);
+    <T extends LightBox> List<T> getBoxes(Class<T> clazz);
 
     /**
      * Gets all child boxes of the given type. May not return <code>null</code>.
@@ -57,9 +59,7 @@ public interface Container {
      * @param <T> type of boxes to get
      * @return an array of boxes, empty array in case of no children.
      */
-    <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive);
-
-    public ByteBuffer getByteBuffer(long start, long size) throws IOException;
+    <T extends LightBox> List<T> getBoxes(Class<T> clazz, boolean recursive);
 
     void writeContainer(WritableByteChannel bb) throws IOException;
 }

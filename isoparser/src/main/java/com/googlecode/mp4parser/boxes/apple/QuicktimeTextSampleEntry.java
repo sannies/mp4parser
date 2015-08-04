@@ -24,6 +24,9 @@ import com.coremedia.iso.boxes.sampleentry.AbstractSampleEntry;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import com.googlecode.mp4parser.DataSource;
+import com.mp4parser.LightBox;
+
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
 
@@ -64,7 +67,7 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
     }
 
     @Override
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer content = ByteBuffer.allocate(l2i(contentSize));
         dataSource.read(content);
         content.position(6);
@@ -95,12 +98,12 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
     }
 
     @Override
-    public void setBoxes(List<Box> boxes) {
+    public void setBoxes(List<? extends LightBox> boxes) {
         throw new RuntimeException("QuicktimeTextSampleEntries may not have child boxes");
     }
 
     @Override
-    public void addBox(Box box) {
+    public void addBox(LightBox box) {
         throw new RuntimeException("QuicktimeTextSampleEntries may not have child boxes");
     }
 

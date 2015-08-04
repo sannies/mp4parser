@@ -18,15 +18,18 @@ package com.googlecode.mp4parser.authoring.container.mp4;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.SchemeTypeBox;
 import com.coremedia.iso.boxes.TrackBox;
-import com.googlecode.mp4parser.DataSource;
-import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.authoring.CencMp4TrackImplImpl;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Mp4TrackImpl;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.tools.Path;
+import com.mp4parser.FileRandomAccessSourceImpl;
+import com.mp4parser.RandomAccessSource;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.ReadableByteChannel;
 import java.util.List;
 
 /**
@@ -35,26 +38,34 @@ import java.util.List;
 public class MovieCreator {
 
     public static Movie build(String file) throws IOException {
-        return build(new FileDataSourceImpl(new File(file)));
+        File f = new File(file);
+        FileInputStream fis = new FileInputStream(f);
+        Movie m = build(fis.getChannel(), new FileRandomAccessSourceImpl(new RandomAccessFile(f, "r")), file);
+        fis.close();
+        return m;
     }
 
     /**
      * Creates <code>Movie</code> object from a <code>ReadableByteChannel</code>.
      *
-     * @param channel input channel
      * @return a representation of the movie
      * @throws IOException in case of I/O error during IsoFile creation
      */
-    public static Movie build(DataSource channel) throws IOException {
-        IsoFile isoFile = new IsoFile(channel);
+    public static Movie build(ReadableByteChannel readableByteChannel, RandomAccessSource randomAccessSource, String name) throws IOException {
+        IsoFile isoFile = new IsoFile(readableByteChannel);
         Movie m = new Movie();
         List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
         for (TrackBox trackBox : trackBoxes) {
             SchemeTypeBox schm = Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schm[0]");
             if (schm != null && (schm.getSchemeType().equals("cenc") || schm.getSchemeType().equals("cbc1"))) {
-                m.addTrack(new CencMp4TrackImplImpl(channel.toString() + "[" + trackBox.getTrackHeaderBox().getTrackId() + "]", trackBox));
+
+                m.addTrack(new CencMp4TrackImplImpl(
+                        trackBox.getTrackHeaderBox().getTrackId(), isoFile,
+                        randomAccessSource, name + "[" + trackBox.getTrackHeaderBox().getTrackId() + "]"));
             } else {
-                m.addTrack(new Mp4TrackImpl(channel.toString() + "[" + trackBox.getTrackHeaderBox().getTrackId() + "]" , trackBox));
+                m.addTrack(new Mp4TrackImpl(
+                        trackBox.getTrackHeaderBox().getTrackId(), isoFile,
+                        randomAccessSource, name + "[" + trackBox.getTrackHeaderBox().getTrackId() + "]"));
             }
         }
         m.setMatrix(isoFile.getMovieBox().getMovieHeaderBox().getMatrix());

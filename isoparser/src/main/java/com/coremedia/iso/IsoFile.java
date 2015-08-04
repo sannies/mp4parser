@@ -19,15 +19,18 @@ package com.coremedia.iso;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.MovieBox;
 import com.googlecode.mp4parser.BasicContainer;
-import com.googlecode.mp4parser.DataSource;
-import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.util.Logger;
+import com.mp4parser.LightBox;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -37,31 +40,28 @@ import java.nio.channels.WritableByteChannel;
 @DoNotParseDetail
 public class IsoFile extends BasicContainer implements Closeable {
     private static Logger LOG = Logger.getLogger(IsoFile.class);
+    private ReadableByteChannel readableByteChannel;
 
-    /**
-     * Shortcut constructor that creates a <code>DataSource</code> from the
-     * given filename and pass it to the {@link IsoFile#IsoFile(DataSource)}
-     * constructor.
-     *
-     * @param filename of the MP4 file to be parsed
-     * @throws IOException in case I/O error
-     */
-    public IsoFile(String filename) throws IOException {
-        this(new FileDataSourceImpl(new File(filename)));
+
+    public IsoFile(String file) throws IOException {
+        this( new FileInputStream(file).getChannel(), new PropertyBoxParserImpl());
     }
 
-
-    /**
-     * @param dataSource the data source
-     * @throws IOException in case I/O error
-     */
-    public IsoFile(DataSource dataSource) throws IOException {
-        this(dataSource, new PropertyBoxParserImpl());
-
+    public IsoFile(File file) throws IOException {
+        this( new FileInputStream(file).getChannel(), new PropertyBoxParserImpl());
     }
 
-    public IsoFile(DataSource dataSource, BoxParser boxParser) throws IOException {
-        initContainer(dataSource, dataSource.size(), boxParser);
+    /**
+     * @param readableByteChannel the data source
+     * @throws IOException in case I/O error
+     */
+    public IsoFile(ReadableByteChannel readableByteChannel) throws IOException {
+        this(readableByteChannel, new PropertyBoxParserImpl());
+    }
+
+    public IsoFile(ReadableByteChannel readableByteChannel, BoxParser boxParser) throws IOException {
+        this.readableByteChannel = readableByteChannel;
+        initContainer(readableByteChannel, -1, boxParser);
     }
 
     public static byte[] fourCCtoBytes(String fourCC) {
@@ -99,7 +99,7 @@ public class IsoFile extends BasicContainer implements Closeable {
      * @return the MovieBox or <code>null</code>
      */
     public MovieBox getMovieBox() {
-        for (Box box : getBoxes()) {
+        for (LightBox box : getBoxes()) {
             if (box instanceof MovieBox) {
                 return (MovieBox) box;
             }
@@ -112,11 +112,11 @@ public class IsoFile extends BasicContainer implements Closeable {
     }
 
     public void close() throws IOException {
-        this.dataSource.close();
+        this.readableByteChannel.close();
     }
 
     @Override
     public String toString() {
-        return "model(" + dataSource.toString() + ")";
+        return "model(" + readableByteChannel.toString() + ")";
     }
 }

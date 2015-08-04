@@ -1,13 +1,11 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.OriginalFormatBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.SchemeTypeBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
-import com.googlecode.mp4parser.MemoryDataSourceImpl;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
@@ -15,12 +13,15 @@ import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.cenc.CencDecryptingSampleList;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
-import com.googlecode.mp4parser.util.Path;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.tools.Path;
 import com.googlecode.mp4parser.util.RangeStartMap;
+import com.mp4parser.LightBox;
 
 import javax.crypto.SecretKey;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.*;
 
@@ -38,6 +39,7 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
         super("dec(" + original.getName() + ")");
         this.original = original;
         SchemeTypeBox schm = Path.getPath(original.getSampleDescriptionBox(), "enc./sinf/schm");
+        assert schm != null;
         if (!("cenc".equals(schm.getSchemeType()) || "cbc1".equals(schm.getSchemeType()))) {
             throw new RuntimeException("You can only use the CencDecryptingTrackImpl with CENC (cenc or cbc1) encrypted tracks");
         }
@@ -99,7 +101,7 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
         SampleDescriptionBox stsd;
         try {
             original.getSampleDescriptionBox().getBox(Channels.newChannel(baos));
-            stsd = (SampleDescriptionBox) new IsoFile(new MemoryDataSourceImpl(baos.toByteArray())).getBoxes().get(0);
+            stsd = (SampleDescriptionBox) new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray()))).getBoxes().get(0);
         } catch (IOException e) {
             throw new RuntimeException("Dumping stsd to memory failed");
         }
@@ -111,8 +113,8 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
         } else {
             throw new RuntimeException("I don't know " + stsd.getSampleEntry().getType());
         }
-        List<Box> nuBoxes = new LinkedList<Box>();
-        for (Box box : stsd.getSampleEntry().getBoxes()) {
+        List<LightBox> nuBoxes = new LinkedList<LightBox>();
+        for (LightBox box : stsd.getSampleEntry().getBoxes()) {
             if (!box.getType().equals("sinf")) {
                 nuBoxes.add(box);
             }

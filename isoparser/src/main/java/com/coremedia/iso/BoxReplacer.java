@@ -1,8 +1,7 @@
 package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.Box;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.tools.Path;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,13 +16,14 @@ import java.util.Map;
  */
 public class BoxReplacer {
     public static void replace(Map<String, Box> replacements, File file) throws IOException {
-        IsoFile isoFile = new IsoFile( new FileDataSourceImpl(new RandomAccessFile(file, "r").getChannel()));
+        IsoFile isoFile = new IsoFile(new RandomAccessFile(file, "r").getChannel());
         Map<String, Box> replacementSanitised = new HashMap<String, Box>();
         Map<String, Long> positions = new HashMap<String, Long>();
+        // TODO not working atm
         for (Map.Entry<String, Box> e : replacements.entrySet()) {
             Box b = Path.getPath(isoFile, e.getKey());
-            replacementSanitised.put(Path.createPath( b ), e.getValue());
-            positions.put(Path.createPath( b ), b.getOffset());
+            //replacementSanitised.put(Path.createPath( b ), e.getValue());
+            //positions.put(Path.createPath( b ), b.getOffset());
             assert b.getSize() == e.getValue().getSize();
         }
         isoFile.close();

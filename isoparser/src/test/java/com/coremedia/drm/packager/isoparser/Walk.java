@@ -19,7 +19,7 @@ package com.coremedia.drm.packager.isoparser;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.AbstractBox;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.LightBox;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -57,10 +57,10 @@ public final class Walk {
     }
 
     public static void through(Container container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
-        for (Box b : container.getBoxes()) {
-            List<Box> myBoxes = (List<Box>) container.getBoxes(b.getClass());
+        for (LightBox b : container.getBoxes()) {
+            List<LightBox> myBoxes = (List<LightBox>) container.getBoxes(b.getClass());
             boolean found = false;
-            for (Box myBox : myBoxes) {
+            for (LightBox myBox : myBoxes) {
                 if (myBox == b) {
                     found = true;
                 }
@@ -89,7 +89,7 @@ public final class Walk {
 
             }
             if (b instanceof AbstractBox) {
-                assert ((AbstractBox) b).isParsed(): "Box " + Path.createPath(b) + "(" + b.getClass().getSimpleName() + ") is not parsed.";
+                assert ((AbstractBox) b).isParsed() : "Box (" + b.getClass().getSimpleName() + ") is not parsed.";
             }
 
         }

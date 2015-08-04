@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
@@ -24,7 +25,7 @@ public class MetaBoxTest {
         FileOutputStream fos = new FileOutputStream(f);
         fos.write(metaBox);
         fos.close();
-        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
+        IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         isoFile.getBox(Channels.newChannel(baos));

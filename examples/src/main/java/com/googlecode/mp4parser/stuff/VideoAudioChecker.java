@@ -4,13 +4,15 @@ package com.googlecode.mp4parser.stuff;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.HandlerBox;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
 public class VideoAudioChecker {
 
     public static void main(String[] args) throws IOException {
-        IsoFile isoFile = new IsoFile(VideoAudioChecker.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/count-video.mp4");
+        String f = VideoAudioChecker.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/count-video.mp4";
+        IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
         System.err.println(getType(isoFile));
     }
 

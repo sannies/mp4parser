@@ -1,13 +1,14 @@
 package com.googlecode.mp4parser.stuff;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ChunkOffsetBox;
 import com.coremedia.iso.boxes.MetaBox;
+import com.coremedia.iso.boxes.SampleTableBox;
 import com.coremedia.iso.boxes.StaticChunkOffsetBox;
 import com.coremedia.iso.boxes.UserDataBox;
 import com.coremedia.iso.boxes.XmlBox;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.tools.Path;
+import com.mp4parser.LightBox;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -15,7 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,7 +43,7 @@ public class ChangeMetaData {
             throw new RuntimeException("Fragmented MP4 files need correction, too. (But I would need to look where)");
         }
 
-        for (Box box : isoFile.getBoxes()) {
+        for (LightBox box : isoFile.getBoxes()) {
             if ("mdat".equals(box.getType())) {
                 return false;
             }
@@ -69,7 +70,7 @@ public class ChangeMetaData {
             tempFile = File.createTempFile("ChangeMetaData", "");
             FileUtils.copyFile(videoFile, tempFile);
 
-            tempIsoFile = new IsoFile(tempFile.getAbsolutePath());
+            tempIsoFile = new IsoFile(tempFile);
 
 
             UserDataBox userDataBox;
@@ -107,13 +108,19 @@ public class ChangeMetaData {
     }
 
     private void correctChunkOffsets(IsoFile tempIsoFile, long correction) {
-        List<Box> chunkOffsetBoxes = Path.getPaths(tempIsoFile, "/moov[0]/trak/mdia[0]/minf[0]/stbl[0]/stco[0]");
-        for (Box chunkOffsetBox : chunkOffsetBoxes) {
+        List<SampleTableBox> sampleTableBoxes = Path.getPaths(tempIsoFile, "/moov[0]/trak/mdia[0]/minf[0]/stbl[0]");
 
-            LinkedList<Box> stblChildren = new LinkedList<Box>(chunkOffsetBox.getParent().getBoxes());
+        for (SampleTableBox sampleTableBox : sampleTableBoxes) {
+
+            List<LightBox> stblChildren = new ArrayList<LightBox>(sampleTableBox.getBoxes());
+            ChunkOffsetBox chunkOffsetBox = Path.getPath(sampleTableBox, "stco");
+            if (chunkOffsetBox == null) {
+                stblChildren.remove(Path.getPath(sampleTableBox, "co64"));
+            }
             stblChildren.remove(chunkOffsetBox);
 
-            long[] cOffsets = ((ChunkOffsetBox) chunkOffsetBox).getChunkOffsets();
+            assert chunkOffsetBox != null;
+            long[] cOffsets = chunkOffsetBox.getChunkOffsets();
             for (int i = 0; i < cOffsets.length; i++) {
                 cOffsets[i] += correction;
             }
@@ -121,7 +128,7 @@ public class ChangeMetaData {
             StaticChunkOffsetBox cob = new StaticChunkOffsetBox();
             cob.setChunkOffsets(cOffsets);
             stblChildren.add(cob);
-            chunkOffsetBox.getParent().setBoxes(stblChildren);
+            sampleTableBox.setBoxes(stblChildren);
         }
     }
 

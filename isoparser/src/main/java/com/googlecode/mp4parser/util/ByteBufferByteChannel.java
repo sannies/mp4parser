@@ -26,6 +26,10 @@ import java.nio.channels.ByteChannel;
 public class ByteBufferByteChannel implements ByteChannel {
     ByteBuffer byteBuffer;
 
+    public ByteBufferByteChannel(byte[] byteArray) {
+        this(ByteBuffer.wrap(byteArray));
+    }
+
     public ByteBufferByteChannel(ByteBuffer byteBuffer) {
         this.byteBuffer = byteBuffer;
     }

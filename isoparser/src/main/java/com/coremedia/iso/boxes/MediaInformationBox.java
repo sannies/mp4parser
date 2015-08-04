@@ -17,6 +17,8 @@
 package com.coremedia.iso.boxes;
 
 import com.googlecode.mp4parser.AbstractContainerBox;
+import com.mp4parser.tools.Path;
+import com.mp4parser.LightBox;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
@@ -30,16 +32,11 @@ public class MediaInformationBox extends AbstractContainerBox {
     }
 
     public SampleTableBox getSampleTableBox() {
-        for (Box box : getBoxes()) {
-            if (box instanceof SampleTableBox) {
-                return (SampleTableBox) box;
-            }
-        }
-        return null;
+        return Path.getPath(this, "stbl[0]");
     }
 
     public AbstractMediaHeaderBox getMediaHeaderBox() {
-        for (Box box : getBoxes()) {
+        for (LightBox box : getBoxes()) {
             if (box instanceof AbstractMediaHeaderBox) {
                 return (AbstractMediaHeaderBox) box;
             }

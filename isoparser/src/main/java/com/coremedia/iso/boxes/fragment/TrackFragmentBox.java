@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes.fragment;
 import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.AbstractContainerBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
+import com.mp4parser.LightBox;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
@@ -34,7 +35,7 @@ public class TrackFragmentBox extends AbstractContainerBox {
 
     @DoNotParseDetail
     public TrackFragmentHeaderBox getTrackFragmentHeaderBox() {
-        for (Box box : getBoxes()) {
+        for (LightBox box : getBoxes()) {
             if (box instanceof TrackFragmentHeaderBox) {
                 return (TrackFragmentHeaderBox) box;
             }

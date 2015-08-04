@@ -25,6 +25,7 @@ import com.googlecode.mp4parser.DataSource;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -148,8 +149,8 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
     }
 
     @Override
-    public void parse(final DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        final long endPosition = dataSource.position() + contentSize;
+    public void parse(final ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+
         ByteBuffer content = ByteBuffer.allocate(78);
         dataSource.read(content);
         content.position(6);
@@ -187,46 +188,7 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
         assert 0xFFFF == tmp;
 
 
-        final DataSource dsLimited = new DataSource() {
-
-            public int read(ByteBuffer byteBuffer) throws IOException {
-                if (endPosition == dataSource.position()) {
-                    return -1;
-                } else if (byteBuffer.remaining() > endPosition - dataSource.position()) {
-                    ByteBuffer bb = ByteBuffer.allocate(l2i(endPosition - dataSource.position()));
-                    dataSource.read(bb);
-                    byteBuffer.put((ByteBuffer) bb.rewind());
-                    return bb.capacity();
-                } else {
-                    return dataSource.read(byteBuffer);
-                }
-            }
-
-            public long size() throws IOException {
-                return endPosition;
-            }
-
-            public long position() throws IOException {
-                return dataSource.position();
-            }
-
-            public void position(long nuPos) throws IOException {
-                dataSource.position(nuPos);
-            }
-
-            public long transferTo(long position, long count, WritableByteChannel target) throws IOException {
-                return dataSource.transferTo(position, count, target);
-            }
-
-            public ByteBuffer map(long startPosition, long size) throws IOException {
-                return dataSource.map(startPosition, size);
-            }
-
-            public void close() throws IOException {
-                dataSource.close();
-            }
-        };
-        initContainer(dsLimited, contentSize - 78, boxParser);
+        initContainer(dataSource, contentSize - 78, boxParser);
 
     }
 

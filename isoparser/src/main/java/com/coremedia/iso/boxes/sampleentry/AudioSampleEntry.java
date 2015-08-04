@@ -26,7 +26,9 @@ import java.nio.ByteBuffer;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.DataSource;
+import com.mp4parser.LightBox;
 
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -188,7 +190,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
     }
 
     @Override
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer content = ByteBuffer.allocate(28);
         dataSource.read(content);
         content.position(6);
@@ -245,21 +247,10 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
             final ByteBuffer owmaSpecifics = ByteBuffer.allocate(l2i(remaining));
             dataSource.read(owmaSpecifics);
 
-            addBox(new Box() {
-                public Container getParent() {
-                    return AudioSampleEntry.this;
-                }
-
-                public void setParent(Container parent) {
-                    assert parent == AudioSampleEntry.this : "you cannot diswown this special box";
-                }
+            addBox(new LightBox() {
 
                 public long getSize() {
                     return remaining;
-                }
-
-                public long getOffset() {
-                    return 0;
                 }
 
                 public String getType() {
@@ -271,9 +262,6 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
                     writableByteChannel.write(owmaSpecifics);
                 }
 
-                public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-                    throw new RuntimeException("NotImplemented");
-                }
             });
         } else {
             initContainer(dataSource,

@@ -23,8 +23,10 @@ import com.coremedia.iso.boxes.Container;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.googlecode.mp4parser.AbstractBox;
 import com.googlecode.mp4parser.DataSource;
 
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.logging.Logger;
 
@@ -40,70 +42,36 @@ import java.util.logging.Logger;
  * so Media Data Box headers and free space may easily be skipped, and files without any box structure may
  * also be referenced and used.
  */
-public final class MediaDataBox implements Box {
-    private static Logger LOG = Logger.getLogger(MediaDataBox.class.getName());
-
+public final class MediaDataBox extends AbstractBox {
     public static final String TYPE = "mdat";
+    ByteBuffer data;
 
-    Container parent;
-    boolean largeBox = false;
-
-    // These fields are for the special case of a DataSource as input.
-    private DataSource dataSource;
-    private long offset;
-    private long size;
-
-
-    public Container getParent() {
-        return parent;
+    public MediaDataBox() {
+        super(TYPE);
     }
-
-    public void setParent(Container parent) {
-        this.parent = parent;
-    }
-
-    public String getType() {
-        return TYPE;
-    }
-
-    private static void transfer(DataSource from, long position, long count, WritableByteChannel to) throws IOException {
-        long maxCount = (64 * 1024 * 1024) - (32 * 1024);
-        // Transfer data in chunks a bit less than 64MB
-        // People state that this is a kind of magic number on Windows.
-        // I don't care. The size seems reasonable.
-        long offset = 0;
-        while (offset < count) {
-            offset += from.transferTo(position + offset, Math.min(maxCount, count - offset), to);
-        }
-    }
-
-    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        transfer(dataSource, offset, size, writableByteChannel);
-    }
-
-
-    public long getSize() {
-        return size;
-    }
-
-    public long getOffset() {
-        return offset;
-    }
-
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        this.offset = dataSource.position() - header.remaining();
-        this.dataSource = dataSource;
-        this.size = contentSize + header.remaining();
-        dataSource.position(dataSource.position() + contentSize);
-
-    }
-
 
     @Override
-    public String toString() {
-        return "MediaDataBox{" +
-                "size=" + size +
-                '}';
+    protected long getContentSize() {
+        return data.limit();
     }
 
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        data = content;
+        content.position(content.position() + content.remaining());
+    }
+
+    @Override
+    protected void getContent(ByteBuffer byteBuffer) {
+        data.rewind();
+        byteBuffer.put(data);
+    }
+
+    public ByteBuffer getData() {
+        return data;
+    }
+
+    public void setData(ByteBuffer data) {
+        this.data = data;
+    }
 }

@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -64,7 +65,7 @@ public class TrackRunBoxTest {
         fc.close();
 
 
-        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
+        IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
         TrackRunBox trun2 = (TrackRunBox) isoFile.getBoxes().get(0);
 
         Assert.assertEquals(trun.isDataOffsetPresent(), trun2.isDataOffsetPresent());

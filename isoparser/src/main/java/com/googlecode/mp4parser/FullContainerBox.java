@@ -21,9 +21,12 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullBox;
+import com.mp4parser.LightBox;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
 import java.util.logging.Logger;
@@ -53,7 +56,7 @@ public abstract class FullContainerBox extends AbstractContainerBox implements F
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Box> List<T> getBoxes(Class<T> clazz) {
+    public <T extends LightBox> List<T> getBoxes(Class<T> clazz) {
         return getBoxes(clazz, false);
     }
 
@@ -62,7 +65,7 @@ public abstract class FullContainerBox extends AbstractContainerBox implements F
     }
 
     @Override
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer versionAndFlags = ByteBuffer.allocate(4);
         dataSource.read(versionAndFlags);
         parseVersionAndFlags((ByteBuffer) versionAndFlags.rewind());

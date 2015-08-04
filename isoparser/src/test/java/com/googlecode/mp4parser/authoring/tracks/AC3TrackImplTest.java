@@ -9,6 +9,7 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import org.junit.Test;
 
 import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
@@ -25,7 +26,7 @@ public class AC3TrackImplTest {
         //WritableByteChannel fc = new FileOutputStream("ac3-sample.mp4").getChannel();
         //isoFile.writeContainer(fc);
         //fc.close();
-        IsoFile isoFileReference = new IsoFile(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/ac3-sample.mp4");
-        BoxComparator.check(isoFile, isoFileReference, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]");
+        IsoFile isoFileReference = new IsoFile(new FileInputStream(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/ac3-sample.mp4").getChannel());
+        BoxComparator.check(isoFile, isoFileReference, "moov[0]/mvhd[0]", "moov[0]/trak[0]/tkhd[0]", "moov[0]/trak[0]/mdia[0]/mdhd[0]");
     }
 }

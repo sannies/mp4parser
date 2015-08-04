@@ -6,7 +6,10 @@ import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
 import com.googlecode.mp4parser.DataSource;
+
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 
@@ -21,7 +24,7 @@ public class MpegSampleEntry extends AbstractSampleEntry {
     }
 
     @Override
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer bb = ByteBuffer.allocate(8);
         dataSource.read(bb);
         bb.position(6);// ignore 6 reserved bytes;
@@ -40,7 +43,7 @@ public class MpegSampleEntry extends AbstractSampleEntry {
     }
 
     public String toString() {
-        return "MpegSampleEntry" + Arrays.asList(getBoxes());
+        return "MpegSampleEntry" + getBoxes();
     }
 
 

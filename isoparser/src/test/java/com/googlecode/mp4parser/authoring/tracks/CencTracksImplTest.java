@@ -8,6 +8,8 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.InMemRandomAccessSourceImpl;
 import org.junit.Test;
 
 import javax.crypto.SecretKey;
@@ -42,7 +44,7 @@ public class CencTracksImplTest {
 
         //c.writeContainer(new FileOutputStream("output.mp4").getChannel());
 
-        Movie m2 = MovieCreator.build(new MemoryDataSourceImpl(baos.toByteArray()));
+        Movie m2 = MovieCreator.build(new ByteBufferByteChannel(baos.toByteArray()), new InMemRandomAccessSourceImpl(baos.toByteArray()), "inmem");
         List<Track> decTracks = new LinkedList<Track>();
         for (Track track : m2.getTracks()) {
             decTracks.add(new CencDecryptingTrackImpl((CencEncryptedTrack) track, sk));
@@ -75,7 +77,7 @@ public class CencTracksImplTest {
 
         //c.writeContainer(new FileOutputStream("output.mp4").getChannel());
 
-        Movie m2 = MovieCreator.build(new MemoryDataSourceImpl(baos.toByteArray()));
+        Movie m2 = MovieCreator.build(new ByteBufferByteChannel(baos.toByteArray()), new InMemRandomAccessSourceImpl(baos.toByteArray()), "inmem");
         List<Track> decTracks = new LinkedList<Track>();
         for (Track track : m2.getTracks()) {
             decTracks.add(new CencDecryptingTrackImpl((CencEncryptedTrack) track, sk));

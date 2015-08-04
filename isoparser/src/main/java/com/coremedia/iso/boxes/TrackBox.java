@@ -17,6 +17,8 @@
 package com.coremedia.iso.boxes;
 
 import com.googlecode.mp4parser.AbstractContainerBox;
+import com.mp4parser.tools.Path;
+import com.mp4parser.LightBox;
 
 import java.util.List;
 
@@ -37,12 +39,7 @@ public class TrackBox extends AbstractContainerBox {
     }
 
     public TrackHeaderBox getTrackHeaderBox() {
-        for (Box box : getBoxes()) {
-            if (box instanceof TrackHeaderBox) {
-                return (TrackHeaderBox) box;
-            }
-        }
-        return null;
+        return Path.getPath(this, "tkhd[0]");
     }
 
     /**
@@ -68,16 +65,11 @@ public class TrackBox extends AbstractContainerBox {
 
 
     public MediaBox getMediaBox() {
-        for (Box box : getBoxes()) {
-            if (box instanceof MediaBox) {
-                return (MediaBox) box;
-            }
-        }
-        return null;
+        return Path.getPath(this, "mdia[0]");
     }
 
     @Override
-    public void setBoxes(List<Box> boxes) {
+    public void setBoxes(List<? extends LightBox> boxes) {
         super.setBoxes(boxes);
         sampleTableBox = null;
     }

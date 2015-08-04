@@ -4,24 +4,25 @@ import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
+import com.mp4parser.FileRandomAccessSourceImpl;
 import junit.framework.Assert;
 import org.junit.Test;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by sannies on 1/9/14.
- */
 public class DefaultMp4SampleListTest {
     @Test
     public void checkSampleList() throws IOException, NoSuchAlgorithmException {
-        IsoFile isoFile = new IsoFile(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() +
-                "/com/googlecode/mp4parser/authoring/samples/1365070268951.mp4");
-        SampleList sl = new SampleList(isoFile.getMovieBox().getBoxes(TrackBox.class).get(0));
+        String filename = this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() +
+                "/com/googlecode/mp4parser/authoring/samples/1365070268951.mp4";
+        IsoFile isoFile = new IsoFile(new FileInputStream(filename).getChannel());
+        SampleList sl = new SampleList(1, isoFile, new FileRandomAccessSourceImpl(new RandomAccessFile(filename, "r")));
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         for (int i = 0; i < sl.size(); i++) {
             //System.err.println("\"" + Hex.encodeHex(md5.digest(sl.get(i).asByteBuffer().array())) + "\",");

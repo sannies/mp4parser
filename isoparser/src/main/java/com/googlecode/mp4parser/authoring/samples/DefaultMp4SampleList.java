@@ -1,7 +1,9 @@
 package com.googlecode.mp4parser.authoring.samples;
 
+import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.authoring.Sample;
+import com.mp4parser.RandomAccessSource;
 
 import java.io.IOException;
 import java.lang.ref.SoftReference;
@@ -20,6 +22,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
     private static final long MAX_MAP_SIZE = 1024 * 1024 * 256; // Limit maximum mem map to 512MB
 
     Container topLevel;
+    private RandomAccessSource randomAccess;
     TrackBox trackBox = null;
     SoftReference<ByteBuffer[]>[] cache = null;
     int[] chunkNumsStartSampleNum;
@@ -30,8 +33,9 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
     int lastChunk = 0;
 
 
-    public DefaultMp4SampleList(long track, Container topLevel) {
+    public DefaultMp4SampleList(long track, Container topLevel, RandomAccessSource randomAccessFile) {
         this.topLevel = topLevel;
+        this.randomAccess = randomAccessFile;
         MovieBox movieBox = topLevel.getBoxes(MovieBox.class).get(0);
         List<TrackBox> trackBoxes = movieBox.getBoxes(TrackBox.class);
 
@@ -175,15 +179,14 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             try {
                 for (int i = 0; i < sampleOffsetsWithinChunk.length; i++) {
                     if (sampleOffsetsWithinChunk[i] + ssb.getSampleSizeAtIndex(i + chunkStartSample) - currentStart > MAX_MAP_SIZE) {
-                        _chunkBuffers.add(topLevel.getByteBuffer(
+                        _chunkBuffers.add(randomAccess.get(
                                 chunkOffset + currentStart,
-                                sampleOffsetsWithinChunk[i] - currentStart));
+                                (sampleOffsetsWithinChunk[i] - currentStart)));
                         currentStart = sampleOffsetsWithinChunk[i];
                     }
                 }
-                _chunkBuffers.add(topLevel.getByteBuffer(
-                        chunkOffset + currentStart,
-                        -currentStart + sampleOffsetsWithinChunk[sampleOffsetsWithinChunk.length - 1] + ssb.getSampleSizeAtIndex(chunkStartSample + sampleOffsetsWithinChunk.length - 1)));
+                _chunkBuffers.add(randomAccess.get(chunkOffset + currentStart,
+                        (-currentStart + sampleOffsetsWithinChunk[sampleOffsetsWithinChunk.length - 1] + ssb.getSampleSizeAtIndex(chunkStartSample + sampleOffsetsWithinChunk.length - 1))));
                 chunkBuffers = _chunkBuffers.toArray(new ByteBuffer[_chunkBuffers.size()]);
                 cache[l2i(chunkNumber)] = new SoftReference<ByteBuffer[]>(chunkBuffers);
             } catch (IOException e) {

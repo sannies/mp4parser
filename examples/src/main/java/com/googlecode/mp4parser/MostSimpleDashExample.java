@@ -6,9 +6,11 @@ import com.coremedia.iso.boxes.TrackBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Mp4TrackImpl;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.FileRandomAccessSourceImpl;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,9 +34,7 @@ public class MostSimpleDashExample {
             fragments.add(new IsoFile(basePath + "redbull_10sec" + i + ".m4s"));
         }
 
-        m.addTrack(new Mp4TrackImpl("redbull_100kbit_dash.mp4",
-                baseIsoFile.getMovieBox().getBoxes(TrackBox.class).get(0),
-                fragments.toArray(new IsoFile[fragments.size()])));
+        m.addTrack(new Mp4TrackImpl(1, new IsoFile("redbull_100kbit_dash.mp4"), new FileRandomAccessSourceImpl(new RandomAccessFile("redbull_100kbit_dash.mp4", "r")), "test"));
 
 
         DefaultMp4Builder builder = new DefaultMp4Builder();

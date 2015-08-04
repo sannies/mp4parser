@@ -2,15 +2,23 @@ package com.mp4parser.iso14496.part30;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.boxes.sampleentry.AbstractSampleEntry;
-import com.googlecode.mp4parser.DataSource;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.tools.Path;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 /**
- * Created by sannies on 04.12.2014.
+ * Sample Entry for WebVTT subtitles.
+ * <p/>
+ * <pre>
+ * class WVTTSampleEntry() extends PlainTextSampleEntry (‘wvtt’){
+ *   WebVTTConfigurationBox config;
+ *   WebVTTSourceLabelBox label; // recommended
+ *   MPEG4BitRateBox (); // optional
+ * }
+ * </pre>
  */
 public class WebVTTSampleEntry extends AbstractSampleEntry {
     public static final String TYPE = "wvtt";
@@ -20,7 +28,7 @@ public class WebVTTSampleEntry extends AbstractSampleEntry {
     }
 
     @Override
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         initContainer(dataSource, contentSize, boxParser);
     }
 

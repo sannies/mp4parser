@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.googlecode.mp4parser.util;
+package com.mp4parser.tools;
 
 
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.AbstractContainerBox;
+import com.mp4parser.LightBox;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -34,74 +35,46 @@ public class Path {
 
     static Pattern component = Pattern.compile("(....|\\.\\.)(\\[(.*)\\])?");
 
-    public static String createPath(Box box) {
-        return createPath(box, "");
-    }
-
-    private static String createPath(Box box, String path) {
-
-        Container parent = box.getParent();
-        int index = 0;
-        List<Box> siblings = parent.getBoxes();
-        for (Box sibling : siblings) {
-            if (sibling.getType().equals(box.getType())) {
-                if (sibling == box) {
-                    break;
-                }
-                index++;
-            }
-        }
-        path = String.format("/%s[%d]", box.getType(), index) + path;
-        if (parent instanceof Box) {
-            return createPath((Box) parent, path);
-        } else {
-            return path;
-        }
-    }
-
-    public static <T extends Box> T getPath(Box box, String path) {
+    public static <T extends LightBox> T getPath(Box box, String path) {
         List<T> all = getPaths(box, path, true);
         return all.isEmpty() ? null : all.get(0);
     }
 
-    public static <T extends Box> T  getPath(Container container, String path) {
+    public static <T extends LightBox> T  getPath(Container container, String path) {
         List<T> all = getPaths(container, path, true);
         return all.isEmpty() ? null : all.get(0);
     }
 
-    public static <T extends Box> T  getPath(AbstractContainerBox containerBox, String path) {
+    public static <T extends LightBox> T  getPath(AbstractContainerBox containerBox, String path) {
         List<T> all = getPaths(containerBox, path, true);
         return all.isEmpty() ? null : all.get(0);
     }
 
 
-    public static <T extends Box> List<T> getPaths(Box box, String path) {
+    public static <T extends LightBox> List<T> getPaths(LightBox box, String path) {
         return getPaths(box, path, false);
     }
 
-    public static <T extends Box> List<T> getPaths(Container container, String path) {
+    public static <T extends LightBox> List<T> getPaths(Container container, String path) {
         return getPaths(container, path, false);
     }
 
-    private static <T extends Box> List<T> getPaths(AbstractContainerBox container, String path, boolean singleResult) {
+    private static <T extends LightBox> List<T> getPaths(AbstractContainerBox container, String path, boolean singleResult) {
         return getPaths((Object) container, path, singleResult);
     }
 
-    private static <T extends Box> List<T> getPaths(Container container, String path, boolean singleResult) {
+    private static <T extends LightBox> List<T> getPaths(Container container, String path, boolean singleResult) {
         return getPaths((Object) container, path, singleResult);
     }
 
-    private static <T extends Box> List<T>  getPaths(Box box, String path, boolean singleResult) {
+    private static <T extends LightBox> List<T>  getPaths(Box box, String path, boolean singleResult) {
         return getPaths((Object) box, path, singleResult);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Box> List<T>  getPaths(Object thing, String path, boolean singleResult) {
+    private static <T extends LightBox> List<T>  getPaths(Object thing, String path, boolean singleResult) {
         if (path.startsWith("/")) {
-            path = path.substring(1);
-            while (thing instanceof Box) {
-                thing = ((Box) thing).getParent();
-            }
+            throw new RuntimeException("Cannot start at / - only relative path expression into the structure are allowed");
         }
 
         if (path.length() == 0) {
@@ -125,11 +98,7 @@ public class Path {
             if (m.matches()) {
                 String type = m.group(1);
                 if ("..".equals(type)) {
-                    if (thing instanceof Box) {
-                        return Path.getPaths(((Box) thing).getParent(), later, singleResult);
-                    } else {
-                        return Collections.emptyList();
-                    }
+                    throw new RuntimeException(".. notation no longer allowed");
                 } else {
                     if (thing instanceof Container) {
                         int index = -1;
@@ -143,9 +112,9 @@ public class Path {
                         // I'm suspecting some Dalvik VM to create indexed loops from for-each loops
                         // using the iterator instead makes sure that this doesn't happen
                         // (and yes - it could be completely useless)
-                        Iterator<Box> iterator = ((Container) thing).getBoxes().iterator();
+                        Iterator<LightBox> iterator = ((Container) thing).getBoxes().iterator();
                         while (iterator.hasNext()) {
-                            Box box1 = iterator.next();
+                            LightBox box1 = iterator.next();
                             if (box1.getType().matches(type)) {
                                 if (index == -1 || index == currentIndex) {
                                     children.addAll(Path.<T>getPaths(box1, later, singleResult));
@@ -170,8 +139,7 @@ public class Path {
     }
 
 
-    public static boolean isContained(Box box, String path) {
-        assert path.startsWith("/") : "Absolute path required";
-        return getPaths(box, path).contains(box);
+    public static boolean isContained(Container ref, LightBox box, String path) {
+        return getPaths(ref, path).contains(box);
     }
 }

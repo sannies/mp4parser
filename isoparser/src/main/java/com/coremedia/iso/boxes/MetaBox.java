@@ -24,6 +24,8 @@ import com.googlecode.mp4parser.AbstractContainerBox;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import com.googlecode.mp4parser.DataSource;
+
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 
@@ -75,7 +77,7 @@ public class MetaBox extends AbstractContainerBox {
     }
 
     @Override
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer bb = ByteBuffer.allocate(4);
         dataSource.read(bb);
         parseVersionAndFlags((ByteBuffer) bb.rewind());

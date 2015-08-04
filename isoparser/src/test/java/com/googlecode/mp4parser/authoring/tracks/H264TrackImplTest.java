@@ -24,6 +24,7 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.tracks.h264.H264TrackImpl;
 import org.junit.Test;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import com.googlecode.mp4parser.DataSource;
@@ -49,7 +50,9 @@ public class H264TrackImplTest {
         fcOut.close();*/
 
 
-        IsoFile isoFileReference = new IsoFile(getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "com/googlecode/mp4parser/authoring/tracks/h264-sample.mp4");
-        BoxComparator.check(isoFile, isoFileReference, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]", "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stco[0]");
+        IsoFile isoFileReference = new IsoFile(
+                new FileInputStream(
+                        getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "com/googlecode/mp4parser/authoring/tracks/h264-sample.mp4").getChannel());
+        BoxComparator.check(isoFile, isoFileReference, "moov[0]/mvhd[0]", "moov[0]/trak[0]/tkhd[0]", "moov[0]/trak[0]/mdia[0]/mdhd[0]", "moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stco[0]");
     }
 }

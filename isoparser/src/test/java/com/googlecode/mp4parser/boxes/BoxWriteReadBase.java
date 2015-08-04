@@ -5,6 +5,7 @@ import com.coremedia.iso.PropertyBoxParserImpl;
 import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.AbstractContainerBox;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -96,7 +97,7 @@ public abstract class BoxWriteReadBase<T extends Box> {
         baos.close();
 
         DummyContainerBox singleBoxIsoFile = new DummyContainerBox(dummyParent);
-        singleBoxIsoFile.initContainer(new MemoryDataSourceImpl(baos.toByteArray()), baos.size(), new PropertyBoxParserImpl());
+        singleBoxIsoFile.initContainer(new ByteBufferByteChannel(baos.toByteArray()), baos.size(), new PropertyBoxParserImpl());
         Assert.assertEquals("Expected box and file size to be the same", box.getSize(), baos.size());
         Assert.assertEquals("Expected a single box in the IsoFile structure", 1, singleBoxIsoFile.getBoxes().size());
         Assert.assertEquals("Expected to find a box of different type ", clazz, singleBoxIsoFile.getBoxes().get(0).getClass());

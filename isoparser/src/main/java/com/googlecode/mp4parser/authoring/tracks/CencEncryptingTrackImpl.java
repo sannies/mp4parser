@@ -19,7 +19,9 @@ import com.googlecode.mp4parser.authoring.tracks.h265.H265TrackImpl;
 import com.googlecode.mp4parser.boxes.cenc.CencEncryptingSampleList;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import com.googlecode.mp4parser.util.RangeStartMap;
+import com.mp4parser.LightBox;
 import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.mp4parser.iso14496.part15.HevcConfigurationBox;
 import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
@@ -158,9 +160,9 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
         }
 
 
-        List<Box> boxes = source.getSampleDescriptionBox().getSampleEntry().getBoxes();
+        List<LightBox> boxes = source.getSampleDescriptionBox().getSampleEntry().getBoxes();
         int nalLengthSize = -1;
-        for (Box box : boxes) {
+        for (LightBox box : boxes) {
             if (box instanceof AvcConfigurationBox) {
                 AvcConfigurationBox avcC = (AvcConfigurationBox) (configurationBox = box);
                 subSampleEncryption = true;
@@ -236,7 +238,7 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try {
                 source.getSampleDescriptionBox().getBox(Channels.newChannel(baos));
-                stsd = (SampleDescriptionBox) new IsoFile(new MemoryDataSourceImpl(baos.toByteArray())).getBoxes().get(0);
+                stsd = (SampleDescriptionBox) new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray()))).getBoxes().get(0);
             } catch (IOException e) {
                 throw new RuntimeException("Dumping stsd to memory failed");
             }

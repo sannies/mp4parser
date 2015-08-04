@@ -16,10 +16,11 @@
 
 package com.coremedia.iso.boxes.fragment;
 
+import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.googlecode.mp4parser.AbstractContainerBox;
 
-import com.googlecode.mp4parser.DataSource;
+import com.mp4parser.tools.Path;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,14 +77,11 @@ public class MovieFragmentBox extends AbstractContainerBox {
     }
 
     public List<TrackFragmentHeaderBox> getTrackFragmentHeaderBoxes() {
-        return getBoxes(TrackFragmentHeaderBox.class, true);
+        return Path.getPaths((Container) this, "tfhd");
     }
 
     public List<TrackRunBox> getTrackRunBoxes() {
         return getBoxes(TrackRunBox.class, true);
     }
 
-    public DataSource getFileChannel() {
-        return this.dataSource;
-    }
 }

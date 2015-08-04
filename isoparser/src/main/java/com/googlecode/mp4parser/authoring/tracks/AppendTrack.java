@@ -29,6 +29,7 @@ import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BaseDescriptor;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderConfigDescriptor;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ESDescriptor;
 import com.googlecode.mp4parser.util.Logger;
+import com.mp4parser.LightBox;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -161,11 +162,11 @@ public class AppendTrack extends AbstractTrack {
         }
 
         if (vse1.getBoxes().size() == vse2.getBoxes().size()) {
-            Iterator<Box> bxs1 = vse1.getBoxes().iterator();
-            Iterator<Box> bxs2 = vse2.getBoxes().iterator();
+            Iterator<LightBox> bxs1 = vse1.getBoxes().iterator();
+            Iterator<LightBox> bxs2 = vse2.getBoxes().iterator();
             while (bxs1.hasNext()) {
-                Box cur1 = bxs1.next();
-                Box cur2 = bxs2.next();
+                LightBox cur1 = bxs1.next();
+                LightBox cur2 = bxs2.next();
                 ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
                 ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
                 try {
@@ -250,11 +251,11 @@ public class AppendTrack extends AbstractTrack {
             return null;
         }
         if (ase1.getBoxes().size() == ase2.getBoxes().size()) {
-            Iterator<Box> bxs1 = ase1.getBoxes().iterator();
-            Iterator<Box> bxs2 = ase2.getBoxes().iterator();
+            Iterator<LightBox> bxs1 = ase1.getBoxes().iterator();
+            Iterator<LightBox> bxs2 = ase2.getBoxes().iterator();
             while (bxs1.hasNext()) {
-                Box cur1 = bxs1.next();
-                Box cur2 = bxs2.next();
+                LightBox cur1 = bxs1.next();
+                LightBox cur2 = bxs2.next();
                 ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
                 ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
                 try {

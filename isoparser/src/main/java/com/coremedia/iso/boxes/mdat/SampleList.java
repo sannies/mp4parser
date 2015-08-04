@@ -1,17 +1,13 @@
 package com.coremedia.iso.boxes.mdat;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.samples.DefaultMp4SampleList;
 import com.googlecode.mp4parser.authoring.samples.FragmentedMp4SampleList;
+import com.mp4parser.tools.Path;
+import com.mp4parser.RandomAccessSource;
 
-import java.lang.ref.SoftReference;
-import java.lang.reflect.Array;
-import java.nio.ByteBuffer;
+import java.io.IOException;
 import java.util.AbstractList;
 import java.util.List;
 
@@ -22,17 +18,12 @@ public class SampleList extends AbstractList<Sample> {
     List<Sample> samples;
 
 
+    public SampleList(long trackId, Container isofile, RandomAccessSource source) throws IOException {
 
-    public SampleList(TrackBox trackBox, IsoFile... additionalFragments) {
-        Container topLevel = ((Box) trackBox.getParent()).getParent();
-
-        if (trackBox.getParent().getBoxes(MovieExtendsBox.class).isEmpty()) {
-            if (additionalFragments.length > 0) {
-                throw new RuntimeException("The TrackBox comes from a standard MP4 file. Only use the additionalFragments param if you are dealing with ( fragmented MP4 files AND additional fragments in standalone files )");
-            }
-            samples = new DefaultMp4SampleList(trackBox.getTrackHeaderBox().getTrackId(), topLevel);
+        if (Path.getPaths(isofile, "moov/mvex/trex").isEmpty()) {
+            samples = new DefaultMp4SampleList(trackId, isofile, source);
         } else {
-            samples = new FragmentedMp4SampleList(trackBox.getTrackHeaderBox().getTrackId(), topLevel, additionalFragments);
+            samples = new FragmentedMp4SampleList(trackId, isofile, source);
         }
     }
 

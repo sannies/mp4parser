@@ -13,6 +13,7 @@ import com.coremedia.iso.boxes.fragment.TrackFragmentBaseMediaDecodeTimeBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
+import com.mp4parser.LightBox;
 import com.mp4parser.streaming.extensions.CencEncryptTrackExtension;
 import com.mp4parser.streaming.extensions.CompositionTimeSampleExtension;
 import com.mp4parser.streaming.extensions.CompositionTimeTrackExtension;
@@ -400,8 +401,12 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
         moof.addBox(mfhd);
     }
 
-    private Box createMdat() {
-        return new WriteOnlyBox("mdat") {
+    private LightBox createMdat() {
+        return new LightBox() {
+            public String getType() {
+                return "mdat";
+            }
+
             public long getSize() {
                 long l = 8;
                 for (StreamingSample streamingSample : fragment) {

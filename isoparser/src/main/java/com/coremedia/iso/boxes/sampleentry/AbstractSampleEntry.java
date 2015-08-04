@@ -22,6 +22,8 @@ import com.googlecode.mp4parser.AbstractContainerBox;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import com.googlecode.mp4parser.DataSource;
+
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -50,7 +52,7 @@ public abstract class AbstractSampleEntry extends AbstractContainerBox implement
     }
 
     @Override
-    public abstract void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
+    public abstract void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
 
     @Override
     public abstract void getBox(WritableByteChannel writableByteChannel) throws IOException;

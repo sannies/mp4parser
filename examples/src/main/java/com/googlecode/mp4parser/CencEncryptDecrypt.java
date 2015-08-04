@@ -8,6 +8,8 @@ import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.CencEncryptedTrack;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.InMemRandomAccessSourceImpl;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -17,9 +19,6 @@ import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.UUID;
 
-/**
- * Created by user on 22.07.2014.
- */
 public class CencEncryptDecrypt {
     public static void main(String[] args) throws IOException {
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
@@ -40,7 +39,7 @@ public class CencEncryptDecrypt {
         FileOutputStream fos = new FileOutputStream("output-enc.mp4");
         fos.write(baos.toByteArray());
 
-        Movie mEncryptIn = MovieCreator.build (new MemoryDataSourceImpl(baos.toByteArray()));
+        Movie mEncryptIn = MovieCreator.build (new ByteBufferByteChannel(baos.toByteArray()), new InMemRandomAccessSourceImpl(baos.toByteArray()), "inmem");
         Movie mDecrypt = new Movie();
 
         for (Track track : mEncryptIn.getTracks()) {

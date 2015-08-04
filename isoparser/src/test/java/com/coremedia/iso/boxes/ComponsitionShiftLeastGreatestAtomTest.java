@@ -4,6 +4,7 @@ import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
@@ -35,7 +36,7 @@ public class ComponsitionShiftLeastGreatestAtomTest extends TestCase {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         clsg.getBox(Channels.newChannel(baos));
-        IsoFile isoFile = new IsoFile(new MemoryDataSourceImpl(baos.toByteArray()));
+        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(baos.toByteArray()));
 
         CompositionShiftLeastGreatestAtom clsg2 = isoFile.getBoxes(CompositionShiftLeastGreatestAtom.class).get(0);
         Assert.assertEquals(baos.toByteArray().length, clsg2.getSize());

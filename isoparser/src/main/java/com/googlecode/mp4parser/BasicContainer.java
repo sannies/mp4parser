@@ -5,61 +5,28 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.util.LazyList;
 import com.googlecode.mp4parser.util.Logger;
+import com.mp4parser.LightBox;
 
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
-
-/**
- * Created by sannies on 18.05.13.
- */
-public class BasicContainer implements Container, Iterator<Box>, Closeable {
-    private static final Box EOF = new AbstractBox("eof ") {
-
-        @Override
-        protected long getContentSize() {
-            return 0;
-        }
-
-        @Override
-        protected void getContent(ByteBuffer byteBuffer) {
-        }
-
-        @Override
-        protected void _parseDetails(ByteBuffer content) {
-        }
-    };
-    private static Logger LOG = Logger.getLogger(BasicContainer.class);
-    protected BoxParser boxParser;
-    protected DataSource dataSource;
-    Box lookahead = null;
-    long parsePosition = 0;
-    long startPosition = 0;
-    long endPosition = 0;
-    private List<Box> boxes = new ArrayList<Box>();
+public class BasicContainer implements Container {
+    private List<LightBox> boxes = new ArrayList<LightBox>();
 
     public BasicContainer() {
     }
 
-    public List<Box> getBoxes() {
-        if (dataSource != null && lookahead != EOF) {
-            return new LazyList<Box>(boxes, this);
-        } else {
-            return boxes;
-        }
+    public List<LightBox> getBoxes() {
+        return boxes;
     }
 
-    public void setBoxes(List<Box> boxes) {
-        this.boxes = new ArrayList<Box>(boxes);
-        this.lookahead = EOF;
-        this.dataSource = null;
+    public void setBoxes(List<? extends LightBox> boxes) {
+        this.boxes = new ArrayList<LightBox>(boxes);
     }
 
     protected long getContainerSize() {
@@ -73,12 +40,11 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Box> List<T> getBoxes(Class<T> clazz) {
+    public <T extends LightBox> List<T> getBoxes(Class<T> clazz) {
         List<T> boxesToBeReturned = null;
         T oneBox = null;
-        List<Box> boxes = getBoxes();
-        for (int i = 0; i < boxes.size(); i++) {
-            Box boxe = boxes.get(i);
+        List<LightBox> boxes = getBoxes();
+        for (LightBox boxe : boxes) {
             //clazz.isInstance(boxe) / clazz == boxe.getClass()?
             // I hereby finally decide to use isInstance
 
@@ -104,11 +70,11 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
+    public <T extends LightBox> List<T> getBoxes(Class<T> clazz, boolean recursive) {
         List<T> boxesToBeReturned = new ArrayList<T>(2);
-        List<Box> boxes = getBoxes();
+        List<LightBox> boxes = getBoxes();
         for (int i = 0; i < boxes.size(); i++) {
-            Box boxe = boxes.get(i);
+            LightBox boxe = boxes.get(i);
             //clazz.isInstance(boxe) / clazz == boxe.getClass()?
             // I hereby finally decide to use isInstance
 
@@ -129,72 +95,31 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
      *
      * @param box will be added to the container
      */
-    public void addBox(Box box) {
+    public void addBox(LightBox box) {
         if (box != null) {
-            boxes = new ArrayList<Box>(getBoxes());
-            box.setParent(this);
+            boxes = new ArrayList<LightBox>(getBoxes());
             boxes.add(box);
         }
     }
 
-    public void initContainer(DataSource dataSource, long containerSize, BoxParser boxParser) throws IOException {
+    public void initContainer(ReadableByteChannel readableByteChannel, long containerSize, BoxParser boxParser) throws IOException {
+        long contentProcessed = 0;
 
-        this.dataSource = dataSource;
-        this.parsePosition = this.startPosition = dataSource.position();
-        dataSource.position(dataSource.position() + containerSize);
-        this.endPosition = dataSource.position();
-        this.boxParser = boxParser;
-    }
-
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean hasNext() {
-        if (lookahead == EOF) {
-            return false;
-        }
-        if (lookahead != null) {
-            return true;
-        } else {
+        while (containerSize < 0 || contentProcessed < containerSize) {
             try {
-                lookahead = next();
-                return true;
-            } catch (NoSuchElementException e) {
-                lookahead = EOF;
-                return false;
-            }
-        }
-    }
-
-    public Box next() {
-        if (lookahead != null && lookahead != EOF) {
-            Box b = lookahead;
-            lookahead = null;
-            return b;
-        } else {
-           // LOG.logDebug("Parsing next() box");
-            if (dataSource == null || parsePosition >= endPosition) {
-                lookahead = EOF;
-                throw new NoSuchElementException();
-            }
-
-            try {
-                synchronized (dataSource) {
-                    dataSource.position(parsePosition);
-                    Box b = boxParser.parseBox(dataSource, this);
-                    //System.err.println(b.getType());
-                    parsePosition = dataSource.position();
-                    return b;
-                }
+                Box b = boxParser.parseBox(readableByteChannel, (this instanceof Box) ? ((Box) this).getType() : null);
+                boxes.add(b);
+                contentProcessed += b.getSize();
             } catch (EOFException e) {
-                throw new NoSuchElementException();
-            } catch (IOException e) {
-                throw new NoSuchElementException();
+                if (containerSize < 0) {
+                    return;
+                } else {
+                    throw e;
+                }
             }
         }
-
     }
+
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
@@ -212,52 +137,8 @@ public class BasicContainer implements Container, Iterator<Box>, Closeable {
 
 
     public final void writeContainer(WritableByteChannel bb) throws IOException {
-        for (Box box : getBoxes()) {
+        for (LightBox box : getBoxes()) {
             box.getBox(bb);
         }
-    }
-
-    public ByteBuffer getByteBuffer(long rangeStart, long size) throws IOException {
-        if (this.dataSource != null) {
-            synchronized (this.dataSource) {
-                return this.dataSource.map(this.startPosition + rangeStart, size);
-            }
-        } else {
-            ByteBuffer out = ByteBuffer.allocate(l2i(size));
-            long rangeEnd = rangeStart + size;
-            long boxStart;
-            long boxEnd = 0;
-            for (Box box : boxes) {
-                boxStart = boxEnd;
-                boxEnd = boxStart + box.getSize();
-                if (!(boxEnd <= rangeStart || boxStart >= rangeEnd)) {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    WritableByteChannel wbc = Channels.newChannel(baos);
-                    box.getBox(wbc);
-                    wbc.close();
-
-                    if (boxStart >= rangeStart && boxEnd <= rangeEnd) {
-                        out.put(baos.toByteArray());
-                        // within -> use full box
-                    } else if (boxStart < rangeStart && boxEnd > rangeEnd) {
-                        // around -> use 'middle' of box
-                        int length = l2i(box.getSize() - (rangeStart - boxStart) - (boxEnd - rangeEnd));
-                        out.put(baos.toByteArray(), l2i(rangeStart - boxStart), length);
-                    } else if (boxStart < rangeStart && boxEnd <= rangeEnd) {
-                        // endwith
-                        int length = l2i(box.getSize() - (rangeStart - boxStart));
-                        out.put(baos.toByteArray(), l2i(rangeStart - boxStart), length);
-                    } else if (boxStart >= rangeStart && boxEnd > rangeEnd) {
-                        int length = l2i(box.getSize() - (boxEnd - rangeEnd));
-                        out.put(baos.toByteArray(), 0, length);
-                    }
-                }
-            }
-            return (ByteBuffer) out.rewind();
-        }
-    }
-
-    public void close() throws IOException {
-        dataSource.close();
     }
 }

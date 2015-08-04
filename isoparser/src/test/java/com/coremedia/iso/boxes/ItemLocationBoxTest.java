@@ -2,11 +2,13 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -50,7 +52,7 @@ public class ItemLocationBoxTest {
 
 
 
-        IsoFile isoFile = new IsoFile(new MemoryDataSourceImpl(baos.toByteArray()));
+        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(baos.toByteArray()));
 
         ItemLocationBox iloc = (ItemLocationBox) isoFile.getBoxes().get(0);
 
@@ -90,7 +92,7 @@ public class ItemLocationBoxTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ilocOrig.getBox(Channels.newChannel(baos));
 
-        IsoFile isoFile = new IsoFile(new MemoryDataSourceImpl(baos.toByteArray()));
+        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(baos.toByteArray()));
 
         ItemLocationBox iloc = (ItemLocationBox) isoFile.getBoxes().get(0);
 
@@ -136,7 +138,7 @@ public class ItemLocationBoxTest {
         fc.close();
 
 
-        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
+        IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
 
         ItemLocationBox iloc = (ItemLocationBox) isoFile.getBoxes().get(0);
 

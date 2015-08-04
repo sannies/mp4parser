@@ -6,6 +6,8 @@ import com.coremedia.iso.PropertyBoxParserImpl;
 import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.AbstractContainerBox;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.LightBox;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -109,13 +111,13 @@ public abstract class BoxRoundtripTest {
         wbc.close();
         baos.close();
 
-        IsoFile singleBoxIsoFile = new IsoFile(new MemoryDataSourceImpl(baos.toByteArray()));
+        IsoFile singleBoxIsoFile = new IsoFile(new ByteBufferByteChannel(baos.toByteArray()));
 
         Assert.assertEquals("Expected box and file size to be the same", boxUnderTest.getSize(), baos.size());
         Assert.assertEquals("Expected a single box in the IsoFile structure", 1, singleBoxIsoFile.getBoxes().size());
         Assert.assertEquals("Expected to find a box of different type ", boxUnderTest.getClass(), singleBoxIsoFile.getBoxes().get(0).getClass());
 
-        Box parsedBox = singleBoxIsoFile.getBoxes().get(0);
+        LightBox parsedBox = singleBoxIsoFile.getBoxes().get(0);
 
 
         for (String property : props.keySet()) {
@@ -130,7 +132,7 @@ public abstract class BoxRoundtripTest {
                     } else if (props.get(property) instanceof long[]) {
                         Assert.assertArrayEquals("Writing and parsing changed the value of " + property, (long[]) props.get(property), (long[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
                     } else {
-                        Assert.assertEquals("Writing and parsing changed the value of " + property, props.get(property), (Object) propertyDescriptor.getReadMethod().invoke(parsedBox));
+                        Assert.assertEquals("Writing and parsing changed the value of " + property, props.get(property), propertyDescriptor.getReadMethod().invoke(parsedBox));
                     }
                 }
             }

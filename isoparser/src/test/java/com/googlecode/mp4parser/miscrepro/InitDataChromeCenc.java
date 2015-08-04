@@ -5,6 +5,7 @@ import com.coremedia.drm.packager.isoparser.Walk;
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import org.junit.Test;
 
 import java.beans.IntrospectionException;
@@ -16,7 +17,7 @@ public class InitDataChromeCenc {
 
     @Test
     public void ausprobieren() throws IOException, IllegalAccessException, IntrospectionException, InvocationTargetException {
-        IsoFile isoFile = new IsoFile(new MemoryDataSourceImpl(Hex.decodeHex(eInitData)));
+        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(Hex.decodeHex(eInitData)));
         Walk.through(isoFile);
     }
 }

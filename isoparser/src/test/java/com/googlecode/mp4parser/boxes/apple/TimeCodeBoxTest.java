@@ -7,6 +7,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class TimeCodeBoxTest extends BoxWriteReadBase<TimeCodeBox> {
         fos.write(Hex.decodeHex(tcmd.toCharArray()));
         fos.close();
 
-        IsoFile isoFile = new IsoFile(f.getAbsolutePath());
+        IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
         TimeCodeBox tcmd = (TimeCodeBox) isoFile.getBoxes().get(0);
         System.err.println(tcmd);
         isoFile.close();
@@ -40,11 +41,11 @@ public class TimeCodeBoxTest extends BoxWriteReadBase<TimeCodeBox> {
     @Override
     public void setupProperties(Map<String, Object> addPropsHere, TimeCodeBox box) {
         addPropsHere.put("dataReferenceIndex", 666);
-        addPropsHere.put("frameDuration", (int) 1001);
-        addPropsHere.put("numberOfFrames", (int) 24);
-        addPropsHere.put("reserved1", (int) 0);
-        addPropsHere.put("reserved2", (int) 0);
-        addPropsHere.put("timeScale", (int) 24000);
+        addPropsHere.put("frameDuration", 1001);
+        addPropsHere.put("numberOfFrames", 24);
+        addPropsHere.put("reserved1", 0);
+        addPropsHere.put("reserved2", 0);
+        addPropsHere.put("timeScale", 24000);
         addPropsHere.put("rest", new byte[]{4, 5});
     }
 

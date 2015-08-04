@@ -8,6 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -40,7 +41,7 @@ public class PiffSampleEncryptionBoxTest {
         Assert.assertEquals(f.length(), senc.getSize());
 
 
-        IsoFile iso = new IsoFile(f.getAbsolutePath());
+        IsoFile iso = new IsoFile(new FileInputStream(f).getChannel());
 
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
@@ -70,7 +71,7 @@ public class PiffSampleEncryptionBoxTest {
         senc.getBox(fc);
         fc.close();
 
-        IsoFile iso = new IsoFile(f.getAbsolutePath());
+        IsoFile iso = new IsoFile(new FileInputStream(f).getChannel());
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);
@@ -102,7 +103,7 @@ public class PiffSampleEncryptionBoxTest {
         senc.getBox(fc);
         fc.close();
 
-        IsoFile iso = new IsoFile(f.getAbsolutePath());
+        IsoFile iso = new IsoFile(new FileInputStream(f).getChannel());
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);
@@ -141,7 +142,7 @@ public class PiffSampleEncryptionBoxTest {
         senc.getBox(fc);
         fc.close();
 
-        IsoFile iso = new IsoFile(f.getAbsolutePath());
+        IsoFile iso = new IsoFile(new FileInputStream(f).getChannel());
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);

@@ -17,6 +17,8 @@
 package com.coremedia.iso.boxes;
 
 import com.googlecode.mp4parser.AbstractContainerBox;
+import com.mp4parser.tools.Path;
+import com.mp4parser.LightBox;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
@@ -43,38 +45,19 @@ public class SampleTableBox extends AbstractContainerBox {
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
-        for (Box box : getBoxes()) {
-            if (box instanceof SampleDescriptionBox) {
-                return (SampleDescriptionBox) box;
-            }
-        }
-        return null;
+        return Path.getPath(this, "stsd");
     }
 
     public SampleSizeBox getSampleSizeBox() {
-        for (Box box : getBoxes()) {
-            if (box instanceof SampleSizeBox) {
-                return (SampleSizeBox) box;
-            }
-        }
-        return null;
+        return Path.getPath(this, "stsz");
     }
 
     public SampleToChunkBox getSampleToChunkBox() {
-        if (sampleToChunkBox != null) {
-            return sampleToChunkBox;
-        }
-        for (Box box : getBoxes()) {
-            if (box instanceof SampleToChunkBox) {
-                sampleToChunkBox = (SampleToChunkBox) box;
-                return sampleToChunkBox;
-            }
-        }
-        return null;
+        return Path.getPath(this, "stsc");
     }
 
     public ChunkOffsetBox getChunkOffsetBox() {
-        for (Box box : getBoxes()) {
+        for (LightBox box : getBoxes()) {
             if (box instanceof ChunkOffsetBox) {
                 return (ChunkOffsetBox) box;
             }
@@ -84,39 +67,21 @@ public class SampleTableBox extends AbstractContainerBox {
 
 
     public TimeToSampleBox getTimeToSampleBox() {
-        for (Box box : getBoxes()) {
-            if (box instanceof TimeToSampleBox) {
-                return (TimeToSampleBox) box;
-            }
-        }
-        return null;
+        return Path.getPath(this, "stts");
     }
 
     public SyncSampleBox getSyncSampleBox() {
-        for (Box box : getBoxes()) {
-            if (box instanceof SyncSampleBox) {
-                return (SyncSampleBox) box;
-            }
-        }
-        return null;
+        return Path.getPath(this, "stss");
     }
 
     public CompositionTimeToSample getCompositionTimeToSample() {
-        for (Box box : getBoxes()) {
-            if (box instanceof CompositionTimeToSample) {
-                return (CompositionTimeToSample) box;
-            }
-        }
-        return null;
+        return Path.getPath(this, "ctts");
+
+
     }
 
     public SampleDependencyTypeBox getSampleDependencyTypeBox() {
-        for (Box box : getBoxes()) {
-            if (box instanceof SampleDependencyTypeBox) {
-                return (SampleDependencyTypeBox) box;
-            }
-        }
-        return null;
+        return Path.getPath(this, "sdtp");
     }
 
 }

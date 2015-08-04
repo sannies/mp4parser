@@ -2,15 +2,11 @@ package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriterVariable;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.SubSampleInformationBox;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
-import com.googlecode.mp4parser.MemoryDataSourceImpl;
 import com.googlecode.mp4parser.authoring.*;
-import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
-import com.googlecode.mp4parser.util.Path;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.tools.Path;
 import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 
 import java.io.ByteArrayOutputStream;
@@ -21,7 +17,6 @@ import java.nio.channels.WritableByteChannel;
 import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -42,8 +37,9 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         parent.getSampleDescriptionBox().getBox(Channels.newChannel(baos));
-        IsoFile isoFile = new IsoFile(new MemoryDataSourceImpl(baos.toByteArray()));
+        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
         this.stsd = Path.getPath(isoFile, "stsd");
+        assert stsd != null;
         ((VisualSampleEntry) stsd.getSampleEntry()).setType("avc3");
 
         avcC = Path.getPath(stsd, "avc./avcC");

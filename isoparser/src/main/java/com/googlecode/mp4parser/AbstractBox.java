@@ -25,10 +25,10 @@ import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.UserBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
 import com.googlecode.mp4parser.util.Logger;
-import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
@@ -48,49 +48,22 @@ public abstract class AbstractBox implements Box {
 
     protected String type;
     private byte[] userType;
-    private Container parent;
     boolean isParsed;
-    boolean isRead;
 
 
     private ByteBuffer content;
 
 
-    long contentStartPosition;
-    long offset;
-    long memMapSize = -1;
-    DataSource dataSource;
-
-    private synchronized void readContent() {
-        if (!isRead) {
-
-            try {
-                LOG.logDebug("mem mapping " + this.getType());
-                content = dataSource.map(contentStartPosition, memMapSize);
-            } catch (IOException e) {
-                throw new RuntimeException(
-                        "contentStartPosition: " + contentStartPosition + " memMapSize: " + memMapSize, e);
-            }
-            isRead = true;
-        }
-    }
-
     private ByteBuffer deadBytes = null;
-
-    public long getOffset() {
-        return offset;
-    }
 
     protected AbstractBox(String type) {
         this.type = type;
-        isRead = true;
         isParsed = true;
     }
 
     protected AbstractBox(String type, byte[] userType) {
         this.type = type;
         this.userType = userType;
-        isRead = true;
         isParsed = true;
     }
 
@@ -123,44 +96,35 @@ public abstract class AbstractBox implements Box {
      * {@inheritDoc}
      */
     @DoNotParseDetail
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
 
-        this.contentStartPosition = dataSource.position();
-        this.offset = contentStartPosition - header.remaining();
-        this.memMapSize = contentSize;
-        this.dataSource = dataSource;
-
-        dataSource.position(dataSource.position() + contentSize);
-        isRead = false;
+        content = ByteBuffer.allocateDirect(l2i(contentSize));
+        int bytesRead = 0;
+        int b;
+        while (((((b = dataSource.read(content))) + bytesRead) < contentSize)) {
+            bytesRead += b;
+        }
         isParsed = false;
 
     }
 
     public void getBox(WritableByteChannel os) throws IOException {
-        if (isRead) {
-            if (isParsed) {
-                ByteBuffer bb = ByteBuffer.allocate(l2i(getSize()));
-                getHeader(bb);
-                getContent(bb);
-                if (deadBytes != null) {
-                    deadBytes.rewind();
-                    while (deadBytes.remaining() > 0) {
-                        bb.put(deadBytes);
-                    }
+        if (isParsed) {
+            ByteBuffer bb = ByteBuffer.allocate(l2i(getSize()));
+            getHeader(bb);
+            getContent(bb);
+            if (deadBytes != null) {
+                deadBytes.rewind();
+                while (deadBytes.remaining() > 0) {
+                    bb.put(deadBytes);
                 }
-                os.write((ByteBuffer) bb.rewind());
-            } else {
-                ByteBuffer header = ByteBuffer.allocate((isSmallBox() ? 8 : 16) + (UserBox.TYPE.equals(getType()) ? 16 : 0));
-                getHeader(header);
-                os.write((ByteBuffer) header.rewind());
-                os.write((ByteBuffer) content.position(0));
             }
-
+            os.write((ByteBuffer) bb.rewind());
         } else {
             ByteBuffer header = ByteBuffer.allocate((isSmallBox() ? 8 : 16) + (UserBox.TYPE.equals(getType()) ? 16 : 0));
             getHeader(header);
             os.write((ByteBuffer) header.rewind());
-            dataSource.transferTo(contentStartPosition, memMapSize, os);
+            os.write((ByteBuffer) content.position(0));
         }
     }
 
@@ -170,7 +134,6 @@ public abstract class AbstractBox implements Box {
      * which is done
      */
     public synchronized final void parseDetails() {
-        readContent();
         LOG.logDebug("parsing details of " + this.getType());
         if (content != null) {
             ByteBuffer content = this.content;
@@ -185,16 +148,6 @@ public abstract class AbstractBox implements Box {
         }
     }
 
-    /**
-     * Sets the 'dead' bytes. These bytes are left if the content of the box
-     * has been parsed but not all bytes have been used up.
-     *
-     * @param newDeadBytes the unused bytes with no meaning but required for bytewise reconstruction
-     */
-    protected void setDeadBytes(ByteBuffer newDeadBytes) {
-        deadBytes = newDeadBytes;
-    }
-
 
     /**
      * Gets the full size of the box including header and content.
@@ -202,7 +155,7 @@ public abstract class AbstractBox implements Box {
      * @return the box's size
      */
     public long getSize() {
-        long size = (isRead ? (isParsed ? getContentSize() : (content != null ? content.limit() : 0)) : memMapSize);
+        long size = isParsed ? getContentSize() : content.limit();
         size += (8 + // size|type
                 (size >= ((1L << 32) - 8) ? 8 : 0) + // 32bit - 8 byte size and type
                 (UserBox.TYPE.equals(getType()) ? 16 : 0));
@@ -218,16 +171,6 @@ public abstract class AbstractBox implements Box {
     @DoNotParseDetail
     public byte[] getUserType() {
         return userType;
-    }
-
-    @DoNotParseDetail
-    public Container getParent() {
-        return parent;
-    }
-
-    @DoNotParseDetail
-    public void setParent(Container parent) {
-        this.parent = parent;
     }
 
     /**
@@ -288,15 +231,12 @@ public abstract class AbstractBox implements Box {
         if (UserBox.TYPE.equals(getType())) {
             baseSize += 16;
         }
-        if (isRead) {
-            if (isParsed) {
-                return (getContentSize() + (deadBytes != null ? deadBytes.limit() : 0) + baseSize) < (1L << 32);
-            } else {
-                return content.limit() + baseSize < (1L << 32);
-            }
+        if (isParsed) {
+            return (getContentSize() + (deadBytes != null ? deadBytes.limit() : 0) + baseSize) < (1L << 32);
         } else {
-            return memMapSize + baseSize < (1L << 32);
+            return content.limit() + baseSize < (1L << 32);
         }
+
     }
 
     private void getHeader(ByteBuffer byteBuffer) {
@@ -311,10 +251,5 @@ public abstract class AbstractBox implements Box {
         if (UserBox.TYPE.equals(getType())) {
             byteBuffer.put(getUserType());
         }
-    }
-
-    @DoNotParseDetail
-    public String getPath() {
-        return Path.createPath(this);
     }
 }

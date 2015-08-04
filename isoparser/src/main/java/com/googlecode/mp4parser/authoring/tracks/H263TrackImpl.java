@@ -17,10 +17,11 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.*;
 import com.googlecode.mp4parser.util.Mp4Arrays;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.tools.Path;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,7 +34,7 @@ import java.util.logging.Logger;
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
- * Created by sannies on 26.04.2015.
+ *
  */
 public class H263TrackImpl extends AbstractH26XTrack {
     private static Logger LOG = Logger.getLogger(ESDescriptor.class.getName());
@@ -226,13 +227,13 @@ public class H263TrackImpl extends AbstractH26XTrack {
         }
         if (video_object_layer_shape != BINARY_ONLY) {
             if (video_object_layer_shape == RECTANGULAR) {
-                marker_bit = brb.readBool();
+                brb.readBool();
                 int video_object_layer_width = brb.readBits(13);
                 mp4v.setWidth(video_object_layer_width);
-                marker_bit = brb.readBool();
+                brb.readBool();
                 int video_object_layer_height = brb.readBits(13);
                 mp4v.setHeight(video_object_layer_height);
-                marker_bit = brb.readBool();
+                brb.readBool();
             }
 /****************************************************************************************************************************
  *
@@ -409,7 +410,7 @@ public class H263TrackImpl extends AbstractH26XTrack {
     }
 
     public static void main2(String[] args) throws IOException {
-        ESDescriptorBox esds = Path.getPath(new IsoFile("C:\\content\\bbb.mp4"), "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stsd[0]/mp4v[0]/esds[0]");
+        ESDescriptorBox esds = Path.getPath(new IsoFile(new FileInputStream("C:\\content\\bbb.mp4").getChannel()), "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stsd[0]/mp4v[0]/esds[0]");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         esds.getBox(Channels.newChannel(baos));
         System.err.println(Hex.encodeHex(baos.toByteArray()));

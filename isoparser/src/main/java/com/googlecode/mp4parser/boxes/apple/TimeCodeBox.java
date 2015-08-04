@@ -21,6 +21,7 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import com.googlecode.mp4parser.AbstractBox;
+import com.mp4parser.LightBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -163,24 +164,20 @@ public class TimeCodeBox extends AbstractBox implements SampleEntry, Container {
     }
 
 
-    public List<Box> getBoxes() {
+    public List<LightBox> getBoxes() {
         return Collections.emptyList();
     }
 
-    public void setBoxes(List<Box> boxes) {
+    public void setBoxes(List<? extends LightBox> boxes) {
         throw new RuntimeException("Time Code Box doesn't accept any children");
     }
 
-    public <T extends Box> List<T> getBoxes(Class<T> clazz) {
+    public <T extends LightBox> List<T> getBoxes(Class<T> clazz) {
         return Collections.emptyList();
     }
 
-    public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
+    public <T extends LightBox> List<T> getBoxes(Class<T> clazz, boolean recursive) {
         return Collections.emptyList();
-    }
-
-    public ByteBuffer getByteBuffer(long start, long size) throws IOException {
-        return null;
     }
 
     public void writeContainer(WritableByteChannel bb) throws IOException {

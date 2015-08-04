@@ -4,12 +4,17 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.sampleentry.AbstractSampleEntry;
 import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.util.Mp4Arrays;
 
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 public class XMLSubtitleSampleEntry extends AbstractSampleEntry {
@@ -32,26 +37,35 @@ public class XMLSubtitleSampleEntry extends AbstractSampleEntry {
     }
 
     @Override
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer byteBuffer = ByteBuffer.allocate(8);
         dataSource.read((ByteBuffer) byteBuffer.rewind());
         byteBuffer.position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(byteBuffer);
 
-        long start = dataSource.position();
-        ByteBuffer content = ByteBuffer.allocate(1024);
 
-        dataSource.read((ByteBuffer) content.rewind());
-        namespace = IsoTypeReader.readString((ByteBuffer) content.rewind());
-        dataSource.position(start + namespace.length() + 1);
+        byte[] namespaceBytes = new byte[0];
+        int read;
+        while ((read = Channels.newInputStream(dataSource).read()) != 0) {
+            namespaceBytes = Mp4Arrays.copyOfAndAppend(namespaceBytes, (byte) read);
+        }
+        namespace = Utf8.convert(namespaceBytes);
 
-        dataSource.read((ByteBuffer) content.rewind());
-        schemaLocation = IsoTypeReader.readString((ByteBuffer) content.rewind());
-        dataSource.position(start + namespace.length() + schemaLocation.length() + 2);
 
-        dataSource.read((ByteBuffer) content.rewind());
-        auxiliaryMimeTypes = IsoTypeReader.readString((ByteBuffer) content.rewind());
-        dataSource.position(start + namespace.length() + schemaLocation.length() + auxiliaryMimeTypes.length() + 3);
+        byte[] schemaLocationBytes = new byte[0];
+
+        while ((read = Channels.newInputStream(dataSource).read()) != 0) {
+            schemaLocationBytes = Mp4Arrays.copyOfAndAppend(schemaLocationBytes, (byte) read);
+        }
+        schemaLocation = Utf8.convert(schemaLocationBytes);
+
+
+        byte[] auxiliaryMimeTypesBytes = new byte[0];
+
+        while ((read = Channels.newInputStream(dataSource).read()) != 0) {
+            auxiliaryMimeTypesBytes = Mp4Arrays.copyOfAndAppend(auxiliaryMimeTypesBytes, (byte) read);
+        }
+        auxiliaryMimeTypes = Utf8.convert(auxiliaryMimeTypesBytes);
 
         initContainer(dataSource, contentSize - (header.remaining() + namespace.length() + schemaLocation.length() + auxiliaryMimeTypes.length() + 3), boxParser);
     }

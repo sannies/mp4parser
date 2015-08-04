@@ -19,9 +19,11 @@ package com.coremedia.drm.packager.isoparser;
 import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.MemoryDataSourceImpl;
 import com.googlecode.mp4parser.authoring.tracks.BoxComparator;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.nio.channels.Channels;
 
 /**
@@ -83,7 +85,7 @@ public class RoundTripTest extends TestCase {
         long start1 = System.currentTimeMillis();
         long start2 = System.currentTimeMillis();
 
-        IsoFile isoFile = new IsoFile(originalFile);
+        IsoFile isoFile = new IsoFile(new FileInputStream(originalFile).getChannel());
 
         long start3 = System.currentTimeMillis();
 
@@ -105,8 +107,8 @@ public class RoundTripTest extends TestCase {
         System.err.println("Walking took           : " + (start5 - start4) + "ms");*/
 
 
-        IsoFile copyViaIsoFileReparsed = new IsoFile(new MemoryDataSourceImpl(baos.toByteArray()));
-        BoxComparator.check(isoFile, copyViaIsoFileReparsed, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]");
+        IsoFile copyViaIsoFileReparsed = new IsoFile(new ByteBufferByteChannel(baos.toByteArray()));
+        BoxComparator.check(isoFile, copyViaIsoFileReparsed, "moov[0]/mvhd[0]", "moov[0]/trak[0]/tkhd[0]", "moov[0]/trak[0]/mdia[0]/mdhd[0]");
         isoFile.close();
         copyViaIsoFileReparsed.close();
         // as windows cannot delete file when something is memory mapped and the garbage collector

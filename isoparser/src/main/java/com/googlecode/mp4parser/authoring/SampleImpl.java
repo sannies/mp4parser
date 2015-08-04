@@ -12,13 +12,11 @@ public class SampleImpl implements Sample {
     private final long offset;
     private final long size;
     private ByteBuffer[] data;
-    private final Container parent;
 
     public SampleImpl(ByteBuffer buf) {
         this.offset = -1;
         this.size = buf.limit();
         this.data = new ByteBuffer[]{buf};
-        this.parent = null;
     }
 
     public SampleImpl(ByteBuffer[] data) {
@@ -29,37 +27,15 @@ public class SampleImpl implements Sample {
         }
         this.size = _size;
         this.data = data;
-        this.parent = null;
     }
 
     public SampleImpl(long offset, long sampleSize, ByteBuffer data) {
         this.offset = offset;
         this.size = sampleSize;
         this.data = new ByteBuffer[]{data};
-        this.parent = null;
-    }
-
-    public SampleImpl(long offset, long sampleSize, Container parent) {
-        this.offset = offset;
-        this.size = sampleSize;
-        this.data = null;
-        this.parent = parent;
-    }
-
-    protected void ensureData() {
-        if (data != null) return;
-        if (parent == null) {
-            throw new RuntimeException("Missing parent container, can't read sample " + this);
-        }
-        try {
-            data = new ByteBuffer[]{parent.getByteBuffer(offset, size)};
-        } catch (IOException e) {
-            throw new RuntimeException("couldn't read sample " + this, e);
-        }
     }
 
     public void writeTo(WritableByteChannel channel) throws IOException {
-        ensureData();
         for (ByteBuffer b : data) {
             channel.write(b.duplicate());
         }
@@ -70,7 +46,6 @@ public class SampleImpl implements Sample {
     }
 
     public ByteBuffer asByteBuffer() {
-        ensureData();
         byte[] bCopy = new byte[l2i(size)];
         ByteBuffer copy = ByteBuffer.wrap(bCopy);
         for (ByteBuffer b : data) {

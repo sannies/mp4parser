@@ -13,6 +13,8 @@ import com.googlecode.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.CencEncryptedTrack;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.InMemRandomAccessSourceImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,9 +27,6 @@ import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.*;
 
-/**
- * Created by sannies on 27.09.2014.
- */
 public class CencFileRoundtripTest {
     String baseDir = CencFileRoundtripTest.class.getProtectionDomain().getCodeSource().getLocation().getFile();
     Map<UUID, SecretKey> keys;
@@ -102,6 +101,11 @@ public class CencFileRoundtripTest {
     }
 
     @Test
+    public void testSingleKeyFragMp4_cenc() throws IOException {
+        testMultipleKeys(new FragmentedMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, null, "cenc", uuidDefault, false);
+    }
+
+    @Test
     public void testMultipleKeysStdMp4_cbc1() throws IOException {
         testMultipleKeys(new DefaultMp4Builder(), baseDir + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4", keys, keyRotation1, "cbc1", uuidDefault, false);
     }
@@ -162,9 +166,9 @@ public class CencFileRoundtripTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         c.writeContainer(Channels.newChannel(baos));
-       // new FileOutputStream("c:\\dev\\mp4parser\\m2.mp4").write(baos.toByteArray());
+        new FileOutputStream("c:\\dev\\mp4parser\\m2.mp4").write(baos.toByteArray());
 
-        Movie m3 = MovieCreator.build(new MemoryDataSourceImpl(baos.toByteArray()));
+        Movie m3 = MovieCreator.build(new ByteBufferByteChannel(baos.toByteArray()), new InMemRandomAccessSourceImpl(baos.toByteArray()), "inmem");
 
         Movie m4 = new Movie();
         for (Track track : m3.getTracks()) {
@@ -176,7 +180,7 @@ public class CencFileRoundtripTest {
 
         ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
         c2.writeContainer(Channels.newChannel(baos2));
-        Movie m5 = MovieCreator.build(new MemoryDataSourceImpl(baos2.toByteArray()));
+        Movie m5 = MovieCreator.build(new ByteBufferByteChannel(baos2.toByteArray()), new InMemRandomAccessSourceImpl(baos2.toByteArray()), "inmem");
 
         Iterator<Track> tracksPlainIter = m1.getTracks().iterator();
         Iterator<Track> roundTrippedTracksIter = m5.getTracks().iterator();
@@ -190,6 +194,7 @@ public class CencFileRoundtripTest {
     }
 
     public void verifySampleEquality(List<Sample> orig, List<Sample> roundtripped) throws IOException {
+        int i = 0;
         Iterator<Sample> origIter = orig.iterator();
         Iterator<Sample> roundTrippedIter = roundtripped.iterator();
         while (origIter.hasNext() && roundTrippedIter.hasNext()) {
@@ -197,7 +202,8 @@ public class CencFileRoundtripTest {
             ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
             origIter.next().writeTo(Channels.newChannel(baos1));
             roundTrippedIter.next().writeTo(Channels.newChannel(baos2));
-            Assert.assertArrayEquals(baos1.toByteArray(), baos2.toByteArray());
+            Assert.assertArrayEquals("Sample " + i + " differs", baos1.toByteArray(), baos2.toByteArray());
+            i++;
         }
 
     }

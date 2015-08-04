@@ -22,7 +22,9 @@ import com.googlecode.mp4parser.DataSource;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Logger;
 
 /**
@@ -44,19 +46,17 @@ public abstract class AbstractBoxParser implements BoxParser {
      * Parses the next size and type, creates a box instance and parses the box's content.
      *
      * @param byteChannel the DataSource pointing to the ISO file
-     * @param parent      the current box's parent (null if no parent)
+     * @param parentType      the current box's parent's type (null if no parent)
      * @return the box just parsed
      * @throws java.io.IOException if reading from <code>in</code> fails
      */
-    public Box parseBox(DataSource byteChannel, Container parent) throws IOException {
-        long startPos = byteChannel.position();
+    public Box parseBox(ReadableByteChannel byteChannel, String parentType) throws IOException {
         header.get().rewind().limit(8);
 
         int bytesRead = 0;
-        int b = 0;
-        while ((b = byteChannel.read(header.get())) != 8) {
+        int b;
+        while ((b = byteChannel.read(header.get())) + bytesRead < 8) {
             if (b < 0) {
-                byteChannel.position(startPos);
                 throw new EOFException();
             } else {
                 bytesRead += b;
@@ -84,8 +84,7 @@ public abstract class AbstractBoxParser implements BoxParser {
             size = IsoTypeReader.readUInt64(header.get());
             contentSize = size - 16;
         } else if (size == 0) {
-            contentSize = byteChannel.size() - byteChannel.position();
-            size = contentSize + 8;
+            throw new RuntimeException("box size of zero means 'till end of file. That is not yet supported");
         } else {
             contentSize = size - 8;
         }
@@ -98,8 +97,7 @@ public abstract class AbstractBoxParser implements BoxParser {
             }
             contentSize -= 16;
         }
-        Box box = createBox(type, usertype, (parent instanceof Box) ? ((Box) parent).getType() : "");
-        box.setParent(parent);
+        Box box = createBox(type, usertype, parentType);
         //LOG.finest("Parsing " + box.getType());
         // System.out.println("parsing " + Mp4Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
         header.get().rewind();

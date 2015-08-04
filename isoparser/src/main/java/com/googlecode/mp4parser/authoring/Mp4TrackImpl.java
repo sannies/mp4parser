@@ -15,18 +15,38 @@
  */
 package com.googlecode.mp4parser.authoring;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.*;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.Container;
+import com.coremedia.iso.boxes.EditListBox;
+import com.coremedia.iso.boxes.MediaHeaderBox;
+import com.coremedia.iso.boxes.MovieHeaderBox;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SampleTableBox;
+import com.coremedia.iso.boxes.SubSampleInformationBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.coremedia.iso.boxes.fragment.SampleFlags;
+import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
+import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
-import com.googlecode.mp4parser.BasicContainer;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleGroupDescriptionBox;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleToGroupBox;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.tools.Path;
+import com.mp4parser.RandomAccessSource;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
@@ -34,8 +54,6 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
  * Represents a single track of an MP4 file.
  */
 public class Mp4TrackImpl extends AbstractTrack {
-    TrackBox trackBox;
-    IsoFile[] fragments;
     private List<Sample> samples;
     private SampleDescriptionBox sampleDescriptionBox;
     private long[] decodingTimes;
@@ -49,15 +67,19 @@ public class Mp4TrackImpl extends AbstractTrack {
     /**
      * Creates a track from a TrackBox and potentially fragments. Use <b>fragements parameter
      * only</b> to supply additional fragments that are not located in the main file.
-     *
-     * @param name      a name for the track for better identification
-     * @param trackBox  the <code>TrackBox</code> describing the track.
-     * @param fragments additional fragments if located in more than a single file
      */
-    public Mp4TrackImpl(String name, TrackBox trackBox, IsoFile... fragments) {
+    public Mp4TrackImpl(final long trackId, Container isofile, RandomAccessSource randomAccess, String name) throws IOException {
         super(name);
-        final long trackId = trackBox.getTrackHeaderBox().getTrackId();
-        samples = new SampleList(trackBox, fragments);
+
+        samples = new SampleList(trackId, isofile, randomAccess);
+        TrackBox trackBox = null;
+        for (TrackBox box : Path.<TrackBox>getPaths(isofile, "moov/trak")) {
+            if (box.getTrackHeaderBox().getTrackId() == trackId) {
+                trackBox = box;
+                break;
+            }
+        }
+        assert trackBox != null : "Could not find TrackBox with trackID " + trackId;
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
 
         handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
@@ -80,20 +102,17 @@ public class Mp4TrackImpl extends AbstractTrack {
 
         // gather all movie fragment boxes from the fragments
         List<MovieFragmentBox> movieFragmentBoxes = new ArrayList<MovieFragmentBox>();
-        movieFragmentBoxes.addAll(((Box) trackBox.getParent()).getParent().getBoxes(MovieFragmentBox.class));
-        for (IsoFile fragment : fragments) {
-            movieFragmentBoxes.addAll(fragment.getBoxes(MovieFragmentBox.class));
-        }
+        movieFragmentBoxes.addAll(isofile.getBoxes(MovieFragmentBox.class));
 
         sampleDescriptionBox = stbl.getSampleDescriptionBox();
         int lastSubsSample = 0;
-        final List<MovieExtendsBox> movieExtendsBoxes = trackBox.getParent().getBoxes(MovieExtendsBox.class);
+        final List<MovieExtendsBox> movieExtendsBoxes = Path.getPaths(isofile, "moov/mvex");
         if (movieExtendsBoxes.size() > 0) {
             for (MovieExtendsBox mvex : movieExtendsBoxes) {
                 final List<TrackExtendsBox> trackExtendsBoxes = mvex.getBoxes(TrackExtendsBox.class);
                 for (TrackExtendsBox trex : trackExtendsBoxes) {
                     if (trex.getTrackId() == trackId) {
-                        List<SubSampleInformationBox> subss = Path.getPaths(((Box) trackBox.getParent()).getParent(), "/moof/traf/subs");
+                        List<SubSampleInformationBox> subss = Path.getPaths(isofile, "moof/traf/subs");
                         if (subss.size() > 0) {
                             subSampleInformationBox = new SubSampleInformationBox();
                         }
@@ -124,7 +143,7 @@ public class Mp4TrackImpl extends AbstractTrack {
 
                                     List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
                                     for (TrackRunBox trun : truns) {
-                                        final TrackFragmentHeaderBox tfhd = ((TrackFragmentBox) trun.getParent()).getTrackFragmentHeaderBox();
+                                        final TrackFragmentHeaderBox tfhd = traf.getTrackFragmentHeaderBox();
                                         boolean first = true;
                                         for (TrackRunBox.Entry entry : trun.getEntries()) {
                                             if (trun.isSampleDurationPresent()) {
@@ -190,8 +209,6 @@ public class Mp4TrackImpl extends AbstractTrack {
                     }
                 }
             }
-            List<SampleGroupDescriptionBox> sgpds = new ArrayList<SampleGroupDescriptionBox>();
-            List<SampleToGroupBox> sbgps = new ArrayList<SampleToGroupBox>();
             for (MovieFragmentBox movieFragmentBox : movieFragmentBoxes) {
                 for (TrackFragmentBox traf : movieFragmentBox.getBoxes(TrackFragmentBox.class)) {
                     if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
@@ -219,8 +236,9 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setLayer(tkhd.getLayer());
         trackMetaData.setMatrix(tkhd.getMatrix());
         EditListBox elst = Path.getPath(trackBox, "edts/elst");
-        MovieHeaderBox mvhd = Path.getPath(trackBox, "../mvhd");
+        MovieHeaderBox mvhd = Path.getPath(isofile, "moov/mvhd");
         if (elst != null) {
+            assert mvhd != null;
             for (EditListBox.Entry e : elst.getEntries()) {
                 edits.add(new Edit(e.getMediaTime(), mdhd.getTimescale(), e.getMediaRate(), (double) e.getSegmentDuration() / mvhd.getTimescale()));
             }
@@ -265,15 +283,6 @@ public class Mp4TrackImpl extends AbstractTrack {
     }
 
     public void close() throws IOException {
-        Container c = trackBox.getParent();
-        if (c instanceof BasicContainer) {
-            ((BasicContainer) c).close();
-        }
-        for (IsoFile fragment : fragments) {
-            fragment.close();
-        }
-
-
     }
 
     public List<Sample> getSamples() {
