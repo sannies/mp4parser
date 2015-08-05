@@ -1,0 +1,70 @@
+/*
+ * Copyright 2012 Sebastian Annies, Hamburg
+ *
+ * Licensed under the Apache License, Version 2.0 (the License);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an AS IS BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.mp4parser.authoring.tracks;
+
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.tools.Hex;
+import com.mp4parser.IsoFile;
+import com.mp4parser.authoring.FileDataSourceImpl;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
+import com.mp4parser.tools.Path;
+import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
+
+/**
+ * Simple test to make sure nothing breaks.
+ */
+public class AACTrackImplTest {
+
+    @Test
+    public void freeze() throws IOException {
+        Track t = new AACTrackImpl(new FileDataSourceImpl(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/mp4parser/authoring/tracks/aac-sample.aac"));
+        //Track t = new AACTrackImpl2(new FileInputStream(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.aac"));
+        Movie m = new Movie();
+        m.addTrack(t);
+
+        DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
+        RandomAccessSource.Container c = mp4Builder.build(m);
+        WritableByteChannel fc = new FileOutputStream("aac-sample.mp4").getChannel();
+        c.writeContainer(fc);
+        fc.close();
+        IsoFile isoFileReference = new IsoFile(
+                new FileInputStream(
+                        this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/mp4parser/authoring/tracks/aac-sample.mp4").getChannel());
+        BoxComparator.check(c, isoFileReference, "moov[0]/mvhd[0]", "moov[0]/trak[0]/tkhd[0]", "moov[0]/trak[0]/mdia[0]/mdhd[0]", "moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stco[0]");
+    }
+
+    public static void main(String[] args) throws IOException {
+        ESDescriptorBox esds = Path.getPath(new IsoFile(
+                new FileInputStream("C:\\dev\\mp4parer\\aac-sample.mp4").getChannel()), "moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stsd[0]/mp4v[0]/esds[0]");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        esds.getBox(Channels.newChannel(baos));
+        System.err.println(Hex.encodeHex(baos.toByteArray()));
+        System.err.println(esds.getEsDescriptor());
+        baos = new ByteArrayOutputStream();
+        esds.getBox(Channels.newChannel(baos));
+        System.err.println(Hex.encodeHex(baos.toByteArray()));
+    }
+}

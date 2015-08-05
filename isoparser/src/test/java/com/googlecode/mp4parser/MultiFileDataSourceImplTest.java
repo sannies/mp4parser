@@ -1,5 +1,7 @@
 package com.googlecode.mp4parser;
 
+import com.mp4parser.authoring.DataSource;
+import com.mp4parser.authoring.MultiFileDataSourceImpl;
 import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;

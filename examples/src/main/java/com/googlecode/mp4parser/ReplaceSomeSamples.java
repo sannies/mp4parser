@@ -1,14 +1,13 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.ReplaceSampleTrack;
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.authoring.tracks.ReplaceSampleTrack;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,7 +32,7 @@ public class ReplaceSomeSamples {
                                 25, ByteBuffer.allocate(5)),
                         27, ByteBuffer.allocate(5)),
                 29, ByteBuffer.allocate(5)));
-        Container out = new DefaultMp4Builder().build(nuMovie);
+        RandomAccessSource.Container out = new DefaultMp4Builder().build(nuMovie);
         FileOutputStream fos = new FileOutputStream(new File("output.mp4"));
         FileChannel fc = fos.getChannel();
         out.writeContainer(fc);

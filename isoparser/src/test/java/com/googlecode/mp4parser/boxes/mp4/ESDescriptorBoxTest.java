@@ -1,8 +1,9 @@
 package com.googlecode.mp4parser.boxes.mp4;
 
-import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
+import com.mp4parser.tools.Hex;
+import com.mp4parser.IsoFile;
+import com.mp4parser.tools.ByteBufferByteChannel;
 import com.mp4parser.tools.Path;
 import org.junit.Test;
 

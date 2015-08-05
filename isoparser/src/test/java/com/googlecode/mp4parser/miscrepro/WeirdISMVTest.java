@@ -1,10 +1,9 @@
 package com.googlecode.mp4parser.miscrepro;
 
-import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
-import com.googlecode.mp4parser.MemoryDataSourceImpl;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.tools.Hex;
+import com.mp4parser.IsoFile;
+import com.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import com.mp4parser.tools.ByteBufferByteChannel;
 import com.mp4parser.tools.Path;
 import org.junit.Assert;
 import org.junit.Test;

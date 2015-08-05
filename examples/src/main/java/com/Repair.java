@@ -1,10 +1,10 @@
 package com;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.mp4parser.LightBox;
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.Box;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,10 +15,10 @@ public class Repair {
     public static void main(String[] args) throws IOException {
         Movie m = MovieCreator.build("C:\\dev\\drmtoday_cloud_encoder\\live.mp4");
         DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
-        Container c = defaultMp4Builder.build(m);
+        RandomAccessSource.Container c = defaultMp4Builder.build(m);
         FileOutputStream fos = new FileOutputStream("C:\\dev\\drmtoday_cloud_encoder\\live-repaired.mp4");
         WritableByteChannel wbc = Channels.newChannel(fos);
-        for (LightBox box : c.getBoxes()) {
+        for (Box box : c.getBoxes()) {
             box.getBox(wbc);
         }
     }

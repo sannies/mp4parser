@@ -1,12 +1,12 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
-import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
+import com.mp4parser.boxes.samplegrouping.CencSampleEncryptionInformationGroupEntry;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -47,7 +47,7 @@ public class CheckSampleGroups {
                 new CencEncryptingTrackImpl(
                         m.getTracks().get(0),
                         uuid1, keys, keyRotation, "cenc", false))); // cbc1 alternatively
-        Container c = builder.build(m);
+        RandomAccessSource.Container c = builder.build(m);
         c.writeContainer(new FileOutputStream("output.mp4").getChannel());
 
     }

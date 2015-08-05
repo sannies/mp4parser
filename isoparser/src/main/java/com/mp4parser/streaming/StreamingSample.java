@@ -1,7 +1,5 @@
 package com.mp4parser.streaming;
 
-import com.googlecode.mp4parser.authoring.Sample;
-
 import java.nio.ByteBuffer;
 
 /**

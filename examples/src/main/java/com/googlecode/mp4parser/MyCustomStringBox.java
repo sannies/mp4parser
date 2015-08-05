@@ -1,9 +1,9 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.IsoTypeReader;
-import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.UserBox;
-import com.googlecode.mp4parser.util.UUIDConverter;
+import com.mp4parser.tools.IsoTypeReader;
+import com.mp4parser.tools.IsoTypeWriter;
+import com.mp4parser.boxes.UserBox;
+import com.mp4parser.tools.UUIDConverter;
 
 import java.nio.ByteBuffer;
 import java.util.UUID;

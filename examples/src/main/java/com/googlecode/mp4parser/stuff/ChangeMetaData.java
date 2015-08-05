@@ -1,14 +1,14 @@
 package com.googlecode.mp4parser.stuff;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.ChunkOffsetBox;
-import com.coremedia.iso.boxes.MetaBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.StaticChunkOffsetBox;
-import com.coremedia.iso.boxes.UserDataBox;
-import com.coremedia.iso.boxes.XmlBox;
+import com.mp4parser.IsoFile;
+import com.mp4parser.boxes.iso14496.part12.ChunkOffsetBox;
+import com.mp4parser.boxes.iso14496.part12.MetaBox;
+import com.mp4parser.boxes.iso14496.part12.SampleTableBox;
+import com.mp4parser.boxes.iso14496.part12.StaticChunkOffsetBox;
+import com.mp4parser.boxes.iso14496.part12.UserDataBox;
+import com.mp4parser.boxes.iso14496.part12.XmlBox;
 import com.mp4parser.tools.Path;
-import com.mp4parser.LightBox;
+import com.mp4parser.Box;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -43,7 +43,7 @@ public class ChangeMetaData {
             throw new RuntimeException("Fragmented MP4 files need correction, too. (But I would need to look where)");
         }
 
-        for (LightBox box : isoFile.getBoxes()) {
+        for (Box box : isoFile.getBoxes()) {
             if ("mdat".equals(box.getType())) {
                 return false;
             }
@@ -112,7 +112,7 @@ public class ChangeMetaData {
 
         for (SampleTableBox sampleTableBox : sampleTableBoxes) {
 
-            List<LightBox> stblChildren = new ArrayList<LightBox>(sampleTableBox.getBoxes());
+            List<Box> stblChildren = new ArrayList<Box>(sampleTableBox.getBoxes());
             ChunkOffsetBox chunkOffsetBox = Path.getPath(sampleTableBox, "stco");
             if (chunkOffsetBox == null) {
                 stblChildren.remove(Path.getPath(sampleTableBox, "co64"));

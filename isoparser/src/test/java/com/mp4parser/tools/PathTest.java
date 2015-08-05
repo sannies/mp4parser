@@ -1,9 +1,7 @@
 package com.mp4parser.tools;
 
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.TrackBox;
+import com.mp4parser.IsoFile;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;

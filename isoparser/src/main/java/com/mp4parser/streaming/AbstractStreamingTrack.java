@@ -1,13 +1,9 @@
 package com.mp4parser.streaming;
 
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
+import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 

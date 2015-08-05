@@ -1,19 +1,18 @@
 package com.googlecode.mp4parser.boxes.cenc;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.MemoryDataSourceImpl;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
-import com.googlecode.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
-import com.googlecode.mp4parser.authoring.tracks.CencEncryptedTrack;
-import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Sample;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.authoring.builder.FragmentedMp4Builder;
+import com.mp4parser.authoring.builder.Mp4Builder;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
+import com.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
+import com.mp4parser.authoring.tracks.CencEncryptedTrack;
+import com.mp4parser.boxes.samplegrouping.CencSampleEncryptionInformationGroupEntry;
+import com.mp4parser.tools.ByteBufferByteChannel;
 import com.mp4parser.InMemRandomAccessSourceImpl;
 import org.junit.Assert;
 import org.junit.Before;
@@ -162,7 +161,7 @@ public class CencFileRoundtripTest {
             CencEncryptingTrackImpl cencEncryptingTrack = new CencEncryptingTrackImpl(track, uuidDefault, keys, keyRotation, encAlgo, false, encryptButClear);
             m2.addTrack(cencEncryptingTrack);
         }
-        Container c = builder.build(m2);
+        RandomAccessSource.Container c = builder.build(m2);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         c.writeContainer(Channels.newChannel(baos));
@@ -176,7 +175,7 @@ public class CencFileRoundtripTest {
                     new CencDecryptingTrackImpl((CencEncryptedTrack) track, keys);
             m4.addTrack(cencDecryptingTrack);
         }
-        Container c2 = builder.build(m4);
+        RandomAccessSource.Container c2 = builder.build(m4);
 
         ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
         c2.writeContainer(Channels.newChannel(baos2));

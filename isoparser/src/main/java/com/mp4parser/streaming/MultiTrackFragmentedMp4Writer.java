@@ -1,41 +1,41 @@
 package com.mp4parser.streaming;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.DataEntryUrlBox;
-import com.coremedia.iso.boxes.DataInformationBox;
-import com.coremedia.iso.boxes.DataReferenceBox;
-import com.coremedia.iso.boxes.FileTypeBox;
-import com.coremedia.iso.boxes.HandlerBox;
-import com.coremedia.iso.boxes.HintMediaHeaderBox;
-import com.coremedia.iso.boxes.MediaBox;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.MediaInformationBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.MovieHeaderBox;
-import com.coremedia.iso.boxes.NullMediaHeaderBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.SoundMediaHeaderBox;
-import com.coremedia.iso.boxes.StaticChunkOffsetBox;
-import com.coremedia.iso.boxes.SubtitleMediaHeaderBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.VideoMediaHeaderBox;
-import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
-import com.coremedia.iso.boxes.fragment.MovieExtendsHeaderBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentHeaderBox;
-import com.coremedia.iso.boxes.fragment.SampleFlags;
-import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentBaseMediaDecodeTimeBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
-import com.coremedia.iso.boxes.fragment.TrackRunBox;
-import com.googlecode.mp4parser.util.Mp4Arrays;
-import com.mp4parser.LightBox;
+import com.mp4parser.IsoFile;
+import com.mp4parser.tools.IsoTypeWriter;
+import com.mp4parser.ParsableBox;
+import com.mp4parser.boxes.iso14496.part12.DataEntryUrlBox;
+import com.mp4parser.boxes.iso14496.part12.DataInformationBox;
+import com.mp4parser.boxes.iso14496.part12.DataReferenceBox;
+import com.mp4parser.boxes.iso14496.part12.FileTypeBox;
+import com.mp4parser.boxes.iso14496.part12.HandlerBox;
+import com.mp4parser.boxes.iso14496.part12.HintMediaHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.MediaBox;
+import com.mp4parser.boxes.iso14496.part12.MediaHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.MediaInformationBox;
+import com.mp4parser.boxes.iso14496.part12.MovieBox;
+import com.mp4parser.boxes.iso14496.part12.MovieHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.NullMediaHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.SampleSizeBox;
+import com.mp4parser.boxes.iso14496.part12.SampleTableBox;
+import com.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
+import com.mp4parser.boxes.iso14496.part12.SoundMediaHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.StaticChunkOffsetBox;
+import com.mp4parser.boxes.iso14496.part12.SubtitleMediaHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.TimeToSampleBox;
+import com.mp4parser.boxes.iso14496.part12.TrackBox;
+import com.mp4parser.boxes.iso14496.part12.VideoMediaHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.MovieExtendsBox;
+import com.mp4parser.boxes.iso14496.part12.MovieExtendsHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.MovieFragmentBox;
+import com.mp4parser.boxes.iso14496.part12.MovieFragmentHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.SampleFlags;
+import com.mp4parser.boxes.iso14496.part12.TrackExtendsBox;
+import com.mp4parser.boxes.iso14496.part12.TrackFragmentBaseMediaDecodeTimeBox;
+import com.mp4parser.boxes.iso14496.part12.TrackFragmentBox;
+import com.mp4parser.boxes.iso14496.part12.TrackFragmentHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.TrackRunBox;
+import com.mp4parser.tools.Mp4Arrays;
+import com.mp4parser.Box;
 import com.mp4parser.streaming.extensions.CencEncryptTrackExtension;
 import com.mp4parser.streaming.extensions.CompositionTimeSampleExtension;
 import com.mp4parser.streaming.extensions.CompositionTimeTrackExtension;
@@ -61,7 +61,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static com.googlecode.mp4parser.util.Math.lcm;
+import static com.mp4parser.tools.Math.lcm;
 import static com.mp4parser.streaming.StreamingSampleHelper.getSampleExtension;
 
 /**
@@ -110,7 +110,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     }
 
 
-    protected Box createMvhd() {
+    protected ParsableBox createMvhd() {
         MovieHeaderBox mvhd = new MovieHeaderBox();
         mvhd.setVersion(1);
         mvhd.setCreationTime(creationTime);
@@ -127,13 +127,13 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return mvhd;
     }
 
-    protected Box createMdiaHdlr(StreamingTrack streamingTrack) {
+    protected ParsableBox createMdiaHdlr(StreamingTrack streamingTrack) {
         HandlerBox hdlr = new HandlerBox();
         hdlr.setHandlerType(streamingTrack.getHandler());
         return hdlr;
     }
 
-    protected Box createMdhd(StreamingTrack streamingTrack) {
+    protected ParsableBox createMdhd(StreamingTrack streamingTrack) {
         MediaHeaderBox mdhd = new MediaHeaderBox();
         mdhd.setCreationTime(creationTime);
         mdhd.setModificationTime(creationTime);
@@ -144,7 +144,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     }
 
 
-    protected Box createMdia(StreamingTrack streamingTrack) {
+    protected ParsableBox createMdia(StreamingTrack streamingTrack) {
         MediaBox mdia = new MediaBox();
         mdia.addBox(createMdhd(streamingTrack));
         mdia.addBox(createMdiaHdlr(streamingTrack));
@@ -152,7 +152,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return mdia;
     }
 
-    protected Box createMinf(StreamingTrack streamingTrack) {
+    protected ParsableBox createMinf(StreamingTrack streamingTrack) {
         MediaInformationBox minf = new MediaInformationBox();
         if (streamingTrack.getHandler().equals("vide")) {
             minf.addBox(new VideoMediaHeaderBox());
@@ -172,7 +172,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return minf;
     }
 
-    protected Box createStbl(StreamingTrack streamingTrack) {
+    protected ParsableBox createStbl(StreamingTrack streamingTrack) {
         SampleTableBox stbl = new SampleTableBox();
 
         stbl.addBox(streamingTrack.getSampleDescriptionBox());
@@ -194,7 +194,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return dinf;
     }
 
-    protected Box createTrak(StreamingTrack streamingTrack) {
+    protected ParsableBox createTrak(StreamingTrack streamingTrack) {
         TrackBox trackBox = new TrackBox();
         trackBox.addBox(streamingTrack.getTrackHeaderBox());
         trackBox.addBox(streamingTrack.getTrackHeaderBox());
@@ -203,7 +203,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     }
 
 
-    public Box createFtyp() {
+    public ParsableBox createFtyp() {
         List<String> minorBrands = new LinkedList<String>();
         minorBrands.add("isom");
         minorBrands.add("iso6");
@@ -211,7 +211,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return new FileTypeBox("isom", 0, minorBrands);
     }
 
-    protected Box createMvex() {
+    protected ParsableBox createMvex() {
         MovieExtendsBox mvex = new MovieExtendsBox();
         final MovieExtendsHeaderBox mved = new MovieExtendsHeaderBox();
         mved.setVersion(1);
@@ -225,7 +225,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return mvex;
     }
 
-    protected Box createTrex(StreamingTrack streamingTrack) {
+    protected ParsableBox createTrex(StreamingTrack streamingTrack) {
         TrackExtendsBox trex = new TrackExtendsBox();
         trex.setTrackId(streamingTrack.getTrackHeaderBox().getTrackId());
         trex.setDefaultSampleDescriptionIndex(1);
@@ -244,7 +244,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     }
 
 
-    protected Box createMoov() {
+    protected ParsableBox createMoov() {
         MovieBox movieBox = new MovieBox();
 
         movieBox.addBox(createMvhd());
@@ -320,7 +320,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         }
     }
 
-    private Box createMoof(StreamingTrack streamingTrack) {
+    private ParsableBox createMoof(StreamingTrack streamingTrack) {
         MovieFragmentBox moof = new MovieFragmentBox();
         createMfhd(sequenceNumber, moof);
         createTraf(streamingTrack, moof);
@@ -465,8 +465,8 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         moof.addBox(mfhd);
     }
 
-    private LightBox createMdat(final StreamingTrack streamingTrack) {
-        return new LightBox() {
+    private Box createMdat(final StreamingTrack streamingTrack) {
+        return new Box() {
             public String getType() {
                 return "mdat";
             }

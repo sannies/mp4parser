@@ -1,5 +1,6 @@
 package com.googlecode.mp4parser.util;
 
+import com.mp4parser.tools.RangeStartMap;
 import junit.framework.Assert;
 import org.junit.Test;
 

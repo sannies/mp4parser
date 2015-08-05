@@ -11,26 +11,26 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.mp4parser.LightBox;
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.boxes.iso14496.part12.SampleTableBox;
+import com.mp4parser.Box;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.ChunkOffsetBox;
-import com.coremedia.iso.boxes.Container;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.MetaBox;
-import com.coremedia.iso.boxes.MovieHeaderBox;
-import com.coremedia.iso.boxes.StaticChunkOffsetBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
-import com.coremedia.iso.boxes.UnknownBox;
-import com.coremedia.iso.boxes.UserDataBox;
-import com.coremedia.iso.boxes.apple.AppleItemListBox;
-import com.googlecode.mp4parser.boxes.apple.AppleGPSCoordinatesBox;
-import com.googlecode.mp4parser.boxes.apple.AppleNameBox;
-import com.googlecode.mp4parser.boxes.apple.Utf8AppleDataBox;
-import com.googlecode.mp4parser.boxes.microsoft.XtraBox;
+import com.mp4parser.IsoFile;
+import com.mp4parser.boxes.iso14496.part12.ChunkOffsetBox;
+import com.mp4parser.boxes.iso14496.part12.MediaHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.MetaBox;
+import com.mp4parser.boxes.iso14496.part12.MovieHeaderBox;
+import com.mp4parser.boxes.iso14496.part12.StaticChunkOffsetBox;
+import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
+import com.mp4parser.boxes.UnknownBox;
+import com.mp4parser.boxes.iso14496.part12.UserDataBox;
+import com.mp4parser.boxes.apple.AppleItemListBox;
+import com.mp4parser.boxes.apple.AppleGPSCoordinatesBox;
+import com.mp4parser.boxes.apple.AppleNameBox;
+import com.mp4parser.boxes.apple.Utf8AppleDataBox;
+import com.mp4parser.boxes.microsoft.XtraBox;
 import com.mp4parser.tools.Path;
 
 /**
@@ -168,9 +168,9 @@ public class MetaDataTool {
     }
 
     private void setMediaDate(Date date, boolean create) {
-        List<LightBox> headers = getBoxes(isoFile, new String[]{MovieHeaderBox.TYPE, MediaHeaderBox.TYPE, TrackHeaderBox.TYPE});
+        List<Box> headers = getBoxes(isoFile, new String[]{MovieHeaderBox.TYPE, MediaHeaderBox.TYPE, TrackHeaderBox.TYPE});
         boolean set = false;
-        for (LightBox header : headers) {
+        for (Box header : headers) {
             if (header instanceof MediaHeaderBox) {
                 set = true;
                 if (create) {
@@ -336,13 +336,13 @@ public class MetaDataTool {
         dumpBoxes(isoFile, 0);
     }
 
-    private static void dumpBoxes(Container container, int indent) {
+    private static void dumpBoxes(RandomAccessSource.Container container, int indent) {
         String meInd = getIndentation(indent);
         String subInd = getIndentation(indent + 2);
         System.out.println(meInd + container.getClass().getName());
-        for (LightBox box : container.getBoxes()) {
-            if (box instanceof Container) {
-                dumpBoxes((Container) box, indent + 2);
+        for (Box box : container.getBoxes()) {
+            if (box instanceof RandomAccessSource.Container) {
+                dumpBoxes((RandomAccessSource.Container) box, indent + 2);
             } else {
                 try {
                     if (box instanceof UnknownBox) {
@@ -372,7 +372,7 @@ public class MetaDataTool {
             throw new RuntimeException("Fragmented MP4 files need correction, too. (But I would need to look where)");
         }
 
-        for (LightBox box : isoFile.getBoxes()) {
+        for (Box box : isoFile.getBoxes()) {
             if ("mdat".equals(box.getType())) {
                 return false;
             }
@@ -388,7 +388,7 @@ public class MetaDataTool {
 
         for (SampleTableBox sampleTableBox : sampleTableBoxes) {
 
-            List<LightBox> stblChildren = new ArrayList<LightBox>(sampleTableBox.getBoxes());
+            List<Box> stblChildren = new ArrayList<Box>(sampleTableBox.getBoxes());
             ChunkOffsetBox chunkOffsetBox = Path.getPath(sampleTableBox, "stco");
             if (chunkOffsetBox == null) {
                 stblChildren.remove(Path.getPath(sampleTableBox, "co64"));
@@ -426,27 +426,27 @@ public class MetaDataTool {
         }
     }
 
-    public static LightBox getBox(Container outer, String type) {
-        List<LightBox> list = getBoxes(outer, new String[]{type});
+    public static Box getBox(RandomAccessSource.Container outer, String type) {
+        List<Box> list = getBoxes(outer, new String[]{type});
         return list.get(0);
     }
 
-    public static List<LightBox> getBoxes(Container outer, String types[], List<LightBox> list) {
-        for (LightBox box : outer.getBoxes()) {
+    public static List<Box> getBoxes(RandomAccessSource.Container outer, String types[], List<Box> list) {
+        for (Box box : outer.getBoxes()) {
             for (String type : types) {
                 if (box.getType().equals(type)) {
                     list.add(box);
                 }
             }
-            if (box instanceof Container) {
-                getBoxes((Container) box, types, list);
+            if (box instanceof RandomAccessSource.Container) {
+                getBoxes((RandomAccessSource.Container) box, types, list);
             }
         }
         return list;
     }
 
-    public static List<LightBox> getBoxes(Container outer, String types[]) {
-        List<LightBox> list = new ArrayList<LightBox>();
+    public static List<Box> getBoxes(RandomAccessSource.Container outer, String types[]) {
+        List<Box> list = new ArrayList<Box>();
         return getBoxes(outer, types, list);
     }
 

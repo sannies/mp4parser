@@ -1,13 +1,11 @@
 package com.googlecode.mp4parser.boxes;
 
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.PropertyBoxParserImpl;
-import com.coremedia.iso.boxes.Box;
-import com.googlecode.mp4parser.AbstractContainerBox;
-import com.googlecode.mp4parser.MemoryDataSourceImpl;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
-import com.mp4parser.LightBox;
+import com.mp4parser.IsoFile;
+import com.mp4parser.ParsableBox;
+import com.mp4parser.support.AbstractContainerBox;
+import com.mp4parser.tools.ByteBufferByteChannel;
+import com.mp4parser.Box;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,10 +15,8 @@ import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.ByteArrayOutputStream;
-import java.lang.reflect.Constructor;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.text.AttributedCharacterIterator;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,12 +45,12 @@ public abstract class BoxRoundtripTest {
      */
 
     String dummyParent = null;
-    Box boxUnderTest;
+    ParsableBox parsableBoxUnderTest;
     Map<String, Object> props;
 
 
-    public BoxRoundtripTest(Box boxUnderTest, Map.Entry<String, Object>... properties) {
-        this.boxUnderTest = boxUnderTest;
+    public BoxRoundtripTest(ParsableBox parsableBoxUnderTest, Map.Entry<String, Object>... properties) {
+        this.parsableBoxUnderTest = parsableBoxUnderTest;
         this.props = new HashMap<String, Object>();
         for (Map.Entry<String, Object> property : properties) {
             props.put(property.getKey(), property.getValue());
@@ -78,7 +74,7 @@ public abstract class BoxRoundtripTest {
     @Test
     public void roundtrip() throws Exception {
 
-        BeanInfo beanInfo = Introspector.getBeanInfo(boxUnderTest.getClass());
+        BeanInfo beanInfo = Introspector.getBeanInfo(parsableBoxUnderTest.getClass());
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
         for (String property : props.keySet()) {
             boolean found = false;
@@ -86,7 +82,7 @@ public abstract class BoxRoundtripTest {
                 if (property.equals(propertyDescriptor.getName())) {
                     found = true;
                     try {
-                        propertyDescriptor.getWriteMethod().invoke(boxUnderTest, props.get(property));
+                        propertyDescriptor.getWriteMethod().invoke(parsableBoxUnderTest, props.get(property));
                     } catch (IllegalArgumentException e) {
 
                         System.err.println(propertyDescriptor.getWriteMethod().getName() + "(" + propertyDescriptor.getWriteMethod().getParameterTypes()[0].getSimpleName() + ");");
@@ -96,7 +92,7 @@ public abstract class BoxRoundtripTest {
                         throw e;
                     }
                     // do the next assertion on string level to not trap into the long vs java.lang.Long pitfall
-                    Assert.assertEquals("The symmetry between getter/setter of " + property + " is not given.", props.get(property), propertyDescriptor.getReadMethod().invoke(boxUnderTest));
+                    Assert.assertEquals("The symmetry between getter/setter of " + property + " is not given.", props.get(property), propertyDescriptor.getReadMethod().invoke(parsableBoxUnderTest));
                 }
             }
             if (!found) {
@@ -107,17 +103,17 @@ public abstract class BoxRoundtripTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         WritableByteChannel wbc = Channels.newChannel(baos);
-        boxUnderTest.getBox(wbc);
+        parsableBoxUnderTest.getBox(wbc);
         wbc.close();
         baos.close();
 
         IsoFile singleBoxIsoFile = new IsoFile(new ByteBufferByteChannel(baos.toByteArray()));
 
-        Assert.assertEquals("Expected box and file size to be the same", boxUnderTest.getSize(), baos.size());
+        Assert.assertEquals("Expected box and file size to be the same", parsableBoxUnderTest.getSize(), baos.size());
         Assert.assertEquals("Expected a single box in the IsoFile structure", 1, singleBoxIsoFile.getBoxes().size());
-        Assert.assertEquals("Expected to find a box of different type ", boxUnderTest.getClass(), singleBoxIsoFile.getBoxes().get(0).getClass());
+        Assert.assertEquals("Expected to find a box of different type ", parsableBoxUnderTest.getClass(), singleBoxIsoFile.getBoxes().get(0).getClass());
 
-        LightBox parsedBox = singleBoxIsoFile.getBoxes().get(0);
+        Box parsedBox = singleBoxIsoFile.getBoxes().get(0);
 
 
         for (String property : props.keySet()) {
@@ -141,7 +137,7 @@ public abstract class BoxRoundtripTest {
             }
         }
 
-        Assert.assertEquals("Writing and parsing should not change the box size.", boxUnderTest.getSize(), parsedBox.getSize());
+        Assert.assertEquals("Writing and parsing should not change the box size.", parsableBoxUnderTest.getSize(), parsedBox.getSize());
 
         boolean output = false;
         for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {

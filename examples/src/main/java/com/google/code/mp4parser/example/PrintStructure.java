@@ -1,13 +1,11 @@
 package com.google.code.mp4parser.example;
 
-import com.coremedia.iso.IsoTypeReader;
+import com.mp4parser.tools.IsoTypeReader;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
-import com.googlecode.mp4parser.DataSource;
 
 import java.nio.channels.FileChannel;
 import java.util.Arrays;

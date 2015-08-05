@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.stuff;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.HandlerBox;
+import com.mp4parser.IsoFile;
+import com.mp4parser.boxes.iso14496.part12.HandlerBox;
 import com.mp4parser.tools.Path;
 import org.apache.commons.lang.RandomStringUtils;
 

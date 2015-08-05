@@ -1,13 +1,12 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.authoring.tracks.AppendTrack;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
@@ -53,7 +52,7 @@ public class AppendExample {
             result.addTrack(new AppendTrack(videoTracks.toArray(new Track[videoTracks.size()])));
         }
 
-        Container out = new DefaultMp4Builder().build(result);
+        RandomAccessSource.Container out = new DefaultMp4Builder().build(result);
 
         FileChannel fc = new RandomAccessFile(String.format("output.mp4"), "rw").getChannel();
         out.writeContainer(fc);

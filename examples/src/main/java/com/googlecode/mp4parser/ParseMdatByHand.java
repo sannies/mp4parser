@@ -1,11 +1,7 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.IsoTypeReader;
-import com.googlecode.mp4parser.authoring.tracks.AbstractH26XTrack;
-import com.googlecode.mp4parser.authoring.tracks.CleanInputStream;
-import com.googlecode.mp4parser.h264.model.SeqParameterSet;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import com.mp4parser.authoring.FileDataSourceImpl;
+import com.mp4parser.authoring.tracks.AbstractH26XTrack;
 
 import java.io.*;
 import java.nio.ByteBuffer;

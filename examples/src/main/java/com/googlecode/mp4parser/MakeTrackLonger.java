@@ -1,11 +1,11 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.WrappingTrack;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.WrappingTrack;
+import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class MakeTrackLonger {
             }
         }
         DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
-        Container mOut = defaultMp4Builder.build(movieOut);
+        RandomAccessSource.Container mOut = defaultMp4Builder.build(movieOut);
         mOut.writeContainer(new FileOutputStream("default.mp4").getChannel());
 
     }

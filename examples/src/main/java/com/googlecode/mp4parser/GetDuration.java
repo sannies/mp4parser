@@ -1,8 +1,7 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.IsoFile;
+import com.mp4parser.IsoFile;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 
 /**

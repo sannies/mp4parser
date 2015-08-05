@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.stuff;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.XmlBox;
+import com.mp4parser.IsoFile;
+import com.mp4parser.boxes.iso14496.part12.XmlBox;
 import com.mp4parser.tools.Path;
 
 import java.io.FileInputStream;

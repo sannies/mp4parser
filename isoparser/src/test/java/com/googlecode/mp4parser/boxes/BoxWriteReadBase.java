@@ -1,11 +1,10 @@
 package com.googlecode.mp4parser.boxes;
 
 
-import com.coremedia.iso.PropertyBoxParserImpl;
-import com.coremedia.iso.boxes.Box;
-import com.googlecode.mp4parser.AbstractContainerBox;
-import com.googlecode.mp4parser.MemoryDataSourceImpl;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.PropertyBoxParserImpl;
+import com.mp4parser.ParsableBox;
+import com.mp4parser.support.AbstractContainerBox;
+import com.mp4parser.tools.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,7 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class BoxWriteReadBase<T extends Box> {
+public abstract class BoxWriteReadBase<T extends ParsableBox> {
 
     String dummyParent = null;
 

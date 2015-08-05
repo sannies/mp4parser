@@ -16,10 +16,10 @@
 
 package com.coremedia.drm.packager.isoparser;
 
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.AbstractBox;
-import com.mp4parser.LightBox;
+import com.mp4parser.ParsableBox;
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.support.AbstractBox;
+import com.mp4parser.Box;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -56,11 +56,11 @@ public final class Walk {
     private Walk() {
     }
 
-    public static void through(Container container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
-        for (LightBox b : container.getBoxes()) {
-            List<LightBox> myBoxes = (List<LightBox>) container.getBoxes(b.getClass());
+    public static void through(RandomAccessSource.Container container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
+        for (Box b : container.getBoxes()) {
+            List<Box> myBoxes = (List<Box>) container.getBoxes(b.getClass());
             boolean found = false;
-            for (LightBox myBox : myBoxes) {
+            for (Box myBox : myBoxes) {
                 if (myBox == b) {
                     found = true;
                 }
@@ -69,8 +69,8 @@ public final class Walk {
                 throw new RuntimeException("Didn't find the box");
             }
 
-            if (b instanceof Container) {
-                Walk.through((Container) b);
+            if (b instanceof RandomAccessSource.Container) {
+                Walk.through((RandomAccessSource.Container) b);
             }
 
 
@@ -83,7 +83,7 @@ public final class Walk {
                 String name = propertyDescriptor.getName();
                 if (!Walk.skipList.contains(name) &&
                         propertyDescriptor.getReadMethod() != null &&
-                        !Box.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
+                        !ParsableBox.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
                     propertyDescriptor.getReadMethod().invoke(b, (Object[]) null);
                 }
 

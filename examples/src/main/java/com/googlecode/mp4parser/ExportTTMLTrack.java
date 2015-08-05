@@ -1,10 +1,10 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.SubSampleInformationBox;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -19,7 +19,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
+import static com.mp4parser.tools.CastUtils.l2i;
 
 /**
  * Created by user on 06.08.2014.

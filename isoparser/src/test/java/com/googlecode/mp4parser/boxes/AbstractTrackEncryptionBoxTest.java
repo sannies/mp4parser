@@ -1,9 +1,9 @@
 package com.googlecode.mp4parser.boxes;
 
 
-import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.DataSource;
-import com.googlecode.mp4parser.util.UUIDConverter;
+import com.mp4parser.IsoFile;
+import com.mp4parser.boxes.iso23001.part7.AbstractTrackEncryptionBox;
+import com.mp4parser.tools.UUIDConverter;
 import org.junit.Assert;
 import org.junit.Test;
 

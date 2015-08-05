@@ -3,7 +3,7 @@ package com.mp4parser;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
+import static com.mp4parser.tools.CastUtils.l2i;
 
 /**
  * Typically used for tests.

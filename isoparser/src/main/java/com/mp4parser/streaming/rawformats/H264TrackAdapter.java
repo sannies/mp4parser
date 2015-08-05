@@ -1,19 +1,15 @@
 package com.mp4parser.streaming.rawformats;
 
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.tracks.h264.H264TrackImpl;
+import com.mp4parser.authoring.FileDataSourceImpl;
+import com.mp4parser.authoring.Sample;
+import com.mp4parser.authoring.tracks.h264.H264TrackImpl;
 import com.mp4parser.streaming.*;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by sannies on 25.05.2015.

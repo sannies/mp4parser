@@ -1,8 +1,8 @@
 package com.googlecode.mp4parser;
 
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
 
 import java.io.File;
 import java.io.IOException;

@@ -2,10 +2,9 @@ package com.googlecode.mp4parser.miscrepro;
 
 
 import com.coremedia.drm.packager.isoparser.Walk;
-import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.MemoryDataSourceImpl;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.tools.Hex;
+import com.mp4parser.IsoFile;
+import com.mp4parser.tools.ByteBufferByteChannel;
 import org.junit.Test;
 
 import java.beans.IntrospectionException;

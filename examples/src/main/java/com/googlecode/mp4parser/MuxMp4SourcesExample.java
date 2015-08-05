@@ -1,15 +1,14 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.authoring.builder.FragmentedMp4Builder;
+import com.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -37,7 +36,7 @@ public class MuxMp4SourcesExample {
         countVideo.addTrack(audioTrackEnglish);
 
         {
-            Container out = new DefaultMp4Builder().build(countVideo);
+            RandomAccessSource.Container out = new DefaultMp4Builder().build(countVideo);
             FileOutputStream fos = new FileOutputStream(new File("output.mp4"));
             out.writeContainer(fos.getChannel());
             fos.close();
@@ -45,7 +44,7 @@ public class MuxMp4SourcesExample {
         {
             FragmentedMp4Builder fragmentedMp4Builder = new FragmentedMp4Builder();
             fragmentedMp4Builder.setIntersectionFinder(new SyncSampleIntersectFinderImpl(countVideo, null, -1));
-            Container out = fragmentedMp4Builder.build(countVideo);
+            RandomAccessSource.Container out = fragmentedMp4Builder.build(countVideo);
             FileOutputStream fos = new FileOutputStream(new File("output-frag.mp4"));
             out.writeContainer(fos.getChannel());
             fos.close();

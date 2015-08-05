@@ -1,10 +1,9 @@
 package com.googlecode.mp4parser.stuff;
 
-import com.coremedia.iso.boxes.NullMediaHeaderBox;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Sample;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.File;

@@ -1,14 +1,14 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
-import com.googlecode.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
-import com.googlecode.mp4parser.authoring.tracks.CencEncryptedTrack;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
+import com.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
+import com.mp4parser.authoring.tracks.CencEncryptedTrack;
+import com.mp4parser.tools.ByteBufferByteChannel;
 import com.mp4parser.InMemRandomAccessSourceImpl;
 
 import javax.crypto.SecretKey;
@@ -32,7 +32,7 @@ public class CencEncryptDecrypt {
             mEncryptOut.addTrack(new CencEncryptingTrackImpl(track, UUID.randomUUID(), sk, true));
         }
 
-        Container cEncrypted = mp4Builder.build(mEncryptOut);
+        RandomAccessSource.Container cEncrypted = mp4Builder.build(mEncryptOut);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         cEncrypted.writeContainer(Channels.newChannel(baos));
 
@@ -50,7 +50,7 @@ public class CencEncryptDecrypt {
             }
         }
 
-        Container cDecrypted = mp4Builder.build(mDecrypt);
+        RandomAccessSource.Container cDecrypted = mp4Builder.build(mDecrypt);
         FileOutputStream fos2 = new FileOutputStream("output.mp4");
         cDecrypted.writeContainer(fos2.getChannel());
 

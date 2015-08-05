@@ -16,10 +16,10 @@
 package com.mp4parser.tools;
 
 
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.AbstractContainerBox;
-import com.mp4parser.LightBox;
+import com.mp4parser.ParsableBox;
+import com.mp4parser.RandomAccessSource;
+import com.mp4parser.support.AbstractContainerBox;
+import com.mp4parser.Box;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -35,50 +35,50 @@ public class Path {
 
     static Pattern component = Pattern.compile("(....|\\.\\.)(\\[(.*)\\])?");
 
-    public static <T extends LightBox> T getPath(Box box, String path) {
-        List<T> all = getPaths(box, path, true);
+    public static <T extends Box> T getPath(ParsableBox parsableBox, String path) {
+        List<T> all = getPaths(parsableBox, path, true);
         return all.isEmpty() ? null : all.get(0);
     }
 
-    public static <T extends LightBox> T  getPath(Container container, String path) {
+    public static <T extends Box> T  getPath(RandomAccessSource.Container container, String path) {
         List<T> all = getPaths(container, path, true);
         return all.isEmpty() ? null : all.get(0);
     }
 
-    public static <T extends LightBox> T  getPath(AbstractContainerBox containerBox, String path) {
+    public static <T extends Box> T  getPath(AbstractContainerBox containerBox, String path) {
         List<T> all = getPaths(containerBox, path, true);
         return all.isEmpty() ? null : all.get(0);
     }
 
 
-    public static <T extends LightBox> List<T> getPaths(LightBox box, String path) {
+    public static <T extends Box> List<T> getPaths(Box box, String path) {
         return getPaths(box, path, false);
     }
 
-    public static <T extends LightBox> List<T> getPaths(Container container, String path) {
+    public static <T extends Box> List<T> getPaths(RandomAccessSource.Container container, String path) {
         return getPaths(container, path, false);
     }
 
-    private static <T extends LightBox> List<T> getPaths(AbstractContainerBox container, String path, boolean singleResult) {
+    private static <T extends Box> List<T> getPaths(AbstractContainerBox container, String path, boolean singleResult) {
         return getPaths((Object) container, path, singleResult);
     }
 
-    private static <T extends LightBox> List<T> getPaths(Container container, String path, boolean singleResult) {
+    private static <T extends Box> List<T> getPaths(RandomAccessSource.Container container, String path, boolean singleResult) {
         return getPaths((Object) container, path, singleResult);
     }
 
-    private static <T extends LightBox> List<T>  getPaths(Box box, String path, boolean singleResult) {
-        return getPaths((Object) box, path, singleResult);
+    private static <T extends Box> List<T>  getPaths(ParsableBox parsableBox, String path, boolean singleResult) {
+        return getPaths((Object) parsableBox, path, singleResult);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends LightBox> List<T>  getPaths(Object thing, String path, boolean singleResult) {
+    private static <T extends Box> List<T>  getPaths(Object thing, String path, boolean singleResult) {
         if (path.startsWith("/")) {
             throw new RuntimeException("Cannot start at / - only relative path expression into the structure are allowed");
         }
 
         if (path.length() == 0) {
-            if (thing instanceof Box) {
+            if (thing instanceof ParsableBox) {
                 return Collections.singletonList((T) thing);
             } else {
                 throw new RuntimeException("Result of path expression seems to be the root container. This is not allowed!");
@@ -100,7 +100,7 @@ public class Path {
                 if ("..".equals(type)) {
                     throw new RuntimeException(".. notation no longer allowed");
                 } else {
-                    if (thing instanceof Container) {
+                    if (thing instanceof RandomAccessSource.Container) {
                         int index = -1;
                         if (m.group(2) != null) {
                             // we have a specific index
@@ -112,9 +112,9 @@ public class Path {
                         // I'm suspecting some Dalvik VM to create indexed loops from for-each loops
                         // using the iterator instead makes sure that this doesn't happen
                         // (and yes - it could be completely useless)
-                        Iterator<LightBox> iterator = ((Container) thing).getBoxes().iterator();
+                        Iterator<Box> iterator = ((RandomAccessSource.Container) thing).getBoxes().iterator();
                         while (iterator.hasNext()) {
-                            LightBox box1 = iterator.next();
+                            Box box1 = iterator.next();
                             if (box1.getType().matches(type)) {
                                 if (index == -1 || index == currentIndex) {
                                     children.addAll(Path.<T>getPaths(box1, later, singleResult));
@@ -139,7 +139,7 @@ public class Path {
     }
 
 
-    public static boolean isContained(Container ref, LightBox box, String path) {
+    public static boolean isContained(RandomAccessSource.Container ref, Box box, String path) {
         return getPaths(ref, path).contains(box);
     }
 }

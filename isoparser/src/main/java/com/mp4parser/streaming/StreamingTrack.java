@@ -1,8 +1,7 @@
 package com.mp4parser.streaming;
 
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
-import com.googlecode.mp4parser.authoring.Track;
+import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
+import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
 
 import java.util.concurrent.BlockingQueue;
 

@@ -1,10 +1,12 @@
 package com.googlecode.mp4parser.boxes.cenc;
 
-import com.coremedia.iso.Hex;
-import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.SampleImpl;
-import com.googlecode.mp4parser.util.RangeStartMap;
-import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
+import com.mp4parser.authoring.samples.CencDecryptingSampleList;
+import com.mp4parser.authoring.samples.CencEncryptingSampleList;
+import com.mp4parser.tools.Hex;
+import com.mp4parser.authoring.Sample;
+import com.mp4parser.authoring.SampleImpl;
+import com.mp4parser.tools.RangeStartMap;
+import com.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import org.junit.Assert;
 import org.junit.Test;
 

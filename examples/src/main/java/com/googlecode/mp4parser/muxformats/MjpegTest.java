@@ -1,13 +1,13 @@
 package com.googlecode.mp4parser.muxformats;
 
-import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.mjpeg.OneJpegPerIframe;
-import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
+import com.mp4parser.tools.Hex;
+import com.mp4parser.IsoFile;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.authoring.tracks.mjpeg.OneJpegPerIframe;
+import com.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
 import com.mp4parser.tools.Path;
 
 import java.io.File;
