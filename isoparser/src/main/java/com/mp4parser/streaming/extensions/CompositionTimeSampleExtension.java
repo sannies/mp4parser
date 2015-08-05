@@ -7,10 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CompositionTimeSampleExtension implements SampleExtension {
-    public static Map<Integer, CompositionTimeSampleExtension> pool =
-            Collections.synchronizedMap(new HashMap<Integer, CompositionTimeSampleExtension>());
+    public static Map<Long, CompositionTimeSampleExtension> pool =
+            Collections.synchronizedMap(new HashMap<Long, CompositionTimeSampleExtension>());
 
-    public static CompositionTimeSampleExtension create(int offset) {
+    public static CompositionTimeSampleExtension create(long offset) {
         CompositionTimeSampleExtension c = pool.get(offset);
         if (c == null) {
             c = new CompositionTimeSampleExtension();
@@ -20,7 +20,7 @@ public class CompositionTimeSampleExtension implements SampleExtension {
         return c;
     }
 
-    private int ctts;
+    private long ctts;
 
     /**
      * This value provides the offset between decoding time and composition time. The offset is expressed as
@@ -28,7 +28,7 @@ public class CompositionTimeSampleExtension implements SampleExtension {
      *
      * @return offset between decoding time and composition time.
      */
-    public int getCompositionTimeOffset() {
+    public long getCompositionTimeOffset() {
         return ctts;
     }
 }

@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.mp4parser.streaming.StreamingSampleHelper.getSampleExtension;
+import static com.mp4parser.tools.CastUtils.l2i;
 
 /**
  *
@@ -350,7 +351,7 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
                 CompositionTimeSampleExtension compositionTimeSampleExtension =
                         getSampleExtension(streamingSample, CompositionTimeSampleExtension.class);
                 assert compositionTimeSampleExtension != null:"CompositionTimeSampleExtension missing even though CompositionTimeTrackExtension was present";
-                entry.setSampleCompositionTimeOffset(compositionTimeSampleExtension.getCompositionTimeOffset());
+                entry.setSampleCompositionTimeOffset(l2i(compositionTimeSampleExtension.getCompositionTimeOffset()));
             }
 
             entries.add(entry);

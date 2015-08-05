@@ -61,6 +61,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static com.mp4parser.tools.CastUtils.l2i;
 import static com.mp4parser.tools.Math.lcm;
 import static com.mp4parser.streaming.StreamingSampleHelper.getSampleExtension;
 
@@ -393,7 +394,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
                 CompositionTimeSampleExtension compositionTimeSampleExtension =
                         getSampleExtension(streamingSample, CompositionTimeSampleExtension.class);
                 assert compositionTimeSampleExtension != null : "CompositionTimeSampleExtension missing even though CompositionTimeTrackExtension was present";
-                entry.setSampleCompositionTimeOffset(compositionTimeSampleExtension.getCompositionTimeOffset());
+                entry.setSampleCompositionTimeOffset(l2i(compositionTimeSampleExtension.getCompositionTimeOffset()));
             }
 
             entries.add(entry);
@@ -403,6 +404,8 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
         parent.addBox(trun);
     }
+
+
 
     private void createTraf(StreamingTrack streamingTrack, MovieFragmentBox moof) {
         TrackFragmentBox traf = new TrackFragmentBox();
