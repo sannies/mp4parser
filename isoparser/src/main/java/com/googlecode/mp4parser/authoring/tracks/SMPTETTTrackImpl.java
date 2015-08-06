@@ -43,13 +43,14 @@ public class SMPTETTTrackImpl extends AbstractTrack {
     private long[] sampleDurations;
 
     static long toTime(String expr) {
-        Pattern p = Pattern.compile("([0-9][0-9]):([0-9][0-9]):([0-9][0-9])([\\.:][0-9][0-9]?[0-9]?)?");
+        Pattern p = Pattern.compile("(-?)([0-9][0-9]):([0-9][0-9]):([0-9][0-9])([\\.:][0-9][0-9]?[0-9]?)?");
         Matcher m = p.matcher(expr);
         if (m.matches()) {
-            String hours = m.group(1);
-            String minutes = m.group(2);
-            String seconds = m.group(3);
-            String fraction = m.group(4);
+            String minus = m.group(1);
+            String hours = m.group(2);
+            String minutes = m.group(3);
+            String seconds = m.group(4);
+            String fraction = m.group(5);
             if (fraction == null) {
                 fraction = ".000";
             }
@@ -58,7 +59,7 @@ public class SMPTETTTrackImpl extends AbstractTrack {
             ms += Long.parseLong(minutes) * 60 * 1000;
             ms += Long.parseLong(seconds) * 1000;
             ms += Double.parseDouble("0" + fraction) * 1000;
-            return ms;
+            return ms * ("-".equals(minus)?-1:1);
         } else {
             throw new RuntimeException("Cannot match " + expr + " to time expression");
         }
