@@ -51,32 +51,32 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
         private int value;
 
 
-        public int getReserved() {
-            return (value >> 6) & 0x03;
+        public byte getIsLeading() {
+            return (byte) ((value >> 6) & 0x03);
         }
 
-        public void setReserved(int res) {
+        public void setIsLeading(int res) {
             value = (res & 0x03) << 6 | value & 0x3f;
         }
 
-        public int getSampleDependsOn() {
-            return (value >> 4) & 0x03;
+        public byte getSampleDependsOn() {
+            return (byte) ((value >> 4) & 0x03);
         }
 
         public void setSampleDependsOn(int sdo) {
             value = (sdo & 0x03) << 4 | value & 0xcf;
         }
 
-        public int getSampleIsDependentOn() {
-            return (value >> 2) & 0x03;
+        public byte getSampleIsDependentOn() {
+            return (byte) ((value >> 2) & 0x03);
         }
 
         public void setSampleIsDependentOn(int sido) {
             value = (sido & 0x03) << 2 | value & 0xf3;
         }
 
-        public int getSampleHasRedundancy() {
-            return value & 0x03;
+        public byte getSampleHasRedundancy() {
+            return (byte) (value & 0x03);
         }
 
         public void setSampleHasRedundancy(int shr) {
@@ -86,7 +86,7 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
         @Override
         public String toString() {
             return "Entry{" +
-                    "reserved=" + getReserved() +
+                    "isLeading=" + getIsLeading() +
                     ", sampleDependsOn=" + getSampleDependsOn() +
                     ", sampleIsDependentOn=" + getSampleIsDependentOn() +
                     ", sampleHasRedundancy=" + getSampleHasRedundancy() +

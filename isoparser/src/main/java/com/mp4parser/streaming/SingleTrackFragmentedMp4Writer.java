@@ -1,6 +1,7 @@
 package com.mp4parser.streaming;
 
 import com.mp4parser.IsoFile;
+import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
 import com.mp4parser.tools.IsoTypeWriter;
 import com.mp4parser.boxes.iso14496.part12.HintMediaHeaderBox;
 import com.mp4parser.boxes.iso14496.part12.MovieExtendsBox;
@@ -168,9 +169,15 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
     protected ParsableBox createTrak() {
         TrackBox trackBox = new TrackBox();
-        trackBox.addBox(source.getTrackHeaderBox());
+        trackBox.addBox(createTkhd());
         trackBox.addBox(createMdia());
         return trackBox;
+    }
+
+    private Box createTkhd() {
+        TrackHeaderBox tkhd = new TrackHeaderBox();
+        tkhd.setTrackId(source.getTrackExtension(TrackIdTrackExtension.class).getTrackId());
+        return tkhd;
     }
 
 
@@ -197,7 +204,7 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
     protected ParsableBox createTrex() {
         TrackExtendsBox trex = new TrackExtendsBox();
-        trex.setTrackId(source.getTrackHeaderBox().getTrackId());
+        trex.setTrackId(source.getTrackExtension(TrackIdTrackExtension.class).getTrackId());
         trex.setDefaultSampleDescriptionIndex(1);
         trex.setDefaultSampleDuration(0);
         trex.setDefaultSampleSize(0);

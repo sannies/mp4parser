@@ -24,7 +24,7 @@ public interface StreamingTrack {
      *
      * @return the original TrackHeaderBox
      */
-    TrackHeaderBox getTrackHeaderBox();
+    //TrackHeaderBox getTrackHeaderBox();
 
     String getHandler();
 

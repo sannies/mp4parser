@@ -1,6 +1,7 @@
 package com.mp4parser.streaming;
 
 import com.mp4parser.IsoFile;
+import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
 import com.mp4parser.tools.IsoTypeWriter;
 import com.mp4parser.ParsableBox;
 import com.mp4parser.boxes.iso14496.part12.DataEntryUrlBox;
@@ -119,12 +120,15 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         mvhd.setDuration(0);//no duration in moov for fragmented movies
 
         long[] timescales = new long[0];
+        long maxTrackId = 0;
         for (StreamingTrack streamingTrack : source) {
-            Mp4Arrays.copyOfAndAppend(timescales, streamingTrack.getTimescale());
+            timescales = Mp4Arrays.copyOfAndAppend(timescales, streamingTrack.getTimescale());
+            maxTrackId = Math.max(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId(), maxTrackId);
         }
+
         mvhd.setTimescale(lcm(timescales));
         // find the next available trackId
-        mvhd.setNextTrackId(2);
+        mvhd.setNextTrackId(maxTrackId + 1);
         return mvhd;
     }
 
@@ -197,10 +201,15 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
     protected ParsableBox createTrak(StreamingTrack streamingTrack) {
         TrackBox trackBox = new TrackBox();
-        trackBox.addBox(streamingTrack.getTrackHeaderBox());
-        trackBox.addBox(streamingTrack.getTrackHeaderBox());
+        trackBox.addBox(createTkhd(streamingTrack));
         trackBox.addBox(createMdia(streamingTrack));
         return trackBox;
+    }
+
+    private Box createTkhd(StreamingTrack streamingTrack) {
+        TrackHeaderBox tkhd = new TrackHeaderBox();
+        tkhd.setTrackId(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId());
+        return tkhd;
     }
 
 
@@ -228,7 +237,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
     protected ParsableBox createTrex(StreamingTrack streamingTrack) {
         TrackExtendsBox trex = new TrackExtendsBox();
-        trex.setTrackId(streamingTrack.getTrackHeaderBox().getTrackId());
+        trex.setTrackId(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId());
         trex.setDefaultSampleDescriptionIndex(1);
         trex.setDefaultSampleDuration(0);
         trex.setDefaultSampleSize(0);
@@ -292,6 +301,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         for (StreamingTrack streamingTrack : source) {
             es.submit(new ConsumeSamplesCallable(streamingTrack));
         }
+        es.shutdown();
     }
 
 
@@ -404,7 +414,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
         parent.addBox(trun);
     }
-
 
 
     private void createTraf(StreamingTrack streamingTrack, MovieFragmentBox moof) {

@@ -5,6 +5,8 @@ import com.mp4parser.Box;
 import com.mp4parser.BoxParser;
 import com.mp4parser.PropertyBoxParserImpl;
 import com.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
+import com.mp4parser.boxes.iso14496.part12.DegradationPriorityBox;
+import com.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
 import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import com.mp4parser.boxes.iso14496.part12.SampleSizeBox;
 import com.mp4parser.boxes.iso14496.part12.SampleTableBox;
@@ -12,15 +14,19 @@ import com.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
 import com.mp4parser.boxes.iso14496.part12.TimeToSampleBox;
 import com.mp4parser.boxes.iso14496.part12.TrackBox;
 import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
+import com.mp4parser.streaming.MultiTrackFragmentedMp4Writer;
 import com.mp4parser.streaming.SampleExtension;
 import com.mp4parser.streaming.StreamingSample;
 import com.mp4parser.streaming.StreamingTrack;
 import com.mp4parser.streaming.TrackExtension;
 import com.mp4parser.streaming.extensions.CompositionTimeSampleExtension;
 import com.mp4parser.streaming.extensions.CompositionTimeTrackExtension;
+import com.mp4parser.streaming.extensions.SampleFlagsSampleExtension;
+import com.mp4parser.streaming.extensions.TrackIdTrackExtension;
 import com.mp4parser.tools.Path;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +35,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +65,7 @@ public class Mp4ContainerSource {
                     StreamingSample ss;
                     while ((ss = streamingTrack.getSamples().poll(100, TimeUnit.MILLISECONDS)) != null) {
                         // consumeSample(streamingTrack, ss);
-                        System.out.println(streamingTrack.getTrackHeaderBox().getTrackId() + ": " + ss.getDuration());
+                        System.out.println(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + ": " + ss.getDuration());
                     }
 
                 } catch (InterruptedException e) {
@@ -72,6 +79,9 @@ public class Mp4ContainerSource {
     public static void main(String[] args) throws IOException, InterruptedException {
         Mp4ContainerSource mp4ContainerSource = new Mp4ContainerSource();
         List<StreamingTrack> streamingTracks = mp4ContainerSource.doParse(new FileInputStream("C:\\content\\Surfing_RedBull.mp4_smooth_246x144_138.h264.mp4"));
+
+        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(streamingTracks.toArray(new StreamingTrack[streamingTracks.size()]), new FileOutputStream("output.mp4"));
+        writer.write();
 
         ExecutorService es = Executors.newFixedThreadPool(streamingTracks.size());
         for (StreamingTrack streamingTrack : streamingTracks) {
@@ -105,6 +115,7 @@ public class Mp4ContainerSource {
             if (trackBox.getSampleTableBox().getCompositionTimeToSample() != null) {
                 mp4StreamingTrack.addTrackExtension(new CompositionTimeTrackExtension());
             }
+            mp4StreamingTrack.addTrackExtension(new TrackIdTrackExtension(trackBox.getTrackHeaderBox().getTrackId()));
             currentChunks.put(trackBox, 1L);
             currentSamples.put(trackBox, 1L);
         }
@@ -172,7 +183,37 @@ public class Mp4ContainerSource {
                             }
                             extensions.add(CompositionTimeSampleExtension.create(compositionOffset));
                         }
+                        SampleDependencyTypeBox sdtp = Path.getPath(stbl, "sdtp");
+                        SampleFlagsSampleExtension sfse = null;
+                        if (sdtp != null) {
+                            SampleDependencyTypeBox.Entry e = sdtp.getEntries().get(l2i(index));
+                            if (sfse == null) {
+                                sfse = new SampleFlagsSampleExtension();
+                            }
 
+                            sfse.setIsLeading(e.getIsLeading());
+                            sfse.setSampleDependsOn(e.getSampleDependsOn());
+                            sfse.setSampleIsDependedOn(e.getSampleIsDependentOn());
+                            sfse.setSampleHasRedundancy(e.getSampleHasRedundancy());
+                        }
+                        if (stbl.getSyncSampleBox()!=null) {
+                            if (sfse == null) {
+                                sfse = new SampleFlagsSampleExtension();
+                            }
+                            if (Arrays.binarySearch(stbl.getSyncSampleBox().getSampleNumber(), index) >= 0) {
+                                sfse.setSampleIsNonSyncSample(false);
+                            } else {
+                                sfse.setSampleIsNonSyncSample(true);
+                            }
+                        }
+
+                        DegradationPriorityBox stdp = Path.getPath(stbl, "stdp");
+                        if (stdp != null) {
+                            if (sfse == null) {
+                                sfse = new SampleFlagsSampleExtension();
+                            }
+                            sfse.setSampleDegradationPriority(stdp.getPriorities()[l2i(index)]);
+                        }
 
                         int sampleSize = l2i(stsz.getSampleSizeAtIndex(l2i(index - 1)));
                         long avail = baos.available();
