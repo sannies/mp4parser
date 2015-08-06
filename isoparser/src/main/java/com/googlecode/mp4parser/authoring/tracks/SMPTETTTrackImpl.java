@@ -42,7 +42,23 @@ public class SMPTETTTrackImpl extends AbstractTrack {
 
     private long[] sampleDurations;
 
-    static long toTime(String expr) {
+    public static String toTimeExpression(long ms) {
+        String minus = ms > 0?"":"-";
+        ms = Math.abs(ms);
+
+        long hours = ms / 1000 / 60 / 60;
+        ms -= hours * 1000 * 60 * 60;
+
+        long minutes = ms / 1000 / 60;
+        ms -= minutes * 1000 * 60;
+
+        long seconds = ms / 1000;
+        ms -= seconds * 1000;
+
+        return String.format("%s%02d:%02d:%02d.%03d", minus, hours, minutes, seconds, ms);
+    }
+
+    public static long toTime(String expr) {
         Pattern p = Pattern.compile("(-?)([0-9][0-9]):([0-9][0-9]):([0-9][0-9])([\\.:][0-9][0-9]?[0-9]?)?");
         Matcher m = p.matcher(expr);
         if (m.matches()) {
@@ -54,12 +70,18 @@ public class SMPTETTTrackImpl extends AbstractTrack {
             if (fraction == null) {
                 fraction = ".000";
             }
+
             fraction = fraction.replace(":", ".");
             long ms = Long.parseLong(hours) * 60 * 60 * 1000;
             ms += Long.parseLong(minutes) * 60 * 1000;
             ms += Long.parseLong(seconds) * 1000;
-            ms += Double.parseDouble("0" + fraction) * 1000;
-            return ms * ("-".equals(minus)?-1:1);
+            if (fraction.contains(":")) {
+                ms += Double.parseDouble("0" + fraction.replace(":", ".")) * 40 * 1000; // 40ms == 25fps - simplifying assumption should be ok for here
+            } else {
+                ms += Double.parseDouble("0" + fraction) * 1000;
+            }
+
+            return ms * ("-".equals(minus) ? -1 : 1);
         } else {
             throw new RuntimeException("Cannot match " + expr + " to time expression");
         }

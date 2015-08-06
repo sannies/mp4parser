@@ -13,6 +13,13 @@ public class SMPTETTTrackImplTest {
     public void testToTime() throws Exception {
         Assert.assertEquals(-3599000, SMPTETTTrackImpl.toTime("-00:59:59:00"));
         Assert.assertEquals(3599000, SMPTETTTrackImpl.toTime("00:59:59:00"));
-
     }
+
+    @Test
+    public void testToTimeExpression() throws Exception {
+        Assert.assertEquals("-00:59:59.009", SMPTETTTrackImpl.toTimeExpression(-3599009));
+        Assert.assertEquals("00:59:59.010", SMPTETTTrackImpl.toTimeExpression(3599010));
+    }
+
+
 }
