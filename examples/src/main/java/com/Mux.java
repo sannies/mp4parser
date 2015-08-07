@@ -2,12 +2,10 @@ package com;
 
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.SMPTETTTrackImpl;
+import com.googlecode.mp4parser.authoring.tracks.ttml.TtmlTrackImpl;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,7 +31,7 @@ public class Mux {
             v.addTrack(track);
         }*/
 
-        v.addTrack(new SMPTETTTrackImpl(new File("C:\\dev\\dashencrypt\\a.xml")));
+        v.addTrack(new TtmlTrackImpl(new File("C:\\dev\\dashencrypt\\a.xml")));
 
         Mp4Builder defaultMp4Builder = new FragmentedMp4Builder();
         Container c=  defaultMp4Builder.build(v);

@@ -51,7 +51,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 public class FragmentedMp4Builder implements Mp4Builder {
     private static final Logger LOG = Logger.getLogger(FragmentedMp4Builder.class.getName());
 
-    protected FragmentIntersectionFinder intersectionFinder;
+    protected Fragmenter intersectionFinder;
 
     public FragmentedMp4Builder() {
     }
@@ -852,11 +852,11 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return dinf;
     }
 
-    public FragmentIntersectionFinder getFragmentIntersectionFinder() {
+    public Fragmenter getFragmentIntersectionFinder() {
         return intersectionFinder;
     }
 
-    public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
+    public void setIntersectionFinder(Fragmenter intersectionFinder) {
         this.intersectionFinder = intersectionFinder;
     }
 

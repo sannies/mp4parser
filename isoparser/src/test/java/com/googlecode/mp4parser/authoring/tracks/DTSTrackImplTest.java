@@ -6,19 +6,13 @@ import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
+import com.googlecode.mp4parser.authoring.builder.Fragmenter;
 import com.googlecode.mp4parser.authoring.builder.StaticFragmentIntersectionFinderImpl;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.nio.channels.Channels;
 import java.util.Collections;
-
-import static org.junit.Assert.*;
 
 public class DTSTrackImplTest {
     @Test
@@ -26,7 +20,7 @@ public class DTSTrackImplTest {
         Movie m = new Movie();
         DTSTrackImpl dts = new DTSTrackImpl(new FileDataSourceImpl(DTSTrackImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/dts-sample.dtshd"));
         m.addTrack(dts);
-        FragmentIntersectionFinder fif = new StaticFragmentIntersectionFinderImpl(Collections.singletonMap((Track)dts, new long[]{1}));
+        Fragmenter fif = new StaticFragmentIntersectionFinderImpl(Collections.singletonMap((Track)dts, new long[]{1}));
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
         mp4Builder.setIntersectionFinder(fif);
         Container c = mp4Builder.build(m);

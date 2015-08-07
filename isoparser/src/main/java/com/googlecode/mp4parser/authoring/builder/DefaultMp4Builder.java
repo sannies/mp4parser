@@ -55,7 +55,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     Set<SampleAuxiliaryInformationOffsetsBox> sampleAuxiliaryInformationOffsetsBoxes = new HashSet<SampleAuxiliaryInformationOffsetsBox>();
     HashMap<Track, List<Sample>> track2Sample = new HashMap<Track, List<Sample>>();
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
-    private FragmentIntersectionFinder intersectionFinder;
+    private Fragmenter intersectionFinder;
 
     private static long sum(int[] ls) {
         long rc = 0;
@@ -80,7 +80,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         return gcd(b, a % b);
     }
 
-    public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
+    public void setIntersectionFinder(Fragmenter intersectionFinder) {
         this.intersectionFinder = intersectionFinder;
     }
 
@@ -89,7 +89,7 @@ public class DefaultMp4Builder implements Mp4Builder {
      */
     public Container build(Movie movie) {
         if (intersectionFinder == null) {
-            intersectionFinder = new TwoSecondIntersectionFinder(movie, 2);
+            intersectionFinder = new TimeBasedFragmenter(movie, 2);
         }
         LOG.fine("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
