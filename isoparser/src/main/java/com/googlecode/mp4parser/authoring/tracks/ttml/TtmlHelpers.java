@@ -85,7 +85,7 @@ public class TtmlHelpers {
 
 
     public static String toTimeExpression(long ms) {
-        return toTimeExpression(ms, 0);
+        return toTimeExpression(ms, -1);
     }
 
     public static String toTimeExpression(long ms, int frames) {
@@ -100,10 +100,10 @@ public class TtmlHelpers {
 
         long seconds = ms / 1000;
         ms -= seconds * 1000;
-        if (frames > 0) {
+        if (frames >= 0) {
             return String.format("%s%02d:%02d:%02d:%d", minus, hours, minutes, seconds, frames);
         } else {
-            return String.format("%s%02d:%02d:%02d:%03d", minus, hours, minutes, seconds, ms);
+            return String.format("%s%02d:%02d:%02d.%03d", minus, hours, minutes, seconds, ms);
         }
     }
 
