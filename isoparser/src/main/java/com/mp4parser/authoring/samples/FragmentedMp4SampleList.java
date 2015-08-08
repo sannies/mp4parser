@@ -4,6 +4,7 @@ import com.mp4parser.Box;
 import com.mp4parser.Container;
 import com.mp4parser.RandomAccessSource;
 import com.mp4parser.authoring.Sample;
+import com.mp4parser.boxes.iso14496.part12.*;
 import com.mp4parser.tools.Offsets;
 import com.mp4parser.tools.Path;
 
@@ -13,6 +14,7 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
+import java.util.*;
 
 import static com.mp4parser.tools.CastUtils.l2i;
 

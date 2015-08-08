@@ -4,6 +4,7 @@ import com.mp4parser.Box;
 import com.mp4parser.Container;
 import com.mp4parser.RandomAccessSource;
 import com.mp4parser.authoring.tracks.CencEncryptedTrack;
+import com.mp4parser.boxes.iso14496.part12.*;
 import com.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.mp4parser.boxes.iso23001.part7.TrackEncryptionBox;
 import com.mp4parser.tools.IsoTypeReader;

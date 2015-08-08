@@ -12,6 +12,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +20,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
+import java.util.*;
 
 import static com.mp4parser.authoring.tracks.ttml.TtmlHelpers.getAllNamespaces;
 import static com.mp4parser.authoring.tracks.ttml.TtmlHelpers.getEndTime;

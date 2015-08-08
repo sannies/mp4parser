@@ -2,7 +2,9 @@ package com.mp4parser.authoring.tracks;
 
 import com.mp4parser.Container;
 import com.mp4parser.IsoFile;
+import com.mp4parser.authoring.*;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.boxes.iso14496.part1.objectdescriptors.*;
 import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import com.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
 import com.mp4parser.boxes.sampleentry.VisualSampleEntry;
@@ -11,6 +13,7 @@ import com.mp4parser.tools.IsoTypeReader;
 import com.mp4parser.tools.Mp4Arrays;
 import com.mp4parser.tools.Path;
 
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.ArrayList;

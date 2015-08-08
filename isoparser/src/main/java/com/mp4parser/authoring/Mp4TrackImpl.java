@@ -18,6 +18,7 @@ package com.mp4parser.authoring;
 import com.mp4parser.Container;
 import com.mp4parser.RandomAccessSource;
 import com.mp4parser.authoring.samples.SampleList;
+import com.mp4parser.boxes.iso14496.part12.*;
 import com.mp4parser.boxes.samplegrouping.GroupEntry;
 import com.mp4parser.boxes.samplegrouping.SampleGroupDescriptionBox;
 import com.mp4parser.boxes.samplegrouping.SampleToGroupBox;

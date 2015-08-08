@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
+import java.util.*;
 
 public class CencFileRoundtripTest {
     String baseDir = CencFileRoundtripTest.class.getProtectionDomain().getCodeSource().getLocation().getFile();
