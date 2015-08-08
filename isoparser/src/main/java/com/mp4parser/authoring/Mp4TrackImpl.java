@@ -57,7 +57,7 @@ public class Mp4TrackImpl extends AbstractTrack {
     private SampleDescriptionBox sampleDescriptionBox;
     private long[] decodingTimes;
     private List<CompositionTimeToSample.Entry> compositionTimeEntries;
-    private long[] syncSamples = new long[0];
+    private long[] syncSamples = null;
     private List<SampleDependencyTypeBox.Entry> sampleDependencies;
     private TrackMetaData trackMetaData = new TrackMetaData();
     private String handler;
@@ -115,7 +115,6 @@ public class Mp4TrackImpl extends AbstractTrack {
                         if (subss.size() > 0) {
                             subSampleInformationBox = new SubSampleInformationBox();
                         }
-                        List<Long> syncSampleList = new LinkedList<Long>();
 
                         long sampleNumber = 1;
                         for (MovieFragmentBox movieFragmentBox : movieFragmentBoxes) {
@@ -186,7 +185,7 @@ public class Mp4TrackImpl extends AbstractTrack {
                                             }
                                             if (sampleFlags != null && !sampleFlags.isSampleIsDifferenceSample()) {
                                                 //iframe
-                                                syncSampleList.add(sampleNumber);
+                                                syncSamples = Mp4Arrays.copyOfAndAppend(syncSamples, sampleNumber);
                                             }
                                             sampleNumber++;
                                             first = false;
@@ -195,16 +194,7 @@ public class Mp4TrackImpl extends AbstractTrack {
                                 }
                             }
                         }
-                        // Warning: Crappy code
-                        long[] oldSS = syncSamples;
-                        syncSamples = new long[syncSamples.length + syncSampleList.size()];
-                        System.arraycopy(oldSS, 0, syncSamples, 0, oldSS.length);
-                        final Iterator<Long> iterator = syncSampleList.iterator();
-                        int i = oldSS.length;
-                        while (iterator.hasNext()) {
-                            Long syncSampleNumber = iterator.next();
-                            syncSamples[i++] = syncSampleNumber;
-                        }
+
                     }
                 }
             }
@@ -301,7 +291,7 @@ public class Mp4TrackImpl extends AbstractTrack {
     }
 
     public long[] getSyncSamples() {
-        if (syncSamples.length == samples.size()) {
+        if (syncSamples == null || syncSamples.length == samples.size()) {
             return null;
         } else {
             return syncSamples;

@@ -15,12 +15,12 @@
  */
 package com.mp4parser.authoring.builder;
 
-import com.mp4parser.boxes.iso14496.part12.OriginalFormatBox;
-import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
-import com.mp4parser.boxes.sampleentry.AudioSampleEntry;
-import com.mp4parser.authoring.Movie;
-import com.mp4parser.authoring.Track;
-import com.mp4parser.tools.Path;
+import com.coremedia.iso.boxes.OriginalFormatBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
+import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.util.Path;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -32,7 +32,7 @@ import static com.mp4parser.tools.Math.lcm;
  * fragments of the same length exactly before the sync samples. Audio tracks are cut
  * into pieces of similar length.
  */
-public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder {
+public class SyncSampleIntersectFinderImpl implements Fragmenter {
 
     private static Logger LOG = Logger.getLogger(SyncSampleIntersectFinderImpl.class.getName());
 

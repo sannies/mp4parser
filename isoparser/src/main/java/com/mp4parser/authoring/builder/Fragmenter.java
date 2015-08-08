@@ -15,12 +15,11 @@
  */
 package com.mp4parser.authoring.builder;
 
-import com.mp4parser.authoring.Track;
 
 /**
  *
  */
-public interface FragmentIntersectionFinder {
+public interface Fragmenter {
     /**
      * Gets the ordinal number of the samples which will be the first sample
      * in each fragment (First sample == 1).

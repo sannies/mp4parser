@@ -79,11 +79,11 @@ import static com.mp4parser.tools.Math.gcd;
 public class DefaultMp4Builder implements Mp4Builder {
 
     private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
-    Set<StaticChunkOffsetBox> chunkOffsetBoxes = new HashSet<StaticChunkOffsetBox>();
+    Map<Track, StaticChunkOffsetBox> chunkOffsetBoxes = new HashMap<Track, StaticChunkOffsetBox>();
     Set<SampleAuxiliaryInformationOffsetsBox> sampleAuxiliaryInformationOffsetsBoxes = new HashSet<SampleAuxiliaryInformationOffsetsBox>();
     HashMap<Track, List<Sample>> track2Sample = new HashMap<Track, List<Sample>>();
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
-    private FragmentIntersectionFinder intersectionFinder;
+    private Fragmenter intersectionFinder;
 
     private static long sum(int[] ls) {
         long rc = 0;
@@ -102,7 +102,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     }
 
 
-    public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
+    public void setIntersectionFinder(Fragmenter intersectionFinder) {
         this.intersectionFinder = intersectionFinder;
     }
 
@@ -113,7 +113,7 @@ public class DefaultMp4Builder implements Mp4Builder {
      */
     public RandomAccessSource.Container build(Movie movie) {
         if (intersectionFinder == null) {
-            intersectionFinder = new TwoSecondIntersectionFinder(movie, 2);
+            intersectionFinder = new TimeBasedFragmenter(movie, 2);
         }
         LOG.fine("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
@@ -476,49 +476,71 @@ public class DefaultMp4Builder implements Mp4Builder {
         stbl.addBox(track.getSampleDescriptionBox());
     }
 
-    protected void createStco(Track track, Movie movie, Map<Track, int[]> chunks, SampleTableBox stbl) {
-        int[] tracksChunkSizes = chunks.get(track);
+    protected void createStco(Track targetTrack, Movie movie, Map<Track, int[]> chunks, SampleTableBox stbl) {
+        if (chunkOffsetBoxes.get(targetTrack) == null) {
+            // The ChunkOffsetBox we create here is just a stub
+            // since we haven't created the whole structure we can't tell where the
+            // first chunk starts (mdat box). So I just let the chunk offset
+            // start at zero and I will add the mdat offset later.
 
-        // The ChunkOffsetBox we create here is just a stub
-        // since we haven't created the whole structure we can't tell where the
-        // first chunk starts (mdat box). So I just let the chunk offset
-        // start at zero and I will add the mdat offset later.
-        StaticChunkOffsetBox stco = new StaticChunkOffsetBox();
-        this.chunkOffsetBoxes.add(stco);
-        long offset = 0;
-        long[] chunkOffset = new long[tracksChunkSizes.length];
-        // all tracks have the same number of chunks
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Calculating chunk offsets for track_" + track.getTrackMetaData().getTrackId());
+            long offset = 0;
+            // all tracks have the same number of chunks
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Calculating chunk offsets for track_" + targetTrack.getTrackMetaData().getTrackId());
+            }
+
+            List<Track> tracks = new ArrayList<Track>(chunks.keySet());
+            tracks.sort(new Comparator<Track>() {
+                public int compare(Track o1, Track o2) {
+                    return l2i(o1.getTrackMetaData().getTrackId() - o2.getTrackMetaData().getTrackId());
+                }
+            });
+            Map<Track, Integer> trackToChunk = new HashMap<Track, Integer>();
+            Map<Track, Integer> trackToSample = new HashMap<Track, Integer>();
+            Map<Track, Double> trackToTime = new HashMap<Track, Double>();
+            for (Track track : tracks) {
+                trackToChunk.put(track, 0);
+                trackToSample.put(track, 0);
+                trackToTime.put(track, 0.0);
+                chunkOffsetBoxes.put(track, new StaticChunkOffsetBox());
+            }
+
+            while (true) {
+                Track nextChunksTrack = null;
+                for (Track track : tracks) {
+                    // This always chooses the least progressed track
+                    if ((nextChunksTrack == null || trackToTime.get(track) < trackToTime.get(nextChunksTrack)) &&
+                            // either first OR track's next chunk's starttime is smaller than nextTrack's next chunks starttime
+                            // AND their need to be chunks left!
+                            (trackToChunk.get(track) < chunks.get(track).length)) {
+                        nextChunksTrack = track;
+                    }
+                }
+                if (nextChunksTrack == null) {
+                    break; // no next
+                }
+                // found the next one
+                ChunkOffsetBox chunkOffsetBox = chunkOffsetBoxes.get(nextChunksTrack);
+                chunkOffsetBox.setChunkOffsets(Mp4Arrays.copyOfAndAppend(chunkOffsetBox.getChunkOffsets(), offset));
+
+                int nextChunksIndex = trackToChunk.get(nextChunksTrack);
+
+                int numberOfSampleInNextChunk = chunks.get(nextChunksTrack)[nextChunksIndex];
+                int startSample = trackToSample.get(nextChunksTrack);
+                double time = trackToTime.get(nextChunksTrack);
+
+                for (int j = startSample; j < startSample + numberOfSampleInNextChunk; j++) {
+                    offset += track2SampleSizes.get(nextChunksTrack)[j];
+                    time += (double) nextChunksTrack.getSampleDurations()[j] / nextChunksTrack.getTrackMetaData().getTimescale();
+                }
+                trackToChunk.put(nextChunksTrack, nextChunksIndex + 1);
+                trackToSample.put(nextChunksTrack, startSample + numberOfSampleInNextChunk);
+                trackToTime.put(nextChunksTrack, time);
+            }
+
         }
 
-
-        for (int i = 0; i < tracksChunkSizes.length; i++) {
-            // The filelayout will be:
-            // chunk_1_track_1,... ,chunk_1_track_n, chunk_2_track_1,... ,chunk_2_track_n, ... , chunk_m_track_1,... ,chunk_m_track_n
-            // calculating the offsets
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.finer("Calculating chunk offsets for track_" + track.getTrackMetaData().getTrackId() + " chunk " + i);
-            }
-            for (Track current : movie.getTracks()) {
-                if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.finest("Adding offsets of track_" + current.getTrackMetaData().getTrackId());
-                }
-                int[] chunkSizes = chunks.get(current);
-                long firstSampleOfChunk = 0;
-                for (int j = 0; j < i; j++) {
-                    firstSampleOfChunk += chunkSizes[j];
-                }
-                if (current == track) {
-                    chunkOffset[i] = offset;
-                }
-                for (int j = l2i(firstSampleOfChunk); j < firstSampleOfChunk + chunkSizes[i]; j++) {
-                    offset += track2SampleSizes.get(current)[j];
-                }
-            }
-        }
-        stco.setChunkOffsets(chunkOffset);
-        stbl.addBox(stco);
+        stbl.addBox(chunkOffsetBoxes.get(targetTrack));
     }
 
     protected void createStsz(Track track, SampleTableBox stbl) {
@@ -640,20 +662,53 @@ public class DefaultMp4Builder implements Mp4Builder {
         private InterleaveChunkMdat(Movie movie, Map<Track, int[]> chunks, long contentSize) {
             this.contentSize = contentSize;
             this.tracks = movie.getTracks();
-
-            for (int i = 0; i < chunks.values().iterator().next().length; i++) {
-                for (Track track : tracks) {
-
-                    int[] chunkSizes = chunks.get(track);
-                    long firstSampleOfChunk = 0;
-                    for (int j = 0; j < i; j++) {
-                        firstSampleOfChunk += chunkSizes[j];
-                    }
-                    List<Sample> chunk = DefaultMp4Builder.this.track2Sample.get(track).subList(l2i(firstSampleOfChunk), l2i(firstSampleOfChunk + chunkSizes[i]));
-                    chunkList.add(chunk);
+            List<Track> tracks = new ArrayList<Track>(chunks.keySet());
+            tracks.sort(new Comparator<Track>() {
+                public int compare(Track o1, Track o2) {
+                    return l2i(o1.getTrackMetaData().getTrackId() - o2.getTrackMetaData().getTrackId());
                 }
-
+            });
+            Map<Track, Integer> trackToChunk = new HashMap<Track, Integer>();
+            Map<Track, Integer> trackToSample = new HashMap<Track, Integer>();
+            Map<Track, Double> trackToTime = new HashMap<Track, Double>();
+            for (Track track : tracks) {
+                trackToChunk.put(track, 0);
+                trackToSample.put(track, 0);
+                trackToTime.put(track, 0.0);
             }
+
+            while (true) {
+                Track nextChunksTrack = null;
+                for (Track track : tracks) {
+                    if ((nextChunksTrack == null || trackToTime.get(track) < trackToTime.get(nextChunksTrack)) &&
+                            // either first OR track's next chunk's starttime is smaller than nextTrack's next chunks starttime
+                            // AND their need to be chunks left!
+                            (trackToChunk.get(track) < chunks.get(track).length)) {
+                        nextChunksTrack = track;
+                    }
+                }
+                if (nextChunksTrack == null) {
+                    break;
+                }
+                // found the next one
+
+                int nextChunksIndex = trackToChunk.get(nextChunksTrack);
+                int numberOfSampleInNextChunk = chunks.get(nextChunksTrack)[nextChunksIndex];
+                int startSample = trackToSample.get(nextChunksTrack);
+                double time = trackToTime.get(nextChunksTrack);
+                for (int j = startSample; j < startSample + numberOfSampleInNextChunk; j++) {
+                    time += (double) nextChunksTrack.getSampleDurations()[j] / nextChunksTrack.getTrackMetaData().getTimescale();
+                }
+                chunkList.add(nextChunksTrack.getSamples().subList(startSample, startSample + numberOfSampleInNextChunk));
+
+                trackToChunk.put(nextChunksTrack, nextChunksIndex + 1);
+                trackToSample.put(nextChunksTrack, startSample + numberOfSampleInNextChunk);
+                trackToTime.put(nextChunksTrack, time);
+            }
+
+
+
+
 
         }
 

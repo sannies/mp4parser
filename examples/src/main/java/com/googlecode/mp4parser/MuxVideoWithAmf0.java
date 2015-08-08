@@ -1,12 +1,12 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.RandomAccessSource;
-import com.mp4parser.authoring.Movie;
-import com.mp4parser.authoring.Track;
-import com.mp4parser.authoring.builder.FragmentedMp4Builder;
-import com.mp4parser.authoring.builder.TwoSecondIntersectionFinder;
-import com.mp4parser.authoring.container.mp4.MovieCreator;
-import com.mp4parser.authoring.tracks.Amf0Track;
+import com.coremedia.iso.boxes.Container;
+import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
+import com.googlecode.mp4parser.authoring.builder.TimeBasedFragmenter;
+import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.googlecode.mp4parser.authoring.tracks.Amf0Track;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.File;
@@ -36,7 +36,7 @@ public class MuxVideoWithAmf0 {
         video.addTrack(amf0Track);
 
         FragmentedMp4Builder fragmentedMp4Builder = new FragmentedMp4Builder();
-        fragmentedMp4Builder.setIntersectionFinder(new TwoSecondIntersectionFinder(video, 2));
+        fragmentedMp4Builder.setIntersectionFinder(new TimeBasedFragmenter(video, 2));
 
         RandomAccessSource.Container out = fragmentedMp4Builder.build(video);
         FileOutputStream fos = new FileOutputStream(new File(String.format("output.mp4")));
