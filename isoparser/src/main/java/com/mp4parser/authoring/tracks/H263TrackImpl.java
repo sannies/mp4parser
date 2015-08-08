@@ -1,29 +1,16 @@
 package com.mp4parser.authoring.tracks;
 
-import com.mp4parser.RandomAccessSource;
-import com.mp4parser.tools.Hex;
+import com.mp4parser.Container;
 import com.mp4parser.IsoFile;
-import com.mp4parser.tools.IsoTypeReader;
-import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
-import com.mp4parser.boxes.sampleentry.VisualSampleEntry;
-import com.mp4parser.authoring.DataSource;
-import com.mp4parser.authoring.FileDataSourceImpl;
-import com.mp4parser.authoring.MultiFileDataSourceImpl;
-import com.mp4parser.authoring.Movie;
-import com.mp4parser.authoring.Sample;
-import com.mp4parser.authoring.SampleImpl;
-import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import com.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
-import com.mp4parser.boxes.iso14496.part1.objectdescriptors.*;
+import com.mp4parser.boxes.sampleentry.VisualSampleEntry;
+import com.mp4parser.tools.Hex;
+import com.mp4parser.tools.IsoTypeReader;
 import com.mp4parser.tools.Mp4Arrays;
 import com.mp4parser.tools.Path;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
@@ -145,6 +132,41 @@ public class H263TrackImpl extends AbstractH26XTrack {
 
         trackMetaData.setTimescale(vop_time_increment_resolution);
 
+    }
+
+    public static void main1(String[] args) throws IOException {
+        File[] files = new File("C:\\dev\\mp4parser\\frames").listFiles();
+        Arrays.sort(files);
+        Movie m = new Movie();
+        Track track = new H263TrackImpl(new MultiFileDataSourceImpl(files));
+        m.addTrack(track);
+        DefaultMp4Builder builder = new DefaultMp4Builder();
+        Container c = builder.build(m);
+        FileOutputStream fos = new FileOutputStream("output.mp4");
+        c.writeContainer(Channels.newChannel(fos));
+    }
+
+    public static void main(String[] args) throws IOException {
+        DataSource ds = new FileDataSourceImpl("C:\\content\\bbb.h263");
+        Movie m = new Movie();
+        Track track = new H263TrackImpl(ds);
+        m.addTrack(track);
+        DefaultMp4Builder builder = new DefaultMp4Builder();
+        Container c = builder.build(m);
+        FileOutputStream fos = new FileOutputStream("output.mp4");
+        c.writeContainer(Channels.newChannel(fos));
+
+    }
+
+    public static void main2(String[] args) throws IOException {
+        ESDescriptorBox esds = Path.getPath(new IsoFile(new FileInputStream("C:\\content\\bbb.mp4").getChannel()), "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stsd[0]/mp4v[0]/esds[0]");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        esds.getBox(Channels.newChannel(baos));
+        System.err.println(Hex.encodeHex(baos.toByteArray()));
+        System.err.println(esds.getEsDescriptor());
+        baos = new ByteArrayOutputStream();
+        esds.getBox(Channels.newChannel(baos));
+        System.err.println(Hex.encodeHex(baos.toByteArray()));
     }
 
     private int parse0x05Unit(ByteBuffer nal) {
@@ -383,40 +405,5 @@ public class H263TrackImpl extends AbstractH26XTrack {
 
     public List<Sample> getSamples() {
         return samples;
-    }
-
-    public static void main1(String[] args) throws IOException {
-        File[] files = new File("C:\\dev\\mp4parser\\frames").listFiles();
-        Arrays.sort(files);
-        Movie m = new Movie();
-        Track track = new H263TrackImpl(new MultiFileDataSourceImpl(files));
-        m.addTrack(track);
-        DefaultMp4Builder builder = new DefaultMp4Builder();
-        RandomAccessSource.Container c = builder.build(m);
-        FileOutputStream fos = new FileOutputStream("output.mp4");
-        c.writeContainer(Channels.newChannel(fos));
-    }
-
-    public static void main(String[] args) throws IOException {
-        DataSource ds = new FileDataSourceImpl("C:\\content\\bbb.h263");
-        Movie m = new Movie();
-        Track track = new H263TrackImpl(ds);
-        m.addTrack(track);
-        DefaultMp4Builder builder = new DefaultMp4Builder();
-        RandomAccessSource.Container c = builder.build(m);
-        FileOutputStream fos = new FileOutputStream("output.mp4");
-        c.writeContainer(Channels.newChannel(fos));
-
-    }
-
-    public static void main2(String[] args) throws IOException {
-        ESDescriptorBox esds = Path.getPath(new IsoFile(new FileInputStream("C:\\content\\bbb.mp4").getChannel()), "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stsd[0]/mp4v[0]/esds[0]");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        esds.getBox(Channels.newChannel(baos));
-        System.err.println(Hex.encodeHex(baos.toByteArray()));
-        System.err.println(esds.getEsDescriptor());
-        baos = new ByteArrayOutputStream();
-        esds.getBox(Channels.newChannel(baos));
-        System.err.println(Hex.encodeHex(baos.toByteArray()));
     }
 }

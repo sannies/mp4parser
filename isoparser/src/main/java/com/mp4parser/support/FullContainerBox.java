@@ -16,11 +16,11 @@
 
 package com.mp4parser.support;
 
+import com.mp4parser.Box;
 import com.mp4parser.BoxParser;
+import com.mp4parser.FullBox;
 import com.mp4parser.tools.IsoTypeReader;
 import com.mp4parser.tools.IsoTypeWriter;
-import com.mp4parser.Box;
-import com.mp4parser.RandomAccessSource;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,10 +32,14 @@ import java.util.logging.Logger;
 /**
  * Abstract base class for a full tools box only containing ither boxes.
  */
-public abstract class FullContainerBox extends AbstractContainerBox implements RandomAccessSource.FullBox {
+public abstract class FullContainerBox extends AbstractContainerBox implements FullBox {
     private static Logger LOG = Logger.getLogger(FullContainerBox.class.getName());
     private int version;
     private int flags;
+
+    public FullContainerBox(String type) {
+        super(type);
+    }
 
     public int getVersion() {
         return version;
@@ -56,10 +60,6 @@ public abstract class FullContainerBox extends AbstractContainerBox implements R
     @SuppressWarnings("unchecked")
     public <T extends Box> List<T> getBoxes(Class<T> clazz) {
         return getBoxes(clazz, false);
-    }
-
-    public FullContainerBox(String type) {
-        super(type);
     }
 
     @Override

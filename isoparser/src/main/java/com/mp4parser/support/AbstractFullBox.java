@@ -17,16 +17,16 @@
 package com.mp4parser.support;
 
 
+import com.mp4parser.FullBox;
 import com.mp4parser.tools.IsoTypeReader;
 import com.mp4parser.tools.IsoTypeWriter;
-import com.mp4parser.RandomAccessSource;
 
 import java.nio.ByteBuffer;
 
 /**
  * Base class for all ISO Full boxes.
  */
-public abstract class AbstractFullBox extends AbstractBox implements RandomAccessSource.FullBox {
+public abstract class AbstractFullBox extends AbstractBox implements FullBox {
     private int version;
     private int flags;
 

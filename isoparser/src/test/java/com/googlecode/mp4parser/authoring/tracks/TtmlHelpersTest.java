@@ -1,11 +1,10 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.googlecode.mp4parser.authoring.tracks.ttml.TtmlTrackImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.googlecode.mp4parser.authoring.tracks.ttml.TtmlHelpers.toTime;
-import static com.googlecode.mp4parser.authoring.tracks.ttml.TtmlHelpers.toTimeExpression;
+import static com.mp4parser.authoring.tracks.ttml.TtmlHelpers.toTime;
+import static com.mp4parser.authoring.tracks.ttml.TtmlHelpers.toTimeExpression;
 
 /**
  * Created by sannies on 06.08.2015.

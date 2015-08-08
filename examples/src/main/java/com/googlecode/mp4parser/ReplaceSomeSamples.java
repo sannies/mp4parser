@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -32,7 +32,7 @@ public class ReplaceSomeSamples {
                                 25, ByteBuffer.allocate(5)),
                         27, ByteBuffer.allocate(5)),
                 29, ByteBuffer.allocate(5)));
-        RandomAccessSource.Container out = new DefaultMp4Builder().build(nuMovie);
+        Container out = new DefaultMp4Builder().build(nuMovie);
         FileOutputStream fos = new FileOutputStream(new File("output.mp4"));
         FileChannel fc = fos.getChannel();
         out.writeContainer(fc);

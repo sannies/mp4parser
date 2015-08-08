@@ -16,10 +16,10 @@
 package com.mp4parser.tools;
 
 
-import com.mp4parser.ParsableBox;
-import com.mp4parser.RandomAccessSource;
-import com.mp4parser.support.AbstractContainerBox;
 import com.mp4parser.Box;
+import com.mp4parser.Container;
+import com.mp4parser.ParsableBox;
+import com.mp4parser.support.AbstractContainerBox;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,17 +30,17 @@ import java.util.regex.Pattern;
 
 public class Path {
 
+    static Pattern component = Pattern.compile("(....|\\.\\.)(\\[(.*)\\])?");
+
     private Path() {
     }
-
-    static Pattern component = Pattern.compile("(....|\\.\\.)(\\[(.*)\\])?");
 
     public static <T extends Box> T getPath(ParsableBox parsableBox, String path) {
         List<T> all = getPaths(parsableBox, path, true);
         return all.isEmpty() ? null : all.get(0);
     }
 
-    public static <T extends Box> T  getPath(RandomAccessSource.Container container, String path) {
+    public static <T extends Box> T getPath(Container container, String path) {
         List<T> all = getPaths(container, path, true);
         return all.isEmpty() ? null : all.get(0);
     }
@@ -55,7 +55,7 @@ public class Path {
         return getPaths(box, path, false);
     }
 
-    public static <T extends Box> List<T> getPaths(RandomAccessSource.Container container, String path) {
+    public static <T extends Box> List<T> getPaths(Container container, String path) {
         return getPaths(container, path, false);
     }
 
@@ -63,7 +63,7 @@ public class Path {
         return getPaths((Object) container, path, singleResult);
     }
 
-    private static <T extends Box> List<T> getPaths(RandomAccessSource.Container container, String path, boolean singleResult) {
+    private static <T extends Box> List<T> getPaths(Container container, String path, boolean singleResult) {
         return getPaths((Object) container, path, singleResult);
     }
 
@@ -100,7 +100,7 @@ public class Path {
                 if ("..".equals(type)) {
                     throw new RuntimeException(".. notation no longer allowed");
                 } else {
-                    if (thing instanceof RandomAccessSource.Container) {
+                    if (thing instanceof Container) {
                         int index = -1;
                         if (m.group(2) != null) {
                             // we have a specific index
@@ -112,7 +112,7 @@ public class Path {
                         // I'm suspecting some Dalvik VM to create indexed loops from for-each loops
                         // using the iterator instead makes sure that this doesn't happen
                         // (and yes - it could be completely useless)
-                        Iterator<Box> iterator = ((RandomAccessSource.Container) thing).getBoxes().iterator();
+                        Iterator<Box> iterator = ((Container) thing).getBoxes().iterator();
                         while (iterator.hasNext()) {
                             Box box1 = iterator.next();
                             if (box1.getType().matches(type)) {
@@ -139,7 +139,7 @@ public class Path {
     }
 
 
-    public static boolean isContained(RandomAccessSource.Container ref, Box box, String path) {
+    public static boolean isContained(Container ref, Box box, String path) {
         return getPaths(ref, path).contains(box);
     }
 }

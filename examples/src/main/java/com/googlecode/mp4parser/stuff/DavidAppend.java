@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser.stuff;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -51,7 +51,7 @@ public class DavidAppend {
         concatMovie.addTrack(new AppendTrack(audioTracks.toArray(new Track[audioTracks.size()])));
 
 
-        RandomAccessSource.Container out2 = new DefaultMp4Builder().build(concatMovie);
+        Container out2 = new DefaultMp4Builder().build(concatMovie);
         FileChannel fc = new RandomAccessFile(String.format("output.mp4"), "rw").getChannel();
         fc.position(0);
         out2.writeContainer(fc);

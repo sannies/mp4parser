@@ -16,10 +16,10 @@
 
 package com.coremedia.drm.packager.isoparser;
 
-import com.mp4parser.ParsableBox;
-import com.mp4parser.RandomAccessSource;
-import com.mp4parser.support.AbstractBox;
 import com.mp4parser.Box;
+import com.mp4parser.Container;
+import com.mp4parser.ParsableBox;
+import com.mp4parser.support.AbstractBox;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -56,7 +56,7 @@ public final class Walk {
     private Walk() {
     }
 
-    public static void through(RandomAccessSource.Container container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
+    public static void through(Container container) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
         for (Box b : container.getBoxes()) {
             List<Box> myBoxes = (List<Box>) container.getBoxes(b.getClass());
             boolean found = false;
@@ -69,8 +69,8 @@ public final class Walk {
                 throw new RuntimeException("Didn't find the box");
             }
 
-            if (b instanceof RandomAccessSource.Container) {
-                Walk.through((RandomAccessSource.Container) b);
+            if (b instanceof Container) {
+                Walk.through((Container) b);
             }
 
 

@@ -1,5 +1,18 @@
 package com.googlecode.mp4parser.stuff;
 
+import com.mp4parser.Box;
+import com.mp4parser.Container;
+import com.mp4parser.IsoFile;
+import com.mp4parser.boxes.UnknownBox;
+import com.mp4parser.boxes.apple.AppleGPSCoordinatesBox;
+import com.mp4parser.boxes.apple.AppleItemListBox;
+import com.mp4parser.boxes.apple.AppleNameBox;
+import com.mp4parser.boxes.apple.Utf8AppleDataBox;
+import com.mp4parser.boxes.microsoft.XtraBox;
+import com.mp4parser.tools.Path;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -11,33 +24,71 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import com.mp4parser.RandomAccessSource;
-import com.mp4parser.boxes.iso14496.part12.SampleTableBox;
-import com.mp4parser.Box;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-
-import com.mp4parser.IsoFile;
-import com.mp4parser.boxes.iso14496.part12.ChunkOffsetBox;
-import com.mp4parser.boxes.iso14496.part12.MediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.MetaBox;
-import com.mp4parser.boxes.iso14496.part12.MovieHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.StaticChunkOffsetBox;
-import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
-import com.mp4parser.boxes.UnknownBox;
-import com.mp4parser.boxes.iso14496.part12.UserDataBox;
-import com.mp4parser.boxes.apple.AppleItemListBox;
-import com.mp4parser.boxes.apple.AppleGPSCoordinatesBox;
-import com.mp4parser.boxes.apple.AppleNameBox;
-import com.mp4parser.boxes.apple.Utf8AppleDataBox;
-import com.mp4parser.boxes.microsoft.XtraBox;
-import com.mp4parser.tools.Path;
-
 /**
  * Added by marwatk 3/1/15
  */
 public class MetaDataTool {
     public static final boolean DEBUG = true;
+    public static final String WM_RATING_TAG = "WM/SharedUserRating";
+    public static final int WM_RATING_VALS[] = {0, 1, 25, 50, 75, 99};
+    public static final String WM_TAGS_TAG = "WM/Category";
+    //http://stackoverflow.com/questions/3389348/parse-any-date-in-java
+    private static final HashMap<String, String> DATE_FORMAT_REGEXPS = new HashMap<String, String>() {
+        {
+            put("^\\d{8}$", "yyyyMMdd");
+            put("^\\d{1,2}-\\d{1,2}-\\d{4}$", "dd-MM-yyyy");
+            put("^\\d{4}-\\d{1,2}-\\d{1,2}$", "yyyy-MM-dd");
+            put("^\\d{1,2}/\\d{1,2}/\\d{4}$", "MM/dd/yyyy");
+            put("^\\d{4}/\\d{1,2}/\\d{1,2}$", "yyyy/MM/dd");
+            put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$", "dd MMM yyyy");
+            put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$", "dd MMMM yyyy");
+            put("^\\d{12}$", "yyyyMMddHHmm");
+            put("^\\d{8}\\s\\d{4}$", "yyyyMMdd HHmm");
+            put("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}$", "dd-MM-yyyy HH:mm");
+            put("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}$", "yyyy-MM-dd HH:mm");
+            put("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}$", "MM/dd/yyyy HH:mm");
+            put("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}$", "yyyy/MM/dd HH:mm");
+            put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}$", "dd MMM yyyy HH:mm");
+            put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$", "dd MMMM yyyy HH:mm");
+            put("^\\d{14}$", "yyyyMMddHHmmss");
+            put("^\\d{8}\\s\\d{6}$", "yyyyMMdd HHmmss");
+            put("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd-MM-yyyy HH:mm:ss");
+            put("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$", "yyyy-MM-dd HH:mm:ss");
+            put("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "MM/dd/yyyy HH:mm:ss");
+            put("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$", "yyyy/MM/dd HH:mm:ss");
+            put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd MMM yyyy HH:mm:ss");
+            put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd MMMM yyyy HH:mm:ss");
+        }
+    };
+    private long originalUserDataSize = 0;
+    private XtraBox xtraBox;
+    private UserDataBox userDataBox;
+    private MetaBox metaBox;
+    private IsoFile isoFile;
+
+    public MetaDataTool(String path) throws IOException {
+
+        //The source I copied this from created 2 new files, a temp file and a target file
+        //I'm not sure this is necessary, but maybe when you make changes it's edited in-place?
+        //Anyway, just to be safe I'm keeping it so no operations are done on original file
+        File videoFile = new File(path);
+        if (!videoFile.exists())
+            throw new FileNotFoundException("File " + path + " not exists");
+
+        if (!videoFile.canWrite())
+            throw new IllegalStateException("No write permissions to file " + path);
+
+        File tempFile = File.createTempFile("ChangeMetaData", "");
+        FileUtils.copyFile(videoFile, tempFile);
+        tempFile.deleteOnExit();
+
+        isoFile = new IsoFile(tempFile.getAbsolutePath());
+        userDataBox = Path.getPath(isoFile, "/moov/udta");
+        if (userDataBox != null) {
+            originalUserDataSize = userDataBox.getSize();
+        }
+
+    }
 
     public static void main(String[] args) {
         if (args.length != 7 && args.length != 1) {
@@ -112,38 +163,145 @@ public class MetaDataTool {
         }
     }
 
-    private long originalUserDataSize = 0;
-    private XtraBox xtraBox;
-    private UserDataBox userDataBox;
-    private MetaBox metaBox;
-    private IsoFile isoFile;
-
-    public MetaDataTool(String path) throws IOException {
-
-        //The source I copied this from created 2 new files, a temp file and a target file
-        //I'm not sure this is necessary, but maybe when you make changes it's edited in-place?
-        //Anyway, just to be safe I'm keeping it so no operations are done on original file
-        File videoFile = new File(path);
-        if (!videoFile.exists())
-            throw new FileNotFoundException("File " + path + " not exists");
-
-        if (!videoFile.canWrite())
-            throw new IllegalStateException("No write permissions to file " + path);
-
-        File tempFile = File.createTempFile("ChangeMetaData", "");
-        FileUtils.copyFile(videoFile, tempFile);
-        tempFile.deleteOnExit();
-
-        isoFile = new IsoFile(tempFile.getAbsolutePath());
-        userDataBox = Path.getPath(isoFile, "/moov/udta");
-        if (userDataBox != null) {
-            originalUserDataSize = userDataBox.getSize();
+    private static String getIndentation(int indent) {
+        char c[] = new char[indent];
+        for (int i = 0; i < indent; i++) {
+            c[i] = ' ';
         }
-
+        return new String(c);
     }
 
-    public static final String WM_RATING_TAG = "WM/SharedUserRating";
-    public static final int WM_RATING_VALS[] = {0, 1, 25, 50, 75, 99};
+    private static void dumpBoxes(Container container, int indent) {
+        String meInd = getIndentation(indent);
+        String subInd = getIndentation(indent + 2);
+        System.out.println(meInd + container.getClass().getName());
+        for (Box box : container.getBoxes()) {
+            if (box instanceof Container) {
+                dumpBoxes((Container) box, indent + 2);
+            } else {
+                try {
+                    if (box instanceof UnknownBox) {
+                        System.out.println(subInd + box.getClass().getName() + "[" + box.getSize() + "/" + box.getType() + "]:" + box.toString());
+                    } else if (box instanceof Utf8AppleDataBox) {
+                        System.out.println(subInd + box.getClass().getName() + ": " + box.getType() + ": " + box.toString() + ": " + ((Utf8AppleDataBox) box).getValue());
+                    } else {
+                        System.out.println(subInd + box.getClass().getName() + ": " + box.getType() + "[" + box.getSize() + "]: " + box.toString());
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error parsing " + box.getClass().getSimpleName() + " box: " + e);
+                    e.printStackTrace(System.err);
+                }
+            }
+        }
+    }
+
+    public static boolean needsOffsetCorrection(IsoFile isoFile) {
+
+        if (Path.getPaths(isoFile, "mdat").size() > 1) {
+            throw new RuntimeException("There might be the weird case that a file has two mdats. One before" +
+                    " moov and one after moov. That would need special handling therefore I just throw an " +
+                    "exception here. ");
+        }
+
+        if (Path.getPaths(isoFile, "moof").size() > 0) {
+            throw new RuntimeException("Fragmented MP4 files need correction, too. (But I would need to look where)");
+        }
+
+        for (Box box : isoFile.getBoxes()) {
+            if ("mdat".equals(box.getType())) {
+                return false;
+            }
+            if ("moov".equals(box.getType())) {
+                return true;
+            }
+        }
+        throw new RuntimeException("Hmmm - shouldn't happen");
+    }
+
+    private static void correctChunkOffsets(IsoFile tempIsoFile, long correction) {
+        List<SampleTableBox> sampleTableBoxes = Path.getPaths(tempIsoFile, "/moov[0]/trak/mdia[0]/minf[0]/stbl[0]");
+
+        for (SampleTableBox sampleTableBox : sampleTableBoxes) {
+
+            List<Box> stblChildren = new ArrayList<Box>(sampleTableBox.getBoxes());
+            ChunkOffsetBox chunkOffsetBox = Path.getPath(sampleTableBox, "stco");
+            if (chunkOffsetBox == null) {
+                stblChildren.remove(Path.getPath(sampleTableBox, "co64"));
+            }
+            stblChildren.remove(chunkOffsetBox);
+
+            assert chunkOffsetBox != null;
+            long[] cOffsets = chunkOffsetBox.getChunkOffsets();
+            for (int i = 0; i < cOffsets.length; i++) {
+                cOffsets[i] += correction;
+            }
+
+            StaticChunkOffsetBox cob = new StaticChunkOffsetBox();
+            cob.setChunkOffsets(cOffsets);
+            stblChildren.add(cob);
+            sampleTableBox.setBoxes(stblChildren);
+        }
+    }
+
+    public static void deleteQuietly(File f) {
+        try {
+            f.delete();
+        } catch (Exception ioe) {
+            //ignore
+        }
+    }
+
+    public static void closeQuietly(IsoFile input) {
+        try {
+            if (input != null) {
+                input.close();
+            }
+        } catch (IOException ioe) {
+            // ignore
+        }
+    }
+
+    public static Box getBox(Container outer, String type) {
+        List<Box> list = getBoxes(outer, new String[]{type});
+        return list.get(0);
+    }
+
+    public static List<Box> getBoxes(Container outer, String types[], List<Box> list) {
+        for (Box box : outer.getBoxes()) {
+            for (String type : types) {
+                if (box.getType().equals(type)) {
+                    list.add(box);
+                }
+            }
+            if (box instanceof Container) {
+                getBoxes((Container) box, types, list);
+            }
+        }
+        return list;
+    }
+
+    public static List<Box> getBoxes(Container outer, String types[]) {
+        List<Box> list = new ArrayList<Box>();
+        return getBoxes(outer, types, list);
+    }
+
+    public static String determineDateFormat(String dateString) {
+        for (String regexp : DATE_FORMAT_REGEXPS.keySet()) {
+            if (dateString.toLowerCase().matches(regexp)) {
+                return DATE_FORMAT_REGEXPS.get(regexp);
+            }
+        }
+        return null; // Unknown format.
+    }
+
+    public static Date parseDate(String dateString) throws ParseException {
+        String formatString = determineDateFormat(dateString);
+        if (formatString == null) {
+            return null;
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat(formatString);
+        return sdf.parse(dateString);
+    }
 
     public void setWindowsMediaRating(int rating) { //0-5
         if (rating < 0 || rating > 5) {
@@ -156,8 +314,6 @@ public class MetaDataTool {
             setWindowsMediaLong(WM_RATING_TAG, WM_RATING_VALS[rating]);
         }
     }
-
-    public static final String WM_TAGS_TAG = "WM/Category";
 
     public void setWindowsMediaTags(String tags[]) {
         if (tags == null || tags.length == 0) {
@@ -273,7 +429,6 @@ public class MetaDataTool {
         xb.removeTag(tagName);
     }
 
-
     private UserDataBox getUserDataBox() {
         if (userDataBox == null) {
             userDataBox = new UserDataBox();
@@ -324,178 +479,8 @@ public class MetaDataTool {
         }
     }
 
-    private static String getIndentation(int indent) {
-        char c[] = new char[indent];
-        for (int i = 0; i < indent; i++) {
-            c[i] = ' ';
-        }
-        return new String(c);
-    }
-
     public void dumpBoxes() {
         dumpBoxes(isoFile, 0);
-    }
-
-    private static void dumpBoxes(RandomAccessSource.Container container, int indent) {
-        String meInd = getIndentation(indent);
-        String subInd = getIndentation(indent + 2);
-        System.out.println(meInd + container.getClass().getName());
-        for (Box box : container.getBoxes()) {
-            if (box instanceof RandomAccessSource.Container) {
-                dumpBoxes((RandomAccessSource.Container) box, indent + 2);
-            } else {
-                try {
-                    if (box instanceof UnknownBox) {
-                        System.out.println(subInd + box.getClass().getName() + "[" + box.getSize() + "/" + box.getType() + "]:" + box.toString());
-                    } else if (box instanceof Utf8AppleDataBox) {
-                        System.out.println(subInd + box.getClass().getName() + ": " + box.getType() + ": " + box.toString() + ": " + ((Utf8AppleDataBox) box).getValue());
-                    } else {
-                        System.out.println(subInd + box.getClass().getName() + ": " + box.getType() + "[" + box.getSize() + "]: " + box.toString());
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error parsing " + box.getClass().getSimpleName() + " box: " + e);
-                    e.printStackTrace(System.err);
-                }
-            }
-        }
-    }
-
-    public static boolean needsOffsetCorrection(IsoFile isoFile) {
-
-        if (Path.getPaths(isoFile, "mdat").size() > 1) {
-            throw new RuntimeException("There might be the weird case that a file has two mdats. One before" +
-                    " moov and one after moov. That would need special handling therefore I just throw an " +
-                    "exception here. ");
-        }
-
-        if (Path.getPaths(isoFile, "moof").size() > 0) {
-            throw new RuntimeException("Fragmented MP4 files need correction, too. (But I would need to look where)");
-        }
-
-        for (Box box : isoFile.getBoxes()) {
-            if ("mdat".equals(box.getType())) {
-                return false;
-            }
-            if ("moov".equals(box.getType())) {
-                return true;
-            }
-        }
-        throw new RuntimeException("Hmmm - shouldn't happen");
-    }
-
-    private static void correctChunkOffsets(IsoFile tempIsoFile, long correction) {
-        List<SampleTableBox> sampleTableBoxes = Path.getPaths(tempIsoFile, "/moov[0]/trak/mdia[0]/minf[0]/stbl[0]");
-
-        for (SampleTableBox sampleTableBox : sampleTableBoxes) {
-
-            List<Box> stblChildren = new ArrayList<Box>(sampleTableBox.getBoxes());
-            ChunkOffsetBox chunkOffsetBox = Path.getPath(sampleTableBox, "stco");
-            if (chunkOffsetBox == null) {
-                stblChildren.remove(Path.getPath(sampleTableBox, "co64"));
-            }
-            stblChildren.remove(chunkOffsetBox);
-
-            assert chunkOffsetBox != null;
-            long[] cOffsets = chunkOffsetBox.getChunkOffsets();
-            for (int i = 0; i < cOffsets.length; i++) {
-                cOffsets[i] += correction;
-            }
-
-            StaticChunkOffsetBox cob = new StaticChunkOffsetBox();
-            cob.setChunkOffsets(cOffsets);
-            stblChildren.add(cob);
-            sampleTableBox.setBoxes(stblChildren);
-        }
-    }
-
-    public static void deleteQuietly(File f) {
-        try {
-            f.delete();
-        } catch (Exception ioe) {
-            //ignore
-        }
-    }
-
-    public static void closeQuietly(IsoFile input) {
-        try {
-            if (input != null) {
-                input.close();
-            }
-        } catch (IOException ioe) {
-            // ignore
-        }
-    }
-
-    public static Box getBox(RandomAccessSource.Container outer, String type) {
-        List<Box> list = getBoxes(outer, new String[]{type});
-        return list.get(0);
-    }
-
-    public static List<Box> getBoxes(RandomAccessSource.Container outer, String types[], List<Box> list) {
-        for (Box box : outer.getBoxes()) {
-            for (String type : types) {
-                if (box.getType().equals(type)) {
-                    list.add(box);
-                }
-            }
-            if (box instanceof RandomAccessSource.Container) {
-                getBoxes((RandomAccessSource.Container) box, types, list);
-            }
-        }
-        return list;
-    }
-
-    public static List<Box> getBoxes(RandomAccessSource.Container outer, String types[]) {
-        List<Box> list = new ArrayList<Box>();
-        return getBoxes(outer, types, list);
-    }
-
-
-    //http://stackoverflow.com/questions/3389348/parse-any-date-in-java
-    private static final HashMap<String, String> DATE_FORMAT_REGEXPS = new HashMap<String, String>() {
-        {
-            put("^\\d{8}$", "yyyyMMdd");
-            put("^\\d{1,2}-\\d{1,2}-\\d{4}$", "dd-MM-yyyy");
-            put("^\\d{4}-\\d{1,2}-\\d{1,2}$", "yyyy-MM-dd");
-            put("^\\d{1,2}/\\d{1,2}/\\d{4}$", "MM/dd/yyyy");
-            put("^\\d{4}/\\d{1,2}/\\d{1,2}$", "yyyy/MM/dd");
-            put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$", "dd MMM yyyy");
-            put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$", "dd MMMM yyyy");
-            put("^\\d{12}$", "yyyyMMddHHmm");
-            put("^\\d{8}\\s\\d{4}$", "yyyyMMdd HHmm");
-            put("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}$", "dd-MM-yyyy HH:mm");
-            put("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}$", "yyyy-MM-dd HH:mm");
-            put("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}$", "MM/dd/yyyy HH:mm");
-            put("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}$", "yyyy/MM/dd HH:mm");
-            put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}$", "dd MMM yyyy HH:mm");
-            put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$", "dd MMMM yyyy HH:mm");
-            put("^\\d{14}$", "yyyyMMddHHmmss");
-            put("^\\d{8}\\s\\d{6}$", "yyyyMMdd HHmmss");
-            put("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd-MM-yyyy HH:mm:ss");
-            put("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$", "yyyy-MM-dd HH:mm:ss");
-            put("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "MM/dd/yyyy HH:mm:ss");
-            put("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$", "yyyy/MM/dd HH:mm:ss");
-            put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd MMM yyyy HH:mm:ss");
-            put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd MMMM yyyy HH:mm:ss");
-        }
-    };
-
-    public static String determineDateFormat(String dateString) {
-        for (String regexp : DATE_FORMAT_REGEXPS.keySet()) {
-            if (dateString.toLowerCase().matches(regexp)) {
-                return DATE_FORMAT_REGEXPS.get(regexp);
-            }
-        }
-        return null; // Unknown format.
-    }
-
-    public static Date parseDate(String dateString) throws ParseException {
-        String formatString = determineDateFormat(dateString);
-        if (formatString == null) {
-            return null;
-        }
-        SimpleDateFormat sdf = new SimpleDateFormat(formatString);
-        return sdf.parse(dateString);
     }
 
 }

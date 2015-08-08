@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser.stuff;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.mp4parser.authoring.container.mp4.MovieCreator;
@@ -22,7 +22,7 @@ public class ReadWriteExample {
         Movie video = MovieCreator.build("/home/sannies/scm/svn/mp4parser/Solekai022_854_29_640x75_MaxSdSubtitle.uvu");
 
         //IsoFile out1 = new FragmentedMp4Builder().build(video);
-        RandomAccessSource.Container out2 = new DefaultMp4Builder().build(video);
+        Container out2 = new DefaultMp4Builder().build(video);
 
 
        /* long starttime1 = System.currentTimeMillis();

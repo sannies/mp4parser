@@ -17,14 +17,13 @@
 package com.mp4parser.boxes.iso14496.part12;
 
 import com.mp4parser.BoxParser;
+import com.mp4parser.FullBox;
+import com.mp4parser.support.AbstractContainerBox;
 import com.mp4parser.tools.IsoTypeReader;
 import com.mp4parser.tools.IsoTypeWriter;
-import com.mp4parser.RandomAccessSource;
-import com.mp4parser.support.AbstractContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
@@ -34,16 +33,14 @@ import java.nio.channels.WritableByteChannel;
  *
  * @see ItemProtectionBox
  */
-public class ItemProtectionBox extends AbstractContainerBox implements RandomAccessSource.FullBox {
+public class ItemProtectionBox extends AbstractContainerBox implements FullBox {
 
     public static final String TYPE = "ipro";
-
+    private int version;
+    private int flags;
     public ItemProtectionBox() {
         super(TYPE);
     }
-
-    private int version;
-    private int flags;
 
     public int getVersion() {
         return version;

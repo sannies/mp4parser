@@ -15,14 +15,17 @@
  */
 package com.mp4parser.authoring.builder;
 
-import com.coremedia.iso.boxes.OriginalFormatBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.util.Path;
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.boxes.iso14496.part12.OriginalFormatBox;
+import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
+import com.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import com.mp4parser.tools.Path;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import static com.mp4parser.tools.Math.lcm;
@@ -64,6 +67,57 @@ public class SyncSampleIntersectFinderImpl implements Fragmenter {
         }
     }
 
+    /**
+     * Calculates the timestamp of all tracks' sync samples.
+     *
+     * @param movie <code>track</code> is located in this movie
+     * @param track get this track's samples timestamps
+     * @return a list of timestamps
+     */
+    public static List<long[]> getSyncSamplesTimestamps(Movie movie, Track track) {
+        List<long[]> times = new LinkedList<long[]>();
+        for (Track currentTrack : movie.getTracks()) {
+            if (currentTrack.getHandler().equals(track.getHandler())) {
+                long[] currentTrackSyncSamples = currentTrack.getSyncSamples();
+                if (currentTrackSyncSamples != null && currentTrackSyncSamples.length > 0) {
+                    final long[] currentTrackTimes = getTimes(currentTrack, movie);
+                    times.add(currentTrackTimes);
+                }
+            }
+        }
+        return times;
+    }
+
+    private static long[] getTimes(Track track, Movie m) {
+        long[] syncSamples = track.getSyncSamples();
+        long[] syncSampleTimes = new long[syncSamples.length];
+
+        int currentSample = 1;  // first syncsample is 1
+        long currentDuration = 0;
+        int currentSyncSampleIndex = 0;
+
+        final long scalingFactor = calculateTracktimesScalingFactor(m, track);
+
+        while (currentSample <= syncSamples[syncSamples.length - 1]) {
+            if (currentSample == syncSamples[currentSyncSampleIndex]) {
+                syncSampleTimes[currentSyncSampleIndex++] = currentDuration * scalingFactor;
+            }
+            currentDuration += track.getSampleDurations()[-1 + currentSample++];
+        }
+        return syncSampleTimes;
+    }
+
+    private static long calculateTracktimesScalingFactor(Movie m, Track track) {
+        long timeScale = 1;
+        for (Track track1 : m.getTracks()) {
+            if (track1.getHandler().equals(track.getHandler())) {
+                if (track1.getTrackMetaData().getTimescale() != track.getTrackMetaData().getTimescale()) {
+                    timeScale = lcm(timeScale, track1.getTrackMetaData().getTimescale());
+                }
+            }
+        }
+        return timeScale;
+    }
 
     /**
      * Gets an array of sample numbers that are meant to be the first sample of each
@@ -155,27 +209,6 @@ public class SyncSampleIntersectFinderImpl implements Fragmenter {
 
     }
 
-    /**
-     * Calculates the timestamp of all tracks' sync samples.
-     *
-     * @param movie <code>track</code> is located in this movie
-     * @param track get this track's samples timestamps
-     * @return a list of timestamps
-     */
-    public static List<long[]> getSyncSamplesTimestamps(Movie movie, Track track) {
-        List<long[]> times = new LinkedList<long[]>();
-        for (Track currentTrack : movie.getTracks()) {
-            if (currentTrack.getHandler().equals(track.getHandler())) {
-                long[] currentTrackSyncSamples = currentTrack.getSyncSamples();
-                if (currentTrackSyncSamples != null && currentTrackSyncSamples.length > 0) {
-                    final long[] currentTrackTimes = getTimes(currentTrack, movie);
-                    times.add(currentTrackTimes);
-                }
-            }
-        }
-        return times;
-    }
-
     public long[] getCommonIndices(long[] syncSamples, long[] syncSampleTimes, long timeScale, long[]... otherTracksTimes) {
         List<Long> nuSyncSamples = new LinkedList<Long>();
         List<Long> nuSyncSampleTimes = new LinkedList<Long>();
@@ -254,38 +287,6 @@ public class SyncSampleIntersectFinderImpl implements Fragmenter {
         }
         return finalSampleArray;
 
-    }
-
-
-    private static long[] getTimes(Track track, Movie m) {
-        long[] syncSamples = track.getSyncSamples();
-        long[] syncSampleTimes = new long[syncSamples.length];
-
-        int currentSample = 1;  // first syncsample is 1
-        long currentDuration = 0;
-        int currentSyncSampleIndex = 0;
-
-        final long scalingFactor = calculateTracktimesScalingFactor(m, track);
-
-        while (currentSample <= syncSamples[syncSamples.length - 1]) {
-            if (currentSample == syncSamples[currentSyncSampleIndex]) {
-                syncSampleTimes[currentSyncSampleIndex++] = currentDuration * scalingFactor;
-            }
-            currentDuration += track.getSampleDurations()[-1 + currentSample++];
-        }
-        return syncSampleTimes;
-    }
-
-    private static long calculateTracktimesScalingFactor(Movie m, Track track) {
-        long timeScale = 1;
-        for (Track track1 : m.getTracks()) {
-            if (track1.getHandler().equals(track.getHandler())) {
-                if (track1.getTrackMetaData().getTimescale() != track.getTrackMetaData().getTimescale()) {
-                    timeScale = lcm(timeScale, track1.getTrackMetaData().getTimescale());
-                }
-            }
-        }
-        return timeScale;
     }
 
 }

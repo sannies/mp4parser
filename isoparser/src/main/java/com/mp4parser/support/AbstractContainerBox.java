@@ -16,11 +16,11 @@
 
 package com.mp4parser.support;
 
-import com.mp4parser.BoxParser;
-import com.mp4parser.tools.IsoTypeWriter;
 import com.mp4parser.BasicContainer;
+import com.mp4parser.BoxParser;
+import com.mp4parser.Container;
 import com.mp4parser.ParsableBox;
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,9 +33,9 @@ import java.nio.channels.WritableByteChannel;
  */
 public class AbstractContainerBox extends BasicContainer implements ParsableBox {
 
-    RandomAccessSource.Container parent;
     protected String type;
     protected boolean largeBox;
+    Container parent;
 
 
     public AbstractContainerBox(String type) {
@@ -43,7 +43,7 @@ public class AbstractContainerBox extends BasicContainer implements ParsableBox 
     }
 
 
-    public void setParent(RandomAccessSource.Container parent) {
+    public void setParent(Container parent) {
         this.parent = parent;
     }
 

@@ -1,20 +1,15 @@
 package com.mp4parser.authoring.tracks.h265;
 
-import com.mp4parser.tools.IsoTypeReader;
-import com.mp4parser.RandomAccessSource;
-import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
-import com.mp4parser.boxes.sampleentry.VisualSampleEntry;
-import com.mp4parser.authoring.DataSource;
-import com.mp4parser.authoring.FileDataSourceImpl;
-import com.mp4parser.authoring.Movie;
-import com.mp4parser.authoring.Sample;
-import com.mp4parser.authoring.Track;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.mp4parser.authoring.tracks.AbstractH26XTrack;
 import com.mp4parser.boxes.iso14496.part1.objectdescriptors.BitReaderBuffer;
-import com.mp4parser.tools.ByteBufferByteChannel;
+import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import com.mp4parser.boxes.iso14496.part15.HevcConfigurationBox;
 import com.mp4parser.boxes.iso14496.part15.HevcDecoderConfigurationRecord;
+import com.mp4parser.boxes.sampleentry.VisualSampleEntry;
+import com.mp4parser.tools.ByteBufferByteChannel;
+import com.mp4parser.tools.IsoTypeReader;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by sannies on 02.01.2015.
+ * Takes a raw H265 stream and muxes into an MP4.
  */
 public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes {
 
@@ -141,6 +136,29 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
         Arrays.fill(decodingTimes, 1);
     }
 
+    public static H265NalUnitHeader getNalUnitHeader(ByteBuffer nal) {
+        nal.position(0);
+        int nal_unit_header = IsoTypeReader.readUInt16(nal);
+
+
+        H265NalUnitHeader nalUnitHeader = new H265NalUnitHeader();
+        nalUnitHeader.forbiddenZeroFlag = (nal_unit_header & 0x8000) >> 15;
+        nalUnitHeader.nalUnitType = (nal_unit_header & 0x7E00) >> 9;
+        nalUnitHeader.nuhLayerId = (nal_unit_header & 0x1F8) >> 3;
+        nalUnitHeader.nuhTemporalIdPlusOne = (nal_unit_header & 0x7);
+        return nalUnitHeader;
+    }
+
+    public static void main(String[] args) throws IOException {
+        Track track = new H265TrackImpl(new FileDataSourceImpl("c:\\content\\test-UHD-HEVC_01_FMV_Med_track1.hvc"));
+        Movie movie = new Movie();
+        movie.addTrack(track);
+        DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
+        Container c = mp4Builder.build(movie);
+        c.writeContainer(new FileOutputStream("output.mp4").getChannel());
+
+    }
+
     private SampleDescriptionBox createSampleDescriptionBox() {
 
         stsd = new SampleDescriptionBox();
@@ -188,7 +206,6 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
         return stsd;
     }
 
-
     public void wrapUp(List<ByteBuffer> nals, boolean[] vclNalUnitSeenInAU, boolean[] isIdr) {
 
         samples.add(createSampleObject(nals));
@@ -203,11 +220,9 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
         nals.clear();
     }
 
-
     public SampleDescriptionBox getSampleDescriptionBox() {
         return null;
     }
-
 
     public String getHandler() {
         return "vide";
@@ -217,33 +232,8 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
         return samples;
     }
 
-
     boolean isVcl(H265NalUnitHeader nalUnitHeader) {
         return nalUnitHeader.nalUnitType >= 0 && nalUnitHeader.nalUnitType <= 31;
-    }
-
-    public static H265NalUnitHeader getNalUnitHeader(ByteBuffer nal) {
-        nal.position(0);
-        int nal_unit_header = IsoTypeReader.readUInt16(nal);
-
-
-        H265NalUnitHeader nalUnitHeader = new H265NalUnitHeader();
-        nalUnitHeader.forbiddenZeroFlag = (nal_unit_header & 0x8000) >> 15;
-        nalUnitHeader.nalUnitType = (nal_unit_header & 0x7E00) >> 9;
-        nalUnitHeader.nuhLayerId = (nal_unit_header & 0x1F8) >> 3;
-        nalUnitHeader.nuhTemporalIdPlusOne = (nal_unit_header & 0x7);
-        return nalUnitHeader;
-    }
-
-
-    public static void main(String[] args) throws IOException {
-        Track track = new H265TrackImpl(new FileDataSourceImpl("c:\\content\\test-UHD-HEVC_01_FMV_Med_track1.hvc"));
-        Movie movie = new Movie();
-        movie.addTrack(track);
-        DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
-        RandomAccessSource.Container c = mp4Builder.build(movie);
-        c.writeContainer(new FileOutputStream("output.mp4").getChannel());
-
     }
 
 }

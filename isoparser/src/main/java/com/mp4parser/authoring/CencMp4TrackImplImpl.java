@@ -1,21 +1,13 @@
 package com.mp4parser.authoring;
 
-import com.mp4parser.tools.IsoTypeReader;
-import com.mp4parser.boxes.iso14496.part12.ChunkOffsetBox;
-import com.mp4parser.boxes.iso14496.part12.SchemeTypeBox;
-import com.mp4parser.boxes.iso14496.part12.TrackBox;
-import com.mp4parser.boxes.iso14496.part12.MovieExtendsBox;
-import com.mp4parser.boxes.iso14496.part12.MovieFragmentBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentBox;
-import com.mp4parser.boxes.iso14496.part12.TrackRunBox;
-import com.mp4parser.authoring.tracks.CencEncryptedTrack;
 import com.mp4parser.Box;
-import com.mp4parser.tools.Path;
+import com.mp4parser.Container;
 import com.mp4parser.RandomAccessSource;
-import com.mp4parser.boxes.iso14496.part12.SampleAuxiliaryInformationOffsetsBox;
-import com.mp4parser.boxes.iso14496.part12.SampleAuxiliaryInformationSizesBox;
+import com.mp4parser.authoring.tracks.CencEncryptedTrack;
 import com.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.mp4parser.boxes.iso23001.part7.TrackEncryptionBox;
+import com.mp4parser.tools.IsoTypeReader;
+import com.mp4parser.tools.Path;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -39,7 +31,7 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
      *
      * @throws java.io.IOException if reading from underlying <code>DataSource</code> fails
      */
-    public CencMp4TrackImplImpl(final long trackId, RandomAccessSource.Container isofile, RandomAccessSource randomAccess, String name) throws IOException {
+    public CencMp4TrackImplImpl(final long trackId, Container isofile, RandomAccessSource randomAccess, String name) throws IOException {
         super(trackId, isofile, randomAccess, name);
         TrackBox trackBox = null;
         for (TrackBox box : Path.<TrackBox>getPaths(isofile, "moov/trak")) {
@@ -124,7 +116,7 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
             long[] chunkSizes = trackBox.getSampleTableBox().getSampleToChunkBox().blowup(chunkOffsetBox.getChunkOffsets().length);
 
 
-            FindSaioSaizPair saizSaioPair = new FindSaioSaizPair((RandomAccessSource.Container) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]")).invoke();
+            FindSaioSaizPair saizSaioPair = new FindSaioSaizPair((Container) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]")).invoke();
             SampleAuxiliaryInformationOffsetsBox saio = saizSaioPair.saio;
             SampleAuxiliaryInformationSizesBox saiz = saizSaioPair.saiz;
 
@@ -217,11 +209,11 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
     }
 
     private class FindSaioSaizPair {
-        private RandomAccessSource.Container container;
+        private Container container;
         private SampleAuxiliaryInformationSizesBox saiz;
         private SampleAuxiliaryInformationOffsetsBox saio;
 
-        public FindSaioSaizPair(RandomAccessSource.Container container) {
+        public FindSaioSaizPair(Container container) {
             this.container = container;
         }
 

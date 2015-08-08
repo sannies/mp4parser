@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -31,6 +31,10 @@ public class ServeMp4 extends AbstractHandler {
 
     Movie movie;
 
+    public ServeMp4(Movie movie) {
+        this.movie = movie;
+    }
+
     public static void main(String[] args) throws Exception {
         Movie movie = MovieCreator.build("/home/sannies/CSI.S13E02.HDTV.x264-LOL.mp4");
 
@@ -41,8 +45,31 @@ public class ServeMp4 extends AbstractHandler {
         server.join();
     }
 
-    public ServeMp4(Movie movie) {
-        this.movie = movie;
+    private static double correctTimeToSyncSample(Track track, double cutHere, boolean next) {
+        double[] timeOfSyncSamples = new double[track.getSyncSamples().length];
+        long currentSample = 0;
+        double currentTime = 0;
+        for (int i = 0; i < track.getSampleDurations().length; i++) {
+            long delta = track.getSampleDurations()[i];
+            if (Arrays.binarySearch(track.getSyncSamples(), currentSample + 1) >= 0) {
+                // samples always start with 1 but we start with zero therefore +1
+                timeOfSyncSamples[Arrays.binarySearch(track.getSyncSamples(), currentSample + 1)] = currentTime;
+            }
+            currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
+            currentSample++;
+        }
+        double previous = 0;
+        for (double timeOfSyncSample : timeOfSyncSamples) {
+            if (timeOfSyncSample > cutHere) {
+                if (next) {
+                    return timeOfSyncSample;
+                } else {
+                    return previous;
+                }
+            }
+            previous = timeOfSyncSample;
+        }
+        return timeOfSyncSamples[timeOfSyncSamples.length - 1];
     }
 
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -100,40 +127,13 @@ public class ServeMp4 extends AbstractHandler {
             movie.addTrack(new CroppedTrack(track, startSample, endSample));
         }
 
-        RandomAccessSource.Container out = new DefaultMp4Builder().build(movie);
+        Container out = new DefaultMp4Builder().build(movie);
         response.setHeader("content-type", "video/mp4");
         WritableByteChannel reponse = Channels.newChannel(response.getOutputStream());
         out.writeContainer(reponse);
         reponse.close();
 
 
-    }
-
-    private static double correctTimeToSyncSample(Track track, double cutHere, boolean next) {
-        double[] timeOfSyncSamples = new double[track.getSyncSamples().length];
-        long currentSample = 0;
-        double currentTime = 0;
-        for (int i = 0; i < track.getSampleDurations().length; i++) {
-            long delta = track.getSampleDurations()[i];
-            if (Arrays.binarySearch(track.getSyncSamples(), currentSample + 1) >= 0) {
-                // samples always start with 1 but we start with zero therefore +1
-                timeOfSyncSamples[Arrays.binarySearch(track.getSyncSamples(), currentSample + 1)] = currentTime;
-            }
-            currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
-            currentSample++;
-        }
-        double previous = 0;
-        for (double timeOfSyncSample : timeOfSyncSamples) {
-            if (timeOfSyncSample > cutHere) {
-                if (next) {
-                    return timeOfSyncSample;
-                } else {
-                    return previous;
-                }
-            }
-            previous = timeOfSyncSample;
-        }
-        return timeOfSyncSamples[timeOfSyncSamples.length - 1];
     }
 
 }

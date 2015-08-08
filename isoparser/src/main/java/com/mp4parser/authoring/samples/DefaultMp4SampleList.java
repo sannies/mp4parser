@@ -1,7 +1,8 @@
 package com.mp4parser.authoring.samples;
 
-import com.mp4parser.authoring.Sample;
+import com.mp4parser.Container;
 import com.mp4parser.RandomAccessSource;
+import com.mp4parser.authoring.Sample;
 import com.mp4parser.boxes.iso14496.part12.MovieBox;
 import com.mp4parser.boxes.iso14496.part12.SampleSizeBox;
 import com.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
@@ -23,8 +24,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
     //private static final long MAX_MAP_SIZE = 4096 * 1024;
     private static final long MAX_MAP_SIZE = 1024 * 1024 * 256; // Limit maximum mem map to 512MB
 
-    RandomAccessSource.Container topLevel;
-    private RandomAccessSource randomAccess;
+    Container topLevel;
     TrackBox trackBox = null;
     SoftReference<ByteBuffer[]>[] cache = null;
     int[] chunkNumsStartSampleNum;
@@ -33,9 +33,10 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
     long[][] sampleOffsetsWithinChunks;
     SampleSizeBox ssb;
     int lastChunk = 0;
+    private RandomAccessSource randomAccess;
 
 
-    public DefaultMp4SampleList(long track, RandomAccessSource.Container topLevel, RandomAccessSource randomAccessFile) {
+    public DefaultMp4SampleList(long track, Container topLevel, RandomAccessSource randomAccessFile) {
         this.topLevel = topLevel;
         this.randomAccess = randomAccessFile;
         MovieBox movieBox = topLevel.getBoxes(MovieBox.class).get(0);

@@ -15,12 +15,12 @@
  */
 package com.mp4parser.boxes.apple;
 
-import com.mp4parser.tools.IsoTypeReader;
-import com.mp4parser.tools.IsoTypeWriter;
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Box;
+import com.mp4parser.Container;
 import com.mp4parser.boxes.sampleentry.SampleEntry;
 import com.mp4parser.support.AbstractBox;
-import com.mp4parser.Box;
+import com.mp4parser.tools.IsoTypeReader;
+import com.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
  */
-public class TimeCodeBox extends AbstractBox implements SampleEntry, RandomAccessSource.Container {
+public class TimeCodeBox extends AbstractBox implements SampleEntry, Container {
     public static final String TYPE = "tmcd";
 
     int timeScale;

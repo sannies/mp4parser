@@ -5,17 +5,13 @@ import com.mp4parser.authoring.Sample;
 import com.mp4parser.authoring.TrackMetaData;
 import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import com.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
+import com.mp4parser.boxes.iso14496.part30.XMLSubtitleSampleEntry;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,13 +19,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 
 import static com.mp4parser.authoring.tracks.ttml.TtmlHelpers.getAllNamespaces;
 import static com.mp4parser.authoring.tracks.ttml.TtmlHelpers.getEndTime;
@@ -39,7 +28,7 @@ public class TtmlTrackImpl extends AbstractTrack {
 
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox = new SampleDescriptionBox();
-    XMLSubtitleSampleEntry XMLSubtitleSampleEntry = new XMLSubtitleSampleEntry();
+    XMLSubtitleSampleEntry xmlSubtitleSampleEntry = new XMLSubtitleSampleEntry();
 
     List<Sample> samples = new ArrayList<Sample>();
     SubSampleInformationBox subSampleInformationBox = new SubSampleInformationBox();
@@ -47,30 +36,6 @@ public class TtmlTrackImpl extends AbstractTrack {
 
     private long[] sampleDurations;
 
-
-
-    public static String getLanguage(Document document) {
-        return document.getDocumentElement().getAttribute("xml:lang");
-    }
-
-    private static long latestTimestamp(Document document) {
-        XPathFactory xPathfactory = XPathFactory.newInstance();
-        XPath xpath = xPathfactory.newXPath();
-        xpath.setNamespaceContext(TtmlHelpers.NAMESPACE_CONTEXT);
-
-        try {
-            XPathExpression xp = xpath.compile("//*[name()='p']");
-            NodeList timedNodes = (NodeList) xp.evaluate(document, XPathConstants.NODESET);
-            long lastTimeStamp = 0;
-            for (int i = 0; i < timedNodes.getLength(); i++) {
-                lastTimeStamp = Math.max(getEndTime(timedNodes.item(i)), lastTimeStamp);
-            }
-            return lastTimeStamp;
-        } catch (XPathExpressionException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
 
     public TtmlTrackImpl(String name, List<Document> ttmls) throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, URISyntaxException {
         super(name);
@@ -97,7 +62,7 @@ public class TtmlTrackImpl extends AbstractTrack {
 
 
             long lastTimeStamp = latestTimestamp(ttml);
-            lastTimeStamp = lastTimeStamp==0?startTime:lastTimeStamp;
+            lastTimeStamp = lastTimeStamp == 0 ? startTime : lastTimeStamp;
             sampleDurations[sampleNo] = lastTimeStamp - startTime;
             startTime = lastTimeStamp;
 
@@ -162,13 +127,36 @@ public class TtmlTrackImpl extends AbstractTrack {
             });
         }
 
-        XMLSubtitleSampleEntry.setNamespace(String.join("," ,getAllNamespaces(ttmls.get(0))));
-        XMLSubtitleSampleEntry.setSchemaLocation("");
-        XMLSubtitleSampleEntry.setAuxiliaryMimeTypes(String.join(",", new ArrayList<String>(mimeTypes).toArray(new String[mimeTypes.size()])));
-        sampleDescriptionBox.addBox(XMLSubtitleSampleEntry);
+        xmlSubtitleSampleEntry.setNamespace(String.join(",", getAllNamespaces(ttmls.get(0))));
+        xmlSubtitleSampleEntry.setSchemaLocation("");
+        xmlSubtitleSampleEntry.setAuxiliaryMimeTypes(String.join(",", new ArrayList<String>(mimeTypes).toArray(new String[mimeTypes.size()])));
+        sampleDescriptionBox.addBox(xmlSubtitleSampleEntry);
         trackMetaData.setTimescale(30000);
         trackMetaData.setLayer(65535);
 
+
+    }
+
+    public static String getLanguage(Document document) {
+        return document.getDocumentElement().getAttribute("xml:lang");
+    }
+
+    private static long latestTimestamp(Document document) {
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        XPath xpath = xPathfactory.newXPath();
+        xpath.setNamespaceContext(TtmlHelpers.NAMESPACE_CONTEXT);
+
+        try {
+            XPathExpression xp = xpath.compile("//*[name()='p']");
+            NodeList timedNodes = (NodeList) xp.evaluate(document, XPathConstants.NODESET);
+            long lastTimeStamp = 0;
+            for (int i = 0; i < timedNodes.getLength(); i++) {
+                lastTimeStamp = Math.max(getEndTime(timedNodes.item(i)), lastTimeStamp);
+            }
+            return lastTimeStamp;
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 

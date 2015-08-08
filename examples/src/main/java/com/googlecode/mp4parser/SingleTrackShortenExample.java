@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -39,7 +39,7 @@ public class SingleTrackShortenExample {
 
         movie.addTrack(new CroppedTrack(track, startSample, endSample));
 
-        RandomAccessSource.Container out = new DefaultMp4Builder().build(movie);
+        Container out = new DefaultMp4Builder().build(movie);
         FileOutputStream fos = new FileOutputStream(String.format("output-%f-%f.mp4", startTime, endTime));
         FileChannel fc = fos.getChannel();
         out.writeContainer(fc);

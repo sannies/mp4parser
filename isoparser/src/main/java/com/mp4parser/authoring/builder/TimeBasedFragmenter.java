@@ -15,10 +15,10 @@
  */
 package com.mp4parser.authoring.builder;
 
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.util.Mp4Arrays;
-import com.mp4parser.authoring.builder.Fragmenter;
+
+import com.mp4parser.authoring.Movie;
+import com.mp4parser.authoring.Track;
+import com.mp4parser.tools.Mp4Arrays;
 
 import java.util.Arrays;
 
@@ -50,7 +50,7 @@ public class TimeBasedFragmenter implements Fragmenter {
             time += (double) sampleDurations[i] / timescale;
             if (time >= fragmentLength &&
                     (syncSamples == null || Arrays.binarySearch(syncSamples, i + 1) >= 0)) {
-                segmentStartSamples = Mp4Arrays.copyOfAndAppend(segmentStartSamples, i+1);
+                segmentStartSamples = Mp4Arrays.copyOfAndAppend(segmentStartSamples, i + 1);
                 time = 0;
             }
         }

@@ -12,20 +12,20 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPathExpressionException;
-import java.io.*;
 import java.net.URISyntaxException;
-import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 public class TtmlHelpers {
 
+    public static final String SMPTE_TT_NAMESPACE = "http://www.smpte-ra.org/schemas/2052-1/2010/smpte-tt";
+    public static final String TTML_NAMESPACE = "http://www.w3.org/ns/ttml";
+    public static final NamespaceContext NAMESPACE_CONTEXT = new TextTrackNamespaceContext();
     static byte[] namespacesStyleSheet1 = ("<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n" +
             "    <xsl:output method=\"text\"/>\n" +
             "    <xsl:key name=\"kElemByNSURI\"\n" +
@@ -68,7 +68,6 @@ public class TtmlHelpers {
         }
 
     }
-
 
     public static String toTimeExpression(long ms) {
         return toTimeExpression(ms, -1);
@@ -122,40 +121,6 @@ public class TtmlHelpers {
         }
     }
 
-
-    public static final String SMPTE_TT_NAMESPACE = "http://www.smpte-ra.org/schemas/2052-1/2010/smpte-tt";
-    public static final String TTML_NAMESPACE = "http://www.w3.org/ns/ttml";
-
-    public static final NamespaceContext NAMESPACE_CONTEXT = new TextTrackNamespaceContext();
-
-    private static class TextTrackNamespaceContext implements NamespaceContext {
-
-
-        public String getNamespaceURI(String prefix) {
-            if (prefix.equals("ttml")) {
-                return TTML_NAMESPACE;
-            }
-            if (prefix.equals("smpte")) {
-                return SMPTE_TT_NAMESPACE;
-            }
-            return null;
-        }
-
-        public Iterator getPrefixes(String val) {
-            return Arrays.asList("ttml", "smpte").iterator();
-        }
-
-        public String getPrefix(String uri) {
-            if (uri.equals(TTML_NAMESPACE)) {
-                return "ttml";
-            }
-            if (uri.equals(SMPTE_TT_NAMESPACE)) {
-                return "smpte";
-            }
-            return null;
-        }
-    }
-
     public static void pretty(Document document, OutputStream outputStream, int indent) throws IOException {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = null;
@@ -177,7 +142,6 @@ public class TtmlHelpers {
             throw new IOException(e);
         }
     }
-
 
     public static long getStartTime(Node p) {
         long time = 0;
@@ -207,6 +171,34 @@ public class TtmlHelpers {
             return time + toTime(p.getAttributes().getNamedItem("end").getNodeValue());
         }
         return time;
+    }
+
+    private static class TextTrackNamespaceContext implements NamespaceContext {
+
+
+        public String getNamespaceURI(String prefix) {
+            if (prefix.equals("ttml")) {
+                return TTML_NAMESPACE;
+            }
+            if (prefix.equals("smpte")) {
+                return SMPTE_TT_NAMESPACE;
+            }
+            return null;
+        }
+
+        public Iterator getPrefixes(String val) {
+            return Arrays.asList("ttml", "smpte").iterator();
+        }
+
+        public String getPrefix(String uri) {
+            if (uri.equals(TTML_NAMESPACE)) {
+                return "ttml";
+            }
+            if (uri.equals(SMPTE_TT_NAMESPACE)) {
+                return "smpte";
+            }
+            return null;
+        }
     }
 
 }

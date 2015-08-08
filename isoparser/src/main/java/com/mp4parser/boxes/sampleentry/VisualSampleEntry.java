@@ -17,11 +17,11 @@
 package com.mp4parser.boxes.sampleentry;
 
 import com.mp4parser.BoxParser;
+import com.mp4parser.Container;
+import com.mp4parser.boxes.iso14496.part12.ProtectionSchemeInformationBox;
 import com.mp4parser.tools.IsoTypeReader;
 import com.mp4parser.tools.IsoTypeWriter;
-import com.mp4parser.RandomAccessSource;
 import com.mp4parser.tools.Utf8;
-import com.mp4parser.boxes.iso14496.part12.ProtectionSchemeInformationBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -50,7 +50,7 @@ import java.nio.channels.WritableByteChannel;
  *
  * Format-specific information is appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */
-public final class VisualSampleEntry extends AbstractSampleEntry implements RandomAccessSource.Container {
+public final class VisualSampleEntry extends AbstractSampleEntry implements Container {
     public static final String TYPE1 = "mp4v";
     public static final String TYPE2 = "s263";
     public static final String TYPE3 = "avc1";

@@ -16,9 +16,8 @@
 
 package com.mp4parser.boxes.iso14496.part12;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.support.AbstractContainerBox;
-
 import com.mp4parser.tools.Path;
 
 import java.util.ArrayList;
@@ -76,7 +75,7 @@ public class MovieFragmentBox extends AbstractContainerBox {
     }
 
     public List<TrackFragmentHeaderBox> getTrackFragmentHeaderBoxes() {
-        return Path.getPaths((RandomAccessSource.Container) this, "tfhd");
+        return Path.getPaths((Container) this, "tfhd");
     }
 
     public List<TrackRunBox> getTrackRunBoxes() {

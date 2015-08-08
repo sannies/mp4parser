@@ -1,7 +1,15 @@
 package com.mp4parser;
 
 /**
- * Created by sannies on 08.08.2015.
+ * The <code>FullBox</code> contains all getters and setters specific
+ * to a so-called full box according to the ISO/IEC 14496/12 specification.
  */
-public interface FullBox {
+public interface FullBox extends ParsableBox {
+    int getVersion();
+
+    void setVersion(int version);
+
+    int getFlags();
+
+    void setFlags(int flags);
 }

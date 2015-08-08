@@ -1,7 +1,7 @@
 package com.mp4parser.authoring.tracks;
 
+import com.mp4parser.Container;
 import com.mp4parser.IsoFile;
-import com.mp4parser.RandomAccessSource;
 import com.mp4parser.authoring.FileDataSourceImpl;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
@@ -19,7 +19,7 @@ public class AC3TrackImplTest {
         m.addTrack(t);
 
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
-        RandomAccessSource.Container isoFile = mp4Builder.build(m);
+        Container isoFile = mp4Builder.build(m);
         //WritableByteChannel fc = new FileOutputStream("ac3-sample.mp4").getChannel();
         //isoFile.writeContainer(fc);
         //fc.close();

@@ -15,72 +15,23 @@
  */
 package com.mp4parser.authoring.builder;
 
-import com.mp4parser.IsoFile;
-import com.mp4parser.tools.IsoTypeWriter;
-import com.mp4parser.BasicContainer;
-import com.mp4parser.RandomAccessSource;
 import com.mp4parser.authoring.Edit;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Sample;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.tracks.CencEncryptedTrack;
-import com.mp4parser.boxes.iso14496.part12.HintMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.NullMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.SoundMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.SubtitleMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.VideoMediaHeaderBox;
+import com.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.mp4parser.boxes.iso23001.part7.SampleEncryptionBox;
+import com.mp4parser.boxes.iso23001.part7.TrackEncryptionBox;
 import com.mp4parser.boxes.samplegrouping.GroupEntry;
 import com.mp4parser.boxes.samplegrouping.SampleGroupDescriptionBox;
 import com.mp4parser.boxes.samplegrouping.SampleToGroupBox;
-import com.mp4parser.ParsableBox;
-import com.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
-import com.mp4parser.boxes.iso14496.part12.DataEntryUrlBox;
-import com.mp4parser.boxes.iso14496.part12.DataInformationBox;
-import com.mp4parser.boxes.iso14496.part12.DataReferenceBox;
-import com.mp4parser.boxes.iso14496.part12.EditBox;
-import com.mp4parser.boxes.iso14496.part12.EditListBox;
-import com.mp4parser.boxes.iso14496.part12.FileTypeBox;
-import com.mp4parser.boxes.iso14496.part12.HandlerBox;
-import com.mp4parser.boxes.iso14496.part12.MediaBox;
-import com.mp4parser.boxes.iso14496.part12.MediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.MediaInformationBox;
-import com.mp4parser.boxes.iso14496.part12.MovieBox;
-import com.mp4parser.boxes.iso14496.part12.MovieExtendsBox;
-import com.mp4parser.boxes.iso14496.part12.MovieExtendsHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.MovieFragmentBox;
-import com.mp4parser.boxes.iso14496.part12.MovieFragmentHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.MovieFragmentRandomAccessBox;
-import com.mp4parser.boxes.iso14496.part12.MovieFragmentRandomAccessOffsetBox;
-import com.mp4parser.boxes.iso14496.part12.MovieHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
-import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
-import com.mp4parser.boxes.iso14496.part12.SampleFlags;
-import com.mp4parser.boxes.iso14496.part12.SampleSizeBox;
-import com.mp4parser.boxes.iso14496.part12.SampleTableBox;
-import com.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
-import com.mp4parser.boxes.iso14496.part12.SchemeTypeBox;
-import com.mp4parser.boxes.iso14496.part12.StaticChunkOffsetBox;
-import com.mp4parser.boxes.iso14496.part12.TimeToSampleBox;
-import com.mp4parser.boxes.iso14496.part12.TrackBox;
-import com.mp4parser.boxes.iso14496.part12.TrackExtendsBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentBaseMediaDecodeTimeBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentRandomAccessBox;
-import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.TrackRunBox;
+import com.mp4parser.tools.IsoTypeWriter;
 import com.mp4parser.tools.Path;
-import com.mp4parser.Box;
-import com.mp4parser.boxes.iso14496.part12.SampleAuxiliaryInformationOffsetsBox;
-import com.mp4parser.boxes.iso14496.part12.SampleAuxiliaryInformationSizesBox;
-import com.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
-import com.mp4parser.boxes.iso23001.part7.TrackEncryptionBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.*;
 import java.util.logging.Logger;
 
 import static com.mp4parser.tools.CastUtils.l2i;
@@ -192,7 +143,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     /**
      * {@inheritDoc}
      */
-    public RandomAccessSource.Container build(Movie movie) {
+    public Container build(Movie movie) {
         LOG.fine("Creating movie " + movie);
         if (intersectionFinder == null) {
             Track refTrack = null;
@@ -610,7 +561,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
      * @param isoFile the track is contained in
      * @return a track fragment random access box.
      */
-    protected ParsableBox createTfra(Track track, RandomAccessSource.Container isoFile) {
+    protected ParsableBox createTfra(Track track, Container isoFile) {
         TrackFragmentRandomAccessBox tfra = new TrackFragmentRandomAccessBox();
         tfra.setVersion(1); // use long offsets and times
         List<TrackFragmentRandomAccessBox.Entry> offset2timeEntries = new LinkedList<TrackFragmentRandomAccessBox.Entry>();
@@ -683,14 +634,14 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     /**
      * Creates a 'mfra' - movie fragment random access box for the given movie in the given
-     * isofile. Uses {@link #createTfra(com.mp4parser.authoring.Track, RandomAccessSource.Container)}
+     * isofile. Uses {@link #createTfra(com.mp4parser.authoring.Track, Container)}
      * to generate the child boxes.
      *
      * @param movie   concerned movie
      * @param isoFile concerned isofile
      * @return a complete 'mfra' box
      */
-    protected ParsableBox createMfra(Movie movie, RandomAccessSource.Container isoFile) {
+    protected ParsableBox createMfra(Movie movie, Container isoFile) {
         MovieFragmentRandomAccessBox mfra = new MovieFragmentRandomAccessBox();
         for (Track track : movie.getTracks()) {
             mfra.addBox(createTfra(track, isoFile));

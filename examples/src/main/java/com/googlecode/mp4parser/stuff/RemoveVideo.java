@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser.stuff;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -22,7 +22,7 @@ public class RemoveVideo {
             }
         }
         DefaultMp4Builder b = new DefaultMp4Builder();
-        RandomAccessSource.Container c = b.build(mWOutVideo);
+        Container c = b.build(mWOutVideo);
         c.writeContainer(new FileOutputStream("output.mp4").getChannel());
     }
 }

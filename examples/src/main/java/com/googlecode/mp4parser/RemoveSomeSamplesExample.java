@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -25,7 +25,7 @@ public class RemoveSomeSamplesExample {
         Movie nuMovie = new Movie();
         nuMovie.addTrack(new AppendTrack(new CroppedTrack(audio, 0, 10), new CroppedTrack(audio, 100, audio.getSamples().size())));
 
-        RandomAccessSource.Container out = new DefaultMp4Builder().build(nuMovie);
+        Container out = new DefaultMp4Builder().build(nuMovie);
         FileOutputStream fos = new FileOutputStream(new File("output.mp4"));
         out.writeContainer(fos.getChannel());
         fos.close();

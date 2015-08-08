@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -93,7 +93,7 @@ public class ShortenExample {
             movie.addTrack(new AppendTrack(new CroppedTrack(track, startSample1, endSample1), new CroppedTrack(track, startSample2, endSample2)));
         }
         long start1 = System.currentTimeMillis();
-        RandomAccessSource.Container out = new DefaultMp4Builder().build(movie);
+        Container out = new DefaultMp4Builder().build(movie);
         long start2 = System.currentTimeMillis();
         FileOutputStream fos = new FileOutputStream(String.format("output-%f-%f--%f-%f.mp4", startTime1, endTime1, startTime2, endTime2));
         FileChannel fc = fos.getChannel();

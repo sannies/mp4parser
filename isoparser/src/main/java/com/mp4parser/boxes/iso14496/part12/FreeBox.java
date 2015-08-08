@@ -18,13 +18,12 @@ package com.mp4parser.boxes.iso14496.part12;
 
 
 import com.mp4parser.BoxParser;
-import com.mp4parser.tools.IsoTypeWriter;
+import com.mp4parser.Container;
 import com.mp4parser.ParsableBox;
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.LinkedList;
@@ -40,7 +39,7 @@ public class FreeBox implements ParsableBox {
     public static final String TYPE = "free";
     ByteBuffer data;
     List<ParsableBox> replacers = new LinkedList<ParsableBox>();
-    private RandomAccessSource.Container parent;
+    private Container parent;
     private long offset;
 
     public FreeBox() {

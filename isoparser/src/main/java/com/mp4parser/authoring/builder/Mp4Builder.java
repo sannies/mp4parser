@@ -15,7 +15,7 @@
  */
 package com.mp4parser.authoring.builder;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 
 /**
@@ -30,6 +30,6 @@ public interface Mp4Builder {
      * @param movie data source
      * @return the freshly built IsoFile
      */
-    public RandomAccessSource.Container build(Movie movie);
+    public Container build(Movie movie);
 
 }

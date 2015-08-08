@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser.muxformats;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.FileDataSourceImpl;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
@@ -21,7 +21,7 @@ public class DTSMuxExample {
         movie.addTrack(track);
 
         DefaultMp4Builder builder = new DefaultMp4Builder();
-        RandomAccessSource.Container container = builder.build(movie);
+        Container container = builder.build(movie);
         FileOutputStream fos = new FileOutputStream("c:\\dev\\isoparser-dtshd-test.mp4");
         FileChannel fc = fos.getChannel();
         container.writeContainer(fc);

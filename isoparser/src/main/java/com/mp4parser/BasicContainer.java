@@ -4,9 +4,11 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-public class BasicContainer implements RandomAccessSource.Container {
+public class BasicContainer implements Container {
     private List<Box> boxes = new ArrayList<Box>();
 
     public BasicContainer() {
@@ -73,8 +75,8 @@ public class BasicContainer implements RandomAccessSource.Container {
                 boxesToBeReturned.add((T) boxe);
             }
 
-            if (recursive && boxe instanceof RandomAccessSource.Container) {
-                boxesToBeReturned.addAll(((RandomAccessSource.Container) boxe).getBoxes(clazz, recursive));
+            if (recursive && boxe instanceof Container) {
+                boxesToBeReturned.addAll(((Container) boxe).getBoxes(clazz, recursive));
             }
         }
         return boxesToBeReturned;

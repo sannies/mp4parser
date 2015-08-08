@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.WrappingTrack;
@@ -33,7 +33,7 @@ public class MakeTrackLonger {
             }
         }
         DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
-        RandomAccessSource.Container mOut = defaultMp4Builder.build(movieOut);
+        Container mOut = defaultMp4Builder.build(movieOut);
         mOut.writeContainer(new FileOutputStream("default.mp4").getChannel());
 
     }

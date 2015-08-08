@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser.muxformats;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.FileDataSourceImpl;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -28,7 +28,7 @@ public class H264Example {
         //m.addTrack(aacTrack);
 
         {
-            RandomAccessSource.Container out = new DefaultMp4Builder().build(m);
+            Container out = new DefaultMp4Builder().build(m);
             FileOutputStream fos = new FileOutputStream(new File("h264_output.mp4"));
             FileChannel fc = fos.getChannel();
             out.writeContainer(fc);

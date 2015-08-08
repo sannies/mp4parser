@@ -17,15 +17,14 @@
 package com.mp4parser.boxes.iso14496.part12;
 
 import com.mp4parser.BoxParser;
-import com.mp4parser.tools.IsoTypeReader;
-import com.mp4parser.tools.IsoTypeWriter;
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.FullBox;
 import com.mp4parser.boxes.sampleentry.AbstractSampleEntry;
 import com.mp4parser.support.AbstractContainerBox;
+import com.mp4parser.tools.IsoTypeReader;
+import com.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
@@ -52,15 +51,13 @@ import java.nio.channels.WritableByteChannel;
  * @see com.mp4parser.boxes.sampleentry.TextSampleEntry
  * @see com.mp4parser.boxes.sampleentry.AudioSampleEntry
  */
-public class SampleDescriptionBox extends AbstractContainerBox implements RandomAccessSource.FullBox {
+public class SampleDescriptionBox extends AbstractContainerBox implements FullBox {
     public static final String TYPE = "stsd";
-
+    private int version;
+    private int flags;
     public SampleDescriptionBox() {
         super(TYPE);
     }
-
-    private int version;
-    private int flags;
 
     public int getVersion() {
         return version;

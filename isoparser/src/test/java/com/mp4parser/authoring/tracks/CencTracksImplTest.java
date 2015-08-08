@@ -1,6 +1,7 @@
 package com.mp4parser.authoring.tracks;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
+import com.mp4parser.InMemRandomAccessSourceImpl;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -8,7 +9,6 @@ import com.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.mp4parser.authoring.builder.Mp4Builder;
 import com.mp4parser.authoring.container.mp4.MovieCreator;
 import com.mp4parser.tools.ByteBufferByteChannel;
-import com.mp4parser.InMemRandomAccessSourceImpl;
 import org.junit.Test;
 
 import javax.crypto.SecretKey;
@@ -36,7 +36,7 @@ public class CencTracksImplTest {
         m.setTracks(encTracks);
 
         Mp4Builder mp4Builder = new DefaultMp4Builder();
-        RandomAccessSource.Container c = mp4Builder.build(m);
+        Container c = mp4Builder.build(m);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         c.writeContainer(Channels.newChannel(baos));
@@ -69,7 +69,7 @@ public class CencTracksImplTest {
         m.setTracks(encTracks);
 
         Mp4Builder mp4Builder = new FragmentedMp4Builder();
-        RandomAccessSource.Container c = mp4Builder.build(m);
+        Container c = mp4Builder.build(m);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         c.writeContainer(Channels.newChannel(baos));

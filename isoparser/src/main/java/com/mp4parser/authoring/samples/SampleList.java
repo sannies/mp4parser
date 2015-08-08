@@ -1,8 +1,9 @@
 package com.mp4parser.authoring.samples;
 
+import com.mp4parser.Container;
+import com.mp4parser.RandomAccessSource;
 import com.mp4parser.authoring.Sample;
 import com.mp4parser.tools.Path;
-import com.mp4parser.RandomAccessSource;
 
 import java.io.IOException;
 import java.util.AbstractList;
@@ -15,7 +16,7 @@ public class SampleList extends AbstractList<Sample> {
     List<Sample> samples;
 
 
-    public SampleList(long trackId, RandomAccessSource.Container isofile, RandomAccessSource source) throws IOException {
+    public SampleList(long trackId, Container isofile, RandomAccessSource source) throws IOException {
 
         if (Path.getPaths(isofile, "moov/mvex/trex").isEmpty()) {
             samples = new DefaultMp4SampleList(trackId, isofile, source);

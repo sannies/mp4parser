@@ -1,6 +1,7 @@
 package com.googlecode.mp4parser.boxes.cenc;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
+import com.mp4parser.InMemRandomAccessSourceImpl;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Sample;
 import com.mp4parser.authoring.Track;
@@ -9,11 +10,10 @@ import com.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.mp4parser.authoring.builder.Mp4Builder;
 import com.mp4parser.authoring.container.mp4.MovieCreator;
 import com.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
-import com.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
 import com.mp4parser.authoring.tracks.CencEncryptedTrack;
+import com.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
 import com.mp4parser.boxes.samplegrouping.CencSampleEncryptionInformationGroupEntry;
 import com.mp4parser.tools.ByteBufferByteChannel;
-import com.mp4parser.InMemRandomAccessSourceImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +24,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
-import java.util.*;
 
 public class CencFileRoundtripTest {
     String baseDir = CencFileRoundtripTest.class.getProtectionDomain().getCodeSource().getLocation().getFile();
@@ -161,7 +160,7 @@ public class CencFileRoundtripTest {
             CencEncryptingTrackImpl cencEncryptingTrack = new CencEncryptingTrackImpl(track, uuidDefault, keys, keyRotation, encAlgo, false, encryptButClear);
             m2.addTrack(cencEncryptingTrack);
         }
-        RandomAccessSource.Container c = builder.build(m2);
+        Container c = builder.build(m2);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         c.writeContainer(Channels.newChannel(baos));
@@ -175,7 +174,7 @@ public class CencFileRoundtripTest {
                     new CencDecryptingTrackImpl((CencEncryptedTrack) track, keys);
             m4.addTrack(cencDecryptingTrack);
         }
-        RandomAccessSource.Container c2 = builder.build(m4);
+        Container c2 = builder.build(m4);
 
         ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
         c2.writeContainer(Channels.newChannel(baos2));

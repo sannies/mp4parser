@@ -16,6 +16,8 @@
 package com.mp4parser.authoring.builder;
 
 
+import com.mp4parser.authoring.Track;
+
 /**
  *
  */
@@ -27,5 +29,5 @@ public interface Fragmenter {
      * @param track concerned track
      * @return an array containing the ordinal of each fragment's first sample
      */
-    public long[] sampleNumbers(Track track);
+    long[] sampleNumbers(Track track);
 }

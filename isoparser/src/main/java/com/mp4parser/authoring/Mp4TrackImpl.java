@@ -15,35 +15,17 @@
  */
 package com.mp4parser.authoring;
 
-import com.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
-import com.mp4parser.boxes.iso14496.part12.EditListBox;
-import com.mp4parser.boxes.iso14496.part12.MediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.MovieHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
-import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
-import com.mp4parser.boxes.iso14496.part12.SampleTableBox;
-import com.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
-import com.mp4parser.boxes.iso14496.part12.TimeToSampleBox;
-import com.mp4parser.boxes.iso14496.part12.TrackBox;
-import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.MovieExtendsBox;
-import com.mp4parser.boxes.iso14496.part12.MovieFragmentBox;
-import com.mp4parser.boxes.iso14496.part12.SampleFlags;
-import com.mp4parser.boxes.iso14496.part12.TrackExtendsBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.TrackRunBox;
+import com.mp4parser.Container;
+import com.mp4parser.RandomAccessSource;
 import com.mp4parser.authoring.samples.SampleList;
 import com.mp4parser.boxes.samplegrouping.GroupEntry;
 import com.mp4parser.boxes.samplegrouping.SampleGroupDescriptionBox;
 import com.mp4parser.boxes.samplegrouping.SampleToGroupBox;
+import com.mp4parser.tools.Mp4Arrays;
 import com.mp4parser.tools.Path;
-import com.mp4parser.RandomAccessSource;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +49,7 @@ public class Mp4TrackImpl extends AbstractTrack {
      * Creates a track from a TrackBox and potentially fragments. Use <b>fragements parameter
      * only</b> to supply additional fragments that are not located in the main file.
      */
-    public Mp4TrackImpl(final long trackId, RandomAccessSource.Container isofile, RandomAccessSource randomAccess, String name) throws IOException {
+    public Mp4TrackImpl(final long trackId, Container isofile, RandomAccessSource randomAccess, String name) throws IOException {
         super(name);
 
         samples = new SampleList(trackId, isofile, randomAccess);
@@ -201,7 +183,7 @@ public class Mp4TrackImpl extends AbstractTrack {
             for (MovieFragmentBox movieFragmentBox : movieFragmentBoxes) {
                 for (TrackFragmentBox traf : movieFragmentBox.getBoxes(TrackFragmentBox.class)) {
                     if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
-                        sampleGroups = getSampleGroups(Path.<SampleGroupDescriptionBox>getPaths((RandomAccessSource.Container) traf, "sgpd"), Path.<SampleToGroupBox>getPaths((RandomAccessSource.Container) traf, "sbgp"), sampleGroups);
+                        sampleGroups = getSampleGroups(Path.<SampleGroupDescriptionBox>getPaths((Container) traf, "sgpd"), Path.<SampleToGroupBox>getPaths((Container) traf, "sbgp"), sampleGroups);
                     }
                 }
             }

@@ -4,18 +4,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.mp4parser.authoring.tracks.ttml.TtmlHelpers.getEndTime;
-import static com.mp4parser.authoring.tracks.ttml.TtmlHelpers.getStartTime;
-import static com.mp4parser.authoring.tracks.ttml.TtmlHelpers.toTime;
-import static com.mp4parser.authoring.tracks.ttml.TtmlHelpers.toTimeExpression;
+import static com.mp4parser.authoring.tracks.ttml.TtmlHelpers.*;
 
 
 public class TtmlSegmenter {
@@ -34,7 +27,7 @@ public class TtmlSegmenter {
             Document d = (Document) doc.cloneNode(true);
             NodeList timedNodes = (NodeList) xp.evaluate(d, XPathConstants.NODESET);
             long segmentStartTime = subDocs.size() * splitTime;
-            long segmentEndTime = (subDocs.size()+1) * splitTime;
+            long segmentEndTime = (subDocs.size() + 1) * splitTime;
             thereIsMore = false;
 
             for (int i = 0; i < timedNodes.getLength(); i++) {
@@ -49,7 +42,7 @@ public class TtmlSegmenter {
                 }
 
                 if (startTime >= segmentStartTime && startTime < segmentEndTime && endTime > segmentEndTime) {
-                    changeTime(p, "end", segmentEndTime - endTime );
+                    changeTime(p, "end", segmentEndTime - endTime);
                     startTime = segmentStartTime;
                     endTime = segmentEndTime;
                 }
@@ -83,7 +76,7 @@ public class TtmlSegmenter {
                 // that should be ok for non high framerate content
                 // actually I'd have to get the ttp:frameRateMultiplier
                 // and the ttp:frameRate attribute to calculate at which frame to show the sub
-                frames = (int)(nuTime - (nuTime/1000)*1000) / 44;
+                frames = (int) (nuTime - (nuTime / 1000) * 1000) / 44;
             }
             p.getAttributes().getNamedItem(attribute).setNodeValue(toTimeExpression(nuTime, frames));
         }
@@ -140,18 +133,16 @@ public class TtmlSegmenter {
         }
     }
 
-    public static void trimWhitespace(Node node)
-    {
+    public static void trimWhitespace(Node node) {
         NodeList children = node.getChildNodes();
-        for(int i = 0; i < children.getLength(); ++i) {
+        for (int i = 0; i < children.getLength(); ++i) {
             Node child = children.item(i);
-            if(child.getNodeType() == Node.TEXT_NODE) {
+            if (child.getNodeType() == Node.TEXT_NODE) {
                 child.setTextContent(child.getTextContent().trim());
             }
             trimWhitespace(child);
         }
     }
-
 
 
 }

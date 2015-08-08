@@ -15,58 +15,24 @@
  */
 package com.mp4parser.authoring.builder;
 
-import com.mp4parser.IsoFile;
-import com.mp4parser.tools.IsoTypeWriter;
-import com.mp4parser.BasicContainer;
-import com.mp4parser.RandomAccessSource;
 import com.mp4parser.authoring.Edit;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Sample;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.tracks.CencEncryptedTrack;
-import com.mp4parser.boxes.iso14496.part12.HintMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.NullMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.SoundMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.SubtitleMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.VideoMediaHeaderBox;
+import com.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.mp4parser.boxes.iso23001.part7.SampleEncryptionBox;
 import com.mp4parser.boxes.samplegrouping.GroupEntry;
 import com.mp4parser.boxes.samplegrouping.SampleGroupDescriptionBox;
 import com.mp4parser.boxes.samplegrouping.SampleToGroupBox;
-import com.mp4parser.ParsableBox;
-import com.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
-import com.mp4parser.boxes.iso14496.part12.DataEntryUrlBox;
-import com.mp4parser.boxes.iso14496.part12.DataInformationBox;
-import com.mp4parser.boxes.iso14496.part12.DataReferenceBox;
-import com.mp4parser.boxes.iso14496.part12.EditBox;
-import com.mp4parser.boxes.iso14496.part12.EditListBox;
-import com.mp4parser.boxes.iso14496.part12.FileTypeBox;
-import com.mp4parser.boxes.iso14496.part12.HandlerBox;
-import com.mp4parser.boxes.iso14496.part12.MediaBox;
-import com.mp4parser.boxes.iso14496.part12.MediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.MediaInformationBox;
-import com.mp4parser.boxes.iso14496.part12.MovieBox;
-import com.mp4parser.boxes.iso14496.part12.MovieHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
-import com.mp4parser.boxes.iso14496.part12.SampleSizeBox;
-import com.mp4parser.boxes.iso14496.part12.SampleTableBox;
-import com.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
-import com.mp4parser.boxes.iso14496.part12.StaticChunkOffsetBox;
-import com.mp4parser.boxes.iso14496.part12.SyncSampleBox;
-import com.mp4parser.boxes.iso14496.part12.TimeToSampleBox;
-import com.mp4parser.boxes.iso14496.part12.TrackBox;
-import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
-import com.mp4parser.tools.Path;
-import com.mp4parser.Box;
-import com.mp4parser.boxes.iso14496.part12.SampleAuxiliaryInformationOffsetsBox;
-import com.mp4parser.boxes.iso14496.part12.SampleAuxiliaryInformationSizesBox;
-import com.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
+import com.mp4parser.tools.IsoTypeWriter;
+import com.mp4parser.tools.Mp4Arrays;
 import com.mp4parser.tools.Offsets;
+import com.mp4parser.tools.Path;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -111,7 +77,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     /**
      * {@inheritDoc}
      */
-    public RandomAccessSource.Container build(Movie movie) {
+    public Container build(Movie movie) {
         if (intersectionFinder == null) {
             intersectionFinder = new TimeBasedFragmenter(movie, 2);
         }
@@ -160,7 +126,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         at offset 16 so that we can use the same offset for large boxes and small boxes
          */
 
-        for (StaticChunkOffsetBox chunkOffsetBox : chunkOffsetBoxes) {
+        for (StaticChunkOffsetBox chunkOffsetBox : chunkOffsetBoxes.values()) {
             long[] offsets = chunkOffsetBox.getChunkOffsets();
             for (int i = 0; i < offsets.length; i++) {
                 offsets[i] += dataOffset;
@@ -655,7 +621,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     private class InterleaveChunkMdat implements Box {
         List<Track> tracks;
         List<List<Sample>> chunkList = new ArrayList<List<Sample>>();
-        RandomAccessSource.Container parent;
+
 
         long contentSize;
 
@@ -707,24 +673,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             }
 
 
-
-
-
         }
-
-        public RandomAccessSource.Container getParent() {
-            return parent;
-        }
-
-        public void setParent(RandomAccessSource.Container parent) {
-            this.parent = parent;
-        }
-
-        public long getOffset() {
-            throw new RuntimeException("Doesn't have any meaning for programmatically created boxes");
-        }
-
-
 
         public String getType() {
             return "mdat";

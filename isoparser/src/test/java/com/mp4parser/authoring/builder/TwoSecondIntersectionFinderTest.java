@@ -13,10 +13,10 @@ public class TwoSecondIntersectionFinderTest {
 
     @Test
     public void testSampleNumbers() throws Exception {
-        Movie m = MovieCreator.build(new FileDataSourceImpl(TwoSecondIntersectionFinderTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/Beethoven - Bagatelle op.119 no.11 i.m4a"));
+        Movie m = MovieCreator.build(TwoSecondIntersectionFinderTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/Beethoven - Bagatelle op.119 no.11 i.m4a");
         TimeBasedFragmenter intersectionFinder = new TimeBasedFragmenter(m, 2);
         long[] s = intersectionFinder.sampleNumbers(m.getTracks().get(0));
-        String sss="";
+        String sss = "";
         for (long l : s) {
             sss += l + ", ";
         }

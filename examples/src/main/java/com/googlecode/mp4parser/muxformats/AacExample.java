@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser.muxformats;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.FileDataSourceImpl;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -24,7 +24,7 @@ public class AacExample {
         Movie m = new Movie();
         m.addTrack(aacTrack);
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
-        RandomAccessSource.Container out = mp4Builder.build(m);
+        Container out = mp4Builder.build(m);
         FileOutputStream fos = new FileOutputStream("output.mp4");
         FileChannel fc = fos.getChannel();
         out.writeContainer(fc);

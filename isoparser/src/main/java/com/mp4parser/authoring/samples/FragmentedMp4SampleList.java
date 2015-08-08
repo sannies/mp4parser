@@ -1,16 +1,11 @@
 package com.mp4parser.authoring.samples;
 
-import com.mp4parser.boxes.iso14496.part12.TrackBox;
-import com.mp4parser.boxes.iso14496.part12.MovieFragmentBox;
-import com.mp4parser.boxes.iso14496.part12.TrackExtendsBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.TrackRunBox;
+import com.mp4parser.Box;
+import com.mp4parser.Container;
+import com.mp4parser.RandomAccessSource;
 import com.mp4parser.authoring.Sample;
 import com.mp4parser.tools.Offsets;
 import com.mp4parser.tools.Path;
-import com.mp4parser.Box;
-import com.mp4parser.RandomAccessSource;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,30 +13,24 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static com.mp4parser.tools.CastUtils.l2i;
 
 public class FragmentedMp4SampleList extends AbstractList<Sample> {
-    RandomAccessSource.Container isofile;
+    Container isofile;
 
     TrackBox trackBox = null;
     TrackExtendsBox trex = null;
+    HashMap<TrackFragmentBox, MovieFragmentBox> traf2moof = new HashMap<TrackFragmentBox, MovieFragmentBox>();
     private SoftReference<Sample> sampleCache[];
     private List<TrackFragmentBox> allTrafs;
     private Map<TrackRunBox, SoftReference<ByteBuffer>>
             trunDataCache = new HashMap<TrackRunBox, SoftReference<ByteBuffer>>();
     private int firstSamples[];
     private int size_ = -1;
-
     private RandomAccessSource randomAccess;
 
-
-    public FragmentedMp4SampleList(long track, RandomAccessSource.Container isofile, RandomAccessSource randomAccess) throws FileNotFoundException {
+    public FragmentedMp4SampleList(long track, Container isofile, RandomAccessSource randomAccess) throws FileNotFoundException {
         this.isofile = isofile;
         this.randomAccess = randomAccess;
         List<TrackBox> tbs = Path.getPaths(isofile, "moov[0]/trak");
@@ -63,8 +52,6 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
         sampleCache = (SoftReference<Sample>[]) Array.newInstance(SoftReference.class, size());
         initAllFragments();
     }
-
-    HashMap<TrackFragmentBox, MovieFragmentBox> traf2moof = new HashMap<TrackFragmentBox, MovieFragmentBox>();
 
     private List<TrackFragmentBox> initAllFragments() {
         if (allTrafs != null) {

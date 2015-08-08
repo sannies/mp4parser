@@ -1,11 +1,11 @@
 package com.googlecode.mp4parser;
 
+import com.mp4parser.Container;
+import com.mp4parser.FileRandomAccessSourceImpl;
 import com.mp4parser.IsoFile;
-import com.mp4parser.RandomAccessSource;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Mp4TrackImpl;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.mp4parser.FileRandomAccessSourceImpl;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,7 +37,7 @@ public class MostSimpleDashExample {
 
 
         DefaultMp4Builder builder = new DefaultMp4Builder();
-        RandomAccessSource.Container stdMp4 = builder.build(m);
+        Container stdMp4 = builder.build(m);
         FileOutputStream fos = new FileOutputStream("out.mp4");
         stdMp4.writeContainer(fos.getChannel());
         fos.close();

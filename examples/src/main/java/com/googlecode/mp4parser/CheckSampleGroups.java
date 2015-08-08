@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -47,7 +47,7 @@ public class CheckSampleGroups {
                 new CencEncryptingTrackImpl(
                         m.getTracks().get(0),
                         uuid1, keys, keyRotation, "cenc", false))); // cbc1 alternatively
-        RandomAccessSource.Container c = builder.build(m);
+        Container c = builder.build(m);
         c.writeContainer(new FileOutputStream("output.mp4").getChannel());
 
     }

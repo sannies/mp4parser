@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser.muxformats;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.FileDataSourceImpl;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -19,7 +19,7 @@ public class Ec3Example {
         Movie m = new Movie();
         m.addTrack(track);
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
-        RandomAccessSource.Container isoFile = mp4Builder.build(m);
+        Container isoFile = mp4Builder.build(m);
         FileOutputStream fos = new FileOutputStream("output.mp4");
         FileChannel fc = fos.getChannel();
         isoFile.writeContainer(fc);

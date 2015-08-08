@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.RandomAccessSource;
+import com.mp4parser.Container;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
 import com.mp4parser.authoring.builder.DefaultMp4Builder;
@@ -52,7 +52,7 @@ public class AppendExample {
             result.addTrack(new AppendTrack(videoTracks.toArray(new Track[videoTracks.size()])));
         }
 
-        RandomAccessSource.Container out = new DefaultMp4Builder().build(result);
+        Container out = new DefaultMp4Builder().build(result);
 
         FileChannel fc = new RandomAccessFile(String.format("output.mp4"), "rw").getChannel();
         out.writeContainer(fc);
