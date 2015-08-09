@@ -90,6 +90,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         this.creationTime = new Date();
         HashSet<Long> trackIds = new HashSet<Long>();
         for (StreamingTrack streamingTrack : source) {
+            fragmentBuffers.put(streamingTrack, new ArrayList<StreamingSample>());
             if (streamingTrack.getTrackExtension(TrackIdTrackExtension.class) != null) {
                 TrackIdTrackExtension trackIdTrackExtension = streamingTrack.getTrackExtension(TrackIdTrackExtension.class);
                 assert trackIdTrackExtension != null;
@@ -102,7 +103,9 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
             if (streamingTrack.getTrackExtension(TrackIdTrackExtension.class) != null) {
                 ArrayList<Long> ts = new ArrayList<Long>(trackIds);
                 Collections.sort(ts);
-                streamingTrack.addTrackExtension(new TrackIdTrackExtension(ts.size() > 0 ? (ts.get(ts.size() - 1) + 1) : 1));
+                TrackIdTrackExtension tiExt = new TrackIdTrackExtension(ts.size() > 0 ? (ts.get(ts.size() - 1) + 1) : 1);
+                trackIds.add(tiExt.getTrackId());
+                streamingTrack.addTrackExtension(tiExt);
             }
         }
 
@@ -282,7 +285,9 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
                 try {
                     StreamingSample ss;
                     while ((ss = streamingTrack.getSamples().poll(100, TimeUnit.MILLISECONDS)) != null) {
+                        System.out.println(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " Before consume");
                         consumeSample(streamingTrack, ss);
+                        System.out.println(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " consumed");
                     }
 
                 } catch (InterruptedException e) {
@@ -307,6 +312,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
 
     private synchronized void consumeSample(StreamingTrack streamingTrack, StreamingSample ss) throws IOException {
+        System.err.println("Consuming " + streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " " + ss.getDuration());
         SampleFlagsSampleExtension sampleDependencySampleExtension = null;
         CompositionTimeSampleExtension compositionTimeSampleExtension = null;
         for (SampleExtension sampleExtension : ss.getExtensions()) {
@@ -320,7 +326,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         // 3 seconds = 3 * source.getTimescale()
         fragmentBuffers.get(streamingTrack).add(ss);
         if (currentTime > currentFragmentStartTime + 3 * streamingTrack.getTimescale() &&
-                fragmentBuffers.size() > 0 &&
+                fragmentBuffers.get(streamingTrack).size() > 0 &&
                 (sampleDependencyTrackExtension == null ||
                         sampleDependencySampleExtension == null ||
                         sampleDependencySampleExtension.isSyncSample())) {
@@ -328,7 +334,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
             createMoof(streamingTrack).getBox(out);
             createMdat(streamingTrack).getBox(out);
             currentFragmentStartTime = currentTime;
-            fragmentBuffers.clear();
+            fragmentBuffers.get(streamingTrack).clear();
         }
     }
 

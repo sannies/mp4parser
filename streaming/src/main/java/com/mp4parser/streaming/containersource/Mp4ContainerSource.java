@@ -83,11 +83,12 @@ public class Mp4ContainerSource {
         MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(streamingTracks.toArray(new StreamingTrack[streamingTracks.size()]), new FileOutputStream("output.mp4"));
         writer.write();
 
-        ExecutorService es = Executors.newFixedThreadPool(streamingTracks.size());
-        for (StreamingTrack streamingTrack : streamingTracks) {
-            es.submit(new ConsumeSamplesCallable(streamingTrack));
-        }
-        es.shutdown();
+
+        //ExecutorService es = Executors.newFixedThreadPool(streamingTracks.size());
+        //for (StreamingTrack streamingTrack : streamingTracks) {
+        //    es.submit(new ConsumeSamplesCallable(streamingTrack));
+        //}
+        // es.shutdown();
 
 
     }
@@ -162,7 +163,7 @@ public class Mp4ContainerSource {
                     List<TimeToSampleBox.Entry> times = stbl.getTimeToSampleBox().getEntries();
                     List<CompositionTimeToSample.Entry> compositionOffsets = stbl.getCompositionTimeToSample() != null ? stbl.getCompositionTimeToSample().getEntries() : null;
 
-                    System.out.println(trackId + ": Pushing chunk with sample " + currentChunkStartSample + "(offset: " + offset + ") to " + (currentChunkStartSample + entry.getSamplesPerChunk()) + " in the chunk");
+                    //System.out.println(trackId + ": Pushing chunk with sample " + currentChunkStartSample + "(offset: " + offset + ") to " + (currentChunkStartSample + entry.getSamplesPerChunk()) + " in the chunk");
                     SampleSizeBox stsz = stbl.getSampleSizeBox();
 
 
@@ -196,7 +197,7 @@ public class Mp4ContainerSource {
                             sfse.setSampleIsDependedOn(e.getSampleIsDependentOn());
                             sfse.setSampleHasRedundancy(e.getSampleHasRedundancy());
                         }
-                        if (stbl.getSyncSampleBox()!=null) {
+                        if (stbl.getSyncSampleBox() != null) {
                             if (sfse == null) {
                                 sfse = new SampleFlagsSampleExtension();
                             }
@@ -244,9 +245,9 @@ public class Mp4ContainerSource {
                             }
                         };
                         try {
-                            System.out.print("Pushing sample @" + offset + " of " + sampleSize + " bytes (i=" + index + ")");
+                            //System.out.print("Pushing sample @" + offset + " of " + sampleSize + " bytes (i=" + index + ")");
                             tracks.get(firstInLine).getSamples().put(ss);
-                            System.out.println("Pushed");
+                            //System.out.println("Pushed");
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
