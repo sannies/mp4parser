@@ -1,10 +1,10 @@
 package com.googlecode.mp4parser;
 
 import com.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
-import com.mp4parser.authoring.Movie;
-import com.mp4parser.authoring.Track;
-import com.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.muxer.Movie;
+import com.mp4parser.muxer.Track;
+import com.mp4parser.muxer.builder.DefaultMp4Builder;
+import com.mp4parser.muxer.container.mp4.MovieCreator;
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;

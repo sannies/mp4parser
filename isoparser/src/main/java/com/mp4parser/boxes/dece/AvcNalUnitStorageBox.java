@@ -50,14 +50,6 @@ public class AvcNalUnitStorageBox extends AbstractBox {
         return avcDecoderConfigurationRecord.lengthSizeMinusOne;
     }
 
-    public String[] getSPS() {
-        return avcDecoderConfigurationRecord.getSPS();
-    }
-
-    public String[] getPPS() {
-        return avcDecoderConfigurationRecord.getPPS();
-    }
-
     public List<String> getSequenceParameterSetsAsStrings() {
         return avcDecoderConfigurationRecord.getSequenceParameterSetsAsStrings();
     }

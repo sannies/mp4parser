@@ -17,7 +17,7 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.mp4parser.IsoFile;
-import com.mp4parser.authoring.tracks.BoxComparator;
+import com.mp4parser.support.BoxComparator;
 import com.mp4parser.tools.ByteBufferByteChannel;
 import junit.framework.TestCase;
 

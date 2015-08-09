@@ -11,9 +11,9 @@ import com.mp4parser.tools.boxes.TimeToSampleBox;
 import com.mp4parser.tools.boxes.XmlBox;
 import com.mp4parser.authoring.Movie;
 import com.mp4parser.authoring.Track;
-import com.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.mp4parser.authoring.container.mp4.MovieCreator;
-import com.mp4parser.authoring.tracks.CroppedTrack;
+import com.mp4parser.muxer.builder.DefaultMp4Builder;
+import com.mp4parser.muxer.container.mp4.MovieCreator;
+import com.mp4parser.muxer.tracks.CroppedTrack;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.*;

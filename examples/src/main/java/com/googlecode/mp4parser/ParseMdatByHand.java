@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.authoring.FileDataSourceImpl;
-import com.mp4parser.authoring.tracks.AbstractH26XTrack;
+import com.mp4parser.muxer.FileDataSourceImpl;
+import com.mp4parser.muxer.tracks.AbstractH26XTrack;
 
 import java.io.*;
 import java.nio.ByteBuffer;

@@ -16,6 +16,8 @@
         <module>isoparser</module>
         <!--<module>androidtest</module>-->
         <module>examples</module>
+        <module>muxer</module>
+        <module>streaming</module>
     </modules>
     <prerequisites>
         <maven>3.0</maven>

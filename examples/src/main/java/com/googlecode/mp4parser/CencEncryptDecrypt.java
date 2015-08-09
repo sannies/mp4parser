@@ -1,14 +1,14 @@
 package com.googlecode.mp4parser;
 
 import com.mp4parser.Container;
-import com.mp4parser.InMemRandomAccessSourceImpl;
-import com.mp4parser.authoring.Movie;
-import com.mp4parser.authoring.Track;
-import com.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.mp4parser.authoring.container.mp4.MovieCreator;
-import com.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
-import com.mp4parser.authoring.tracks.CencEncryptedTrack;
-import com.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
+import com.mp4parser.muxer.InMemRandomAccessSourceImpl;
+import com.mp4parser.muxer.Movie;
+import com.mp4parser.muxer.Track;
+import com.mp4parser.muxer.builder.DefaultMp4Builder;
+import com.mp4parser.muxer.container.mp4.MovieCreator;
+import com.mp4parser.muxer.tracks.CencDecryptingTrackImpl;
+import com.mp4parser.muxer.tracks.CencEncryptedTrack;
+import com.mp4parser.muxer.tracks.CencEncryptingTrackImpl;
 import com.mp4parser.tools.ByteBufferByteChannel;
 
 import javax.crypto.SecretKey;

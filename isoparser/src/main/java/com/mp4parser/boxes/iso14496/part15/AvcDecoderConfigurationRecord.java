@@ -1,16 +1,11 @@
 package com.mp4parser.boxes.iso14496.part15;
 
+import com.mp4parser.boxes.iso14496.part1.objectdescriptors.BitReaderBuffer;
+import com.mp4parser.boxes.iso14496.part1.objectdescriptors.BitWriterBuffer;
 import com.mp4parser.tools.Hex;
 import com.mp4parser.tools.IsoTypeReader;
 import com.mp4parser.tools.IsoTypeWriter;
-import com.mp4parser.authoring.tracks.CleanInputStream;
-import com.mp4parser.boxes.iso14496.part1.objectdescriptors.BitReaderBuffer;
-import com.mp4parser.boxes.iso14496.part1.objectdescriptors.BitWriterBuffer;
-import com.mp4parser.authoring.tracks.h264.parsing.model.PictureParameterSet;
-import com.mp4parser.authoring.tracks.h264.parsing.model.SeqParameterSet;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,35 +149,6 @@ public class AvcDecoderConfigurationRecord {
         return size;
     }
 
-    public String[] getPPS() {
-        ArrayList<String> l = new ArrayList<String>();
-        for (byte[] pictureParameterSet : pictureParameterSets) {
-            String details = "not parsable";
-            try {
-                // skip NalUnit Header (will not work 100% but at least most cases)
-                details = PictureParameterSet.read(new ByteArrayInputStream(pictureParameterSet, 1, pictureParameterSet.length - 1)).toString();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            l.add(details);
-        }
-        return l.toArray(new String[l.size()]);
-    }
-
-    public String[] getSPS() {
-        ArrayList<String> l = new ArrayList<String>();
-        for (byte[] sequenceParameterSet : sequenceParameterSets) {
-            String detail = "not parsable";
-            try {
-                detail = SeqParameterSet.read(new CleanInputStream(new ByteArrayInputStream(sequenceParameterSet, 1, sequenceParameterSet.length - 1))).toString();
-            } catch (IOException e) {
-
-            }
-            l.add(detail);
-        }
-        return l.toArray(new String[l.size()]);
-    }
 
     public List<String> getSequenceParameterSetsAsStrings() {
         List<String> result = new ArrayList<String>(sequenceParameterSets.size());

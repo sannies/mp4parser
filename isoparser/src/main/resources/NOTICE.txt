@@ -16,7 +16,7 @@ Sebastian Annies (Sebastian.Annies@gmail.com)
 This product includes software (Hex Encoder extracted from commons-codec) developed by
 The Apache Software Foundation (http://www.apache.org/).
 
-This product includes software (package com.mp4parser.authoring.tracks.h264.parsing) developed by
+This product includes software (package com.mp4parser.muxer.tracks.h264.parsing) developed by
 Stanislav Vitvitskiy and originally licensed under MIT license (http://www.opensource.org/licenses/mit-license.php)
 
 

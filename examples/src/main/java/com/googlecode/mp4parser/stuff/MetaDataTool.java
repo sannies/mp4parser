@@ -8,6 +8,7 @@ import com.mp4parser.boxes.apple.AppleGPSCoordinatesBox;
 import com.mp4parser.boxes.apple.AppleItemListBox;
 import com.mp4parser.boxes.apple.AppleNameBox;
 import com.mp4parser.boxes.apple.Utf8AppleDataBox;
+import com.mp4parser.boxes.iso14496.part12.*;
 import com.mp4parser.boxes.microsoft.XtraBox;
 import com.mp4parser.tools.Path;
 import org.apache.commons.io.FileUtils;

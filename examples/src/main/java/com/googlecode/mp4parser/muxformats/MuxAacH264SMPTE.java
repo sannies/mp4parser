@@ -1,8 +1,8 @@
 package com.googlecode.mp4parser.muxformats;
 
-import com.mp4parser.authoring.Movie;
-import com.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.mp4parser.authoring.tracks.ttml.TtmlTrackImpl;
+import com.mp4parser.muxer.Movie;
+import com.mp4parser.muxer.builder.DefaultMp4Builder;
+import com.mp4parser.muxer.tracks.ttml.TtmlTrackImpl;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 

@@ -3,10 +3,10 @@ package com.googlecode.mp4parser;
 import com.mp4parser.IsoFile;
 import com.mp4parser.tools.IsoTypeReaderVariable;
 import com.mp4parser.boxes.iso14496.part12.TrackBox;
-import com.mp4parser.FileRandomAccessSourceImpl;
+import com.mp4parser.muxer.FileRandomAccessSourceImpl;
 import com.mp4parser.boxes.iso14496.part15.AvcConfigurationBox;
-import com.mp4parser.authoring.samples.SampleList;
-import com.mp4parser.authoring.Sample;
+import com.mp4parser.muxer.samples.SampleList;
+import com.mp4parser.muxer.Sample;
 import com.mp4parser.tools.Path;
 
 import java.io.FileOutputStream;

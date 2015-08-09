@@ -1,9 +1,9 @@
 package com.googlecode.mp4parser.stuff;
 
 import com.mp4parser.Container;
-import com.mp4parser.authoring.Movie;
-import com.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.mp4parser.authoring.container.mp4.MovieCreator;
+import com.mp4parser.muxer.Movie;
+import com.mp4parser.muxer.builder.DefaultMp4Builder;
+import com.mp4parser.muxer.container.mp4.MovieCreator;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

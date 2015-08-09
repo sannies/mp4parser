@@ -154,15 +154,6 @@ public final class AvcConfigurationBox extends AbstractBox {
         avcDecoderConfigurationRecord.getContent(byteBuffer);
     }
 
-    // just to display sps in isoviewer no practical use
-    public String[] getSPS() {
-        return avcDecoderConfigurationRecord.getSPS();
-    }
-
-    public String[] getPPS() {
-        return avcDecoderConfigurationRecord.getPPS();
-    }
-
 
     public AvcDecoderConfigurationRecord getavcDecoderConfigurationRecord() {
         return avcDecoderConfigurationRecord;
