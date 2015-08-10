@@ -1,6 +1,7 @@
 package com.mp4parser.muxer.tracks.ttml;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -23,11 +24,13 @@ public class TtmlSegmenter {
         boolean thereIsMore;
 
         List<Document> subDocs = new ArrayList<Document>();
+
+
         do {
-            Document d = (Document) doc.cloneNode(true);
-            NodeList timedNodes = (NodeList) xp.evaluate(d, XPathConstants.NODESET);
             long segmentStartTime = subDocs.size() * splitTime;
             long segmentEndTime = (subDocs.size() + 1) * splitTime;
+            Document d = (Document) doc.cloneNode(true);
+            NodeList timedNodes = (NodeList) xp.evaluate(d, XPathConstants.NODESET);
             thereIsMore = false;
 
             for (int i = 0; i < timedNodes.getLength(); i++) {
@@ -54,10 +57,28 @@ public class TtmlSegmenter {
                 if (!(startTime >= segmentStartTime && endTime <= segmentEndTime)) {
                     Node parent = p.getParentNode();
                     parent.removeChild(p);
-
+                } else {
+                    changeTime(p, "begin", -segmentStartTime);
+                    changeTime(p, "end", -segmentStartTime);
                 }
+
             }
             trimWhitespace(d);
+
+            XPathExpression bodyXP = xpath.compile("/*[name()='tt']/*[name()='body'][1]");
+            Element body = (Element) bodyXP.evaluate(d, XPathConstants.NODE);
+            String beginTime = body.getAttribute("begin");
+            String endTime = body.getAttribute("end");
+            if (beginTime == null || "".equals(beginTime)) {
+                body.setAttribute("begin", toTimeExpression(segmentStartTime));
+            } else {
+                changeTime(body, "begin", segmentStartTime);
+            }
+            if (endTime == null || "".equals(endTime)) {
+                body.setAttribute("end", toTimeExpression(segmentEndTime));
+            } else {
+                changeTime(body, "end", segmentEndTime);
+            }
             subDocs.add(d);
         } while (thereIsMore);
 

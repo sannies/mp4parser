@@ -39,20 +39,53 @@ public class TtmlTrackImpl extends AbstractTrack {
     private long[] sampleDurations;
 
 
-    public TtmlTrackImpl(String name, List<Document> ttmls) throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, URISyntaxException {
-        super(name);
-        Set<String> mimeTypes = new HashSet<String>();
-        sampleDurations = new long[ttmls.size()];
+    public static String getLanguage(Document document) {
+        return document.getDocumentElement().getAttribute("xml:lang");
+    }
+
+    protected long firstTimestamp(Document document) {
         XPathFactory xPathfactory = XPathFactory.newInstance();
         XPath xpath = xPathfactory.newXPath();
         xpath.setNamespaceContext(TtmlHelpers.NAMESPACE_CONTEXT);
-        long startTime = 0;
+
+        try {
+            XPathExpression xp = xpath.compile("//*[@begin]");
+            NodeList timedNodes = (NodeList) xp.evaluate(document, XPathConstants.NODESET);
+
+            long firstTimestamp = Long.MAX_VALUE;
+            for (int i = 0; i < timedNodes.getLength(); i++) {
+                firstTimestamp = Math.min(getStartTime(timedNodes.item(i)), firstTimestamp);
+            }
+            return firstTimestamp;
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    protected long lastTimestamp(Document document) {
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        XPath xpath = xPathfactory.newXPath();
+        xpath.setNamespaceContext(TtmlHelpers.NAMESPACE_CONTEXT);
+
+        try {
+            XPathExpression xp = xpath.compile("//*[@end]");
+            NodeList timedNodes = (NodeList) xp.evaluate(document, XPathConstants.NODESET);
+
+            long lastTimeStamp = 0;
+            for (int i = 0; i < timedNodes.getLength(); i++) {
+                lastTimeStamp = Math.max(getEndTime(timedNodes.item(i)), lastTimeStamp);
+            }
+            return lastTimeStamp;
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    protected void extractLanguage(List<Document> ttmls) {
         String firstLang = null;
-        for (int sampleNo = 0; sampleNo < ttmls.size(); sampleNo++) {
-            final Document ttml = ttmls.get(sampleNo);
-            SubSampleInformationBox.SubSampleEntry subSampleEntry = new SubSampleInformationBox.SubSampleEntry();
-            subSampleInformationBox.getEntries().add(subSampleEntry);
-            subSampleEntry.setSampleDelta(1);
+        for (Document ttml : ttmls) {
 
             String lang = getLanguage(ttml);
             if (firstLang == null) {
@@ -62,57 +95,108 @@ public class TtmlTrackImpl extends AbstractTrack {
                 throw new RuntimeException("Within one Track all sample documents need to have the same language");
             }
 
+        }
+    }
 
-            long lastTimeStamp = latestTimestamp(ttml);
-            lastTimeStamp = lastTimeStamp == 0 ? startTime : lastTimeStamp;
-            sampleDurations[sampleNo] = lastTimeStamp - startTime;
-            startTime = lastTimeStamp;
+    protected List<String> extractMimeTypes(Document ttml) throws XPathExpressionException {
+        XPathFactory xPathfactory = XPathFactory.newInstance();
 
-            XPathExpression expr = xpath.compile("//*/@smpte:backgroundImage");
-            NodeList nl = (NodeList) expr.evaluate(ttml, XPathConstants.NODESET);
+        XPath xpath = xPathfactory.newXPath();
 
-            LinkedHashMap<String, String> internalNames2Original = new LinkedHashMap<String, String>();
+        XPathExpression expr = xpath.compile("//*/@smpte:backgroundImage");
+        NodeList nl = (NodeList) expr.evaluate(ttml, XPathConstants.NODESET);
 
-            int p = 1;
-            for (int i = 0; i < nl.getLength(); i++) {
-                Node bgImageNode = nl.item(i);
-                String uri = bgImageNode.getNodeValue();
-                String ext = uri.substring(uri.lastIndexOf("."));
-                if (ext.contains("jpg") || ext.contains("jpeg")) {
-                    mimeTypes.add("image/jpeg");
-                } else if (ext.contains("png")) {
-                    mimeTypes.add("image/png");
-                }
-                String internalName = internalNames2Original.get(uri);
-                if (internalName == null) {
-                    internalName = "urn:mp4parser:" + p++ + ext;
-                    internalNames2Original.put(internalName, uri);
-                }
-                bgImageNode.setNodeValue(internalName);
+        Set<String> mimeTypes = new LinkedHashSet<String>();
+
+        int p = 1;
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node bgImageNode = nl.item(i);
+            String uri = bgImageNode.getNodeValue();
+            String ext = uri.substring(uri.lastIndexOf("."));
+            if (ext.contains("jpg") || ext.contains("jpeg")) {
+                mimeTypes.add("image/jpeg");
+            } else if (ext.contains("png")) {
+                mimeTypes.add("image/png");
+            }
+        }
+        return new ArrayList<String>(mimeTypes);
+    }
+
+    protected List<byte[]> extractImages(Document ttml) throws XPathExpressionException, URISyntaxException, IOException {
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        XPath xpath = xPathfactory.newXPath();
+        XPathExpression expr = xpath.compile("//*/@smpte:backgroundImage");
+        NodeList nl = (NodeList) expr.evaluate(ttml, XPathConstants.NODESET);
+
+        LinkedHashMap<String, String> internalNames2Original = new LinkedHashMap<String, String>();
+
+        int p = 1;
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node bgImageNode = nl.item(i);
+            String uri = bgImageNode.getNodeValue();
+            String ext = uri.substring(uri.lastIndexOf("."));
+
+            String internalName = internalNames2Original.get(uri);
+            if (internalName == null) {
+                internalName = "urn:mp4parser:" + p++ + ext;
+                internalNames2Original.put(internalName, uri);
+            }
+            bgImageNode.setNodeValue(internalName);
+
+        }
+        List<byte[]> images = new ArrayList<byte[]>();
+        if (!internalNames2Original.isEmpty()) {
+            for (Map.Entry<String, String> internalName2Original : internalNames2Original.entrySet()) {
+
+                URI pic = new URI(ttml.getDocumentURI()).resolve(internalName2Original.getValue());
+                images.add(streamToByteArray(pic.toURL().openStream()));
 
             }
+        }
+        return images;
+    }
 
+    long extractDuration(Document ttml) {
+         return lastTimestamp(ttml) - firstTimestamp(ttml);
+    }
+
+    public TtmlTrackImpl(String name, List<Document> ttmls) throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, URISyntaxException {
+        super(name);
+        extractLanguage(ttmls);
+        Set<String> mimeTypes = new HashSet<String>();
+        sampleDurations = new long[ttmls.size()];
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        XPath xpath = xPathfactory.newXPath();
+        xpath.setNamespaceContext(TtmlHelpers.NAMESPACE_CONTEXT);
+        long startTime = 0;
+
+        for (int sampleNo = 0; sampleNo < ttmls.size(); sampleNo++) {
+            final Document ttml = ttmls.get(sampleNo);
+            SubSampleInformationBox.SubSampleEntry subSampleEntry = new SubSampleInformationBox.SubSampleEntry();
+            subSampleInformationBox.getEntries().add(subSampleEntry);
+            subSampleEntry.setSampleDelta(1);
+            sampleDurations[sampleNo] = extractDuration(ttml);
+
+            List<byte[]> images = extractImages(ttml);
+            mimeTypes.addAll(extractMimeTypes(ttml));
+
+            // No changes of XML after this point!
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             TtmlHelpers.pretty(ttml, baos, 4);
+            SubSampleInformationBox.SubSampleEntry.SubsampleEntry xmlEntry =
+                    new SubSampleInformationBox.SubSampleEntry.SubsampleEntry();
+            xmlEntry.setSubsampleSize(baos.size());
 
-            if (!internalNames2Original.isEmpty()) {
-                SubSampleInformationBox.SubSampleEntry.SubsampleEntry xmlEntry =
+            subSampleEntry.getSubsampleEntries().add(xmlEntry);
+            for (byte[] image : images) {
+                baos.write(image);
+                SubSampleInformationBox.SubSampleEntry.SubsampleEntry imageEntry =
                         new SubSampleInformationBox.SubSampleEntry.SubsampleEntry();
-                xmlEntry.setSubsampleSize(baos.size());
-                subSampleEntry.getSubsampleEntries().add(xmlEntry);
-
-                for (Map.Entry<String, String> internalName2Original : internalNames2Original.entrySet()) {
-
-                    URI pic = new URI(ttml.getDocumentURI()).resolve(internalName2Original.getValue());
-                    byte[] picBytes = streamToByteArray(pic.toURL().openStream());
-                    baos.write(picBytes);
-                    SubSampleInformationBox.SubSampleEntry.SubsampleEntry sse =
-                            new SubSampleInformationBox.SubSampleEntry.SubsampleEntry();
-                    sse.setSubsampleSize(picBytes.length);
-                    subSampleEntry.getSubsampleEntries().add(sse);
-                }
+                imageEntry.setSubsampleSize(image.length);
+                subSampleEntry.getSubsampleEntries().add(imageEntry);
 
             }
+
             final byte[] finalSample = baos.toByteArray();
             samples.add(new Sample() {
                 public void writeTo(WritableByteChannel channel) throws IOException {
