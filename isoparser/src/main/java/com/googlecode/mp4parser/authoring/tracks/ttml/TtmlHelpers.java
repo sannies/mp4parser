@@ -58,8 +58,12 @@ public class TtmlHelpers {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         DocumentBuilder builder = dbf.newDocumentBuilder();
-        Document doc = builder.parse("C:\\dev\\dashencrypt\\a.xml");
-        Track t = new TtmlTrackImpl("a.xml", TtmlSegmenter.split(doc, 60));
+        Document doc = builder.parse("C:\\dev\\mp4parser\\a.xml");
+        List<Document> split = TtmlSegmenter.split(doc, 60);
+/*        for (Document document : split) {
+            pretty(document, System.out, 4);
+        }*/
+        Track t = new TtmlTrackImpl("a.xml", split);
         Movie m = new Movie();
         m.addTrack(t);
         Container c = new DefaultMp4Builder().build(m);
@@ -89,7 +93,7 @@ public class TtmlHelpers {
     }
 
     public static String toTimeExpression(long ms, int frames) {
-        String minus = ms > 0 ? "" : "-";
+        String minus = ms >= 0 ? "" : "-";
         ms = Math.abs(ms);
 
         long hours = ms / 1000 / 60 / 60;
@@ -132,7 +136,7 @@ public class TtmlHelpers {
 
             return ms * ("-".equals(minus) ? -1 : 1);
         } else {
-            throw new RuntimeException("Cannot match " + expr + " to time expression");
+            throw new RuntimeException("Cannot match '" + expr + "' to time expression");
         }
     }
 

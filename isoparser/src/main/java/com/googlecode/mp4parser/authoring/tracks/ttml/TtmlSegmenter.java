@@ -1,6 +1,7 @@
 package com.googlecode.mp4parser.authoring.tracks.ttml;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -38,11 +39,13 @@ public class TtmlSegmenter {
         boolean thereIsMore;
 
         List<Document> subDocs = new ArrayList<Document>();
+
+
         do {
+            long segmentStartTime = subDocs.size() * splitTime;
+            long segmentEndTime = (subDocs.size() + 1) * splitTime;
             Document d = (Document) doc.cloneNode(true);
             NodeList timedNodes = (NodeList) xp.evaluate(d, XPathConstants.NODESET);
-            long segmentStartTime = subDocs.size() * splitTime;
-            long segmentEndTime = (subDocs.size()+1) * splitTime;
             thereIsMore = false;
 
             for (int i = 0; i < timedNodes.getLength(); i++) {
@@ -57,7 +60,7 @@ public class TtmlSegmenter {
                 }
 
                 if (startTime >= segmentStartTime && startTime < segmentEndTime && endTime > segmentEndTime) {
-                    changeTime(p, "end", segmentEndTime - endTime );
+                    changeTime(p, "end", segmentEndTime - endTime);
                     startTime = segmentStartTime;
                     endTime = segmentEndTime;
                 }
@@ -69,10 +72,28 @@ public class TtmlSegmenter {
                 if (!(startTime >= segmentStartTime && endTime <= segmentEndTime)) {
                     Node parent = p.getParentNode();
                     parent.removeChild(p);
-
+                } else {
+                    changeTime(p, "begin", -segmentStartTime);
+                    changeTime(p, "end", -segmentStartTime);
                 }
+
             }
             trimWhitespace(d);
+
+            XPathExpression bodyXP = xpath.compile("/*[name()='tt']/*[name()='body'][1]");
+            Element body = (Element) bodyXP.evaluate(d, XPathConstants.NODE);
+            String beginTime = body.getAttribute("begin");
+            String endTime = body.getAttribute("end");
+            if (beginTime == null || "".equals(beginTime)) {
+                body.setAttribute("begin", toTimeExpression(segmentStartTime));
+            } else {
+                changeTime(body, "begin", segmentStartTime);
+            }
+            if (endTime == null || "".equals(endTime)) {
+                body.setAttribute("end", toTimeExpression(segmentEndTime));
+            } else {
+                changeTime(body, "end", segmentEndTime);
+            }
             subDocs.add(d);
         } while (thereIsMore);
 
@@ -91,7 +112,7 @@ public class TtmlSegmenter {
                 // that should be ok for non high framerate content
                 // actually I'd have to get the ttp:frameRateMultiplier
                 // and the ttp:frameRate attribute to calculate at which frame to show the sub
-                frames = (int)(nuTime - (nuTime/1000)*1000) / 44;
+                frames = (int) (nuTime - (nuTime / 1000) * 1000) / 44;
             }
             p.getAttributes().getNamedItem(attribute).setNodeValue(toTimeExpression(nuTime, frames));
         }
@@ -148,18 +169,16 @@ public class TtmlSegmenter {
         }
     }
 
-    public static void trimWhitespace(Node node)
-    {
+    public static void trimWhitespace(Node node) {
         NodeList children = node.getChildNodes();
-        for(int i = 0; i < children.getLength(); ++i) {
+        for (int i = 0; i < children.getLength(); ++i) {
             Node child = children.item(i);
-            if(child.getNodeType() == Node.TEXT_NODE) {
+            if (child.getNodeType() == Node.TEXT_NODE) {
                 child.setTextContent(child.getTextContent().trim());
             }
             trimWhitespace(child);
         }
     }
-
 
 
 }
