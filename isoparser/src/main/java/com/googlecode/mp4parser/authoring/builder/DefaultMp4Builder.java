@@ -202,7 +202,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                 for (Edit edit : track.getEdits()) {
                     d += (long) edit.getSegmentDuration();
                 }
-                tracksDuration = (long)((d * movieTimeScale)/1000);
+                tracksDuration = (long) (d * movieTimeScale);
             }
 
 
@@ -690,9 +690,6 @@ public class DefaultMp4Builder implements Mp4Builder {
                 trackToSample.put(nextChunksTrack, startSample + numberOfSampleInNextChunk);
                 trackToTime.put(nextChunksTrack, time);
             }
-
-
-
 
 
         }
