@@ -2,9 +2,11 @@ package com.googlecode.mp4parser;
 
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.TextTrackImpl;
+import com.googlecode.mp4parser.authoring.tracks.webvtt.WebVttTrack;
 import com.googlecode.mp4parser.srt.SrtParser;
 
 import java.io.File;
@@ -12,37 +14,28 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.Locale;
 
 /**
  * Adds subtitles.
  */
 public class SubTitleExample {
     public static void main(String[] args) throws IOException {
-        String audioEnglish = RemoveSomeSamplesExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/count-video.mp4";
-        Movie countVideo = MovieCreator.build(audioEnglish);
+        Movie m = new Movie();
+        String bd = "C:\\dev\\DRMTODAY-872\\";
 
+        Track eng = MovieCreator.build(bd  + "31245689abb7c52a3d0721447bddd6cd_Tears_Of_Steel_128000_eng.mp4").getTracks().get(0);
+        m.addTrack(eng);
 
-        TextTrackImpl subTitleEng = new TextTrackImpl();
-        subTitleEng.getTrackMetaData().setLanguage("eng");
+        Track vid = MovieCreator.build(bd  + "31245689abb7c52a3d0721447bddd6cd_Tears_Of_Steel_600000.mp4").getTracks().get(0);
+        m.addTrack(vid);
 
+        Track sub = new WebVttTrack(new FileInputStream(bd  + "31245689abb7c52a3d0721447bddd6cd_Tears_Of_Steel_deu.vtt"), "subs", Locale.GERMAN);
+        m.addTrack(sub);
 
-        subTitleEng.getSubs().add(new TextTrackImpl.Line(5000, 6000, "Five"));
-        subTitleEng.getSubs().add(new TextTrackImpl.Line(8000, 9000, "Four"));
-        subTitleEng.getSubs().add(new TextTrackImpl.Line(12000, 13000, "Three"));
-        subTitleEng.getSubs().add(new TextTrackImpl.Line(16000, 17000, "Two"));
-        subTitleEng.getSubs().add(new TextTrackImpl.Line(20000, 21000, "one"));
+        Container c = new DefaultMp4Builder().build(m);
 
-        countVideo.addTrack(subTitleEng);
-
-        TextTrackImpl subTitleDeu = SrtParser.parse(SubTitleExample.class.getResourceAsStream("/count-subs-deutsch.srt"));
-        subTitleDeu.getTrackMetaData().setLanguage("deu");
-        countVideo.addTrack(subTitleDeu);
-
-        Container out = new DefaultMp4Builder().build(countVideo);
-        FileOutputStream fos = new FileOutputStream(new File("output.mp4"));
-        FileChannel fc = fos.getChannel();
-        out.writeContainer(fc);
-        fos.close();
+        c.writeContainer(new FileOutputStream("output.mp4").getChannel());
     }
 
 }

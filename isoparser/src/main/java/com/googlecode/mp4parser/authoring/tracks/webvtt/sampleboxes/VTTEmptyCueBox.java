@@ -1,4 +1,4 @@
-package com.mp4parser.iso14496.part30.webvtt;
+package com.googlecode.mp4parser.authoring.tracks.webvtt.sampleboxes;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
@@ -8,9 +8,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
-/**
- * Created by sannies on 11.08.2015.
- */
 public class VTTEmptyCueBox extends WriteOnlyBox {
     public VTTEmptyCueBox() {
         super("vtte");

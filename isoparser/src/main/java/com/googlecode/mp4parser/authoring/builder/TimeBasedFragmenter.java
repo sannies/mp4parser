@@ -49,7 +49,9 @@ public class TimeBasedFragmenter implements Fragmenter {
             time += (double) sampleDurations[i] / timescale;
             if (time >= fragmentLength &&
                     (syncSamples == null || Arrays.binarySearch(syncSamples, i + 1) >= 0)) {
-                segmentStartSamples = Mp4Arrays.copyOfAndAppend(segmentStartSamples, i+1);
+                if (i > 0) {
+                    segmentStartSamples = Mp4Arrays.copyOfAndAppend(segmentStartSamples, i + 1);
+                }
                 time = 0;
             }
         }
