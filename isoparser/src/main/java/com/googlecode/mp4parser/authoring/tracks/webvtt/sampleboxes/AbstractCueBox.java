@@ -1,4 +1,4 @@
-package com.mp4parser.iso14496.part30.webvtt;
+package com.googlecode.mp4parser.authoring.tracks.webvtt.sampleboxes;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
@@ -31,10 +31,11 @@ public abstract class AbstractCueBox extends WriteOnlyBox {
     }
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        ByteBuffer header=  ByteBuffer.allocate(l2i(getSize()));
+        ByteBuffer header = ByteBuffer.allocate(l2i(getSize()));
         IsoTypeWriter.writeUInt32(header, getSize());
         header.put(IsoFile.fourCCtoBytes(getType()));
         header.put(Utf8.convert(content));
+        writableByteChannel.write((ByteBuffer) header.rewind());
     }
 
 

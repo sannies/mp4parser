@@ -1,8 +1,5 @@
-package com.mp4parser.iso14496.part30.webvtt;
+package com.googlecode.mp4parser.authoring.tracks.webvtt.sampleboxes;
 
-/**
- * Created by sannies on 11.08.2015.
- */
 public class CueSourceIDBox extends AbstractCueBox {
     public CueSourceIDBox() {
         super("vsid");

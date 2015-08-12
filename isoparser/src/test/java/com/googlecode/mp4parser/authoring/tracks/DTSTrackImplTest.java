@@ -22,7 +22,7 @@ public class DTSTrackImplTest {
         m.addTrack(dts);
         Fragmenter fif = new StaticFragmentIntersectionFinderImpl(Collections.singletonMap((Track)dts, new long[]{1}));
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
-        mp4Builder.setIntersectionFinder(fif);
+        mp4Builder.setFragmenter(fif);
         Container c = mp4Builder.build(m);
 
         // c.writeContainer(new FileOutputStream("C:\\dev\\mp4parser\\isoparser\\src\\test\\resources\\com\\googlecode\\mp4parser\\authoring\\tracks\\dts-sample.mp4").getChannel());

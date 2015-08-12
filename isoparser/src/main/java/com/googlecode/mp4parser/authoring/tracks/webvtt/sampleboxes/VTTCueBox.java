@@ -1,17 +1,13 @@
-package com.mp4parser.iso14496.part30.webvtt;
+package com.googlecode.mp4parser.authoring.tracks.webvtt.sampleboxes;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.Box;
 import com.mp4parser.streaming.WriteOnlyBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
-/**
- * Created by sannies on 11.08.2015.
- */
 public class VTTCueBox extends WriteOnlyBox {
     CueSourceIDBox cueSourceIDBox; // optional source ID
     CueIDBox cueIDBox; // optional
@@ -34,15 +30,25 @@ public class VTTCueBox extends WriteOnlyBox {
     }
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        ByteBuffer header=  ByteBuffer.allocate(8);
+        ByteBuffer header = ByteBuffer.allocate(8);
         IsoTypeWriter.writeUInt32(header, getSize());
         header.put(IsoFile.fourCCtoBytes(getType()));
         writableByteChannel.write((ByteBuffer) header.rewind());
-        cueSourceIDBox.getBox(writableByteChannel);
-        cueIDBox.getBox(writableByteChannel);
-        cueTimeBox.getBox(writableByteChannel);
-        cueSettingsBox.getBox(writableByteChannel);
-        cuePayloadBox.getBox(writableByteChannel);
+        if (cueSourceIDBox != null) {
+            cueSourceIDBox.getBox(writableByteChannel);
+        }
+        if (cueIDBox != null) {
+            cueIDBox.getBox(writableByteChannel);
+        }
+        if (cueTimeBox != null) {
+            cueTimeBox.getBox(writableByteChannel);
+        }
+        if (cueSettingsBox != null) {
+            cueSettingsBox.getBox(writableByteChannel);
+        }
+        if (cuePayloadBox != null) {
+            cuePayloadBox.getBox(writableByteChannel);
+        }
     }
 
     public CueSourceIDBox getCueSourceIDBox() {
