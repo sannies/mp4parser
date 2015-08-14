@@ -23,6 +23,7 @@ package com.googlecode.mp4parser.h264.model;
 import com.googlecode.mp4parser.h264.read.CAVLCReader;
 import com.googlecode.mp4parser.h264.write.CAVLCWriter;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -76,6 +77,11 @@ public class SeqParameterSet extends BitstreamElement {
     public VUIParameters vuiParams;
     public ScalingMatrix scalingMatrix;
     public int num_ref_frames_in_pic_order_cnt_cycle;
+
+
+    public static SeqParameterSet read(byte[] b) throws IOException {
+        return read(new ByteArrayInputStream(b));
+    }
 
     public static SeqParameterSet read(InputStream is) throws IOException {
         CAVLCReader reader = new CAVLCReader(is);

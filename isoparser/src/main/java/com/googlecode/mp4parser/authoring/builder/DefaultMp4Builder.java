@@ -175,11 +175,10 @@ public class DefaultMp4Builder implements Mp4Builder {
     protected FileTypeBox createFileTypeBox(Movie movie) {
         List<String> minorBrands = new LinkedList<String>();
 
+        minorBrands.add("mp42");
         minorBrands.add("isom");
-        minorBrands.add("iso2");
-        minorBrands.add("avc1");
 
-        return new FileTypeBox("isom", 0, minorBrands);
+        return new FileTypeBox("mp42", 0, minorBrands);
     }
 
     protected MovieBox createMovieBox(Movie movie, Map<Track, int[]> chunks) {
@@ -330,7 +329,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     protected Box createEdts(Track track, Movie movie) {
         if (track.getEdits() != null && track.getEdits().size() > 0) {
             EditListBox elst = new EditListBox();
-            elst.setVersion(1);
+            elst.setVersion(0); // quicktime won't play file when version = 1
             List<EditListBox.Entry> entries = new ArrayList<EditListBox.Entry>();
 
             for (Edit edit : track.getEdits()) {
