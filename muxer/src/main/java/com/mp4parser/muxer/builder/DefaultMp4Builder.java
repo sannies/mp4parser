@@ -16,17 +16,17 @@
 package com.mp4parser.muxer.builder;
 
 import com.mp4parser.*;
-import com.mp4parser.muxer.Edit;
-import com.mp4parser.muxer.Movie;
-import com.mp4parser.muxer.Sample;
-import com.mp4parser.muxer.Track;
-import com.mp4parser.muxer.tracks.CencEncryptedTrack;
 import com.mp4parser.boxes.iso14496.part12.*;
 import com.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import com.mp4parser.boxes.iso23001.part7.SampleEncryptionBox;
 import com.mp4parser.boxes.samplegrouping.GroupEntry;
 import com.mp4parser.boxes.samplegrouping.SampleGroupDescriptionBox;
 import com.mp4parser.boxes.samplegrouping.SampleToGroupBox;
+import com.mp4parser.muxer.Edit;
+import com.mp4parser.muxer.Movie;
+import com.mp4parser.muxer.Sample;
+import com.mp4parser.muxer.Track;
+import com.mp4parser.muxer.tracks.CencEncryptedTrack;
 import com.mp4parser.tools.IsoTypeWriter;
 import com.mp4parser.tools.Mp4Arrays;
 import com.mp4parser.tools.Offsets;
@@ -39,8 +39,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
-import static com.googlecode.mp4parser.util.Math.lcm;
+import static com.mp4parser.tools.CastUtils.l2i;
+import static com.mp4parser.tools.Mp4Math.lcm;
 
 /**
  * Creates a plain MP4 file from a video. Plain as plain can be.
@@ -74,7 +74,6 @@ public class DefaultMp4Builder implements Mp4Builder {
     public void setFragmenter(Fragmenter fragmenter) {
         this.fragmenter = fragmenter;
     }
-
 
 
     /**

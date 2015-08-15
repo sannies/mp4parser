@@ -1,21 +1,22 @@
 package com.mp4parser.muxer.tracks.webvtt.sampleboxes;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.Utf8;
-import com.mp4parser.streaming.WriteOnlyBox;
+import com.mp4parser.Box;
+import com.mp4parser.IsoFile;
+import com.mp4parser.tools.IsoTypeWriter;
+import com.mp4parser.tools.Utf8;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
+import static com.mp4parser.tools.CastUtils.l2i;
 
-public abstract class AbstractCueBox extends WriteOnlyBox {
+public abstract class AbstractCueBox implements Box {
     String content = "";
+    String type;
 
     public AbstractCueBox(String type) {
-        super(type);
+        this.type = type;
     }
 
     public String getContent() {
@@ -38,5 +39,7 @@ public abstract class AbstractCueBox extends WriteOnlyBox {
         writableByteChannel.write((ByteBuffer) header.rewind());
     }
 
-
+    public String getType() {
+        return type;
+    }
 }

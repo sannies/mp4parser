@@ -24,6 +24,7 @@ import java.util.*;
 
 import static com.mp4parser.muxer.tracks.ttml.TtmlHelpers.getAllNamespaces;
 import static com.mp4parser.muxer.tracks.ttml.TtmlHelpers.getEndTime;
+import static com.mp4parser.muxer.tracks.ttml.TtmlHelpers.getStartTime;
 
 public class TtmlTrackImpl extends AbstractTrack {
 
@@ -223,9 +224,6 @@ public class TtmlTrackImpl extends AbstractTrack {
 
     }
 
-    public static String getLanguage(Document document) {
-        return document.getDocumentElement().getAttribute("xml:lang");
-    }
 
     private static long latestTimestamp(Document document) {
         XPathFactory xPathfactory = XPathFactory.newInstance();

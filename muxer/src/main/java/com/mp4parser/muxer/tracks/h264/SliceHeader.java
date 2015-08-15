@@ -1,8 +1,9 @@
 package com.mp4parser.muxer.tracks.h264;
 
-import com.googlecode.mp4parser.h264.model.PictureParameterSet;
-import com.googlecode.mp4parser.h264.model.SeqParameterSet;
-import com.googlecode.mp4parser.h264.read.CAVLCReader;
+
+import com.mp4parser.muxer.tracks.h264.parsing.model.PictureParameterSet;
+import com.mp4parser.muxer.tracks.h264.parsing.model.SeqParameterSet;
+import com.mp4parser.muxer.tracks.h264.parsing.read.CAVLCReader;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,16 +1,15 @@
 package com.mp4parser.muxer.tracks.webvtt.sampleboxes;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoTypeWriter;
-import com.mp4parser.streaming.WriteOnlyBox;
+import com.mp4parser.Box;
+import com.mp4parser.IsoFile;
+import com.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
-public class VTTEmptyCueBox extends WriteOnlyBox {
-    public VTTEmptyCueBox() {
-        super("vtte");
+public class VTTEmptyCueBox implements Box {
+    public VTTEmptyCueBox(){
     }
 
     public long getSize() {
@@ -22,5 +21,9 @@ public class VTTEmptyCueBox extends WriteOnlyBox {
         IsoTypeWriter.writeUInt32(header, getSize());
         header.put(IsoFile.fourCCtoBytes(getType()));
         writableByteChannel.write((ByteBuffer) header.rewind());
+    }
+
+    public String getType() {
+        return "vtte";
     }
 }

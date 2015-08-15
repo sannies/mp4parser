@@ -10,6 +10,7 @@ import com.mp4parser.muxer.tracks.AbstractH26XTrack;
 import com.mp4parser.muxer.tracks.h264.parsing.model.PictureParameterSet;
 import com.mp4parser.muxer.tracks.h264.parsing.model.SeqParameterSet;
 import com.mp4parser.muxer.tracks.h264.parsing.read.CAVLCReader;
+import com.mp4parser.tools.Mp4Arrays;
 import com.mp4parser.tools.RangeStartMap;
 import com.mp4parser.boxes.iso14496.part15.AvcConfigurationBox;
 

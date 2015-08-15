@@ -2,7 +2,7 @@ package com.mp4parser.muxer.tracks;
 
 import com.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import com.mp4parser.boxes.iso14496.part12.TimeToSampleBox;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.LinkedList;

@@ -1,19 +1,19 @@
 package com.mp4parser.muxer.tracks.webvtt;
 
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.googlecode.mp4parser.authoring.AbstractTrack;
-import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.TrackMetaData;
+import com.mp4parser.Box;
+import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
+import com.mp4parser.boxes.iso14496.part30.WebVTTConfigurationBox;
+import com.mp4parser.boxes.iso14496.part30.WebVTTSampleEntry;
+import com.mp4parser.boxes.iso14496.part30.WebVTTSourceLabelBox;
+import com.mp4parser.muxer.AbstractTrack;
+import com.mp4parser.muxer.Sample;
+import com.mp4parser.muxer.TrackMetaData;
 import com.mp4parser.muxer.tracks.webvtt.sampleboxes.CuePayloadBox;
 import com.mp4parser.muxer.tracks.webvtt.sampleboxes.CueSettingsBox;
 import com.mp4parser.muxer.tracks.webvtt.sampleboxes.VTTCueBox;
 import com.mp4parser.muxer.tracks.webvtt.sampleboxes.VTTEmptyCueBox;
-import com.googlecode.mp4parser.util.ByteBufferByteChannel;
-import com.googlecode.mp4parser.util.Mp4Arrays;
-import com.mp4parser.iso14496.part30.WebVTTConfigurationBox;
-import com.mp4parser.iso14496.part30.WebVTTSampleEntry;
-import com.mp4parser.iso14496.part30.WebVTTSourceLabelBox;
+import com.mp4parser.tools.ByteBufferByteChannel;
+import com.mp4parser.tools.Mp4Arrays;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -26,7 +26,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
+import static com.mp4parser.tools.CastUtils.l2i;
+
 
 public class WebVttTrack extends AbstractTrack {
     TrackMetaData trackMetaData = new TrackMetaData();

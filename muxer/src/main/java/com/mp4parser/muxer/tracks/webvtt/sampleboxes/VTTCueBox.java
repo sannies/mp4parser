@@ -1,22 +1,22 @@
 package com.mp4parser.muxer.tracks.webvtt.sampleboxes;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoTypeWriter;
-import com.mp4parser.streaming.WriteOnlyBox;
+import com.mp4parser.Box;
+import com.mp4parser.IsoFile;
+import com.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
-public class VTTCueBox extends WriteOnlyBox {
+public class VTTCueBox implements Box {
     CueSourceIDBox cueSourceIDBox; // optional source ID
     CueIDBox cueIDBox; // optional
     CueTimeBox cueTimeBox; // optional current time indication
     CueSettingsBox cueSettingsBox; // optional, cue settings
     CuePayloadBox cuePayloadBox; // the (mandatory) cue payload lines
 
+
     public VTTCueBox() {
-        super("vtcc");
     }
 
     public long getSize() {
@@ -89,5 +89,9 @@ public class VTTCueBox extends WriteOnlyBox {
 
     public void setCuePayloadBox(CuePayloadBox cuePayloadBox) {
         this.cuePayloadBox = cuePayloadBox;
+    }
+
+    public String getType() {
+        return "vtcc";
     }
 }
