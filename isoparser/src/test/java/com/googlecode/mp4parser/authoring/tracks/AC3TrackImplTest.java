@@ -21,11 +21,9 @@ public class AC3TrackImplTest {
         m.addTrack(t);
 
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
-        Container isoFile = mp4Builder.build(m);
-        WritableByteChannel fc = new FileOutputStream("ac3-sample.mp4").getChannel();
-        isoFile.writeContainer(fc);
-        fc.close();
+        Container c = mp4Builder.build(m);
+        //c.writeContainer(new FileOutputStream("C:\\dev\\mp4parser\\isoparser\\src\\test\\resources\\com\\googlecode\\mp4parser\\authoring\\tracks\\ac3-sample.mp4").getChannel());
         IsoFile isoFileReference = new IsoFile(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/ac3-sample.mp4");
-        BoxComparator.check(isoFile, isoFileReference, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]");
+        BoxComparator.check(c, isoFileReference, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]");
     }
 }

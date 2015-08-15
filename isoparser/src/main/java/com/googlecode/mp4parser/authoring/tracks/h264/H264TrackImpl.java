@@ -299,6 +299,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                         createSample(buffered);
                     }
                     fvnd = current;
+                    //System.err.println("" + nalUnitHeader.nal_unit_type);
                     buffered.add((ByteBuffer) nal.rewind());
                     //log.finer("NAL Unit Type: " + nalUnitHeader.nal_unit_type + " " + fvnd.frame_num);
                     break;
@@ -310,6 +311,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                         fvnd = null;
                     }
                     seiMessage = new SEIMessage(cleanBuffer(new ByteBufferBackedInputStream(nal)), currentSeqParameterSet);
+                    //System.err.println("" + nalUnitHeader.nal_unit_type);
                     buffered.add(nal);
                     break;
 
@@ -319,6 +321,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                         createSample(buffered);
                         fvnd = null;
                     }
+                    //System.err.println("" + nalUnitHeader.nal_unit_type);
                     buffered.add(nal);
                     break;
                 case H264NalUnitTypes.SEQ_PARAMETER_SET:
@@ -409,6 +412,10 @@ public class H264TrackImpl extends AbstractH26XTrack {
                 case H264NalUnitTypes.CODED_SLICE_DATA_PART_C:
                     nu = _nu;
             }
+        }
+        if (nu == null) {
+            LOG.warning("Sample without Slice");
+            return;
         }
 
         if (IdrPicFlag) {
