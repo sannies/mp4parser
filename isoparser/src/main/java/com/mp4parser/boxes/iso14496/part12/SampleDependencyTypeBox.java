@@ -29,7 +29,7 @@ import java.util.List;
  * <pre>
  * aligned(8) class SampleDependencyTypeBox extends FullBox('sdtp', version = 0, 0) {
  *  for (i=0; i &lt; sample_count; i++){
- *   unsigned int(2) reserved = 0;
+ *   unsigned int(2) isLeading;
  *   unsigned int(2) sample_depends_on;
  *   unsigned int(2) sample_is_depended_on;
  *   unsigned int(2) sample_has_redundancy;

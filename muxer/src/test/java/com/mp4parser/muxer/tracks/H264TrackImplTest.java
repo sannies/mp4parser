@@ -43,16 +43,13 @@ public class H264TrackImplTest {
         m.addTrack(t);
 
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
-        Container isoFile = mp4Builder.build(m);
+        Container c = mp4Builder.build(m);
 
-/*        WritableByteChannel fcOut = new FileOutputStream("h264-sample.mp4").getChannel();
-        isoFile.writeContainer(fcOut);
-        fcOut.close();*/
+        //c.writeContainer(new FileOutputStream("C:\\dev\\mp4parser\\isoparser\\src\\test\\resources\\com\\googlecode\\mp4parser\\authoring\\tracks\\h264-sample.mp4").getChannel());
 
 
-        IsoFile isoFileReference = new IsoFile(
-                new FileInputStream(
-                        getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "com/mp4parser/muxer/tracks/h264-sample.mp4").getChannel());
-        BoxComparator.check(isoFile, isoFileReference, "moov[0]/mvhd[0]", "moov[0]/trak[0]/tkhd[0]", "moov[0]/trak[0]/mdia[0]/mdhd[0]", "moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stco[0]");
+
+        IsoFile isoFileReference = new IsoFile(getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "com/googlecode/mp4parser/authoring/tracks/h264-sample.mp4");
+        BoxComparator.check(c, isoFileReference, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]", "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stco[0]");
     }
 }

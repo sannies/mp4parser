@@ -13,7 +13,7 @@ public class WebVTTSourceLabelBox extends AbstractBox {
     public static final String TYPE = "vlab";
 
 
-    String sourceLabel;
+    String sourceLabel = "";
 
     public WebVTTSourceLabelBox() {
         super(TYPE);

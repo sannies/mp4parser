@@ -57,6 +57,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
     private boolean determineFrameRate = true;
     private String lang = "eng";
 
+    int[] pictureOrderCounts = new int[0];
 
     /**
      * Creates a new <code>Track</code> object from a raw H264 source (<code>DataSource dataSource1</code>).
@@ -100,7 +101,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
     private void parse(LookAhead la) throws IOException {
 
 
-        samples = new LinkedList<Sample>();
+        samples = new ArrayList<Sample>();
         if (!readSamples(la)) {
             throw new IOException();
         }
@@ -293,35 +294,38 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     FirstVclNalDetector current = new FirstVclNalDetector(nal,
                             nalUnitHeader.nal_ref_idc, nalUnitHeader.nal_unit_type);
                     if (fvnd != null && fvnd.isFirstInNew(current)) {
-                        System.err.println("Wrapping up cause of first vcl nal is found");
+                        LOG.finer("Wrapping up cause of first vcl nal is found");
                         createSample(buffered);
                     }
                     fvnd = current;
+                    //System.err.println("" + nalUnitHeader.nal_unit_type);
                     buffered.add((ByteBuffer) nal.rewind());
-                    //System.err.println("NAL Unit Type: " + nalUnitHeader.nal_unit_type + " " + fvnd.frame_num);
+                    //log.finer("NAL Unit Type: " + nalUnitHeader.nal_unit_type + " " + fvnd.frame_num);
                     break;
 
                 case H264NalUnitTypes.SEI:
                     if (fvnd != null) {
-                        System.err.println("Wrapping up cause of SEI after vcl marks new sample");
+                        LOG.finer("Wrapping up cause of SEI after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
                     seiMessage = new SEIMessage(cleanBuffer(new ByteBufferBackedInputStream(nal)), currentSeqParameterSet);
+                    //System.err.println("" + nalUnitHeader.nal_unit_type);
                     buffered.add(nal);
                     break;
 
                 case H264NalUnitTypes.AU_UNIT_DELIMITER:
                     if (fvnd != null) {
-                        System.err.println("Wrapping up cause of AU after vcl marks new sample");
+                        LOG.finer("Wrapping up cause of AU after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
+                    //System.err.println("" + nalUnitHeader.nal_unit_type);
                     buffered.add(nal);
                     break;
                 case H264NalUnitTypes.SEQ_PARAMETER_SET:
                     if (fvnd != null) {
-                        System.err.println("Wrapping up cause of SPS after vcl marks new sample");
+                        LOG.finer("Wrapping up cause of SPS after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -329,7 +333,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     break;
                 case 8:
                     if (fvnd != null) {
-                        System.err.println("Wrapping up cause of PPS after vcl marks new sample");
+                        LOG.finer("Wrapping up cause of PPS after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -354,32 +358,81 @@ public class H264TrackImpl extends AbstractH26XTrack {
         if (buffered.size() > 0) {
             createSample(buffered);
         }
+        calcCtts();
+
         decodingTimes = new long[samples.size()];
         Arrays.fill(decodingTimes, frametick);
+
+
         return true;
+    }
+
+    int prevPicOrderCntLsb = 0;
+    int prevPicOrderCntMsb = 0;
+
+    public void calcCtts() {
+
+        int pTime = 0;
+        int lastPoc = -1;
+        for (int j = 0; j < pictureOrderCounts.length; j++) {
+            int minIndex = 0;
+            int minValue = Integer.MAX_VALUE;
+            for (int i = Math.max(0, j - 128); i < Math.min(pictureOrderCounts.length, j + 128); i++) {
+                if (pictureOrderCounts[i] > lastPoc && pictureOrderCounts[i] < minValue) {
+                    minIndex = i;
+                    minValue = pictureOrderCounts[i];
+                }
+            }
+            lastPoc = pictureOrderCounts[minIndex];
+            pictureOrderCounts[minIndex] = pTime++;
+        }
+        for (int i = 0; i < pictureOrderCounts.length; i++) {
+            ctts.add(new CompositionTimeToSample.Entry(1, pictureOrderCounts[i] - i));
+        }
+
+        pictureOrderCounts = new int[0];
     }
 
     private void createSample(List<ByteBuffer> buffered) throws IOException {
 
-        int stdpValue = 22;
+        SampleDependencyTypeBox.Entry sampleDependency = new SampleDependencyTypeBox.Entry(0);
 
         boolean IdrPicFlag = false;
+        H264NalUnitHeader nu = null;
         for (ByteBuffer nal : buffered) {
-            int type = nal.get(0);
-            int nal_unit_type = type & 0x1f;
-            if (nal_unit_type == 5) {
-                IdrPicFlag = true;
+            H264NalUnitHeader _nu = getNalUnitHeader(nal);
+
+            switch (_nu.nal_unit_type) {
+                case H264NalUnitTypes.CODED_SLICE_IDR:
+                    IdrPicFlag = true;
+                case H264NalUnitTypes.CODED_SLICE_NON_IDR:
+                case H264NalUnitTypes.CODED_SLICE_DATA_PART_A:
+                case H264NalUnitTypes.CODED_SLICE_DATA_PART_B:
+                case H264NalUnitTypes.CODED_SLICE_DATA_PART_C:
+                    nu = _nu;
             }
+        }
+        if (nu == null) {
+            LOG.warning("Sample without Slice");
+            return;
         }
 
         if (IdrPicFlag) {
-            stdpValue += 16;
+            calcCtts();
         }
         // cleans the buffer we just added
         InputStream bs = cleanBuffer(new ByteBufferBackedInputStream(buffered.get(buffered.size() - 1)));
         SliceHeader sh = new SliceHeader(bs, spsIdToSps, ppsIdToPps, IdrPicFlag);
-        if (sh.slice_type == SliceHeader.SliceType.B) {
-            stdpValue += 4;
+
+        if (nu.nal_ref_idc== 0) {
+            sampleDependency.setSampleIsDependentOn(2);
+        } else {
+            sampleDependency.setSampleIsDependentOn(1);
+        }
+        if ((sh.slice_type == SliceHeader.SliceType.I) || (sh.slice_type == SliceHeader.SliceType.SI) ) {
+            sampleDependency.setSampleDependsOn(2);
+        } else {
+            sampleDependency.setSampleDependsOn(1);
         }
         Sample bb = createSampleObject(buffered);
 //                    LOG.fine("Adding sample with size " + bb.capacity() + " and header " + sh);
@@ -389,20 +442,116 @@ public class H264TrackImpl extends AbstractH26XTrack {
             frameNrInGop = 0;
         }
         int offset = 0;
-        if (seiMessage != null && seiMessage.clock_timestamp_flag) {
-            offset = seiMessage.n_frames - frameNrInGop;
-        } else if (seiMessage != null && seiMessage.removal_delay_flag) {
-            offset = seiMessage.dpb_removal_delay / 2;
+        if (sh.sps.pic_order_cnt_type == 0) {
+            int max_pic_order_count_lsb = (1 << (sh.sps.log2_max_pic_order_cnt_lsb_minus4 + 4));
+            // System.out.print(" pic_order_cnt_lsb " + pic_order_cnt_lsb + " " + max_pic_order_count);
+            int picOrderCountLsb = sh.pic_order_cnt_lsb;
+            int picOrderCntMsb = 0;
+            if ((picOrderCountLsb < prevPicOrderCntLsb) &&
+                    ((prevPicOrderCntLsb - picOrderCountLsb) >= (max_pic_order_count_lsb / 2))) {
+                picOrderCntMsb = prevPicOrderCntMsb + max_pic_order_count_lsb;
+            } else if ((picOrderCountLsb > prevPicOrderCntLsb) &&
+                    ((picOrderCountLsb - prevPicOrderCntLsb) > (max_pic_order_count_lsb / 2))) {
+                picOrderCntMsb = prevPicOrderCntMsb - max_pic_order_count_lsb;
+            } else {
+                picOrderCntMsb = prevPicOrderCntMsb;
+            }
+
+            pictureOrderCounts = Mp4Arrays.copyOfAndAppend(pictureOrderCounts, picOrderCntMsb + picOrderCountLsb);
+            prevPicOrderCntLsb = picOrderCountLsb;
+            prevPicOrderCntMsb = picOrderCntMsb;
+
+
+        } else if (sh.sps.pic_order_cnt_type == 1) {
+                /*if (seiMessage != null && seiMessage.clock_timestamp_flag) {
+                    offset = seiMessage.n_frames - frameNrInGop;
+                } else if (seiMessage != null && seiMessage.removal_delay_flag) {
+                    offset = seiMessage.dpb_removal_delay / 2;
+                }
+
+                if (seiMessage == null) {
+                    LOG.warning("CTS timing in ctts box is most likely not OK");
+                }*/
+            throw new RuntimeException("pic_order_cnt_type == 1 needs to be implemented");
+        } else if (sh.sps.pic_order_cnt_type == 2) {
+            pictureOrderCounts = Mp4Arrays.copyOfAndAppend(pictureOrderCounts, samples.size());
         }
-        ctts.add(new CompositionTimeToSample.Entry(1, offset * frametick));
-        sdtp.add(new SampleDependencyTypeBox.Entry(stdpValue));
+
+        sdtp.add(sampleDependency);
         frameNrInGop++;
 
         samples.add(bb);
         if (IdrPicFlag) { // IDR Picture
             stss.add(samples.size());
         }
+    }
 
+    private int calcPoc(int absFrameNum, H264NalUnitHeader nu, SliceHeader sh) {
+        if (sh.sps.pic_order_cnt_type == 0) {
+            return calcPOC0(nu, sh);
+        } else if (sh.sps.pic_order_cnt_type == 1) {
+            return calcPOC1(absFrameNum, nu, sh);
+        } else {
+            return calcPOC2(absFrameNum, nu, sh);
+        }
+    }
+
+    private int calcPOC2(int absFrameNum, H264NalUnitHeader nu, SliceHeader sh) {
+
+        if (nu.nal_ref_idc == 0)
+            return 2 * absFrameNum - 1;
+        else
+            return 2 * absFrameNum;
+    }
+
+    private int calcPOC1(int absFrameNum, H264NalUnitHeader nu, SliceHeader sh) {
+
+        if (sh.sps.num_ref_frames_in_pic_order_cnt_cycle == 0)
+            absFrameNum = 0;
+        if (nu.nal_ref_idc == 0 && absFrameNum > 0)
+            absFrameNum = absFrameNum - 1;
+
+        int expectedDeltaPerPicOrderCntCycle = 0;
+        for (int i = 0; i < sh.sps.num_ref_frames_in_pic_order_cnt_cycle; i++)
+            expectedDeltaPerPicOrderCntCycle += sh.sps.offsetForRefFrame[i];
+
+        int expectedPicOrderCnt;
+        if (absFrameNum > 0) {
+            int picOrderCntCycleCnt = (absFrameNum - 1) / sh.sps.num_ref_frames_in_pic_order_cnt_cycle;
+            int frameNumInPicOrderCntCycle = (absFrameNum - 1) % sh.sps.num_ref_frames_in_pic_order_cnt_cycle;
+
+            expectedPicOrderCnt = picOrderCntCycleCnt * expectedDeltaPerPicOrderCntCycle;
+            for (int i = 0; i <= frameNumInPicOrderCntCycle; i++)
+                expectedPicOrderCnt = expectedPicOrderCnt + sh.sps.offsetForRefFrame[i];
+        } else {
+            expectedPicOrderCnt = 0;
+        }
+        if (nu.nal_ref_idc == 0)
+            expectedPicOrderCnt = expectedPicOrderCnt + sh.sps.offset_for_non_ref_pic;
+
+        return expectedPicOrderCnt + sh.delta_pic_order_cnt_0;
+    }
+
+    private int calcPOC0(H264NalUnitHeader nu, SliceHeader sh) {
+
+        int pocCntLsb = sh.pic_order_cnt_lsb;
+        int maxPicOrderCntLsb = 1 << (sh.sps.log2_max_pic_order_cnt_lsb_minus4 + 4);
+
+        // TODO prevPicOrderCntMsb should be wrapped!!
+        int picOrderCntMsb;
+        if ((pocCntLsb < prevPicOrderCntLsb) && ((prevPicOrderCntLsb - pocCntLsb) >= (maxPicOrderCntLsb / 2)))
+            picOrderCntMsb = prevPicOrderCntMsb + maxPicOrderCntLsb;
+        else if ((pocCntLsb > prevPicOrderCntLsb) && ((pocCntLsb - prevPicOrderCntLsb) > (maxPicOrderCntLsb / 2)))
+            picOrderCntMsb = prevPicOrderCntMsb - maxPicOrderCntLsb;
+        else
+            picOrderCntMsb = prevPicOrderCntMsb;
+
+        if (nu.nal_ref_idc != 0) {
+            prevPicOrderCntMsb = picOrderCntMsb;
+            prevPicOrderCntLsb = pocCntLsb;
+        }
+
+        return picOrderCntMsb + pocCntLsb;
     }
 
 
@@ -467,123 +616,19 @@ public class H264TrackImpl extends AbstractH26XTrack {
                 timescale = firstSeqParameterSet.vuiParams.time_scale >> 1; // Not sure why, but I found this in several places, and it works...
                 frametick = firstSeqParameterSet.vuiParams.num_units_in_tick;
                 if (timescale == 0 || frametick == 0) {
-                    System.err.println("Warning: vuiParams contain invalid values: time_scale: " + timescale + " and frame_tick: " + frametick + ". Setting frame rate to 25fps");
+                    LOG.warning("vuiParams contain invalid values: time_scale: " + timescale + " and frame_tick: " + frametick + ". Setting frame rate to 25fps");
                     timescale = 90000;
                     frametick = 3600;
                 }
+
+                if (timescale / frametick > 100) {
+                    LOG.warning("Framerate is " + (timescale / frametick) + ". That is suspicious.");
+                }
             } else {
-                System.err.println("Warning: Can't determine frame rate. Guessing 25 fps");
+                LOG.warning("Can't determine frame rate. Guessing 25 fps");
                 timescale = 90000;
                 frametick = 3600;
             }
-        }
-    }
-
-    public static class SliceHeader {
-
-        public enum SliceType {
-            P, B, I, SP, SI
-        }
-
-        public int first_mb_in_slice;
-        public SliceType slice_type;
-        public int pic_parameter_set_id;
-        public int colour_plane_id;
-        public int frame_num;
-        public boolean field_pic_flag = false;
-        public boolean bottom_field_flag = false;
-        public int idr_pic_id;
-        public int pic_order_cnt_lsb;
-        public int delta_pic_order_cnt_bottom;
-        public int delta_pic_order_cnt_0;
-        public int delta_pic_order_cnt_1;
-
-        public SliceHeader(InputStream is, Map<Integer, SeqParameterSet> spss, Map<Integer, PictureParameterSet> ppss, boolean IdrPicFlag) {
-            try {
-                is.read();
-                CAVLCReader reader = new CAVLCReader(is);
-                first_mb_in_slice = reader.readUE("SliceHeader: first_mb_in_slice");
-                int sliceTypeInt = reader.readUE("SliceHeader: slice_type");
-                switch (sliceTypeInt) {
-                    case 0:
-                    case 5:
-                        slice_type = SliceType.P;
-                        break;
-
-                    case 1:
-                    case 6:
-                        slice_type = SliceType.B;
-                        break;
-
-                    case 2:
-                    case 7:
-                        slice_type = SliceType.I;
-                        break;
-
-                    case 3:
-                    case 8:
-                        slice_type = SliceType.SP;
-                        break;
-
-                    case 4:
-                    case 9:
-                        slice_type = SliceType.SI;
-                        break;
-
-                }
-
-                pic_parameter_set_id = reader.readUE("SliceHeader: pic_parameter_set_id");
-                PictureParameterSet pps = ppss.get(pic_parameter_set_id);
-                SeqParameterSet sps = spss.get(pps.seq_parameter_set_id);
-                if (sps.residual_color_transform_flag) {
-                    colour_plane_id = reader.readU(2, "SliceHeader: colour_plane_id");
-                }
-                frame_num = reader.readU(sps.log2_max_frame_num_minus4 + 4, "SliceHeader: frame_num");
-
-                if (!sps.frame_mbs_only_flag) {
-                    field_pic_flag = reader.readBool("SliceHeader: field_pic_flag");
-                    if (field_pic_flag) {
-                        bottom_field_flag = reader.readBool("SliceHeader: bottom_field_flag");
-                    }
-                }
-                if (IdrPicFlag) {
-
-                    idr_pic_id = reader.readUE("SliceHeader: idr_pic_id");
-                }
-                if (sps.pic_order_cnt_type == 0) {
-                    pic_order_cnt_lsb = reader.readU(sps.log2_max_pic_order_cnt_lsb_minus4 + 4, "SliceHeader: pic_order_cnt_lsb");
-                    if (pps.bottom_field_pic_order_in_frame_present_flag && !field_pic_flag) {
-                        delta_pic_order_cnt_bottom = reader.readSE("SliceHeader: delta_pic_order_cnt_bottom");
-                    }
-                }
-
-                if (sps.pic_order_cnt_type == 1 && !sps.delta_pic_order_always_zero_flag) {
-
-                    delta_pic_order_cnt_0 = reader.readSE("delta_pic_order_cnt_0");
-                    if (pps.bottom_field_pic_order_in_frame_present_flag && !field_pic_flag) {
-                        delta_pic_order_cnt_1 = reader.readSE("delta_pic_order_cnt_1");
-                    }
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
-
-        @Override
-        public String toString() {
-            return "SliceHeader{" +
-                    "first_mb_in_slice=" + first_mb_in_slice +
-                    ", slice_type=" + slice_type +
-                    ", pic_parameter_set_id=" + pic_parameter_set_id +
-                    ", colour_plane_id=" + colour_plane_id +
-                    ", frame_num=" + frame_num +
-                    ", field_pic_flag=" + field_pic_flag +
-                    ", bottom_field_flag=" + bottom_field_flag +
-                    ", idr_pic_id=" + idr_pic_id +
-                    ", pic_order_cnt_lsb=" + pic_order_cnt_lsb +
-                    ", delta_pic_order_cnt_bottom=" + delta_pic_order_cnt_bottom +
-                    '}';
         }
     }
 

@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
 public class WebVTTConfigurationBox extends AbstractBox {
     public static final String TYPE = "vttC";
 
-    String config;
+    String config = "";
 
     public WebVTTConfigurationBox() {
         super(TYPE);

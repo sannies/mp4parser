@@ -206,6 +206,7 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setWidth(tkhd.getWidth());
         trackMetaData.setLayer(tkhd.getLayer());
         trackMetaData.setMatrix(tkhd.getMatrix());
+        trackMetaData.setVolume(tkhd.getVolume());
         EditListBox elst = Path.getPath(trackBox, "edts/elst");
         MovieHeaderBox mvhd = Path.getPath(isofile, "moov/mvhd");
         if (elst != null) {

@@ -60,12 +60,20 @@ public class AACTrackImplTest {
 
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
         Container c = mp4Builder.build(m);
-        WritableByteChannel fc = new FileOutputStream("aac-sample.mp4").getChannel();
-        c.writeContainer(fc);
-        fc.close();
-        IsoFile isoFileReference = new IsoFile(
-                new FileInputStream(
-                        this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/mp4parser/muxer/tracks/aac-sample.mp4").getChannel());
-        BoxComparator.check(c, isoFileReference, "moov[0]/mvhd[0]", "moov[0]/trak[0]/tkhd[0]", "moov[0]/trak[0]/mdia[0]/mdhd[0]", "moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stco[0]");
+        //c.writeContainer(new FileOutputStream("C:\\dev\\mp4parser\\isoparser\\src\\test\\resources\\com\\googlecode\\mp4parser\\authoring\\tracks\\aac-sample.mp4").getChannel());
+
+        IsoFile isoFileReference = new IsoFile(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.mp4");
+        BoxComparator.check(c, isoFileReference, "/moov[0]/mvhd[0]", "/moov[0]/trak[0]/tkhd[0]", "/moov[0]/trak[0]/mdia[0]/mdhd[0]", "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stco[0]");
+    }
+
+    public static void main(String[] args) throws IOException {
+        ESDescriptorBox esds = Path.getPath(new IsoFile("C:\\dev\\mp4parer\\aac-sample.mp4"), "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stsd[0]/mp4v[0]/esds[0]");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        esds.getBox(Channels.newChannel(baos));
+        System.err.println(Hex.encodeHex(baos.toByteArray()));
+        System.err.println(esds.getEsDescriptor());
+        baos = new ByteArrayOutputStream();
+        esds.getBox(Channels.newChannel(baos));
+        System.err.println(Hex.encodeHex(baos.toByteArray()));
     }
 }

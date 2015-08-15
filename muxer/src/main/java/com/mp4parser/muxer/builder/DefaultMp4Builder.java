@@ -39,8 +39,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.mp4parser.tools.CastUtils.l2i;
-import static com.mp4parser.tools.Mp4Math.gcd;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.Math.lcm;
 
 /**
  * Creates a plain MP4 file from a video. Plain as plain can be.
@@ -52,7 +52,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     Set<SampleAuxiliaryInformationOffsetsBox> sampleAuxiliaryInformationOffsetsBoxes = new HashSet<SampleAuxiliaryInformationOffsetsBox>();
     HashMap<Track, List<Sample>> track2Sample = new HashMap<Track, List<Sample>>();
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
-    private Fragmenter intersectionFinder;
+    private Fragmenter fragmenter;
 
     private static long sum(int[] ls) {
         long rc = 0;
@@ -71,8 +71,8 @@ public class DefaultMp4Builder implements Mp4Builder {
     }
 
 
-    public void setIntersectionFinder(Fragmenter intersectionFinder) {
-        this.intersectionFinder = intersectionFinder;
+    public void setFragmenter(Fragmenter fragmenter) {
+        this.fragmenter = fragmenter;
     }
 
 
@@ -81,8 +81,8 @@ public class DefaultMp4Builder implements Mp4Builder {
      * {@inheritDoc}
      */
     public Container build(Movie movie) {
-        if (intersectionFinder == null) {
-            intersectionFinder = new TimeBasedFragmenter(movie, 2);
+        if (fragmenter == null) {
+            fragmenter = new TimeBasedFragmenter(movie, 2);
         }
         LOG.fine("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
@@ -160,11 +160,10 @@ public class DefaultMp4Builder implements Mp4Builder {
     protected FileTypeBox createFileTypeBox(Movie movie) {
         List<String> minorBrands = new LinkedList<String>();
 
+        minorBrands.add("mp42");
         minorBrands.add("isom");
-        minorBrands.add("iso2");
-        minorBrands.add("avc1");
 
-        return new FileTypeBox("isom", 0, minorBrands);
+        return new FileTypeBox("mp42", 0, minorBrands);
     }
 
     protected MovieBox createMovieBox(Movie movie, Map<Track, int[]> chunks) {
@@ -181,13 +180,13 @@ public class DefaultMp4Builder implements Mp4Builder {
             long tracksDuration;
 
             if (track.getEdits() == null || track.getEdits().isEmpty()) {
-                tracksDuration = (track.getDuration() * getTimescale(movie) / track.getTrackMetaData().getTimescale());
+                tracksDuration = (track.getDuration() * movieTimeScale / track.getTrackMetaData().getTimescale());
             } else {
-                long d = 0;
+                double d = 0;
                 for (Edit edit : track.getEdits()) {
                     d += (long) edit.getSegmentDuration();
                 }
-                tracksDuration = (d * getTimescale(movie));
+                tracksDuration = (long) (d * movieTimeScale);
             }
 
 
@@ -315,7 +314,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     protected ParsableBox createEdts(Track track, Movie movie) {
         if (track.getEdits() != null && track.getEdits().size() > 0) {
             EditListBox elst = new EditListBox();
-            elst.setVersion(1);
+            elst.setVersion(0); // quicktime won't play file when version = 1
             List<EditListBox.Entry> entries = new ArrayList<EditListBox.Entry>();
 
             for (Edit edit : track.getEdits()) {
@@ -591,7 +590,7 @@ public class DefaultMp4Builder implements Mp4Builder {
      */
     int[] getChunkSizes(Track track, Movie movie) {
 
-        long[] referenceChunkStarts = intersectionFinder.sampleNumbers(track);
+        long[] referenceChunkStarts = fragmenter.sampleNumbers(track);
         int[] chunkSizes = new int[referenceChunkStarts.length];
 
 
@@ -614,9 +613,10 @@ public class DefaultMp4Builder implements Mp4Builder {
     }
 
     public long getTimescale(Movie movie) {
+
         long timescale = movie.getTracks().iterator().next().getTrackMetaData().getTimescale();
         for (Track track : movie.getTracks()) {
-            timescale = gcd(track.getTrackMetaData().getTimescale(), timescale);
+            timescale = lcm(timescale, track.getTrackMetaData().getTimescale());
         }
         return timescale;
     }
