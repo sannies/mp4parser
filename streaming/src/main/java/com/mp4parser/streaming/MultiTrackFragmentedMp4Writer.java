@@ -1,48 +1,13 @@
 package com.mp4parser.streaming;
 
-import com.mp4parser.IsoFile;
-import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
-import com.mp4parser.tools.IsoTypeWriter;
-import com.mp4parser.ParsableBox;
-import com.mp4parser.boxes.iso14496.part12.DataEntryUrlBox;
-import com.mp4parser.boxes.iso14496.part12.DataInformationBox;
-import com.mp4parser.boxes.iso14496.part12.DataReferenceBox;
-import com.mp4parser.boxes.iso14496.part12.FileTypeBox;
-import com.mp4parser.boxes.iso14496.part12.HandlerBox;
-import com.mp4parser.boxes.iso14496.part12.HintMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.MediaBox;
-import com.mp4parser.boxes.iso14496.part12.MediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.MediaInformationBox;
-import com.mp4parser.boxes.iso14496.part12.MovieBox;
-import com.mp4parser.boxes.iso14496.part12.MovieHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.NullMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.SampleSizeBox;
-import com.mp4parser.boxes.iso14496.part12.SampleTableBox;
-import com.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
-import com.mp4parser.boxes.iso14496.part12.SoundMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.StaticChunkOffsetBox;
-import com.mp4parser.boxes.iso14496.part12.SubtitleMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.TimeToSampleBox;
-import com.mp4parser.boxes.iso14496.part12.TrackBox;
-import com.mp4parser.boxes.iso14496.part12.VideoMediaHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.MovieExtendsBox;
-import com.mp4parser.boxes.iso14496.part12.MovieExtendsHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.MovieFragmentBox;
-import com.mp4parser.boxes.iso14496.part12.MovieFragmentHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.SampleFlags;
-import com.mp4parser.boxes.iso14496.part12.TrackExtendsBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentBaseMediaDecodeTimeBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentHeaderBox;
-import com.mp4parser.boxes.iso14496.part12.TrackRunBox;
-import com.mp4parser.tools.Mp4Arrays;
 import com.mp4parser.Box;
-import com.mp4parser.streaming.extensions.CencEncryptTrackExtension;
-import com.mp4parser.streaming.extensions.CompositionTimeSampleExtension;
-import com.mp4parser.streaming.extensions.CompositionTimeTrackExtension;
-import com.mp4parser.streaming.extensions.SampleFlagsSampleExtension;
-import com.mp4parser.streaming.extensions.SampleFlagsTrackExtension;
-import com.mp4parser.streaming.extensions.TrackIdTrackExtension;
+import com.mp4parser.IsoFile;
+import com.mp4parser.ParsableBox;
+import com.mp4parser.boxes.iso14496.part12.*;
+import com.mp4parser.muxer.Sample;
+import com.mp4parser.streaming.extensions.*;
+import com.mp4parser.tools.IsoTypeWriter;
+import com.mp4parser.tools.Mp4Arrays;
 import com.mp4parser.tools.Mp4Math;
 
 import java.io.IOException;
@@ -50,22 +15,14 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static com.mp4parser.tools.CastUtils.l2i;
-import static com.mp4parser.tools.Mp4Math.lcm;
-import static com.mp4parser.streaming.StreamingSampleHelper.getSampleExtension;
+
 
 /**
  *
@@ -100,7 +57,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
             }
         }
         for (StreamingTrack streamingTrack : source) {
-            if (streamingTrack.getTrackExtension(TrackIdTrackExtension.class) != null) {
+            if (streamingTrack.getTrackExtension(TrackIdTrackExtension.class) == null) {
                 ArrayList<Long> ts = new ArrayList<Long>(trackIds);
                 Collections.sort(ts);
                 TrackIdTrackExtension tiExt = new TrackIdTrackExtension(ts.size() > 0 ? (ts.get(ts.size() - 1) + 1) : 1);
@@ -213,6 +170,11 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     private Box createTkhd(StreamingTrack streamingTrack) {
         TrackHeaderBox tkhd = new TrackHeaderBox();
         tkhd.setTrackId(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId());
+        DimensionTrackExtension dte = streamingTrack.getTrackExtension(DimensionTrackExtension.class);
+        if (dte != null) {
+            tkhd.setHeight(dte.getHeight());
+            tkhd.setWidth(dte.getWidth());
+        }
         return tkhd;
     }
 
@@ -285,9 +247,9 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
                 try {
                     StreamingSample ss;
                     while ((ss = streamingTrack.getSamples().poll(100, TimeUnit.MILLISECONDS)) != null) {
-                        System.out.println(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " Before consume");
+                        //System.out.println(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " Before consume");
                         consumeSample(streamingTrack, ss);
-                        System.out.println(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " consumed");
+                        //System.out.println(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " consumed");
                     }
 
                 } catch (InterruptedException e) {
@@ -307,7 +269,16 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         for (StreamingTrack streamingTrack : source) {
             es.submit(new ConsumeSamplesCallable(streamingTrack));
         }
-        es.shutdown();
+
+        try {
+            System.out.println("-1- es.awaitTermination in MultiTrackFragmentedMp4Writer");
+            es.shutdown();
+            es.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+            System.out.println("-2- es.awaitTermination in MultiTrackFragmentedMp4Writer");
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -315,13 +286,8 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         System.err.println("Consuming " + streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " " + ss.getDuration());
         SampleFlagsSampleExtension sampleDependencySampleExtension = null;
         CompositionTimeSampleExtension compositionTimeSampleExtension = null;
-        for (SampleExtension sampleExtension : ss.getExtensions()) {
-            if (sampleExtension instanceof SampleFlagsSampleExtension) {
-                sampleDependencySampleExtension = (SampleFlagsSampleExtension) sampleExtension;
-            } else if (sampleExtension instanceof CompositionTimeSampleExtension) {
-                compositionTimeSampleExtension = (CompositionTimeSampleExtension) sampleExtension;
-            }
-        }
+        sampleDependencySampleExtension = ss.getSampleExtension(SampleFlagsSampleExtension.class);
+        compositionTimeSampleExtension = ss.getSampleExtension(CompositionTimeSampleExtension.class);
         currentTime += ss.getDuration();
         // 3 seconds = 3 * source.getTimescale()
         fragmentBuffers.get(streamingTrack).add(ss);
@@ -389,8 +355,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
             TrackRunBox.Entry entry = new TrackRunBox.Entry();
             entry.setSampleSize(streamingSample.getContent().remaining());
             if (sampleFlagsRequired) {
-                SampleFlagsSampleExtension sampleFlagsSampleExtension =
-                        getSampleExtension(streamingSample, SampleFlagsSampleExtension.class);
+                SampleFlagsSampleExtension sampleFlagsSampleExtension = streamingSample.getSampleExtension(SampleFlagsSampleExtension.class);
                 assert sampleFlagsSampleExtension != null : "SampleDependencySampleExtension missing even though SampleDependencyTrackExtension was present";
                 SampleFlags sflags = new SampleFlags();
                 sflags.setIsLeading(sampleFlagsSampleExtension.getIsLeading());
@@ -408,8 +373,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
             entry.setSampleDuration(streamingSample.getDuration());
 
             if (trun.isSampleCompositionTimeOffsetPresent()) {
-                CompositionTimeSampleExtension compositionTimeSampleExtension =
-                        getSampleExtension(streamingSample, CompositionTimeSampleExtension.class);
+                CompositionTimeSampleExtension compositionTimeSampleExtension = streamingSample.getSampleExtension(CompositionTimeSampleExtension.class);
                 assert compositionTimeSampleExtension != null : "CompositionTimeSampleExtension missing even though CompositionTimeTrackExtension was present";
                 entry.setSampleCompositionTimeOffset(l2i(compositionTimeSampleExtension.getCompositionTimeOffset()));
             }
@@ -478,6 +442,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
     }
 
+
     private void createMfhd(long sequenceNumber, MovieFragmentBox moof) {
         MovieFragmentHeaderBox mfhd = new MovieFragmentHeaderBox();
         mfhd.setSequenceNumber(sequenceNumber);
@@ -485,6 +450,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     }
 
     private Box createMdat(final StreamingTrack streamingTrack) {
+        final List<StreamingSample> samples = new ArrayList<StreamingSample>(fragmentBuffers.get(streamingTrack));
         return new Box() {
             public String getType() {
                 return "mdat";
@@ -492,7 +458,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
             public long getSize() {
                 long l = 8;
-                for (StreamingSample streamingSample : fragmentBuffers.get(streamingTrack)) {
+                for (StreamingSample streamingSample : samples) {
                     l += streamingSample.getContent().remaining();
                 }
                 return l;
@@ -501,7 +467,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
             public void getBox(WritableByteChannel writableByteChannel) throws IOException {
                 ArrayList<ByteBuffer> sampleContents = new ArrayList<ByteBuffer>();
                 long l = 8;
-                for (StreamingSample streamingSample : fragmentBuffers.get(streamingTrack)) {
+                for (StreamingSample streamingSample : samples) {
                     ByteBuffer sampleContent = streamingSample.getContent();
                     sampleContents.add(sampleContent);
                     l += sampleContent.remaining();

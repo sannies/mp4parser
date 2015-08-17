@@ -31,4 +31,9 @@ public class CompositionTimeSampleExtension implements SampleExtension {
     public long getCompositionTimeOffset() {
         return ctts;
     }
+
+    @Override
+    public String toString() {
+        return "ctts=" + ctts;
+    }
 }

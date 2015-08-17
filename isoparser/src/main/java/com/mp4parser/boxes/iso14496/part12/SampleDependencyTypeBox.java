@@ -67,11 +67,11 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
             value = (sdo & 0x03) << 4 | value & 0xcf;
         }
 
-        public byte getSampleIsDependentOn() {
+        public byte getSampleIsDependedOn() {
             return (byte) ((value >> 2) & 0x03);
         }
 
-        public void setSampleIsDependentOn(int sido) {
+        public void setSampleIsDependedOn(int sido) {
             value = (sido & 0x03) << 2 | value & 0xf3;
         }
 
@@ -88,7 +88,7 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
             return "Entry{" +
                     "isLeading=" + getIsLeading() +
                     ", sampleDependsOn=" + getSampleDependsOn() +
-                    ", sampleIsDependentOn=" + getSampleIsDependentOn() +
+                    ", sampleIsDependentOn=" + getSampleIsDependedOn() +
                     ", sampleHasRedundancy=" + getSampleHasRedundancy() +
                     '}';
         }

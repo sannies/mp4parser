@@ -22,14 +22,6 @@ public abstract class AbstractStreamingTrack implements StreamingTrack {
         return samples;
     }
 
-    public boolean hasMoreSamples() {
-        return false;
-    }
-
-    public TrackHeaderBox getTrackHeaderBox() {
-        return tkhd;
-    }
-
     public SampleDescriptionBox getSampleDescriptionBox() {
         return stsd;
     }

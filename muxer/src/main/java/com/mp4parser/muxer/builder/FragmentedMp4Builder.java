@@ -452,7 +452,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 if (track.getSampleDependencies() != null && !track.getSampleDependencies().isEmpty()) {
                     SampleDependencyTypeBox.Entry e = track.getSampleDependencies().get(i);
                     sflags.setSampleDependsOn(e.getSampleDependsOn());
-                    sflags.setSampleIsDependedOn(e.getSampleIsDependentOn());
+                    sflags.setSampleIsDependedOn(e.getSampleIsDependedOn());
                     sflags.setSampleHasRedundancy(e.getSampleHasRedundancy());
                 }
                 if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {

@@ -50,16 +50,16 @@ public class SampleFlagsSampleExtension implements SampleExtension {
         return sampleDependsOn;
     }
 
-    public void setSampleDependsOn(byte sampleDependsOn) {
-        this.sampleDependsOn = sampleDependsOn;
+    public void setSampleDependsOn(int sampleDependsOn) {
+        this.sampleDependsOn = (byte) sampleDependsOn;
     }
 
     public byte getSampleIsDependedOn() {
         return sampleIsDependedOn;
     }
 
-    public void setSampleIsDependedOn(byte sampleIsDependedOn) {
-        this.sampleIsDependedOn = sampleIsDependedOn;
+    public void setSampleIsDependedOn(int sampleIsDependedOn) {
+        this.sampleIsDependedOn = (byte) sampleIsDependedOn;
     }
 
     public byte getSampleHasRedundancy() {

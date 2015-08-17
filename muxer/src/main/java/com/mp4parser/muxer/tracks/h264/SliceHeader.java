@@ -31,8 +31,8 @@ public class SliceHeader {
     public int delta_pic_order_cnt_0;
     public int delta_pic_order_cnt_1;
 
-    PictureParameterSet pps;
-    SeqParameterSet sps;
+    public PictureParameterSet pps;
+    public SeqParameterSet sps;
 
     public SliceHeader(InputStream is, Map<Integer, SeqParameterSet> spss, Map<Integer, PictureParameterSet> ppss, boolean IdrPicFlag) {
         try {

@@ -8,5 +8,7 @@ import java.nio.ByteBuffer;
 public interface StreamingSample {
     ByteBuffer getContent();
     long getDuration();
-    SampleExtension[] getExtensions();
+    <T extends SampleExtension> T getSampleExtension(Class<T> clazz);
+    void addSampleExtension(SampleExtension sampleExtension);
+    <T extends SampleExtension> T removeSampleExtension(Class<T> clazz);
 }

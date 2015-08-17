@@ -14,11 +14,7 @@ import com.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
 import com.mp4parser.boxes.iso14496.part12.TimeToSampleBox;
 import com.mp4parser.boxes.iso14496.part12.TrackBox;
 import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
-import com.mp4parser.streaming.MultiTrackFragmentedMp4Writer;
-import com.mp4parser.streaming.SampleExtension;
-import com.mp4parser.streaming.StreamingSample;
-import com.mp4parser.streaming.StreamingTrack;
-import com.mp4parser.streaming.TrackExtension;
+import com.mp4parser.streaming.*;
 import com.mp4parser.streaming.extensions.CompositionTimeSampleExtension;
 import com.mp4parser.streaming.extensions.CompositionTimeTrackExtension;
 import com.mp4parser.streaming.extensions.SampleFlagsSampleExtension;
@@ -34,16 +30,10 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static com.mp4parser.tools.CastUtils.l2i;
@@ -194,7 +184,7 @@ public class Mp4ContainerSource {
 
                             sfse.setIsLeading(e.getIsLeading());
                             sfse.setSampleDependsOn(e.getSampleDependsOn());
-                            sfse.setSampleIsDependedOn(e.getSampleIsDependentOn());
+                            sfse.setSampleIsDependedOn(e.getSampleIsDependedOn());
                             sfse.setSampleHasRedundancy(e.getSampleHasRedundancy());
                         }
                         if (stbl.getSyncSampleBox() != null) {
@@ -230,20 +220,8 @@ public class Mp4ContainerSource {
                         }
                         final byte[] sampleContent = baos.get(offset, sampleSize);
 
-                        StreamingSample ss = new StreamingSample() {
+                        StreamingSample ss = new StreamingSampleImpl(Collections.singletonList(sampleContent), duration);
 
-                            public ByteBuffer getContent() {
-                                return ByteBuffer.wrap(sampleContent);
-                            }
-
-                            public long getDuration() {
-                                return duration;
-                            }
-
-                            public SampleExtension[] getExtensions() {
-                                return extensions.toArray(new SampleExtension[extensions.size()]);
-                            }
-                        };
                         try {
                             //System.out.print("Pushing sample @" + offset + " of " + sampleSize + " bytes (i=" + index + ")");
                             tracks.get(firstInLine).getSamples().put(ss);

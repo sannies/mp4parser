@@ -54,7 +54,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.mp4parser.streaming.StreamingSampleHelper.getSampleExtension;
 import static com.mp4parser.tools.CastUtils.l2i;
 
 /**
@@ -255,15 +254,8 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
 
     private void consumeSample(StreamingSample ss, WritableByteChannel out) throws IOException {
-        SampleFlagsSampleExtension sampleDependencySampleExtension = null;
-        CompositionTimeSampleExtension compositionTimeSampleExtension = null;
-        for (SampleExtension sampleExtension : ss.getExtensions()) {
-            if (sampleExtension instanceof SampleFlagsSampleExtension) {
-                sampleDependencySampleExtension = (SampleFlagsSampleExtension) sampleExtension;
-            } else if (sampleExtension instanceof CompositionTimeSampleExtension) {
-                compositionTimeSampleExtension = (CompositionTimeSampleExtension) sampleExtension;
-            }
-        }
+        SampleFlagsSampleExtension sampleDependencySampleExtension = ss.getSampleExtension(SampleFlagsSampleExtension.class);
+        CompositionTimeSampleExtension compositionTimeSampleExtension = ss.getSampleExtension(CompositionTimeSampleExtension.class);
         currentTime += ss.getDuration();
         // 3 seconds = 3 * source.getTimescale()
         fragment.add(ss);
@@ -298,7 +290,7 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
         tfhd.setDefaultSampleFlags(sf);
         tfhd.setBaseDataOffset(-1);
-        TrackIdTrackExtension trackIdTrackExtension =  source.getTrackExtension(TrackIdTrackExtension.class);
+        TrackIdTrackExtension trackIdTrackExtension = source.getTrackExtension(TrackIdTrackExtension.class);
         if (trackIdTrackExtension != null) {
             tfhd.setTrackId(trackIdTrackExtension.getTrackId());
         } else {
@@ -315,7 +307,7 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
         parent.addBox(tfdt);
     }
 
-    protected void createTrun( TrackFragmentBox parent) {
+    protected void createTrun(TrackFragmentBox parent) {
         TrackRunBox trun = new TrackRunBox();
         trun.setVersion(1);
 
@@ -324,21 +316,18 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
         List<TrackRunBox.Entry> entries = new ArrayList<TrackRunBox.Entry>(fragment.size());
 
 
-
-
         trun.setSampleCompositionTimeOffsetPresent(source.getTrackExtension(CompositionTimeTrackExtension.class) != null);
 
         boolean sampleFlagsRequired = source.getTrackExtension(SampleFlagsTrackExtension.class) != null;
 
         trun.setSampleFlagsPresent(sampleFlagsRequired);
 
-        for (StreamingSample streamingSample: fragment) {
+        for (StreamingSample streamingSample : fragment) {
             TrackRunBox.Entry entry = new TrackRunBox.Entry();
             entry.setSampleSize(streamingSample.getContent().remaining());
             if (sampleFlagsRequired) {
-                SampleFlagsSampleExtension sampleFlagsSampleExtension =
-                        getSampleExtension(streamingSample, SampleFlagsSampleExtension.class);
-                assert sampleFlagsSampleExtension != null:"SampleDependencySampleExtension missing even though SampleDependencyTrackExtension was present";
+                SampleFlagsSampleExtension sampleFlagsSampleExtension = streamingSample.getSampleExtension(SampleFlagsSampleExtension.class);
+                assert sampleFlagsSampleExtension != null : "SampleDependencySampleExtension missing even though SampleDependencyTrackExtension was present";
                 SampleFlags sflags = new SampleFlags();
                 sflags.setIsLeading(sampleFlagsSampleExtension.getIsLeading());
                 sflags.setSampleIsDependedOn(sampleFlagsSampleExtension.getSampleIsDependedOn());
@@ -355,9 +344,8 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
             entry.setSampleDuration(streamingSample.getDuration());
 
             if (trun.isSampleCompositionTimeOffsetPresent()) {
-                CompositionTimeSampleExtension compositionTimeSampleExtension =
-                        getSampleExtension(streamingSample, CompositionTimeSampleExtension.class);
-                assert compositionTimeSampleExtension != null:"CompositionTimeSampleExtension missing even though CompositionTimeTrackExtension was present";
+                CompositionTimeSampleExtension compositionTimeSampleExtension = streamingSample.getSampleExtension(CompositionTimeSampleExtension.class);
+                assert compositionTimeSampleExtension != null : "CompositionTimeSampleExtension missing even though CompositionTimeTrackExtension was present";
                 entry.setSampleCompositionTimeOffset(l2i(compositionTimeSampleExtension.getCompositionTimeOffset()));
             }
 
@@ -374,12 +362,12 @@ public class SingleTrackFragmentedMp4Writer implements StreamingMp4Writer {
         moof.addBox(traf);
         createTfhd(traf);
         createTfdt(traf);
-        createTrun( traf);
+        createTrun(traf);
 
         if (source.getTrackExtension(CencEncryptTrackExtension.class) != null) {
-       //     createSaiz(getTrackExtension(source, CencEncryptTrackExtension.class), sequenceNumber, traf);
-       //     createSenc(getTrackExtension(source, CencEncryptTrackExtension.class), sequenceNumber, traf);
-       //     createSaio(getTrackExtension(source, CencEncryptTrackExtension.class), sequenceNumber, traf);
+            //     createSaiz(getTrackExtension(source, CencEncryptTrackExtension.class), sequenceNumber, traf);
+            //     createSenc(getTrackExtension(source, CencEncryptTrackExtension.class), sequenceNumber, traf);
+            //     createSaio(getTrackExtension(source, CencEncryptTrackExtension.class), sequenceNumber, traf);
         }
 
 

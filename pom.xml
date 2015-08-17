@@ -18,6 +18,7 @@
         <module>examples</module>
         <module>muxer</module>
         <module>streaming</module>
+        <module>rtsp2dash</module>
     </modules>
     <prerequisites>
         <maven>3.0</maven>

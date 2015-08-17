@@ -1,4 +1,4 @@
-package com.mp4parser.streaming.rawformats;
+package com.mp4parser.streaming.rawformats.h264;
 
 import com.mp4parser.muxer.FileDataSourceImpl;
 import com.mp4parser.muxer.Sample;
@@ -10,11 +10,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
 
 /**
  * Created by sannies on 25.05.2015.
  */
-public class H264TrackAdapter extends AbstractStreamingTrack {
+public class H264TrackAdapter extends AbstractStreamingTrack implements Callable<Void> {
 
     H264TrackImpl h264Track;
 
@@ -26,7 +27,7 @@ public class H264TrackAdapter extends AbstractStreamingTrack {
             @Override
             public void run() {
                 try {
-                    parse();
+                    call();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -35,7 +36,7 @@ public class H264TrackAdapter extends AbstractStreamingTrack {
         stsd = h264Track.getSampleDescriptionBox();
     }
 
-    public void parse() throws InterruptedException {
+    public Void call() throws InterruptedException {
 
         List<Sample> oldsamples = h264Track.getSamples();
 
@@ -44,23 +45,11 @@ public class H264TrackAdapter extends AbstractStreamingTrack {
             final long duration = h264Track.getSampleDurations()[i];
             final Sample sample = oldsamples.get(i);
 
-            samples.put(new StreamingSample() {
-                public ByteBuffer getContent() {
-                    return sample.asByteBuffer().duplicate();
-                }
-
-                public long getDuration() {
-                    return duration;
-                }
-
-                public SampleExtension[] getExtensions() {
-                    return new SampleExtension[0];
-                }
-            });
+            samples.put(new StreamingSampleImpl(sample.asByteBuffer(), duration));
 
         }
         System.err.println("Jo!");
-
+        return null;
     }
 
     public long getTimescale() {
@@ -76,6 +65,10 @@ public class H264TrackAdapter extends AbstractStreamingTrack {
     }
 
 
+    public boolean hasMoreSamples() {
+        return samples.size() > 0;
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException {
         H264TrackImpl h264Track = new H264TrackImpl(new FileDataSourceImpl("c:\\content\\big_buck_bunny_1080p_h264-2min.h264"));
         final StreamingTrack streamingTrack = new H264TrackAdapter(h264Track);
@@ -83,4 +76,6 @@ public class H264TrackAdapter extends AbstractStreamingTrack {
                 = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{streamingTrack}, new FileOutputStream("output.mp4"));
         mp4Writer.write();
     }
+
+
 }
