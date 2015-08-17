@@ -284,10 +284,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
     private synchronized void consumeSample(StreamingTrack streamingTrack, StreamingSample ss) throws IOException {
         //System.err.println("Consuming " + streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " " + ss.getDuration());
-        SampleFlagsSampleExtension sampleDependencySampleExtension = null;
-        CompositionTimeSampleExtension compositionTimeSampleExtension = null;
-        sampleDependencySampleExtension = ss.getSampleExtension(SampleFlagsSampleExtension.class);
-        compositionTimeSampleExtension = ss.getSampleExtension(CompositionTimeSampleExtension.class);
+        SampleFlagsSampleExtension sampleDependencySampleExtension = ss.getSampleExtension(SampleFlagsSampleExtension.class);
         currentTime += ss.getDuration();
         // 3 seconds = 3 * source.getTimescale()
         fragmentBuffers.get(streamingTrack).add(ss);
