@@ -12,9 +12,7 @@ import com.mp4parser.muxer.tracks.h264.parsing.model.SeqParameterSet;
 import com.mp4parser.streaming.AbstractStreamingTrack;
 import com.mp4parser.streaming.StreamingSample;
 import com.mp4parser.streaming.StreamingSampleImpl;
-import com.mp4parser.streaming.extensions.CompositionTimeSampleExtension;
-import com.mp4parser.streaming.extensions.DimensionTrackExtension;
-import com.mp4parser.streaming.extensions.SampleFlagsSampleExtension;
+import com.mp4parser.streaming.extensions.*;
 import com.mp4parser.tools.RangeStartMap;
 
 import java.io.ByteArrayInputStream;
@@ -36,6 +34,7 @@ public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void>
     int max_dec_frame_buffering = 16;
 
     List<StreamingSample> decFrameBuffer = new ArrayList<StreamingSample>();
+    List<StreamingSample> decFrameBuffer2 = new ArrayList<StreamingSample>();
 
     private static final Logger LOG = Logger.getLogger(H264AnnexB.class.getName());
 
@@ -233,6 +232,7 @@ public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void>
 
     public H264AnnexB(InputStream inputStream) throws IOException {
         assert inputStream != null;
+        this.addTrackExtension(new SampleFlagsTrackExtension());
         this.inputStream = inputStream;
     }
 
@@ -244,12 +244,21 @@ public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void>
             }
         } else {
             StreamingSample first = decFrameBuffer.remove(0);
-            PictureOrderCountType0SampleExtension poct0se = first.removeSampleExtension(PictureOrderCountType0SampleExtension.class);
+            PictureOrderCountType0SampleExtension poct0se = first.getSampleExtension(PictureOrderCountType0SampleExtension.class);
             int delay = 0;
             for (StreamingSample streamingSample : decFrameBuffer) {
                 if (poct0se.getPoc() > streamingSample.getSampleExtension(PictureOrderCountType0SampleExtension.class).getPoc()) {
                     delay++;
                 }
+            }
+            for (StreamingSample streamingSample : decFrameBuffer2) {
+                if (poct0se.getPoc() < streamingSample.getSampleExtension(PictureOrderCountType0SampleExtension.class).getPoc()) {
+                    delay--;
+                }
+            }
+            decFrameBuffer2.add(first);
+            if (decFrameBuffer2.size() > max_dec_frame_buffering) {
+                decFrameBuffer2.remove(0).removeSampleExtension(PictureOrderCountType0SampleExtension.class);
             }
 
             first.addSampleExtension(CompositionTimeSampleExtension.create(delay * frametick));
@@ -316,7 +325,7 @@ public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void>
                     decFrameBuffer.get(decFrameBuffer.size() - 1).getSampleExtension(PictureOrderCountType0SampleExtension.class) :
                     null));
             decFrameBuffer.add(ssi);
-            if (decFrameBuffer.size() > max_dec_frame_buffering) {
+            if (decFrameBuffer.size() - 1 > max_dec_frame_buffering) { // just added one
                 drainDecPictureBuffer(false);
             }
         } else if (sh.sps.pic_order_cnt_type == 1) {
@@ -351,12 +360,10 @@ public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void>
         if (configured) {
             return;
         } else {
-
-
-            SeqParameterSet firstSeqParameterSet;
+            SeqParameterSet sps;
             try {
-                firstSeqParameterSet = spsForConfig.poll(5L, TimeUnit.SECONDS);
-                if (firstSeqParameterSet == null) {
+                sps = spsForConfig.poll(5L, TimeUnit.SECONDS);
+                if (sps == null) {
                     LOG.warning("Can't determine frame rate as no SPS became available in time");
                     return;
                 }
@@ -366,26 +373,30 @@ public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void>
                 return;
             }
 
-            int width = (firstSeqParameterSet.pic_width_in_mbs_minus1 + 1) * 16;
+            if (sps.pic_order_cnt_type == 0 || sps.pic_order_cnt_type == 1) {
+                this.addTrackExtension(new CompositionTimeTrackExtension());
+            }
+
+            int width = (sps.pic_width_in_mbs_minus1 + 1) * 16;
             int mult = 2;
-            if (firstSeqParameterSet.frame_mbs_only_flag) {
+            if (sps.frame_mbs_only_flag) {
                 mult = 1;
             }
-            int height = 16 * (firstSeqParameterSet.pic_height_in_map_units_minus1 + 1) * mult;
-            if (firstSeqParameterSet.frame_cropping_flag) {
+            int height = 16 * (sps.pic_height_in_map_units_minus1 + 1) * mult;
+            if (sps.frame_cropping_flag) {
                 int chromaArrayType = 0;
-                if (!firstSeqParameterSet.residual_color_transform_flag) {
-                    chromaArrayType = firstSeqParameterSet.chroma_format_idc.getId();
+                if (!sps.residual_color_transform_flag) {
+                    chromaArrayType = sps.chroma_format_idc.getId();
                 }
                 int cropUnitX = 1;
                 int cropUnitY = mult;
                 if (chromaArrayType != 0) {
-                    cropUnitX = firstSeqParameterSet.chroma_format_idc.getSubWidth();
-                    cropUnitY = firstSeqParameterSet.chroma_format_idc.getSubHeight() * mult;
+                    cropUnitX = sps.chroma_format_idc.getSubWidth();
+                    cropUnitY = sps.chroma_format_idc.getSubHeight() * mult;
                 }
 
-                width -= cropUnitX * (firstSeqParameterSet.frame_crop_left_offset + firstSeqParameterSet.frame_crop_right_offset);
-                height -= cropUnitY * (firstSeqParameterSet.frame_crop_top_offset + firstSeqParameterSet.frame_crop_bottom_offset);
+                width -= cropUnitX * (sps.frame_crop_left_offset + sps.frame_crop_right_offset);
+                height -= cropUnitY * (sps.frame_crop_top_offset + sps.frame_crop_bottom_offset);
             }
 
 
@@ -408,22 +419,22 @@ public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void>
 
             avcConfigurationBox.setSequenceParameterSets(new ArrayList<byte[]>(spsIdToSpsBytes.values()));
             avcConfigurationBox.setPictureParameterSets(new ArrayList<byte[]>(ppsIdToPpsBytes.values()));
-            avcConfigurationBox.setAvcLevelIndication(firstSeqParameterSet.level_idc);
-            avcConfigurationBox.setAvcProfileIndication(firstSeqParameterSet.profile_idc);
-            avcConfigurationBox.setBitDepthLumaMinus8(firstSeqParameterSet.bit_depth_luma_minus8);
-            avcConfigurationBox.setBitDepthChromaMinus8(firstSeqParameterSet.bit_depth_chroma_minus8);
-            avcConfigurationBox.setChromaFormat(firstSeqParameterSet.chroma_format_idc.getId());
+            avcConfigurationBox.setAvcLevelIndication(sps.level_idc);
+            avcConfigurationBox.setAvcProfileIndication(sps.profile_idc);
+            avcConfigurationBox.setBitDepthLumaMinus8(sps.bit_depth_luma_minus8);
+            avcConfigurationBox.setBitDepthChromaMinus8(sps.bit_depth_chroma_minus8);
+            avcConfigurationBox.setChromaFormat(sps.chroma_format_idc.getId());
             avcConfigurationBox.setConfigurationVersion(1);
             avcConfigurationBox.setLengthSizeMinusOne(3);
 
 
             avcConfigurationBox.setProfileCompatibility(
-                    (firstSeqParameterSet.constraint_set_0_flag ? 128 : 0) +
-                            (firstSeqParameterSet.constraint_set_1_flag ? 64 : 0) +
-                            (firstSeqParameterSet.constraint_set_2_flag ? 32 : 0) +
-                            (firstSeqParameterSet.constraint_set_3_flag ? 16 : 0) +
-                            (firstSeqParameterSet.constraint_set_4_flag ? 8 : 0) +
-                            (int) (firstSeqParameterSet.reserved_zero_2bits & 0x3)
+                    (sps.constraint_set_0_flag ? 128 : 0) +
+                            (sps.constraint_set_1_flag ? 64 : 0) +
+                            (sps.constraint_set_2_flag ? 32 : 0) +
+                            (sps.constraint_set_3_flag ? 16 : 0) +
+                            (sps.constraint_set_4_flag ? 8 : 0) +
+                            (int) (sps.reserved_zero_2bits & 0x3)
             );
 
             visualSampleEntry.addBox(avcConfigurationBox);
@@ -431,9 +442,9 @@ public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void>
             stsd.addBox(visualSampleEntry);
 
 
-            if (firstSeqParameterSet.vuiParams != null) {
-                timescale = firstSeqParameterSet.vuiParams.time_scale >> 1; // Not sure why, but I found this in several places, and it works...
-                frametick = firstSeqParameterSet.vuiParams.num_units_in_tick;
+            if (sps.vuiParams != null) {
+                timescale = sps.vuiParams.time_scale >> 1; // Not sure why, but I found this in several places, and it works...
+                frametick = sps.vuiParams.num_units_in_tick;
                 if (timescale == 0 || frametick == 0) {
                     LOG.warning("vuiParams contain invalid values: time_scale: " + timescale + " and frame_tick: " + frametick + ". Setting frame rate to 25fps");
                     timescale = -1;
@@ -443,8 +454,8 @@ public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void>
                 if (timescale / frametick > 100) {
                     LOG.warning("Framerate is " + (timescale / frametick) + ". That is suspicious.");
                 }
-                if (firstSeqParameterSet.vuiParams.bitstreamRestriction != null) {
-                    max_dec_frame_buffering = firstSeqParameterSet.vuiParams.bitstreamRestriction.max_dec_frame_buffering;
+                if (sps.vuiParams.bitstreamRestriction != null) {
+                    max_dec_frame_buffering = sps.vuiParams.bitstreamRestriction.max_dec_frame_buffering;
                 }
             } else {
                 LOG.warning("Can't determine frame rate as SPS does not contain vuiParama");

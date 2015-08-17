@@ -37,4 +37,9 @@ class PictureOrderCountType0SampleExtension implements SampleExtension {
     public int getPoc() {
         return picOrderCntMsb + picOrderCountLsb;
     }
+
+    @Override
+    public String toString() {
+        return "picOrderCntMsb=" + picOrderCntMsb + ", picOrderCountLsb=" + picOrderCountLsb;
+    }
 }

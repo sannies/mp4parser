@@ -44,7 +44,7 @@ public class H264AnnexBTest {
         Walk.through(isoFile);
         List<Sample> s = new SampleList(1, isoFile, new FileRandomAccessSourceImpl(new RandomAccessFile("output.mp4", "r")));
         for (Sample sample : s) {
-            System.err.println("s: " + sample.getSize());
+            //System.err.println("s: " + sample.getSize());
             sample.asByteBuffer();
         }
     }
