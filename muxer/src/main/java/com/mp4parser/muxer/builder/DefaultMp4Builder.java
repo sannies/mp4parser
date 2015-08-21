@@ -457,7 +457,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             }
 
             List<Track> tracks = new ArrayList<Track>(chunks.keySet());
-            tracks.sort(new Comparator<Track>() {
+            Collections.sort(tracks, new Comparator<Track>() {
                 public int compare(Track o1, Track o2) {
                     return l2i(o1.getTrackMetaData().getTrackId() - o2.getTrackMetaData().getTrackId());
                 }
@@ -631,7 +631,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             this.contentSize = contentSize;
             this.tracks = movie.getTracks();
             List<Track> tracks = new ArrayList<Track>(chunks.keySet());
-            tracks.sort(new Comparator<Track>() {
+            Collections.sort(tracks, new Comparator<Track>() {
                 public int compare(Track o1, Track o2) {
                     return l2i(o1.getTrackMetaData().getTrackId() - o2.getTrackMetaData().getTrackId());
                 }

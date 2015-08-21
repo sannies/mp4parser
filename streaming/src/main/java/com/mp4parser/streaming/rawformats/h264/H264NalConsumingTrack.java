@@ -30,13 +30,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 
-public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void> {
+public class H264NalConsumingTrack extends AbstractStreamingTrack implements Callable<Void> {
     int max_dec_frame_buffering = 16;
 
     List<StreamingSample> decFrameBuffer = new ArrayList<StreamingSample>();
     List<StreamingSample> decFrameBuffer2 = new ArrayList<StreamingSample>();
 
-    private static final Logger LOG = Logger.getLogger(H264AnnexB.class.getName());
+    private static final Logger LOG = Logger.getLogger(H264NalConsumingTrack.class.getName());
 
     LinkedHashMap<Integer, byte[]> spsIdToSpsBytes = new LinkedHashMap<Integer, byte[]>();
     LinkedHashMap<Integer, SeqParameterSet> spsIdToSps = new LinkedHashMap<Integer, SeqParameterSet>();
@@ -56,7 +56,7 @@ public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void>
     private InputStream inputStream;
 
     public static void main(String[] args) throws IOException {
-        H264AnnexB h264AnnexB = new H264AnnexB(new FileInputStream("C:\\dev\\mp4parser\\streaming\\src\\test\\resources\\com\\mp4parser\\streaming\\rawformats\\tos.h264"));
+        H264NalConsumingTrack h264AnnexB = new H264NalConsumingTrack(new FileInputStream("C:\\dev\\mp4parser\\streaming\\src\\test\\resources\\com\\mp4parser\\streaming\\rawformats\\tos.h264"));
         h264AnnexB.call();
     }
 
@@ -69,168 +69,173 @@ public class H264AnnexB extends AbstractStreamingTrack implements Callable<Void>
         }
     }
 
+    class FirstVclNalDetector {
+
+        public FirstVclNalDetector(byte[] nal, int nal_ref_idc, int nal_unit_type) {
+            InputStream bs = new CleanInputStream(new ByteArrayInputStream(nal));
+            SliceHeader sh = new SliceHeader(bs, spsIdToSps, ppsIdToPps, nal_unit_type == 5);
+            this.frame_num = sh.frame_num;
+            this.pic_parameter_set_id = sh.pic_parameter_set_id;
+            this.field_pic_flag = sh.field_pic_flag;
+            this.bottom_field_flag = sh.bottom_field_flag;
+            this.nal_ref_idc = nal_ref_idc;
+            this.pic_order_cnt_type = spsIdToSps.get(ppsIdToPps.get(sh.pic_parameter_set_id).seq_parameter_set_id).pic_order_cnt_type;
+            this.delta_pic_order_cnt_bottom = sh.delta_pic_order_cnt_bottom;
+            this.pic_order_cnt_lsb = sh.pic_order_cnt_lsb;
+            this.delta_pic_order_cnt_0 = sh.delta_pic_order_cnt_0;
+            this.delta_pic_order_cnt_1 = sh.delta_pic_order_cnt_1;
+            this.idr_pic_id = sh.idr_pic_id;
+        }
+
+        int frame_num;
+        int pic_parameter_set_id;
+        boolean field_pic_flag;
+        boolean bottom_field_flag;
+        int nal_ref_idc;
+        int pic_order_cnt_type;
+        int delta_pic_order_cnt_bottom;
+        int pic_order_cnt_lsb;
+        int delta_pic_order_cnt_0;
+        int delta_pic_order_cnt_1;
+        boolean idrPicFlag;
+        int idr_pic_id;
+
+        boolean isFirstInNew(FirstVclNalDetector nu) {
+            if (nu.frame_num != frame_num) {
+                return true;
+            }
+            if (nu.pic_parameter_set_id != pic_parameter_set_id) {
+                return true;
+            }
+            if (nu.field_pic_flag != field_pic_flag) {
+                return true;
+            }
+            if (nu.field_pic_flag) {
+                if (nu.bottom_field_flag != bottom_field_flag) {
+                    return true;
+                }
+            }
+            if (nu.nal_ref_idc != nal_ref_idc) {
+                return true;
+            }
+            if (nu.pic_order_cnt_type == 0 && pic_order_cnt_type == 0) {
+                if (nu.pic_order_cnt_lsb != pic_order_cnt_lsb) {
+                    return true;
+                }
+                if (nu.delta_pic_order_cnt_bottom != delta_pic_order_cnt_bottom) {
+                    return true;
+                }
+            }
+            if (nu.pic_order_cnt_type == 1 && pic_order_cnt_type == 1) {
+                if (nu.delta_pic_order_cnt_0 != delta_pic_order_cnt_0) {
+                    return true;
+                }
+                if (nu.delta_pic_order_cnt_1 != delta_pic_order_cnt_1) {
+                    return true;
+                }
+            }
+            if (nu.idrPicFlag != idrPicFlag) {
+                return true;
+            }
+            if (nu.idrPicFlag && idrPicFlag) {
+                if (nu.idr_pic_id != idr_pic_id) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    List<byte[]> buffered = new ArrayList<byte[]>();
+    FirstVclNalDetector fvnd = null;
+
+    protected void consumeNal(byte[] nal) throws IOException {
+        H264NalUnitHeader nalUnitHeader = getNalUnitHeader(nal);
+        switch (nalUnitHeader.nal_unit_type) {
+            case H264NalUnitTypes.CODED_SLICE_NON_IDR:
+            case H264NalUnitTypes.CODED_SLICE_DATA_PART_A:
+            case H264NalUnitTypes.CODED_SLICE_DATA_PART_B:
+            case H264NalUnitTypes.CODED_SLICE_DATA_PART_C:
+            case H264NalUnitTypes.CODED_SLICE_IDR:
+                FirstVclNalDetector current = new FirstVclNalDetector(nal,
+                        nalUnitHeader.nal_ref_idc, nalUnitHeader.nal_unit_type);
+                if (fvnd != null && fvnd.isFirstInNew(current)) {
+                    LOG.finer("Wrapping up cause of first vcl nal is found");
+                    createSample(buffered);
+                }
+                fvnd = current;
+                //System.err.println("" + nalUnitHeader.nal_unit_type);
+                buffered.add(nal);
+                //log.finer("NAL Unit Type: " + nalUnitHeader.nal_unit_type + " " + fvnd.frame_num);
+                break;
+
+            case H264NalUnitTypes.SEI:
+                if (fvnd != null) {
+                    LOG.finer("Wrapping up cause of SEI after vcl marks new sample");
+                    createSample(buffered);
+                    fvnd = null;
+                }
+                //System.err.println("" + nalUnitHeader.nal_unit_type);
+                buffered.add(nal);
+                break;
+
+            case H264NalUnitTypes.AU_UNIT_DELIMITER:
+                if (fvnd != null) {
+                    LOG.finer("Wrapping up cause of AU after vcl marks new sample");
+                    createSample(buffered);
+                    fvnd = null;
+                }
+                //System.err.println("" + nalUnitHeader.nal_unit_type);
+                buffered.add(nal);
+                break;
+            case H264NalUnitTypes.SEQ_PARAMETER_SET:
+                if (fvnd != null) {
+                    LOG.finer("Wrapping up cause of SPS after vcl marks new sample");
+                    createSample(buffered);
+                    fvnd = null;
+                }
+                handleSPS(nal);
+                break;
+            case 8:
+                if (fvnd != null) {
+                    LOG.finer("Wrapping up cause of PPS after vcl marks new sample");
+                    createSample(buffered);
+                    fvnd = null;
+                }
+                handlePPS(nal);
+                break;
+            case H264NalUnitTypes.END_OF_SEQUENCE:
+            case H264NalUnitTypes.END_OF_STREAM:
+
+                return;
+
+            case H264NalUnitTypes.SEQ_PARAMETER_SET_EXT:
+                throw new RuntimeException("Sequence parameter set extension is not yet handled. Needs TLC.");
+
+            default:
+                //  buffered.add(nal);
+                LOG.warning("Unknown NAL unit type: " + nalUnitHeader.nal_unit_type);
+
+        }
+
+
+    }
+
     public Void call() throws IOException {
         LOG.info("Starting to parse H264 Annex B Stream");
 
         byte[] nal;
         NalStreamTokenizer st = new NalStreamTokenizer(inputStream, new byte[]{0, 0, 1}, new byte[]{0, 0, 0});
 
-        class FirstVclNalDetector {
-
-            public FirstVclNalDetector(byte[] nal, int nal_ref_idc, int nal_unit_type) {
-                InputStream bs = new CleanInputStream(new ByteArrayInputStream(nal));
-                SliceHeader sh = new SliceHeader(bs, spsIdToSps, ppsIdToPps, nal_unit_type == 5);
-                this.frame_num = sh.frame_num;
-                this.pic_parameter_set_id = sh.pic_parameter_set_id;
-                this.field_pic_flag = sh.field_pic_flag;
-                this.bottom_field_flag = sh.bottom_field_flag;
-                this.nal_ref_idc = nal_ref_idc;
-                this.pic_order_cnt_type = spsIdToSps.get(ppsIdToPps.get(sh.pic_parameter_set_id).seq_parameter_set_id).pic_order_cnt_type;
-                this.delta_pic_order_cnt_bottom = sh.delta_pic_order_cnt_bottom;
-                this.pic_order_cnt_lsb = sh.pic_order_cnt_lsb;
-                this.delta_pic_order_cnt_0 = sh.delta_pic_order_cnt_0;
-                this.delta_pic_order_cnt_1 = sh.delta_pic_order_cnt_1;
-                this.idr_pic_id = sh.idr_pic_id;
-            }
-
-            int frame_num;
-            int pic_parameter_set_id;
-            boolean field_pic_flag;
-            boolean bottom_field_flag;
-            int nal_ref_idc;
-            int pic_order_cnt_type;
-            int delta_pic_order_cnt_bottom;
-            int pic_order_cnt_lsb;
-            int delta_pic_order_cnt_0;
-            int delta_pic_order_cnt_1;
-            boolean idrPicFlag;
-            int idr_pic_id;
-
-            boolean isFirstInNew(FirstVclNalDetector nu) {
-                if (nu.frame_num != frame_num) {
-                    return true;
-                }
-                if (nu.pic_parameter_set_id != pic_parameter_set_id) {
-                    return true;
-                }
-                if (nu.field_pic_flag != field_pic_flag) {
-                    return true;
-                }
-                if (nu.field_pic_flag) {
-                    if (nu.bottom_field_flag != bottom_field_flag) {
-                        return true;
-                    }
-                }
-                if (nu.nal_ref_idc != nal_ref_idc) {
-                    return true;
-                }
-                if (nu.pic_order_cnt_type == 0 && pic_order_cnt_type == 0) {
-                    if (nu.pic_order_cnt_lsb != pic_order_cnt_lsb) {
-                        return true;
-                    }
-                    if (nu.delta_pic_order_cnt_bottom != delta_pic_order_cnt_bottom) {
-                        return true;
-                    }
-                }
-                if (nu.pic_order_cnt_type == 1 && pic_order_cnt_type == 1) {
-                    if (nu.delta_pic_order_cnt_0 != delta_pic_order_cnt_0) {
-                        return true;
-                    }
-                    if (nu.delta_pic_order_cnt_1 != delta_pic_order_cnt_1) {
-                        return true;
-                    }
-                }
-                if (nu.idrPicFlag != idrPicFlag) {
-                    return true;
-                }
-                if (nu.idrPicFlag && idrPicFlag) {
-                    if (nu.idr_pic_id != idr_pic_id) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }
-        FirstVclNalDetector fvnd = null;
-        List<byte[]> buffered = new ArrayList<byte[]>();
-
-        nal_loop:
         while ((nal = st.getNext()) != null) {
-            H264NalUnitHeader nalUnitHeader = getNalUnitHeader(nal);
-            switch (nalUnitHeader.nal_unit_type) {
-                case H264NalUnitTypes.CODED_SLICE_NON_IDR:
-                case H264NalUnitTypes.CODED_SLICE_DATA_PART_A:
-                case H264NalUnitTypes.CODED_SLICE_DATA_PART_B:
-                case H264NalUnitTypes.CODED_SLICE_DATA_PART_C:
-                case H264NalUnitTypes.CODED_SLICE_IDR:
-                    FirstVclNalDetector current = new FirstVclNalDetector(nal,
-                            nalUnitHeader.nal_ref_idc, nalUnitHeader.nal_unit_type);
-                    if (fvnd != null && fvnd.isFirstInNew(current)) {
-                        LOG.finer("Wrapping up cause of first vcl nal is found");
-                        createSample(buffered);
-                    }
-                    fvnd = current;
-                    //System.err.println("" + nalUnitHeader.nal_unit_type);
-                    buffered.add(nal);
-                    //log.finer("NAL Unit Type: " + nalUnitHeader.nal_unit_type + " " + fvnd.frame_num);
-                    break;
-
-                case H264NalUnitTypes.SEI:
-                    if (fvnd != null) {
-                        LOG.finer("Wrapping up cause of SEI after vcl marks new sample");
-                        createSample(buffered);
-                        fvnd = null;
-                    }
-                    //System.err.println("" + nalUnitHeader.nal_unit_type);
-                    buffered.add(nal);
-                    break;
-
-                case H264NalUnitTypes.AU_UNIT_DELIMITER:
-                    if (fvnd != null) {
-                        LOG.finer("Wrapping up cause of AU after vcl marks new sample");
-                        createSample(buffered);
-                        fvnd = null;
-                    }
-                    //System.err.println("" + nalUnitHeader.nal_unit_type);
-                    buffered.add(nal);
-                    break;
-                case H264NalUnitTypes.SEQ_PARAMETER_SET:
-                    if (fvnd != null) {
-                        LOG.finer("Wrapping up cause of SPS after vcl marks new sample");
-                        createSample(buffered);
-                        fvnd = null;
-                    }
-                    handleSPS(nal);
-                    break;
-                case 8:
-                    if (fvnd != null) {
-                        LOG.finer("Wrapping up cause of PPS after vcl marks new sample");
-                        createSample(buffered);
-                        fvnd = null;
-                    }
-                    handlePPS(nal);
-                    break;
-                case H264NalUnitTypes.END_OF_SEQUENCE:
-                case H264NalUnitTypes.END_OF_STREAM:
-
-                    break nal_loop;
-
-                case H264NalUnitTypes.SEQ_PARAMETER_SET_EXT:
-                    throw new RuntimeException("Sequence parameter set extension is not yet handled. Needs TLC.");
-
-                default:
-                    //  buffered.add(nal);
-                    LOG.warning("Unknown NAL unit type: " + nalUnitHeader.nal_unit_type);
-
-            }
-
+            consumeNal(nal);
         }
         LOG.info("NalTokenizer drained");
         drainDecPictureBuffer(true);
         return null;
     }
 
-    public H264AnnexB(InputStream inputStream) throws IOException {
+    public H264NalConsumingTrack(InputStream inputStream) throws IOException {
         assert inputStream != null;
         this.addTrackExtension(new SampleFlagsTrackExtension());
         this.inputStream = inputStream;

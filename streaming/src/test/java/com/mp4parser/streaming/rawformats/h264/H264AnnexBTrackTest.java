@@ -1,6 +1,5 @@
 package com.mp4parser.streaming.rawformats.h264;
 
-import com.mp4parser.Box;
 import com.mp4parser.IsoFile;
 import com.mp4parser.muxer.FileRandomAccessSourceImpl;
 import com.mp4parser.muxer.Sample;
@@ -9,7 +8,6 @@ import com.mp4parser.streaming.MultiTrackFragmentedMp4Writer;
 import com.mp4parser.streaming.StreamingTrack;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
@@ -22,13 +20,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by sannies on 16.08.2015.
  */
-public class H264AnnexBTest {
+public class H264AnnexBTrackTest {
     ExecutorService es = Executors.newCachedThreadPool();
 
 
     @Test
     public void testMuxing() throws Exception {
-        H264AnnexB b = new H264AnnexB(H264AnnexBTest.class.getResourceAsStream("/com/mp4parser/streaming/rawformats/h264/tos.h264"));
+        H264NalConsumingTrack b = new H264NalConsumingTrack(H264AnnexBTrackTest.class.getResourceAsStream("/com/mp4parser/streaming/rawformats/h264/tos.h264"));
         MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new FileOutputStream("output.mp4"));
         //MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new ByteArrayOutputStream());
         Future<Void> f = es.submit(b);
