@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="urn:mpeg:dash:schema:mpd:2011" attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="urn:mpeg:dash:schema:mpd:2011">
+
+  <xsd:import namespace="http://www.w3.org/1999/xlink" schemaLocation="auxxsd/xlink.xsd"/>
+
+  <xsd:annotation>
+    <xsd:appinfo>Media Presentation Description</xsd:appinfo>
+    <xsd:documentation xml:lang="en">
+      This Schema defines the Media Presentation Description for MPEG-DASH.
+    </xsd:documentation>
+  </xsd:annotation>
+
+  <!-- MPD: main element -->
+  <xsd:element name="MPD" type="MPDtype"/>
+
+  <!-- MPD Type -->
+  <xsd:complexType name="MPDtype">
+    <xsd:sequence>
+      <xsd:element name="ProgramInformation" type="ProgramInformationType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="BaseURL" type="BaseURLType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="Location" type="xsd:anyURI" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="Period" type="PeriodType" maxOccurs="unbounded"/>
+      <xsd:element name="Metrics" type="MetricsType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:string"/>
+    <xsd:attribute name="profiles" type="xsd:string" use="required"/>
+    <xsd:attribute name="type" type="PresentationType" default="static"/>
+    <xsd:attribute name="availabilityStartTime" type="xsd:dateTime"/>
+    <xsd:attribute name="availabilityEndTime" type="xsd:dateTime"/>
+    <xsd:attribute name="publishTime" type="xsd:dateTime"/>
+    <xsd:attribute name="mediaPresentationDuration" type="xsd:duration"/>
+    <xsd:attribute name="minimumUpdatePeriod" type="xsd:duration"/>
+    <xsd:attribute name="minBufferTime" type="xsd:duration" use="required"/>
+    <xsd:attribute name="timeShiftBufferDepth" type="xsd:duration"/>
+    <xsd:attribute name="suggestedPresentationDelay" type="xsd:duration"/>
+    <xsd:attribute name="maxSegmentDuration" type="xsd:duration"/>
+    <xsd:attribute name="maxSubsegmentDuration" type="xsd:duration"/>
+    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Presentation Type enumeration -->
+  <xsd:simpleType name="PresentationType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="static"/>
+      <xsd:enumeration value="dynamic"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Period -->
+  <xsd:complexType name="PeriodType">
+    <xsd:sequence>
+      <xsd:element name="BaseURL" type="BaseURLType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="SegmentBase" type="SegmentBaseType" minOccurs="0"/>
+      <xsd:element name="SegmentList" type="SegmentListType" minOccurs="0"/>
+      <xsd:element name="SegmentTemplate" type="SegmentTemplateType" minOccurs="0"/>
+      <xsd:element name="AssetIdentifier" type="DescriptorType" minOccurs="0"/>
+      <xsd:element name="EventStream" type="EventStreamType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="AdaptationSet" type="AdaptationSetType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="Subset" type="SubsetType" minOccurs="0" maxOccurs="unbounded"/>
+	  <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute ref="xlink:href"/>
+    <xsd:attribute ref="xlink:actuate" default="onRequest"/>
+    <xsd:attribute name="id" type="xsd:string"/>
+    <xsd:attribute name="start" type="xsd:duration"/>
+    <xsd:attribute name="duration" type="xsd:duration"/>
+    <xsd:attribute name="bitstreamSwitching" type="xsd:boolean" default="false"/>
+    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Event Stream -->
+  <xsd:complexType name="EventStreamType">
+    <xsd:sequence>
+      <xsd:element name="Event" type="EventType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute ref="xlink:href"/>
+    <xsd:attribute ref="xlink:actuate" default="onRequest"/>
+    <xsd:attribute name="schemeIdUri" type="xsd:anyURI" use="required"/>
+    <xsd:attribute name="value" type="xsd:string"/>
+    <xsd:attribute name="timescale" type="xsd:unsignedInt"/>
+  </xsd:complexType>
+
+  
+  <!-- Event  -->
+  <xsd:complexType name="EventType">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="presentationTime" type="xsd:unsignedLong" default="0"/>
+        <xsd:attribute name="duration" type="xsd:unsignedLong"/>
+        <xsd:attribute name="id" type="xsd:unsignedInt"/>
+        <xsd:anyAttribute namespace="##other" processContents="lax"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <!-- Adaptation Set -->
+  <xsd:complexType name="AdaptationSetType">
+    <xsd:complexContent>
+      <xsd:extension base="RepresentationBaseType">
+        <xsd:sequence>
+          <xsd:element name="Accessibility" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="Role" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="Rating" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="Viewpoint" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="ContentComponent" type="ContentComponentType" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="BaseURL" type="BaseURLType" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="SegmentBase" type="SegmentBaseType" minOccurs="0"/>
+          <xsd:element name="SegmentList" type="SegmentListType" minOccurs="0"/>
+          <xsd:element name="SegmentTemplate" type="SegmentTemplateType" minOccurs="0"/>
+          <xsd:element name="Representation" type="RepresentationType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xlink:href"/>
+        <xsd:attribute ref="xlink:actuate" default="onRequest"/>
+        <xsd:attribute name="id" type="xsd:unsignedInt"/>
+        <xsd:attribute name="group" type="xsd:unsignedInt"/>
+        <xsd:attribute name="lang" type="xsd:language"/>
+        <xsd:attribute name="contentType" type="xsd:string"/>
+        <xsd:attribute name="par" type="RatioType"/>
+        <xsd:attribute name="minBandwidth" type="xsd:unsignedInt"/>
+        <xsd:attribute name="maxBandwidth" type="xsd:unsignedInt"/>
+        <xsd:attribute name="minWidth" type="xsd:unsignedInt"/>
+        <xsd:attribute name="maxWidth" type="xsd:unsignedInt"/>
+        <xsd:attribute name="minHeight" type="xsd:unsignedInt"/>
+        <xsd:attribute name="maxHeight" type="xsd:unsignedInt"/>
+        <xsd:attribute name="minFrameRate" type="FrameRateType"/>
+        <xsd:attribute name="maxFrameRate" type="FrameRateType"/>
+        <xsd:attribute name="segmentAlignment" type="ConditionalUintType" default="false"/>
+        <xsd:attribute name="subsegmentAlignment" type="ConditionalUintType" default="false"/>
+        <xsd:attribute name="subsegmentStartsWithSAP" type="SAPType" default="0"/>
+        <xsd:attribute name="bitstreamSwitching" type="xsd:boolean"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <!-- Ratio Type for sar and par -->
+  <xsd:simpleType name="RatioType">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="[0-9]*:[0-9]*"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  
+  <!-- Type for Frame Rate -->
+  <xsd:simpleType name="FrameRateType">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="[0-9]*[0-9](/[0-9]*[0-9])?"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+ 
+
+  <!-- Conditional Unsigned Integer (unsignedInt or boolean) -->
+  <xsd:simpleType name="ConditionalUintType">
+    <xsd:union memberTypes="xsd:unsignedInt xsd:boolean"/>
+  </xsd:simpleType>
+
+  <!-- Content Component -->
+  <xsd:complexType name="ContentComponentType">
+    <xsd:sequence>
+      <xsd:element name="Accessibility" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="Role" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="Rating" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="Viewpoint" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:unsignedInt"/>
+    <xsd:attribute name="lang" type="xsd:language"/>
+    <xsd:attribute name="contentType" type="xsd:string"/>
+    <xsd:attribute name="par" type="RatioType"/>
+    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Representation -->
+  <xsd:complexType name="RepresentationType">
+    <xsd:complexContent>
+      <xsd:extension base="RepresentationBaseType">
+        <xsd:sequence>
+          <xsd:element name="BaseURL" type="BaseURLType" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="SubRepresentation" type="SubRepresentationType" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="SegmentBase" type="SegmentBaseType" minOccurs="0"/>
+          <xsd:element name="SegmentList" type="SegmentListType" minOccurs="0"/>
+          <xsd:element name="SegmentTemplate" type="SegmentTemplateType" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="StringNoWhitespaceType" use="required"/>
+        <xsd:attribute name="bandwidth" type="xsd:unsignedInt" use="required"/>
+        <xsd:attribute name="qualityRanking" type="xsd:unsignedInt"/>
+        <xsd:attribute name="dependencyId" type="StringVectorType"/>
+        <xsd:attribute name="mediaStreamStructureId" type="StringVectorType"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  
+  <!-- String without white spaces -->
+  <xsd:simpleType name="StringNoWhitespaceType">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="[^\r\n\t \p{Z}]*"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  
+
+  <!-- SubRepresentation -->
+  <xsd:complexType name="SubRepresentationType">
+    <xsd:complexContent>
+      <xsd:extension base="RepresentationBaseType">
+        <xsd:attribute name="level" type="xsd:unsignedInt"/>
+        <xsd:attribute name="dependencyLevel" type="UIntVectorType"/>
+        <xsd:attribute name="bandwidth" type="xsd:unsignedInt"/>
+        <xsd:attribute name="contentComponent" type="StringVectorType"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <!-- Representation base (common attributes and elements) -->
+  <xsd:complexType name="RepresentationBaseType">
+    <xsd:sequence>
+      <xsd:element name="FramePacking" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="AudioChannelConfiguration" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="ContentProtection" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="EssentialProperty" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="SupplementalProperty" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="InbandEventStream" type="DescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="profiles" type="xsd:string"/>
+    <xsd:attribute name="width" type="xsd:unsignedInt"/>
+    <xsd:attribute name="height" type="xsd:unsignedInt"/>
+    <xsd:attribute name="sar" type="RatioType"/>
+    <xsd:attribute name="frameRate" type="FrameRateType"/>
+    <xsd:attribute name="audioSamplingRate" type="xsd:string"/>
+    <xsd:attribute name="mimeType" type="xsd:string"/>
+    <xsd:attribute name="segmentProfiles" type="xsd:string"/>
+    <xsd:attribute name="codecs" type="xsd:string"/>
+    <xsd:attribute name="maximumSAPPeriod" type="xsd:double"/>
+    <xsd:attribute name="startWithSAP" type="SAPType"/>
+    <xsd:attribute name="maxPlayoutRate" type="xsd:double"/>
+    <xsd:attribute name="codingDependency" type="xsd:boolean"/>
+    <xsd:attribute name="scanType" type="VideoScanType"/>
+    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+  
+  <!-- Stream Access Point type enumeration -->
+  <xsd:simpleType name="SAPType">
+    <xsd:restriction base="xsd:unsignedInt">
+      <xsd:minInclusive value="0"/>
+      <xsd:maxInclusive value="6"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Video Scan type enumeration -->
+  <xsd:simpleType name="VideoScanType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="progressive"/>
+      <xsd:enumeration value="interlaced"/>
+      <xsd:enumeration value="unknown"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <!-- Subset  -->
+  <xsd:complexType name="SubsetType">
+    <xsd:attribute name="contains" type="UIntVectorType" use="required"/>
+    <xsd:attribute name="id" type="xsd:string"/>
+    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Segment information base -->
+  <xsd:complexType name="SegmentBaseType">
+    <xsd:sequence>
+      <xsd:element name="Initialization" type="URLType" minOccurs="0"/>
+      <xsd:element name="RepresentationIndex" type="URLType" minOccurs="0"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="timescale" type="xsd:unsignedInt"/>
+    <xsd:attribute name="presentationTimeOffset" type="xsd:unsignedLong"/>
+    <xsd:attribute name="indexRange" type="xsd:string"/>
+    <xsd:attribute name="indexRangeExact" type="xsd:boolean" default="false"/>
+    <xsd:attribute name="availabilityTimeOffset" type="xsd:double"/>
+    <xsd:attribute name="availabilityTimeComplete" type="xsd:boolean"/>
+    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Multiple Segment information base -->
+  <xsd:complexType name="MultipleSegmentBaseType">
+    <xsd:complexContent>
+      <xsd:extension base="SegmentBaseType">
+        <xsd:sequence>
+          <xsd:element name="SegmentTimeline" type="SegmentTimelineType" minOccurs="0"/>
+          <xsd:element name="BitstreamSwitching" type="URLType" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="duration" type="xsd:unsignedInt"/>
+        <xsd:attribute name="startNumber" type="xsd:unsignedInt"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <!-- Segment Info item URL/range -->
+  <xsd:complexType name="URLType">
+    <xsd:sequence>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="sourceURL" type="xsd:anyURI"/>
+    <xsd:attribute name="range" type="xsd:string"/>
+    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Segment List -->
+  <xsd:complexType name="SegmentListType">
+    <xsd:complexContent>
+      <xsd:extension base="MultipleSegmentBaseType">
+        <xsd:sequence>
+          <xsd:element name="SegmentURL" type="SegmentURLType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xlink:href"/>
+        <xsd:attribute ref="xlink:actuate" default="onRequest"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <!-- Segment URL  -->
+  <xsd:complexType name="SegmentURLType">
+    <xsd:sequence>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="media" type="xsd:anyURI"/>
+    <xsd:attribute name="mediaRange" type="xsd:string"/>
+    <xsd:attribute name="index" type="xsd:anyURI"/>
+    <xsd:attribute name="indexRange" type="xsd:string"/>
+    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Segment Template -->
+  <xsd:complexType name="SegmentTemplateType">
+    <xsd:complexContent>
+      <xsd:extension base="MultipleSegmentBaseType">
+        <xsd:attribute name="media" type="xsd:string"/>
+        <xsd:attribute name="index" type="xsd:string"/>
+        <xsd:attribute name="initialization" type="xsd:string"/>
+        <xsd:attribute name="bitstreamSwitching" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <!-- Segment Timeline -->
+  <xsd:complexType name="SegmentTimelineType">
+    <xsd:sequence>
+      <xsd:element name="S" minOccurs="1" maxOccurs="unbounded">
+        <xsd:complexType>
+          <xsd:attribute name="t" type="xsd:unsignedLong"/>
+          <xsd:attribute name="d" type="xsd:unsignedLong" use="required"/>
+          <xsd:attribute name="r" type="xsd:integer" use="optional" default="0"/>
+          <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Whitespace-separated list of strings -->
+  <xsd:simpleType name="StringVectorType">
+    <xsd:list itemType="xsd:string"/>
+  </xsd:simpleType>
+
+  <!-- Whitespace-separated list of unsigned integers -->
+  <xsd:simpleType name="UIntVectorType">
+    <xsd:list itemType="xsd:unsignedInt"/>
+  </xsd:simpleType>
+
+  <!-- Base URL -->
+  <xsd:complexType name="BaseURLType">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:anyURI">
+        <xsd:attribute name="serviceLocation" type="xsd:string"/>
+        <xsd:attribute name="byteRange" type="xsd:string"/>
+        <xsd:attribute name="availabilityTimeOffset" type="xsd:double"/>
+        <xsd:attribute name="availabilityTimeComplete" type="xsd:boolean"/>
+        <xsd:anyAttribute namespace="##other" processContents="lax"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <!-- Program Information -->
+  <xsd:complexType name="ProgramInformationType">
+    <xsd:sequence>
+      <xsd:element name="Title" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="Source" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="Copyright" type="xsd:string" minOccurs="0"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="lang" type="xsd:language"/>
+    <xsd:attribute name="moreInformationURL" type="xsd:anyURI"/>
+		<xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Descriptor -->
+  <xsd:complexType name="DescriptorType">
+    <xsd:sequence>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="schemeIdUri" type="xsd:anyURI" use="required"/>
+    <xsd:attribute name="value" type="xsd:string"/>
+    <xsd:attribute name="id" type="xsd:string"/>
+    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Metrics -->
+  <xsd:complexType name="MetricsType">
+    <xsd:sequence>
+      <xsd:element name="Reporting" type="DescriptorType" maxOccurs="unbounded"/>
+      <xsd:element name="Range" type="RangeType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="metrics" type="xsd:string" use="required"/>
+    <xsd:anyAttribute namespace="##other" processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Metrics Range -->
+  <xsd:complexType name="RangeType">
+    <xsd:attribute name="starttime" type="xsd:duration"/>
+    <xsd:attribute name="duration" type="xsd:duration"/>
+  </xsd:complexType>
+
+</xsd:schema>

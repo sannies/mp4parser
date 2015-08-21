@@ -239,7 +239,7 @@ public class Mp4ContainerSource {
 
                 }
                 for (Mp4StreamingTrack mp4StreamingTrack : tracks.values()) {
-                    mp4StreamingTrack.setAllSamplesRead();
+                    mp4StreamingTrack.close();
                 }
                 System.out.println("All Samples read.");
             }
@@ -255,9 +255,10 @@ public class Mp4ContainerSource {
         protected HashMap<Class<? extends TrackExtension>, TrackExtension> trackExtensions = new HashMap<Class<? extends TrackExtension>, TrackExtension>();
         boolean allSamplesRead = false;
 
-        public void setAllSamplesRead() {
+        public void close() {
             allSamplesRead = true;
         }
+
 
 
         public Mp4StreamingTrack(TrackBox trackBox) {

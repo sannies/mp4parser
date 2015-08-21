@@ -9,7 +9,7 @@ import org.junit.Test;
 public class NalStreamTokenizerTest {
     @Test
     public void testTokenize() throws Exception {
-        NalStreamTokenizer nst = new NalStreamTokenizer(
+        H264AnnexBTrack.NalStreamTokenizer nst = new H264AnnexBTrack.NalStreamTokenizer(
                 NalStreamTokenizerTest.class.getResourceAsStream("/com/mp4parser/streaming/rawformats/h264/tos.h264"),
                 new byte[]{0, 0, 1},
                 new byte[]{0, 0, 0}

@@ -23,14 +23,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 
-public class H264NalConsumingTrack extends AbstractStreamingTrack implements Callable<Void> {
+public abstract class H264NalConsumingTrack extends AbstractStreamingTrack  {
     int max_dec_frame_buffering = 16;
 
     List<StreamingSample> decFrameBuffer = new ArrayList<StreamingSample>();
@@ -51,22 +48,16 @@ public class H264NalConsumingTrack extends AbstractStreamingTrack implements Cal
     boolean configured;
 
 
+
+
     SeqParameterSet currentSeqParameterSet = null;
     PictureParameterSet currentPictureParameterSet = null;
-    private InputStream inputStream;
 
-    public static void main(String[] args) throws IOException {
-        H264NalConsumingTrack h264AnnexB = new H264NalConsumingTrack(new FileInputStream("C:\\dev\\mp4parser\\streaming\\src\\test\\resources\\com\\mp4parser\\streaming\\rawformats\\tos.h264"));
-        h264AnnexB.call();
-    }
+
+    public abstract boolean sourceDepleted();
 
     public boolean hasMoreSamples() {
-        try {
-            return samples.size() > 0 || inputStream.available() > 0;
-        } catch (IOException e) {
-            LOG.warning(e.getMessage());
-            return false;
-        }
+        return samples.size() > 0 || !sourceDepleted();
     }
 
     class FirstVclNalDetector {
@@ -221,28 +212,16 @@ public class H264NalConsumingTrack extends AbstractStreamingTrack implements Cal
 
     }
 
-    public Void call() throws IOException {
-        LOG.info("Starting to parse H264 Annex B Stream");
 
-        byte[] nal;
-        NalStreamTokenizer st = new NalStreamTokenizer(inputStream, new byte[]{0, 0, 1}, new byte[]{0, 0, 0});
 
-        while ((nal = st.getNext()) != null) {
-            consumeNal(nal);
-        }
-        LOG.info("NalTokenizer drained");
-        drainDecPictureBuffer(true);
-        return null;
-    }
+    public H264NalConsumingTrack() throws IOException {
 
-    public H264NalConsumingTrack(InputStream inputStream) throws IOException {
-        assert inputStream != null;
         this.addTrackExtension(new SampleFlagsTrackExtension());
-        this.inputStream = inputStream;
+
     }
 
 
-    private void drainDecPictureBuffer(boolean all) {
+    protected void drainDecPictureBuffer(boolean all) {
         if (all) {
             while (decFrameBuffer.size() > 0) {
                 drainDecPictureBuffer(false);
@@ -267,6 +246,7 @@ public class H264NalConsumingTrack extends AbstractStreamingTrack implements Cal
             }
 
             first.addSampleExtension(CompositionTimeSampleExtension.create(delay * frametick));
+            //System.err.println("Adding sample");
             samples.add(first);
         }
 

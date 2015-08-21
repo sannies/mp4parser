@@ -1,0 +1,23 @@
+<xs:schema targetNamespace="urn:mpeg:cenc:2013"
+           attributeFormDefault="qualified"
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:mpeg:cenc:2013">
+
+    <!-- KID is a 128-bit integer written in canonical UUID notation -->
+    <xs:simpleType name="KeyIdType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- space-delimited list of KIDs -->
+    <xs:simpleType name="KeyIdListType">
+        <xs:list itemType="KeyIdType"/>
+    </xs:simpleType>
+
+    <!-- attribute that can be used within the DASH ContentProtection descriptor -->
+    <xs:attribute name="default_KID" type="KeyIdListType"/>
+
+    <xs:element name="pssh" type="xs:base64Binary"/>
+</xs:schema>

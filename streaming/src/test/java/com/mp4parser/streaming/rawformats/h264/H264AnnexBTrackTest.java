@@ -8,9 +8,8 @@ import com.mp4parser.streaming.MultiTrackFragmentedMp4Writer;
 import com.mp4parser.streaming.StreamingTrack;
 import org.junit.Test;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
+import java.nio.channels.Channels;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,8 +25,9 @@ public class H264AnnexBTrackTest {
 
     @Test
     public void testMuxing() throws Exception {
-        H264NalConsumingTrack b = new H264NalConsumingTrack(H264AnnexBTrackTest.class.getResourceAsStream("/com/mp4parser/streaming/rawformats/h264/tos.h264"));
-        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new FileOutputStream("output.mp4"));
+        H264AnnexBTrack b = new H264AnnexBTrack(H264AnnexBTrackTest.class.getResourceAsStream("/com/mp4parser/streaming/rawformats/h264/tos.h264"));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, baos);
         //MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new ByteArrayOutputStream());
         Future<Void> f = es.submit(b);
         writer.write();
@@ -38,7 +38,7 @@ public class H264AnnexBTrackTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        IsoFile isoFile = new IsoFile(new FileInputStream("output.mp4").getChannel());
+        IsoFile isoFile = new IsoFile(Channels.newChannel(new ByteArrayInputStream(baos.toByteArray())));
         Walk.through(isoFile);
         List<Sample> s = new SampleList(1, isoFile, new FileRandomAccessSourceImpl(new RandomAccessFile("output.mp4", "r")));
         for (Sample sample : s) {

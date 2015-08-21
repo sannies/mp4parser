@@ -1,0 +1,16 @@
+<jxb:bindings xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+              xmlns:jxb="http://java.sun.com/xml/ns/jaxb" version="2.1" >
+
+    <jxb:bindings>
+
+        <jxb:bindings schemaLocation="DASH.xsd"
+                node="//xsd:attribute[@name='initialization']">
+            <jxb:property name="initializationAttribute"/>
+        </jxb:bindings>
+        <jxb:bindings schemaLocation="DASH.xsd"
+                      node="//xsd:element[@name='BitstreamSwitching']">
+            <jxb:property name="bitstreamswitchingElement"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+</jxb:bindings>

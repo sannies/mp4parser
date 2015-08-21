@@ -19,6 +19,9 @@ public class H264TrackAdapter extends AbstractStreamingTrack implements Callable
 
     H264TrackImpl h264Track;
 
+    public void close() throws IOException {
+
+    }
 
     public H264TrackAdapter(final H264TrackImpl h264Track) throws InterruptedException {
         this.h264Track = h264Track;

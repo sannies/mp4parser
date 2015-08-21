@@ -3,9 +3,10 @@ package com.mp4parser.streaming;
 import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import com.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
 
+import java.io.Closeable;
 import java.util.concurrent.BlockingQueue;
 
-public interface StreamingTrack {
+public interface StreamingTrack extends Closeable {
     long getTimescale();
 
     BlockingQueue<StreamingSample> getSamples();

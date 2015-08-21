@@ -5,6 +5,7 @@ import com.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
 import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import com.mp4parser.boxes.sampleentry.VisualSampleEntry;
 import com.mp4parser.muxer.DataSource;
+import com.mp4parser.muxer.FileDataSourceImpl;
 import com.mp4parser.muxer.Sample;
 import com.mp4parser.muxer.tracks.AbstractH26XTrack;
 import com.mp4parser.muxer.tracks.h264.parsing.model.PictureParameterSet;
@@ -13,6 +14,7 @@ import com.mp4parser.tools.Mp4Arrays;
 import com.mp4parser.tools.RangeStartMap;
 import com.mp4parser.boxes.iso14496.part15.AvcConfigurationBox;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -88,6 +90,9 @@ public class H264TrackImpl extends AbstractH26XTrack {
         parse(new LookAhead(dataSource));
     }
 
+    public static void main(String[] args) throws IOException {
+        new H264TrackImpl(new FileDataSourceImpl("C:\\dev\\mp4parser\\tos.264"));
+    }
 
     public H264TrackImpl(DataSource dataSource, String lang) throws IOException {
         this(dataSource, lang, -1, -1);
@@ -104,6 +109,10 @@ public class H264TrackImpl extends AbstractH26XTrack {
         if (!readSamples(la)) {
             throw new IOException();
         }
+        System.err.println("psize: " + psize + "(" + pcount + ")");
+        System.err.println("bsize: " + bsize + "(" + bcount + ")");
+        System.err.println("isize: " + isize + "(" + icount + ")");
+
 
         if (!readVariables()) {
             throw new IOException();
@@ -392,6 +401,21 @@ public class H264TrackImpl extends AbstractH26XTrack {
         pictureOrderCounts = new int[0];
     }
 
+    long psize = 0;
+    long pcount = 0;
+    long bsize = 0;
+    long bcount = 0;
+    long isize = 0;
+    long icount = 0;
+
+    long getSize(List<ByteBuffer> buffered) {
+        long i = 0;
+        for (ByteBuffer byteBuffer : buffered) {
+            i += byteBuffer.remaining();
+        }
+        return i;
+    }
+
     private void createSample(List<ByteBuffer> buffered) throws IOException {
 
         SampleDependencyTypeBox.Entry sampleDependency = new SampleDependencyTypeBox.Entry(0);
@@ -421,10 +445,24 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
         if (IdrPicFlag) {
             calcCtts();
+
         }
         // cleans the buffer we just added
         InputStream bs = cleanBuffer(new ByteBufferBackedInputStream(slice));
         SliceHeader sh = new SliceHeader(bs, spsIdToSps, ppsIdToPps, IdrPicFlag);
+
+        if ((sh.slice_type == SliceHeader.SliceType.I) || (sh.slice_type == SliceHeader.SliceType.SI)) {
+            isize += getSize(buffered);
+            icount++;
+        } else if ((sh.slice_type == SliceHeader.SliceType.P) || (sh.slice_type == SliceHeader.SliceType.SP)) {
+            psize += getSize(buffered);
+            pcount++;
+        } else if ((sh.slice_type == SliceHeader.SliceType.B)) {
+            bsize += getSize(buffered);
+            bcount++;
+        } else {
+            throw new RuntimeException("_sdjlfd");
+        }
 
         if (nu.nal_ref_idc == 0) {
             sampleDependency.setSampleIsDependedOn(2);
