@@ -70,6 +70,13 @@ public class SliceHeader {
 
             pic_parameter_set_id = reader.readUE("SliceHeader: pic_parameter_set_id");
             pps = ppss.get(pic_parameter_set_id);
+            if (pps == null) {
+                String ids = "";
+                for (Integer integer : spss.keySet()) {
+                    ids += integer + ", ";
+                }
+                throw new RuntimeException("PPS with ids " + ids + " available but not " + pic_parameter_set_id);
+            }
             sps = spss.get(pps.seq_parameter_set_id);
             if (sps.residual_color_transform_flag) {
                 colour_plane_id = reader.readU(2, "SliceHeader: colour_plane_id");

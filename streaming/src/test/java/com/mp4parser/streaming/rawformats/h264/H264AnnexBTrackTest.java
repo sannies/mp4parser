@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.io.*;
 import java.nio.channels.Channels;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,7 +28,7 @@ public class H264AnnexBTrackTest {
     public void testMuxing() throws Exception {
         H264AnnexBTrack b = new H264AnnexBTrack(H264AnnexBTrackTest.class.getResourceAsStream("/com/mp4parser/streaming/rawformats/h264/tos.h264"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, baos);
+        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), baos);
         //MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new ByteArrayOutputStream());
         Future<Void> f = es.submit(b);
         writer.write();

@@ -302,7 +302,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     FirstVclNalDetector current = new FirstVclNalDetector(nal,
                             nalUnitHeader.nal_ref_idc, nalUnitHeader.nal_unit_type);
                     if (fvnd != null && fvnd.isFirstInNew(current)) {
-                        LOG.finer("Wrapping up cause of first vcl nal is found");
+                        LOG.finest("Wrapping up cause of first vcl nal is found");
                         createSample(buffered);
                     }
                     fvnd = current;
@@ -313,7 +313,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
                 case H264NalUnitTypes.SEI:
                     if (fvnd != null) {
-                        LOG.finer("Wrapping up cause of SEI after vcl marks new sample");
+                        LOG.finest("Wrapping up cause of SEI after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -324,7 +324,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
                 case H264NalUnitTypes.AU_UNIT_DELIMITER:
                     if (fvnd != null) {
-                        LOG.finer("Wrapping up cause of AU after vcl marks new sample");
+                        LOG.finest("Wrapping up cause of AU after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -333,7 +333,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     break;
                 case H264NalUnitTypes.SEQ_PARAMETER_SET:
                     if (fvnd != null) {
-                        LOG.finer("Wrapping up cause of SPS after vcl marks new sample");
+                        LOG.finest("Wrapping up cause of SPS after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -341,7 +341,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     break;
                 case 8:
                     if (fvnd != null) {
-                        LOG.finer("Wrapping up cause of PPS after vcl marks new sample");
+                        LOG.finest("Wrapping up cause of PPS after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }

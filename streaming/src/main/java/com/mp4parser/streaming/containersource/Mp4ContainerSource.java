@@ -70,7 +70,7 @@ public class Mp4ContainerSource {
         Mp4ContainerSource mp4ContainerSource = new Mp4ContainerSource();
         List<StreamingTrack> streamingTracks = mp4ContainerSource.doParse(new FileInputStream("C:\\content\\Surfing_RedBull.mp4_smooth_246x144_138.h264.mp4"));
 
-        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(streamingTracks.toArray(new StreamingTrack[streamingTracks.size()]), new FileOutputStream("output.mp4"));
+        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(streamingTracks, new FileOutputStream("output.mp4"));
         writer.write();
 
 

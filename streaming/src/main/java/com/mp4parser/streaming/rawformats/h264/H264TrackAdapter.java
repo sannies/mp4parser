@@ -8,6 +8,7 @@ import com.mp4parser.streaming.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
@@ -76,7 +77,7 @@ public class H264TrackAdapter extends AbstractStreamingTrack implements Callable
         H264TrackImpl h264Track = new H264TrackImpl(new FileDataSourceImpl("c:\\content\\big_buck_bunny_1080p_h264-2min.h264"));
         final StreamingTrack streamingTrack = new H264TrackAdapter(h264Track);
         MultiTrackFragmentedMp4Writer mp4Writer
-                = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{streamingTrack}, new FileOutputStream("output.mp4"));
+                = new MultiTrackFragmentedMp4Writer(Collections.singletonList(streamingTrack), new FileOutputStream("output.mp4"));
         mp4Writer.write();
     }
 

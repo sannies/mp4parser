@@ -13,6 +13,7 @@ import com.mp4parser.streaming.AbstractStreamingTrack;
 import com.mp4parser.streaming.StreamingSample;
 import com.mp4parser.streaming.StreamingSampleImpl;
 import com.mp4parser.streaming.extensions.*;
+import com.mp4parser.tools.Hex;
 import com.mp4parser.tools.RangeStartMap;
 
 import java.io.ByteArrayInputStream;
@@ -27,7 +28,7 @@ import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 
-public abstract class H264NalConsumingTrack extends AbstractStreamingTrack  {
+public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
     int max_dec_frame_buffering = 16;
 
     List<StreamingSample> decFrameBuffer = new ArrayList<StreamingSample>();
@@ -46,8 +47,6 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack  {
     int timescale = -1;
     int frametick = -1;
     boolean configured;
-
-
 
 
     SeqParameterSet currentSeqParameterSet = null;
@@ -141,6 +140,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack  {
     FirstVclNalDetector fvnd = null;
 
     protected void consumeNal(byte[] nal) throws IOException {
+        LOG.finest("Consume NAL of " + nal.length + " bytes." + Hex.encodeHex(new byte[]{nal[0], nal[1], nal[2], nal[3], nal[4]}));
         H264NalUnitHeader nalUnitHeader = getNalUnitHeader(nal);
         switch (nalUnitHeader.nal_unit_type) {
             case H264NalUnitTypes.CODED_SLICE_NON_IDR:
@@ -213,7 +213,6 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack  {
     }
 
 
-
     public H264NalConsumingTrack() throws IOException {
 
         this.addTrackExtension(new SampleFlagsTrackExtension());
@@ -254,8 +253,8 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack  {
 
 
     private void createSample(List<byte[]> buffered) {
+        LOG.finer("Create Sample");
         configure();
-        //LOG.info("sample is created");
         if (timescale == -1 || frametick == -1) {
             throw new RuntimeException("Frame Rate needs to be configured either by hand or by SPS before samples can be created");
         }
@@ -285,6 +284,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack  {
             LOG.warning("Sample without Slice");
             return;
         }
+
         assert slice != null;
         SliceHeader sh = new SliceHeader(new ByteArrayInputStream(slice), spsIdToSps, ppsIdToPps, idrPicFlag);
 
