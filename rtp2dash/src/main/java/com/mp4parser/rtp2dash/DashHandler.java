@@ -33,12 +33,13 @@ class DashHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     /**
      * Buffer that stores the response content
      */
-    private final StringBuilder buf = new StringBuilder();
+    JAXBContext jaxbContext;
 
     List<DashFragmentedMp4Writer> tracks;
 
-    public DashHandler(List<DashFragmentedMp4Writer> tracks) {
+    public DashHandler(List<DashFragmentedMp4Writer> tracks) throws JAXBException {
         this.tracks = tracks;
+        jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
     }
 
     @Override
@@ -67,7 +68,7 @@ class DashHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
             for (AdaptationSetType adaptationSetType : adaptationSetsMap.values()) {
                 periodType.getAdaptationSet().add(adaptationSetType);
             }
-            JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+
             Marshaller marshaller = jaxbContext.createMarshaller();
             StringWriter sw = new StringWriter();
             marshaller.marshal(new ObjectFactory().createMPD(mpd), sw);
@@ -94,7 +95,14 @@ class DashHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
             FullHttpResponse response = new DefaultFullHttpResponse(
                     HTTP_1_1, OK,
                     Unpooled.copiedBuffer("Notting", CharsetUtil.UTF_8));
-
+            ctx.write(response);
+            if (keepAlive) {
+                // Add 'Content-Length' header only for a keep-alive connection.
+                response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
+                // Add keep alive header as per:
+                // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
+                response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            }
         }
 
         if (!keepAlive) {
@@ -104,30 +112,6 @@ class DashHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
 
-    private boolean writeResponse(HttpObject currentObj, ChannelHandlerContext ctx) {
-        // Decide whether to close the connection or not.
-        boolean keepAlive = HttpHeaderUtil.isKeepAlive(msg);
-        // Build the response object.
-        FullHttpResponse response = new DefaultFullHttpResponse(
-                HTTP_1_1, currentObj.decoderResult().isSuccess() ? OK : BAD_REQUEST,
-                Unpooled.copiedBuffer(buf.toString(), CharsetUtil.UTF_8));
-
-        response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
-
-        if (keepAlive) {
-            // Add 'Content-Length' header only for a keep-alive connection.
-            response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
-            // Add keep alive header as per:
-            // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
-            response.headers().set(CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-        }
-
-
-        // Write the response.
-        ctx.write(response);
-
-        return keepAlive;
-    }
 
     private static void send100Continue(ChannelHandlerContext ctx) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, CONTINUE);
