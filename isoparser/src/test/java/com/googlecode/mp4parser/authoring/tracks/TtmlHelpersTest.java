@@ -48,9 +48,12 @@ public class TtmlHelpersTest {
         DocumentBuilder db = documentBuilderFactory.newDocumentBuilder();
         Document ttml = db.parse(new InputSource(TtmlHelpersTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/ttml/tos-chapters-en.xml"));
         //Document ttml = db.parse(new InputSource("http://localhost/mp4parser/isoparser/src/test/resources/com/googlecode/mp4parser/authoring/tracks/ttml/tos-chapters-en.xml"));
-        File f = File.createTempFile("TtmlHelpersTest", "testDeepCopyDocument");
-        f.delete();
-        f.mkdir();
+        File master = File.createTempFile("TtmlHelpersTest", "testDeepCopyDocument");
+        master.delete();
+        master.mkdir();
+
+        File f = new File(master, "target");
+
 
         File targetFile = new File(f, "subs.xml");
 
@@ -69,8 +72,13 @@ public class TtmlHelpersTest {
             File bgImg = new File(new URI(copy.getDocumentURI()).resolve(backgroundImageUri));
             Assert.assertTrue(bgImg.exists());
             Assert.assertTrue(bgImg.delete());
+            bgImg.getParentFile().delete();
         }
         Assert.assertTrue(targetFile.delete());
+        Assert.assertTrue(f.delete());
+        Assert.assertTrue(master.delete());
+
+
 
     }
 }
