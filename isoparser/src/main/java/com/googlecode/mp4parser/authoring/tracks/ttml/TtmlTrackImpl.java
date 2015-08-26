@@ -125,10 +125,10 @@ public class TtmlTrackImpl extends AbstractTrack {
         return new ArrayList<String>(mimeTypes);
     }
 
-    protected List<byte[]> extractImages(Document ttml) throws XPathExpressionException, URISyntaxException, IOException {
+    protected static List<byte[]> extractImages(Document ttml) throws XPathExpressionException, URISyntaxException, IOException {
         XPathFactory xPathfactory = XPathFactory.newInstance();
         XPath xpath = xPathfactory.newXPath();
-        XPathExpression expr = xpath.compile("//*/@smpte:backgroundImage");
+        XPathExpression expr = xpath.compile("//*/@backgroundImage");
         NodeList nl = (NodeList) expr.evaluate(ttml, XPathConstants.NODESET);
 
         LinkedHashMap<String, String> internalNames2Original = new LinkedHashMap<String, String>();
@@ -226,7 +226,7 @@ public class TtmlTrackImpl extends AbstractTrack {
 
     }
 
-    private byte[] streamToByteArray(InputStream input) throws IOException {
+    private static byte[] streamToByteArray(InputStream input) throws IOException {
         byte[] buffer = new byte[8096];
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
