@@ -6,6 +6,7 @@ import com.mp4parser.muxer.Track;
 import com.mp4parser.muxer.builder.DefaultMp4Builder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.namespace.NamespaceContext;
@@ -16,8 +17,9 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.*;
 import java.io.*;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -208,4 +210,43 @@ public class TtmlHelpers {
         }
     }
 
+    public static void deepCopyDocument(Document ttml, File target) throws IOException {
+        try {
+            XPathFactory xPathfactory = XPathFactory.newInstance();
+            XPath xpath = xPathfactory.newXPath();
+            XPathExpression expr = xpath.compile("//*/@backgroundImage");
+            NodeList nl = (NodeList) expr.evaluate(ttml, XPathConstants.NODESET);
+            for (int i = 0; i < nl.getLength(); i++) {
+                Node backgroundImage = nl.item(i);
+                URI backgroundImageUri = URI.create(backgroundImage.getNodeValue());
+                if (!backgroundImageUri.isAbsolute()) {
+                    copyLarge(new URI(ttml.getDocumentURI()).resolve(backgroundImageUri).toURL().openStream(), new File(target.toURI().resolve(backgroundImageUri).toURL().getFile()));
+                }
+            }
+            copyLarge(new URI(ttml.getDocumentURI()).toURL().openStream(), target);
+
+        } catch (XPathExpressionException e) {
+            throw new IOException(e);
+        } catch (URISyntaxException e) {
+            throw new IOException(e);
+        }
+    }
+
+    private static long copyLarge(InputStream input, File outputFile)
+            throws IOException {
+        byte[] buffer = new byte[16384];
+        long count = 0;
+        int n = 0;
+        outputFile.getParentFile().mkdirs();
+        FileOutputStream output = new FileOutputStream(outputFile);
+        try {
+            while (-1 != (n = input.read(buffer))) {
+                output.write(buffer, 0, n);
+                count += n;
+            }
+        } finally {
+            output.close();
+        }
+        return count;
+    }
 }

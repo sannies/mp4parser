@@ -161,7 +161,9 @@ public class WebVttTrack extends AbstractTrack {
 
         // process the cues and text
         while ((line = webvttData.readLine()) != null) {
-
+            if ("".equals(line.trim())) {
+                continue;
+            }
             // parse the cue identifier (if present) {
             Matcher matcher = WEBVTT_CUE_IDENTIFIER.matcher(line);
             if (matcher.find()) {
