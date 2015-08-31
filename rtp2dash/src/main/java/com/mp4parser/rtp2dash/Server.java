@@ -14,14 +14,19 @@ import io.netty.handler.logging.LoggingHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.Collections;
+import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class Server {
+
+    private static final Logger LOG = Logger.getLogger(Server.class.getName());
 
     private int port;
 
@@ -33,10 +38,16 @@ public class Server {
         RtpH264StreamingTrack st = new RtpH264StreamingTrack("Z2QAFUs2QCAb5/ARAAADAAEAAAMAMI8WLZY=,aEquJyw=", 5000);
         ExecutorService es = Executors.newFixedThreadPool(2);
         Future<Void> f1 = es.submit(st);
-        final DashFragmentedMp4Writer dashFragmentedMp4Writer = new DashFragmentedMp4Writer(st, new File("c:\\dev\\mp4parser\\out"), 12, "rep", new ByteArrayOutputStream());
+        final File baseDir = new File("c:\\dev\\mp4parser\\out");
+        final DashFragmentedMp4Writer dashFragmentedMp4Writer = new DashFragmentedMp4Writer(st, baseDir, 12, "rep", new ByteArrayOutputStream());
         Future<Void> f2 = es.submit(new Callable<Void>() {
             public Void call() throws Exception {
-                dashFragmentedMp4Writer.write();
+                try {
+                    dashFragmentedMp4Writer.write();
+                } catch (IOException e) {
+                    LOG.severe(e.getLocalizedMessage());
+                    throw e;
+                }
                 return null;
             }
         });
@@ -54,19 +65,22 @@ public class Server {
                             p.addLast("encoder", new HttpResponseEncoder());
                             p.addLast("decoder", new HttpRequestDecoder());
                             p.addLast("aggregator", new HttpObjectAggregator(65536));
-                            p.addLast("handler", new DashHandler(Collections.singletonList(dashFragmentedMp4Writer)));
+                            GregorianCalendar gcNow = GregorianCalendar.from(ZonedDateTime.now());
+                            gcNow.setTimeZone(TimeZone.getTimeZone("GMT"));
+                            p.addLast("handler", new DashServerHandler(baseDir, gcNow, Collections.singletonList(dashFragmentedMp4Writer)));
                         }
                     });
             Channel ch = b.bind(port).sync().channel();
+
             f1.get();
+
             f2.get();
+
             ch.closeFuture().sync();
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
-
-
     }
 
 

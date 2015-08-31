@@ -17,14 +17,15 @@ import com.mp4parser.tools.Hex;
 import com.mp4parser.tools.RangeStartMap;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 
@@ -44,8 +45,8 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
     RangeStartMap<Integer, byte[]> pictureParameterRangeMap = new RangeStartMap<Integer, byte[]>();
     BlockingQueue<SeqParameterSet> spsForConfig = new LinkedBlockingDeque<SeqParameterSet>();
 
-    int timescale = -1;
-    int frametick = -1;
+    int timescale = 0;
+    int frametick = 0;
     boolean configured;
 
 
@@ -201,7 +202,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
                 return;
 
             case H264NalUnitTypes.SEQ_PARAMETER_SET_EXT:
-                throw new RuntimeException("Sequence parameter set extension is not yet handled. Needs TLC.");
+                throw new IOException("Sequence parameter set extension is not yet handled. Needs TLC.");
 
             default:
                 //  buffered.add(nal);
@@ -252,11 +253,11 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
     }
 
 
-    private void createSample(List<byte[]> buffered) {
+    protected StreamingSample createSample(List<byte[]> buffered) throws IOException {
         LOG.finer("Create Sample");
         configure();
-        if (timescale == -1 || frametick == -1) {
-            throw new RuntimeException("Frame Rate needs to be configured either by hand or by SPS before samples can be created");
+        if (timescale == 0 || frametick == 0) {
+            throw new IOException("Frame Rate needs to be configured either by hand or by SPS before samples can be created");
         }
         SampleFlagsSampleExtension sampleFlagsSampleExtension = new SampleFlagsSampleExtension();
 
@@ -282,7 +283,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         }
         if (nu == null) {
             LOG.warning("Sample without Slice");
-            return;
+            return null;
         }
 
         assert slice != null;
@@ -323,11 +324,12 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
                 if (seiMessage == null) {
                     LOG.warning("CTS timing in ctts box is most likely not OK");
                 }*/
-            throw new RuntimeException("pic_order_cnt_type == 1 needs to be implemented");
+            throw new IOException("pic_order_cnt_type == 1 needs to be implemented");
         } else if (sh.sps.pic_order_cnt_type == 2) {
             samples.add(ssi);
         }
         buffered.clear();
+        return ssi;
     }
 
 
@@ -426,26 +428,33 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
             stsd = new SampleDescriptionBox();
             stsd.addBox(visualSampleEntry);
 
-
+            int _timescale;
+            int _frametick;
             if (sps.vuiParams != null) {
-                timescale = sps.vuiParams.time_scale >> 1; // Not sure why, but I found this in several places, and it works...
-                frametick = sps.vuiParams.num_units_in_tick;
-                if (timescale == 0 || frametick == 0) {
-                    LOG.warning("vuiParams contain invalid values: time_scale: " + timescale + " and frame_tick: " + frametick + ". Setting frame rate to 25fps");
-                    timescale = -1;
-                    frametick = -1;
+                _timescale = sps.vuiParams.time_scale >> 1; // Not sure why, but I found this in several places, and it works...
+                _frametick = sps.vuiParams.num_units_in_tick;
+                if (_timescale == 0 || _frametick == 0) {
+                    LOG.warning("vuiParams contain invalid values: time_scale: " + _timescale + " and frame_tick: " + _frametick + ". Setting frame rate to 25fps");
+                    _timescale = 0;
+                    _frametick = 0;
                 }
 
-                if (timescale / frametick > 100) {
-                    LOG.warning("Framerate is " + (timescale / frametick) + ". That is suspicious.");
+                if (_timescale / _frametick > 100) {
+                    LOG.warning("Framerate is " + (_timescale / _frametick) + ". That is suspicious.");
                 }
                 if (sps.vuiParams.bitstreamRestriction != null) {
                     max_dec_frame_buffering = sps.vuiParams.bitstreamRestriction.max_dec_frame_buffering;
                 }
             } else {
                 LOG.warning("Can't determine frame rate as SPS does not contain vuiParama");
-                timescale = -1;
-                frametick = -1;
+                _timescale = 0;
+                _frametick = 0;
+            }
+            if (timescale == 0) {
+                timescale = _timescale;
+            }
+            if (frametick == 0) {
+                frametick = _frametick;
             }
             configured = true;
         }
@@ -490,7 +499,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
 
 
         if (oldPpsSameId != null && !Arrays.equals(oldPpsSameId, data)) {
-            throw new RuntimeException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
+            throw new IOException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
         } else {
             if (oldPpsSameId == null) {
                 pictureParameterRangeMap.put(samples.size(), data);
@@ -510,7 +519,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
 
         byte[] oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
         if (oldSpsSameId != null && !Arrays.equals(oldSpsSameId, data)) {
-            throw new RuntimeException("OMG - I got two SPS with same ID but different settings!");
+            throw new IOException("OMG - I got two SPS with same ID but different settings!");
         } else {
             if (oldSpsSameId != null) {
                 seqParameterRangeMap.put(samples.size(), data);

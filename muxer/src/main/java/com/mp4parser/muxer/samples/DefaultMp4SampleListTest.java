@@ -3,7 +3,7 @@ package com.mp4parser.muxer.samples;
 import com.mp4parser.tools.Hex;
 import com.mp4parser.IsoFile;
 import com.mp4parser.muxer.FileRandomAccessSourceImpl;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.FileInputStream;

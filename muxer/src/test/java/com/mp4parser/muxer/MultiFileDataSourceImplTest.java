@@ -1,9 +1,7 @@
 package com.mp4parser.muxer;
 
-import com.mp4parser.muxer.DataSource;
-import com.mp4parser.muxer.MultiFileDataSourceImpl;
-import junit.framework.Assert;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

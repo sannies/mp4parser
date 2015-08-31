@@ -35,7 +35,7 @@ public class Path {
     private Path() {
     }
 
-    public static <T extends Box> T getPath(ParsableBox parsableBox, String path) {
+    public static <T extends Box> T getPath(Box parsableBox, String path) {
         List<T> all = getPaths(parsableBox, path, true);
         return all.isEmpty() ? null : all.get(0);
     }
