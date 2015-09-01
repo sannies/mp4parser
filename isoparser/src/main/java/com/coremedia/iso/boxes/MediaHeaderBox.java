@@ -20,6 +20,7 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
 import com.googlecode.mp4parser.util.DateHelper;
+import com.googlecode.mp4parser.util.Logger;
 
 import java.nio.ByteBuffer;
 import java.util.Date;
@@ -30,6 +31,7 @@ import java.util.Date;
  * considered as a whole.
  */
 public class MediaHeaderBox extends AbstractFullBox {
+    private static Logger LOG = Logger.getLogger(MediaHeaderBox.class);
     public static final String TYPE = "mdhd";
 
 
@@ -103,13 +105,18 @@ public class MediaHeaderBox extends AbstractFullBox {
             creationTime = DateHelper.convert(IsoTypeReader.readUInt64(content));
             modificationTime = DateHelper.convert(IsoTypeReader.readUInt64(content));
             timescale = IsoTypeReader.readUInt32(content);
-            duration = IsoTypeReader.readUInt64(content);
+            duration = content.getLong();
         } else {
             creationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             modificationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             timescale = IsoTypeReader.readUInt32(content);
-            duration = IsoTypeReader.readUInt32(content);
+            duration = content.getInt();
         }
+        if (duration < -1) {
+            LOG.logWarn("mdhd duration is not in expected range");
+        }
+
+
         language = IsoTypeReader.readIso639(content);
         IsoTypeReader.readUInt16(content);
     }

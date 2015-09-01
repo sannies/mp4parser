@@ -21,6 +21,7 @@ import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractFullBox;
 import com.googlecode.mp4parser.util.DateHelper;
+import com.googlecode.mp4parser.util.Logger;
 import com.googlecode.mp4parser.util.Matrix;
 
 import java.nio.ByteBuffer;
@@ -37,6 +38,7 @@ import java.util.Date;
  * to 0, so that they are ignored for local playback and preview.
  */
 public class TrackHeaderBox extends AbstractFullBox {
+    private static Logger LOG = Logger.getLogger(TrackHeaderBox.class);
 
     public static final String TYPE = "tkhd";
 
@@ -117,17 +119,18 @@ public class TrackHeaderBox extends AbstractFullBox {
             trackId = IsoTypeReader.readUInt32(content);
             IsoTypeReader.readUInt32(content);
             duration = content.getLong();
-            if (duration < -1) {
-                throw new RuntimeException("The tracks duration is bigger than Long.MAX_VALUE");
-            }
-
         } else {
             creationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             modificationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             trackId = IsoTypeReader.readUInt32(content);
             IsoTypeReader.readUInt32(content);
-            duration = IsoTypeReader.readUInt32(content);
+            duration = content.getInt();
         } // 196
+
+        if (duration < -1) {
+            LOG.logWarn("tkhd duration is not in expected range");
+        }
+
         IsoTypeReader.readUInt32(content);
         IsoTypeReader.readUInt32(content);
         layer = IsoTypeReader.readUInt16(content);    // 204
