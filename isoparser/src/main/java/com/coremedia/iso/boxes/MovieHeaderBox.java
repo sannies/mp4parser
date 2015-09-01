@@ -175,12 +175,12 @@ public class MovieHeaderBox extends AbstractFullBox {
             IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(creationTime));
             IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, timescale);
-            IsoTypeWriter.writeUInt64(byteBuffer, duration);
+            byteBuffer.putLong(duration);
         } else {
             IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(creationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, timescale);
-            IsoTypeWriter.writeUInt32(byteBuffer, duration);
+            byteBuffer.putInt((int) duration);
         }
         IsoTypeWriter.writeFixedPoint1616(byteBuffer, rate);
         IsoTypeWriter.writeFixedPoint88(byteBuffer, volume);

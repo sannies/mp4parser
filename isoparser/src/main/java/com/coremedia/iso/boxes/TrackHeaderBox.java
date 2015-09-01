@@ -149,13 +149,13 @@ public class TrackHeaderBox extends AbstractFullBox {
             IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, trackId);
             IsoTypeWriter.writeUInt32(byteBuffer, 0);
-            IsoTypeWriter.writeUInt64(byteBuffer, duration);
+            byteBuffer.putLong(duration);
         } else {
             IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(creationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, trackId);
             IsoTypeWriter.writeUInt32(byteBuffer, 0);
-            IsoTypeWriter.writeUInt32(byteBuffer, duration);
+            byteBuffer.putInt((int) duration);
         } // 196
         IsoTypeWriter.writeUInt32(byteBuffer, 0);
         IsoTypeWriter.writeUInt32(byteBuffer, 0);

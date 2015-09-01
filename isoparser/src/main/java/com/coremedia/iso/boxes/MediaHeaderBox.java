@@ -144,12 +144,12 @@ public class MediaHeaderBox extends AbstractFullBox {
             IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(creationTime));
             IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, timescale);
-            IsoTypeWriter.writeUInt64(byteBuffer, duration);
+            byteBuffer.putLong(duration);
         } else {
             IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(creationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, timescale);
-            IsoTypeWriter.writeUInt32(byteBuffer, duration);
+            byteBuffer.putInt((int) duration);
         }
         IsoTypeWriter.writeIso639(byteBuffer, language);
         IsoTypeWriter.writeUInt16(byteBuffer, 0);
