@@ -14,10 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 import static com.mp4parser.tools.CastUtils.l2i;
@@ -27,6 +24,8 @@ import static com.mp4parser.tools.CastUtils.l2i;
  *
  */
 public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
+    private static StreamingSample FINAL_SAMPLE = new StreamingSampleImpl(ByteBuffer.allocate(1), 333);
+
     private static final Logger LOG = Logger.getLogger(MultiTrackFragmentedMp4Writer.class.getName());
 
     protected final OutputStream outputStream;
@@ -87,6 +86,16 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         for (StreamingTrack streamingTrack : source) {
             streamingTrack.close();
         }
+
+        Collections.sort(source, new Comparator<StreamingTrack>() {
+            public int compare(StreamingTrack o1, StreamingTrack o2) {
+                return currentFragmentStartTime.get(o1).compareTo(currentFragmentStartTime.get(o2));
+            }
+        });
+        for (StreamingTrack streamingTrack : source) {
+            consumeSample(streamingTrack, FINAL_SAMPLE);
+        }
+
         try {
             es.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
@@ -230,13 +239,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         trex.setDefaultSampleDuration(0);
         trex.setDefaultSampleSize(0);
         SampleFlags sf = new SampleFlags();
-        if ("soun".equals(streamingTrack.getHandler()) || "subt".equals(streamingTrack.getHandler())) {
-            // as far as I know there is no audio encoding
-            // where the sample are not self contained.
-            // same seems to be true for subtitle tracks
-            sf.setSampleDependsOn(2);
-            sf.setSampleIsDependedOn(2);
-        }
+
         trex.setDefaultSampleFlags(sf);
         return trex;
     }
@@ -299,8 +302,9 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
         es = Executors.newFixedThreadPool(source.size());
         LOG.info("Start receiving from tracks " + source);
+        List<Future<Void>> futures = new ArrayList<Future<Void>>();
         for (StreamingTrack streamingTrack : source) {
-            es.submit(new ConsumeSamplesCallable(streamingTrack));
+            futures.add(es.submit(new ConsumeSamplesCallable(streamingTrack)));
         }
 
         try {
@@ -311,6 +315,22 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+        close();
+        for (Future<Void> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof RuntimeException) {
+                    throw (RuntimeException) e.getCause();
+                } else if (e.getCause() instanceof IOException) {
+                    throw (IOException) e.getCause();
+                } else {
+                    throw new IOException(e.getCause());
+                }
+            }
         }
     }
 
@@ -356,25 +376,29 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         currentTime.put(streamingTrack, ts);
         // 3 seconds = 3 * source.getTimescale()
         //System.err.println("consumeSample " + ts + " " + cfst);
-        if (ts > cfst + 3 * streamingTrack.getTimescale() &&
-                fragmentBuffers.get(streamingTrack).size() > 0 &&
-                (sampleDependencySampleExtension == null ||
-                        sampleDependencySampleExtension.isSyncSample())) {
+        if (sample == FINAL_SAMPLE || (
+
+                ts > cfst + 3 * streamingTrack.getTimescale() &&
+                        fragmentBuffers.get(streamingTrack).size() > 0 &&
+                        (sampleDependencySampleExtension == null ||
+                                sampleDependencySampleExtension.isSyncSample()))) {
             writeFragment(streamingTrack);
             currentFragmentStartTime.put(streamingTrack, ts);
-            if (fragmentBuffers.get(streamingTrack).size() > 0) {
+            LOG.info("fragment written");
+/*            if (fragmentBuffers.get(streamingTrack).size() > 0) {
                 if (fragmentBuffers.get(streamingTrack).get(0).getSampleExtension(SampleFlagsSampleExtension.class).isSyncSample()) {
                     System.err.println("Starts with syncSample");
                 } else {
                     System.err.println("WRONGWRONGWRONGWRONGWRONGWRONGWRONGWRONGWRONGWRONG");
                 }
-            }
+            }*/
             fragmentBuffers.get(streamingTrack).clear();
             LOG.finest("fragment buffer cleared");
 
 
         }
         fragmentBuffers.get(streamingTrack).add(sample);
+        LOG.info("sample received");
         currentTime.put(streamingTrack, ts + sample.getDuration());
     }
 
@@ -396,7 +420,18 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     protected void createTfhd(StreamingTrack streamingTrack, TrackFragmentBox parent) {
         TrackFragmentHeaderBox tfhd = new TrackFragmentHeaderBox();
         SampleFlags sf = new SampleFlags();
+        DefaultSampleFlagsTrackExtension defaultSampleFlagsTrackExtension = streamingTrack.getTrackExtension(DefaultSampleFlagsTrackExtension.class);
+        // I don't like the idea of using sampleflags in trex as it breaks the "self-contained" property of a fragment
+        if (defaultSampleFlagsTrackExtension != null) {
+            sf.setIsLeading(defaultSampleFlagsTrackExtension.getIsLeading());
+            sf.setSampleIsDependedOn(defaultSampleFlagsTrackExtension.getSampleIsDependedOn());
+            sf.setSampleDependsOn(defaultSampleFlagsTrackExtension.getSampleDependsOn());
+            sf.setSampleHasRedundancy(defaultSampleFlagsTrackExtension.getSampleHasRedundancy());
+            sf.setSampleIsDifferenceSample(defaultSampleFlagsTrackExtension.isSampleIsNonSyncSample());
+            sf.setSamplePaddingValue(defaultSampleFlagsTrackExtension.getSamplePaddingValue());
+            sf.setSampleDegradationPriority(defaultSampleFlagsTrackExtension.getSampleDegradationPriority());
 
+        }
         tfhd.setDefaultSampleFlags(sf);
         tfhd.setBaseDataOffset(-1);
         tfhd.setTrackId(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId());
@@ -422,14 +457,13 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
         trun.setSampleCompositionTimeOffsetPresent(streamingTrack.getTrackExtension(CompositionTimeTrackExtension.class) != null);
 
-        boolean sampleFlagsRequired = streamingTrack.getTrackExtension(SampleFlagsTrackExtension.class) != null;
-
-        trun.setSampleFlagsPresent(sampleFlagsRequired);
+        DefaultSampleFlagsTrackExtension defaultSampleFlagsTrackExtension = streamingTrack.getTrackExtension(DefaultSampleFlagsTrackExtension.class);
+        trun.setSampleFlagsPresent(defaultSampleFlagsTrackExtension == null);
 
         for (StreamingSample streamingSample : fragmentBuffers.get(streamingTrack)) {
             TrackRunBox.Entry entry = new TrackRunBox.Entry();
             entry.setSampleSize(streamingSample.getContent().remaining());
-            if (sampleFlagsRequired) {
+            if (defaultSampleFlagsTrackExtension == null) {
                 SampleFlagsSampleExtension sampleFlagsSampleExtension = streamingSample.getSampleExtension(SampleFlagsSampleExtension.class);
                 assert sampleFlagsSampleExtension != null : "SampleDependencySampleExtension missing even though SampleDependencyTrackExtension was present";
                 SampleFlags sflags = new SampleFlags();

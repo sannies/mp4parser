@@ -10,7 +10,6 @@ import java.util.concurrent.BlockingQueue;
 public abstract class AbstractStreamingTrack implements StreamingTrack {
     protected BlockingQueue<StreamingSample> samples = new ArrayBlockingQueue<StreamingSample>(1000);
     protected TrackHeaderBox tkhd;
-    protected SampleDescriptionBox stsd;
     protected HashMap<Class<? extends TrackExtension>, TrackExtension> trackExtensions = new HashMap<Class<? extends TrackExtension>, TrackExtension>();
 
     public AbstractStreamingTrack() {
@@ -20,10 +19,6 @@ public abstract class AbstractStreamingTrack implements StreamingTrack {
 
     public BlockingQueue<StreamingSample> getSamples() {
         return samples;
-    }
-
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return stsd;
     }
 
 

@@ -1,14 +1,11 @@
 package com.mp4parser.rtp2dash;
 
-import com.mp4parser.Box;
 import com.mp4parser.Container;
 import com.mp4parser.IsoFile;
 import com.mp4parser.boxes.iso14496.part12.TrackFragmentBaseMediaDecodeTimeBox;
-import com.mp4parser.boxes.iso14496.part12.TrackFragmentBox;
 import com.mp4parser.boxes.iso14496.part12.TrackRunBox;
 import com.mp4parser.boxes.sampleentry.VisualSampleEntry;
 import com.mp4parser.streaming.MultiTrackFragmentedMp4Writer;
-import com.mp4parser.streaming.StreamingSample;
 import com.mp4parser.streaming.StreamingTrack;
 import com.mp4parser.tools.Path;
 import mpeg.dash.schema.mpd._2011.RepresentationType;
@@ -18,7 +15,9 @@ import mpeg.dash.schema.mpd._2011.SegmentTimelineType;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.channels.WritableByteChannel;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Logger;
 
 

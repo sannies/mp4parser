@@ -1,5 +1,6 @@
 package com.mp4parser.streaming.rawformats.h264;
 
+import com.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import com.mp4parser.muxer.FileDataSourceImpl;
 import com.mp4parser.muxer.Sample;
 import com.mp4parser.muxer.tracks.h264.H264TrackImpl;
@@ -19,7 +20,7 @@ import java.util.concurrent.Callable;
 public class H264TrackAdapter extends AbstractStreamingTrack implements Callable<Void> {
 
     H264TrackImpl h264Track;
-
+    SampleDescriptionBox stsd;
     public void close() throws IOException {
 
     }
@@ -38,6 +39,10 @@ public class H264TrackAdapter extends AbstractStreamingTrack implements Callable
             }
         }.start();
         stsd = h264Track.getSampleDescriptionBox();
+    }
+
+    public SampleDescriptionBox getSampleDescriptionBox() {
+        return stsd;
     }
 
     public Void call() throws InterruptedException {

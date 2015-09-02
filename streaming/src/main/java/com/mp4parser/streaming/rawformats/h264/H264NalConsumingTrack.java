@@ -49,7 +49,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
     int frametick = 0;
     boolean configured;
 
-
+    SampleDescriptionBox stsd;
     SeqParameterSet currentSeqParameterSet = null;
     PictureParameterSet currentPictureParameterSet = null;
 
@@ -215,9 +215,6 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
 
 
     public H264NalConsumingTrack() throws IOException {
-
-        this.addTrackExtension(new SampleFlagsTrackExtension());
-
     }
 
 
@@ -465,10 +462,10 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         return timescale;
     }
 
-    @Override
+
     public SampleDescriptionBox getSampleDescriptionBox() {
         configure();
-        return super.getSampleDescriptionBox();
+        return stsd;
     }
 
 
