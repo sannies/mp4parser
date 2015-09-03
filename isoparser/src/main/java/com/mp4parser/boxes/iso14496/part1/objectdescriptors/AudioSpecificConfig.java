@@ -744,7 +744,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         return n;
     }
 
-    int getContentSize() {
+    protected int getContentSize() {
         int sizeInBits = 5;
         if (originalAudioObjectType > 30) {
             sizeInBits += 6; // extended type
@@ -816,7 +816,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         return (ByteBuffer) out.rewind();
     }
 
-    private ByteBuffer serializeConfigBytes() {
+    protected ByteBuffer serializeConfigBytes() {
         ByteBuffer out = ByteBuffer.wrap(new byte[getContentSize()]);
         BitWriterBuffer bitWriterBuffer = new BitWriterBuffer(out);
         writeAudioObjectType(originalAudioObjectType, bitWriterBuffer);
