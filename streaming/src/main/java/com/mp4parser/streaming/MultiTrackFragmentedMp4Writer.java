@@ -398,7 +398,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
         }
         fragmentBuffers.get(streamingTrack).add(sample);
-        LOG.info("sample received");
+        LOG.finer("sample received");
         currentTime.put(streamingTrack, ts + sample.getDuration());
     }
 

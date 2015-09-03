@@ -23,17 +23,12 @@ public class TestAac {
         OutputStream os = new FileOutputStream("output.mp4");
         final MultiTrackFragmentedMp4Writer streamingMp4Writer = new MultiTrackFragmentedMp4Writer(Collections.<StreamingTrack>singletonList(st), os);
         Future<Void> stFuture = es.submit(st);
-        es.submit(new Callable<Void>() {
-            public Void call() throws Exception {
-                streamingMp4Writer.write();
-                return null;
-            }
-        });
-        System.in.read();
+        streamingMp4Writer.write();
+        stFuture.get();
         streamingMp4Writer.close();
         st.close();
 
-        stFuture.get();
+
         es.shutdown();
 
     }

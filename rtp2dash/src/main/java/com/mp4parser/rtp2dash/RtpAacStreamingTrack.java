@@ -9,6 +9,7 @@ import com.mp4parser.muxer.tracks.h264.parsing.read.BitstreamReader;
 import com.mp4parser.streaming.AbstractStreamingTrack;
 import com.mp4parser.streaming.StreamingSampleImpl;
 import com.mp4parser.streaming.StreamingTrack;
+import com.mp4parser.streaming.extensions.DefaultSampleFlagsTrackExtension;
 import com.mp4parser.tools.Ascii;
 import com.mp4parser.tools.Hex;
 import com.mp4parser.tools.IsoTypeReader;
@@ -52,12 +53,13 @@ public class RtpAacStreamingTrack extends AbstractStreamingTrack implements Call
         HashMap<String, String> propMap = new HashMap<String, String>();
         for (String prop : props) {
             String[] splitProp = prop.split("=");
-            propMap.put(splitProp[0].trim(), splitProp.length>1?splitProp[1]:null);
+            propMap.put(splitProp[0].trim(), splitProp.length > 1 ? splitProp[1] : null);
         }
 
 
         this.sizeLength = Integer.parseInt(propMap.get("sizelength"));
-        this.indexLength = Integer.parseInt(propMap.get("indexlength"));;
+        this.indexLength = Integer.parseInt(propMap.get("indexlength"));
+        ;
         String config = propMap.get("config");
         final byte[] audioSpecificConfigFromSDP = Hex.decodeHex(config);
         assert "aac-hbr".equalsIgnoreCase(propMap.get("mode"));
@@ -65,7 +67,7 @@ public class RtpAacStreamingTrack extends AbstractStreamingTrack implements Call
         this.port = port;
         this.payloadType = payloadType;
 
-        SampleDescriptionBox stsd = new SampleDescriptionBox();
+        stsd = new SampleDescriptionBox();
         AudioSampleEntry audioSampleEntry = new AudioSampleEntry("mp4a");
         if (audioChannels == 7) {
             audioSampleEntry.setChannelCount(8);
@@ -111,6 +113,15 @@ public class RtpAacStreamingTrack extends AbstractStreamingTrack implements Call
         esds.setEsDescriptor(descriptor);
         audioSampleEntry.addBox(esds);
         stsd.addBox(audioSampleEntry);
+
+
+        DefaultSampleFlagsTrackExtension defaultSampleFlagsTrackExtension = new DefaultSampleFlagsTrackExtension();
+        defaultSampleFlagsTrackExtension.setIsLeading(2);
+        defaultSampleFlagsTrackExtension.setSampleDependsOn(2);
+        defaultSampleFlagsTrackExtension.setSampleIsDependedOn(2);
+        defaultSampleFlagsTrackExtension.setSampleHasRedundancy(2);
+        defaultSampleFlagsTrackExtension.setSampleIsNonSyncSample(false);
+        this.addTrackExtension(defaultSampleFlagsTrackExtension);
 
     }
 
@@ -165,11 +176,9 @@ public class RtpAacStreamingTrack extends AbstractStreamingTrack implements Call
                     byte[] currentSample = new byte[sampleSize];
                     System.arraycopy(payload, offset, currentSample, 0, sampleSize);
                     samples.add(new StreamingSampleImpl(ByteBuffer.wrap(currentSample), 1024));
-                    hex(currentSample);
-                    offset+=sampleSize;
+                    //  hex(currentSample);
+                    offset += sampleSize;
                 }
-                System.err.println();
-
 
 
             }
@@ -229,7 +238,7 @@ public class RtpAacStreamingTrack extends AbstractStreamingTrack implements Call
     }
 
     public boolean hasMoreSamples() {
-        return false;
+        return samples.size() > 0 || isOpen;
     }
 
     public String getHandler() {
@@ -237,11 +246,11 @@ public class RtpAacStreamingTrack extends AbstractStreamingTrack implements Call
     }
 
     public String getLanguage() {
-        return "en";
+        return "und";
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
-        return null;
+        return stsd;
     }
 
     public void close() throws IOException {
