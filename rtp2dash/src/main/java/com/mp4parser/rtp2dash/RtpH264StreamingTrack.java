@@ -96,13 +96,13 @@ public class RtpH264StreamingTrack extends H264NalConsumingTrack implements Call
                     payload.get(nalSlice);
                     consumeNal(nalSlice);
                 } else if (nalUnitType == 24) {
-                    throw new RuntimeException("No Support for STAP A");
+                    throw new RuntimeException("No Support for STAP A " + toString());
                 } else if (nalUnitType == 25) {
-                    throw new RuntimeException("No Support for STAP B");
+                    throw new RuntimeException("No Support for STAP B " + toString());
                 } else if (nalUnitType == 26) {
-                    throw new RuntimeException("No Support for MTAP 16");
+                    throw new RuntimeException("No Support for MTAP 16 " + toString());
                 } else if (nalUnitType == 27) {
-                    throw new RuntimeException("No Support for MTAP 24");
+                    throw new RuntimeException("No Support for MTAP 24 " + toString());
                 } else if (nalUnitType == 28) {
                     int fuIndicator = payload.get(0);
                     int fuHeader = IsoTypeReader.byte2int(payload.get(1));
@@ -162,7 +162,7 @@ public class RtpH264StreamingTrack extends H264NalConsumingTrack implements Call
             return null;
         } finally {
             if (isOpen) {
-                LOG.warning("Stopping RTP Receiver due to exception.");
+                LOG.warning("Stopping RTP Receiver due to exception. " + toString());
             }
             isOpen = false;
         }

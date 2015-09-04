@@ -42,6 +42,7 @@ public class RtpAacStreamingTrack extends AbstractStreamingTrack implements Call
     private int indexLength;
     private long clockrate;
     SampleDescriptionBox stsd;
+    String language = "und";
 
     public RtpAacStreamingTrack(int port, int payloadType, int bandwidth, String fmtp, String rtpMap) {
         String encoding = rtpMap.split("/")[0];
@@ -187,7 +188,7 @@ public class RtpAacStreamingTrack extends AbstractStreamingTrack implements Call
             return null;
         } finally {
             if (isOpen) {
-                LOG.warning("Stopping RTP Receiver due to exception.");
+                LOG.warning("Stopping RTP Receiver due to exception. " + toString());
             }
             isOpen = false;
         }
@@ -246,7 +247,11 @@ public class RtpAacStreamingTrack extends AbstractStreamingTrack implements Call
     }
 
     public String getLanguage() {
-        return "und";
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
@@ -257,5 +262,10 @@ public class RtpAacStreamingTrack extends AbstractStreamingTrack implements Call
 
     }
 
-
+    @Override
+    public String toString() {
+        return "RtpAacStreamingTrack{" +
+                "port=" + port +
+                '}';
+    }
 }

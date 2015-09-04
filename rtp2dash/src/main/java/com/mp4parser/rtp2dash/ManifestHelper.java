@@ -7,6 +7,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -23,7 +24,7 @@ public class ManifestHelper {
         }
     }
 
-    public String getManifest(List<DashFragmentedMp4Writer> tracks, GregorianCalendar availabilityStartTime) throws JAXBException, DatatypeConfigurationException {
+    public String getManifest(List<DashFragmentedMp4Writer> tracks, GregorianCalendar availabilityStartTime) throws JAXBException, DatatypeConfigurationException, IOException {
         MPDtype mpd = new MPDtype();
         mpd.setAvailabilityStartTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(availabilityStartTime));
 
@@ -48,7 +49,16 @@ public class ManifestHelper {
                 adaptationSetType = new AdaptationSetType();
                 adaptationSetsMap.put(track.getAdaptationSetId(), adaptationSetType);
                 adaptationSetType.setId(track.getAdaptationSetId());
-                adaptationSetType.setContentType("video");
+                String hdlr = track.getSource().getHandler();
+                if ("soun".equals(hdlr)) {
+                    adaptationSetType.setContentType("audio");
+                } else if ("vide".equals(hdlr)) {
+                    adaptationSetType.setContentType("video");
+                } else if ("text".equals(hdlr) || "subt".equals(hdlr)) {
+                    adaptationSetType.setContentType("text");
+                } else {
+                    throw new IOException("Unknown handler " + hdlr);
+                }
                 adaptationSetType.setSegmentAlignment("true");
             }
 
