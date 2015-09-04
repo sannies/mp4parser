@@ -109,15 +109,55 @@ public class FragmentedMp4Builder implements Mp4Builder {
     protected List<Box> createMoofMdat(final Movie movie) {
         List<Box> moofsMdats = new LinkedList<Box>();
         HashMap<Track, long[]> intersectionMap = new HashMap<Track, long[]>();
-        int maxNumberOfFragments = 0;
+        HashMap<Track, Double> track2currentTime = new HashMap<Track, Double>();
+
         for (Track track : movie.getTracks()) {
             long[] intersects = intersectionFinder.sampleNumbers(track);
             intersectionMap.put(track, intersects);
-            maxNumberOfFragments = Math.max(maxNumberOfFragments, intersects.length);
+            track2currentTime.put(track, 0.0);
+
         }
 
-
         int sequence = 1;
+        while (!intersectionMap.isEmpty()) {
+            Track earliestTrack = null;
+            double earliestTime = Double.MAX_VALUE;
+            for (Map.Entry<Track, Double> trackEntry : track2currentTime.entrySet()) {
+                if (trackEntry.getValue() < earliestTime) {
+                    earliestTime = trackEntry.getValue();
+                    earliestTrack = trackEntry.getKey();
+                }
+            }
+            assert earliestTrack != null;
+
+            long[] startSamples = intersectionMap.get(earliestTrack);
+            long startSample = startSamples[0];
+            long endSample = startSamples.length > 1 ? startSamples[1] : earliestTrack.getSamples().size() + 1;
+
+            long[] times = earliestTrack.getSampleDurations();
+            long timscale = earliestTrack.getTrackMetaData().getTimescale();
+            for (long i = startSample; i < endSample; i++) {
+                earliestTime += (double) times[l2i(i-1)] / timscale;
+            }
+            createFragment(moofsMdats, earliestTrack, startSample, endSample, sequence);
+
+            if (startSamples.length == 1) {
+                intersectionMap.remove(earliestTrack);
+                track2currentTime.remove(earliestTrack);
+                // all sample written.
+            } else {
+                long[] nuStartSamples = new long[startSamples.length - 1];
+                System.arraycopy(startSamples, 1, nuStartSamples, 0, nuStartSamples.length);
+                intersectionMap.put(earliestTrack, nuStartSamples);
+                track2currentTime.put(earliestTrack, earliestTime);
+            }
+
+
+            sequence++;
+
+        }
+
+      /* sequence = 1;
         // this loop has two indices:
 
         for (int cycle = 0; cycle < maxNumberOfFragments; cycle++) {
@@ -126,25 +166,23 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
             for (Track track : sortedTracks) {
                 long[] startSamples = intersectionMap.get(track);
-                sequence = createFragment(moofsMdats, track, startSamples, cycle, sequence);
+                long startSample = startSamples[cycle];
+                // one based sample numbers - the first sample is 1
+                long endSample = cycle + 1 < startSamples.length ? startSamples[cycle + 1] : track.getSamples().size() + 1;
+                createFragment(moofsMdats, track, startSample, endSample, sequence);
+                sequence++;
             }
-        }
+        }*/
         return moofsMdats;
     }
 
-    protected int createFragment(List<Box> moofsMdats, Track track, long[] startSamples, int cycle, int sequence) {
-        //some tracks may have less fragments -> skip them
-        if (cycle < startSamples.length) {
+    protected int createFragment(List<Box> moofsMdats, Track track, long startSample, long endSample, int sequence) {
 
-            long startSample = startSamples[cycle];
-            // one based sample numbers - the first sample is 1
-            long endSample = cycle + 1 < startSamples.length ? startSamples[cycle + 1] : track.getSamples().size() + 1;
 
-            // if startSample == endSample the cycle is empty!
-            if (startSample != endSample) {
-                moofsMdats.add(createMoof(startSample, endSample, track, sequence));
-                moofsMdats.add(createMdat(startSample, endSample, track, sequence++));
-            }
+        // if startSample == endSample the cycle is empty!
+        if (startSample != endSample) {
+            moofsMdats.add(createMoof(startSample, endSample, track, sequence));
+            moofsMdats.add(createMdat(startSample, endSample, track, sequence));
         }
         return sequence;
     }
@@ -200,7 +238,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
             public long getSize() {
                 if (size_ != -1) return size_;
                 long size = 8; // I don't expect 2gig fragments
-                for (Sample sample : getSamples(startSample, endSample, track, i)) {
+                for (Sample sample : getSamples(startSample, endSample, track)) {
                     size += sample.getSize();
                 }
                 size_ = size;
@@ -218,7 +256,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 header.rewind();
                 writableByteChannel.write(header);
 
-                List<Sample> samples = getSamples(startSample, endSample, track, i);
+                List<Sample> samples = getSamples(startSample, endSample, track);
                 for (Sample sample : samples) {
                     sample.writeTo(writableByteChannel);
                 }
@@ -305,7 +343,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
         }
 
 
-
     }
 
     protected void createSenc(long startSample, long endSample, CencEncryptedTrack track, int sequenceNumber, TrackFragmentBox parent) {
@@ -376,13 +413,12 @@ public class FragmentedMp4Builder implements Mp4Builder {
      * Gets all samples starting with <code>startSample</code> (one based -&gt; one is the first) and
      * ending with <code>endSample</code> (exclusive).
      *
-     * @param startSample    low endpoint (inclusive) of the sample sequence
-     * @param endSample      high endpoint (exclusive) of the sample sequence
-     * @param track          source of the samples
-     * @param sequenceNumber the fragment index of the requested list of samples
-     * @return a <code>List&lt;ByteBuffer&gt;</code> of raw samples
+     * @param startSample low endpoint (inclusive) of the sample sequence
+     * @param endSample   high endpoint (exclusive) of the sample sequence
+     * @param track       source of the samples
+     * @return a <code>List&lt;Sample&gt;</code> of raw samples
      */
-    protected List<Sample> getSamples(long startSample, long endSample, Track track, int sequenceNumber) {
+    protected List<Sample> getSamples(long startSample, long endSample, Track track) {
         // since startSample and endSample are one-based substract 1 before addressing list elements
         return track.getSamples().subList(l2i(startSample) - 1, l2i(endSample) - 1);
     }
@@ -397,7 +433,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
      * @return the sample sizes in the given interval
      */
     protected long[] getSampleSizes(long startSample, long endSample, Track track, int sequenceNumber) {
-        List<Sample> samples = getSamples(startSample, endSample, track, sequenceNumber);
+        List<Sample> samples = getSamples(startSample, endSample, track);
 
         long[] sampleSizes = new long[samples.size()];
         for (int i = 0; i < sampleSizes.length; i++) {
