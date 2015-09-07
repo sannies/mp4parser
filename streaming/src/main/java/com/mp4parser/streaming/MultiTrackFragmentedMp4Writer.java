@@ -85,10 +85,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     public void close() throws IOException {
         this.closed = true;
         es.shutdown();
-        for (StreamingTrack streamingTrack : source) {
-            streamingTrack.close();
-        }
-
+        List<StreamingTrack> source = new LinkedList<StreamingTrack>(this.source);
         Collections.sort(source, new Comparator<StreamingTrack>() {
             public int compare(StreamingTrack o1, StreamingTrack o2) {
                 return currentFragmentStartTime.get(o1).compareTo(currentFragmentStartTime.get(o2));
@@ -96,6 +93,9 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         });
         for (StreamingTrack streamingTrack : source) {
             consumeSample(streamingTrack, FINAL_SAMPLE);
+        }
+        for (StreamingTrack streamingTrack : source) {
+            streamingTrack.close();
         }
 
         try {
