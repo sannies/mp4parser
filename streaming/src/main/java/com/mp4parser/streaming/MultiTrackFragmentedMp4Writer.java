@@ -62,9 +62,11 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         }
         for (StreamingTrack streamingTrack : source) {
             if (streamingTrack.getTrackExtension(TrackIdTrackExtension.class) == null) {
-                ArrayList<Long> ts = new ArrayList<Long>(trackIds);
-                Collections.sort(ts);
-                TrackIdTrackExtension tiExt = new TrackIdTrackExtension(ts.size() > 0 ? (ts.get(ts.size() - 1) + 1) : 1);
+                long maxTrackId = 1;
+                for (Long trackId : trackIds) {
+                    maxTrackId = Math.max(trackId, maxTrackId);
+                }
+                TrackIdTrackExtension tiExt = new TrackIdTrackExtension(maxTrackId + 1);
                 trackIds.add(tiExt.getTrackId());
                 streamingTrack.addTrackExtension(tiExt);
             }
