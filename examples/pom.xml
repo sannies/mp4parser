@@ -5,27 +5,27 @@
 
     <artifactId>examples</artifactId>
     <name>ISO Parser Examples</name>
-    <version>1.9.6-SNAPHSOT</version>
+    <version>1.9.6-SNAPSHOT</version>
     <parent>
         <groupId>com.mp4parser</groupId>
         <artifactId>mp4parser-project</artifactId>
-        <version>1.9.6-SNAPHSOT</version>
+        <version>1.9.6-SNAPSHOT</version>
     </parent>
     <dependencies>
         <dependency>
             <groupId>com.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.9.6-SNAPHSOT</version>
+            <version>1.9.6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.mp4parser</groupId>
             <artifactId>muxer</artifactId>
-            <version>1.9.6-SNAPHSOT</version>
+            <version>1.9.6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.mp4parser</groupId>
             <artifactId>streaming</artifactId>
-            <version>1.9.6-SNAPHSOT</version>
+            <version>1.9.6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>xom</groupId>

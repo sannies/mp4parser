@@ -3,7 +3,7 @@
     <parent>
         <artifactId>mp4parser-project</artifactId>
         <groupId>com.mp4parser</groupId>
-        <version>1.9.6-SNAPHSOT</version>
+        <version>1.9.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,12 +12,12 @@
     <dependency>
         <groupId>com.mp4parser</groupId>
         <artifactId>isoparser</artifactId>
-        <version>1.9.6-SNAPHSOT</version>
+        <version>1.9.6-SNAPSHOT</version>
     </dependency>
     <dependency>
         <groupId>com.mp4parser</groupId>
         <artifactId>muxer</artifactId>
-        <version>1.9.6-SNAPHSOT</version>
+        <version>1.9.6-SNAPSHOT</version>
     </dependency>
 </dependencies>
 
