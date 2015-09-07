@@ -161,8 +161,7 @@ public class DiscardingByteArrayOutputStream extends OutputStream {
      * platform's default character set. The length of the new <tt>String</tt>
      * is a function of the character set, and hence may not be equal to the
      * size of the buffer.
-     * <p/>
-     * <p> This method always replaces malformed-input and unmappable-character
+     * This method always replaces malformed-input and unmappable-character
      * sequences with the default replacement string for the platform's
      * default character set. The {@linkplain java.nio.charset.CharsetDecoder}
      * class should be used when more control over the decoding process is
@@ -186,8 +185,6 @@ public class DiscardingByteArrayOutputStream extends OutputStream {
 
     /**
      * Returns the last index that is available.
-     *
-     * @return
      */
     public synchronized long available() {
         return startOffset + count;
