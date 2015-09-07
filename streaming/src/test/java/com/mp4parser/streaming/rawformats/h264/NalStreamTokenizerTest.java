@@ -1,6 +1,7 @@
 package com.mp4parser.streaming.rawformats.h264;
 
 import com.mp4parser.tools.Hex;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -18,9 +19,12 @@ public class NalStreamTokenizerTest {
 
         byte[] nal;
 
-
+        int i = 0;
         while ((nal = nst.getNext()) != null) {
-            System.err.println(Hex.encodeHex(nal));
+            /// System.err.println(Hex.encodeHex(nal));
+            i++;
         }
+        Assert.assertEquals(1019, i);
+        // not much of a test but hey ... better than nothing
     }
 }
