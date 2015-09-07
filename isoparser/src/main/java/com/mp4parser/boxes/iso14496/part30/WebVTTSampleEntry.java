@@ -11,7 +11,6 @@ import java.nio.channels.WritableByteChannel;
 
 /**
  * Sample Entry for WebVTT subtitles.
- * <p/>
  * <pre>
  * class WVTTSampleEntry() extends PlainTextSampleEntry (‘wvtt’){
  *   WebVTTConfigurationBox config;
