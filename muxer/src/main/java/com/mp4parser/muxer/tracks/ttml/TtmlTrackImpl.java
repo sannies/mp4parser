@@ -214,14 +214,24 @@ public class TtmlTrackImpl extends AbstractTrack {
             });
         }
 
-        xmlSubtitleSampleEntry.setNamespace(String.join(",", getAllNamespaces(ttmls.get(0))));
+
+        xmlSubtitleSampleEntry.setNamespace(join(",", getAllNamespaces(ttmls.get(0))));
         xmlSubtitleSampleEntry.setSchemaLocation("");
-        xmlSubtitleSampleEntry.setAuxiliaryMimeTypes(String.join(",", new ArrayList<String>(mimeTypes).toArray(new String[mimeTypes.size()])));
+        xmlSubtitleSampleEntry.setAuxiliaryMimeTypes(join(",", new ArrayList<String>(mimeTypes).toArray(new String[mimeTypes.size()])));
         sampleDescriptionBox.addBox(xmlSubtitleSampleEntry);
         trackMetaData.setTimescale(30000);
         trackMetaData.setLayer(65535);
 
 
+    }
+
+    private static String join(String joiner, String[] i) {
+        StringBuilder result = new StringBuilder();
+        for (String s : i) {
+            result.append(s).append(joiner);
+        }
+        result.setLength(result.length()-1);
+        return result.toString();
     }
 
 
