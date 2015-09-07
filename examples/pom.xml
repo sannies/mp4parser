@@ -7,23 +7,23 @@
     <name>ISO Parser Examples</name>
     <version>1.9.5-SNAPSHOT</version>
     <parent>
-        <groupId>com.googlecode.mp4parser</groupId>
+        <groupId>com.mp4parser</groupId>
         <artifactId>mp4parser-project</artifactId>
         <version>1.9.5-SNAPSHOT</version>
     </parent>
     <dependencies>
         <dependency>
-            <groupId>com.googlecode.mp4parser</groupId>
+            <groupId>com.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
             <version>1.9.5-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.googlecode.mp4parser</groupId>
+            <groupId>com.mp4parser</groupId>
             <artifactId>muxer</artifactId>
             <version>1.9.5-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.googlecode.mp4parser</groupId>
+            <groupId>com.mp4parser</groupId>
             <artifactId>streaming</artifactId>
             <version>1.9.5-SNAPSHOT</version>
         </dependency>
