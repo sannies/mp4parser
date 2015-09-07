@@ -3,7 +3,7 @@
     <parent>
         <artifactId>mp4parser-project</artifactId>
         <groupId>com.googlecode.mp4parser</groupId>
-        <version>1.9.2-SNAPSHOT</version>
+        <version>1.9.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,7 +13,7 @@
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.9.2-SNAPSHOT</version>
+            <version>1.9.2</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
