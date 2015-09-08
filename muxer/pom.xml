@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mp4parser</groupId>
-    <version>1.9.11</version>
+    <version>1.9.12-SNAPSHOT</version>
     <artifactId>muxer</artifactId>
     <name>File Muxer</name>
     <description>This package has a focus on file operation. It can read A/V data from Random Access Datasources</description>
@@ -14,7 +14,7 @@
         <dependency>
             <groupId>com.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.9.11</version>
+            <version>1.9.12-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -92,6 +92,6 @@
     </developers>
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
-        <tag> mp4parser-project-1.9.11</tag>
+        <tag> mp4parser-project-1.9.5</tag>
     </scm>
 </project>
