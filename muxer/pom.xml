@@ -6,6 +6,7 @@
     <version>1.9.12-SNAPSHOT</version>
     <artifactId>muxer</artifactId>
     <name>File Muxer</name>
+    <url>https://github.com/sannies/mp4parser</url>
     <description>This package has a focus on file operation. It can read A/V data from Random Access Datasources</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
