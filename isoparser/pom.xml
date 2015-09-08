@@ -195,11 +195,6 @@
             <name>Nexus Release Repository</name>
             <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
-        <site>
-            <id>mp4parser-svn</id>
-            <name>MP4Parser SVN repository</name>
-            <url>svn:https://mp4parser.googlecode.com/svn/site/${project.version}</url>
-        </site>
     </distributionManagement>
 
     <scm>
