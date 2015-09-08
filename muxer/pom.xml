@@ -5,7 +5,8 @@
     <groupId>com.mp4parser</groupId>
     <version>1.9.11-SNAPSHOT</version>
     <artifactId>muxer</artifactId>
-
+    <name>File Muxer</name>
+    <description>This package has a focus on file operation. It can read A/V data from Random Access Datasources</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
