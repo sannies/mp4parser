@@ -73,5 +73,22 @@
             <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
-
+    <licenses>
+        <license>
+            <name>Apache Software License - Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>sannies</id>
+            <email>Sebastian.Annies@googlemail.com</email>
+        </developer>
+    </developers>
+    <scm>
+        <url>https://github.com/sannies/mp4parser</url>
+        <tag> mp4parser-project-1.9.5</tag>
+    </scm>
 </project>
