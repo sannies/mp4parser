@@ -3,14 +3,17 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mp4parser</groupId>
-    <version>1.9.8-SNAPSHOT</version>
+    <version>1.9.8</version>
     <artifactId>muxer</artifactId>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.9.8-SNAPSHOT</version>
+            <version>1.9.8</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
