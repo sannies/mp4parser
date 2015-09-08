@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mp4parser</groupId>
     <artifactId>streaming</artifactId>
-    <version>1.9.11-SNAPSHOT</version>
+    <version>1.9.11</version>
     <dependencies>
         <dependency>
             <groupId>com.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.9.11-SNAPSHOT</version>
+            <version>1.9.11</version>
         </dependency>
         <dependency>
             <groupId>com.mp4parser</groupId>
             <artifactId>muxer</artifactId>
-            <version>1.9.11-SNAPSHOT</version>
+            <version>1.9.11</version>
         </dependency>
     </dependencies>
     <name>Stream Muxer</name>
@@ -91,6 +90,6 @@
     </developers>
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
-        <tag>mp4parser-project-1.9.5</tag>
+        <tag>mp4parser-project-1.9.11</tag>
     </scm>
 </project>
