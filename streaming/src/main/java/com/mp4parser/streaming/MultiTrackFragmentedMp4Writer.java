@@ -273,7 +273,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         public Void call() throws Exception {
             do {
                 try {
-
                     StreamingSample ss;
                     while ((ss = streamingTrack.getSamples().poll(timeOut, TimeUnit.MILLISECONDS)) != null) {
                         //System.out.println(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " Before consume");
@@ -286,7 +285,8 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
                     }
                     forceEndOfStream++;
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    LOG.info(streamingTrack + " was interrupted.");
+                    return null;
                 }
             } while (streamingTrack.hasMoreSamples() && forceEndOfStream < maxTimeOuts && !closed);
             LOG.info("Finished consuming " + streamingTrack);
@@ -295,7 +295,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     }
 
     public void write() throws IOException {
-        LOG.info("Start writing MP4");
         final WritableByteChannel out = Channels.newChannel(outputStream);
         Container header = createHeader();
         for (Box box : header.getBoxes()) {
@@ -303,37 +302,52 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         }
 
         es = Executors.newFixedThreadPool(source.size());
+        ExecutorCompletionService<Void> ecs = new ExecutorCompletionService<Void>(es);
         LOG.info("Start receiving from tracks " + source);
         List<Future<Void>> futures = new ArrayList<Future<Void>>();
         for (StreamingTrack streamingTrack : source) {
-            futures.add(es.submit(new ConsumeSamplesCallable(streamingTrack)));
+            futures.add(ecs.submit(new ConsumeSamplesCallable(streamingTrack)));
         }
 
-        try {
-            //System.out.println("-1- es.awaitTermination in MultiTrackFragmentedMp4Writer");
-            es.shutdown();
-            es.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-            //System.out.println("-2- es.awaitTermination in MultiTrackFragmentedMp4Writer");
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        close();
-        for (Future<Void> future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                if (e.getCause() instanceof RuntimeException) {
-                    throw (RuntimeException) e.getCause();
-                } else if (e.getCause() instanceof IOException) {
-                    throw (IOException) e.getCause();
+        boolean complete = false;
+        while (!complete) {
+            complete = true;
+            Iterator<Future<Void>> futuresIt = futures.iterator();
+            while (futuresIt.hasNext()) {
+                if (futuresIt.next().isDone()) {
+                    futuresIt.remove();
                 } else {
-                    throw new IOException(e.getCause());
+                    complete = false;
+                }
+            }
+
+            if (!futures.isEmpty()) {
+                try {
+                    ecs.take().get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
+                } catch (ExecutionException e) {
+                    System.out.println("Execution exception " + e.getMessage());
+                    close();
+                    complete = true;
+                    for (Future<Void> future : futures) {
+                        if (!future.isDone()) {
+                            System.out.println("Cancelling " + future);
+                            future.cancel(true);
+                        }
+                    }
                 }
             }
         }
+
+        try {
+            es.shutdown();
+            es.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 
     protected Container createHeader() {
