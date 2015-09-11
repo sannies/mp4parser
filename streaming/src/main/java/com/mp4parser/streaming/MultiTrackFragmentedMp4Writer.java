@@ -294,7 +294,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         }
     }
 
-    public void write() throws IOException {
+    public Void call() throws IOException {
         final WritableByteChannel out = Channels.newChannel(outputStream);
         Container header = createHeader();
         for (Box box : header.getBoxes()) {
@@ -347,7 +347,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
+        return null;
     }
 
     protected Container createHeader() {

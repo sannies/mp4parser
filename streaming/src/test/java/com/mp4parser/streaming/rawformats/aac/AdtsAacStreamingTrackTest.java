@@ -38,7 +38,7 @@ public class AdtsAacStreamingTrackTest {
         MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), baos);
         //MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new ByteArrayOutputStream());
         Future<Void> f = es.submit(b);
-        writer.write();
+        writer.call();
         es.shutdown();
         es.awaitTermination(1, TimeUnit.MINUTES);
         try {
