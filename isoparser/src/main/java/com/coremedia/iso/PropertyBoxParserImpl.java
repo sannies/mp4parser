@@ -16,6 +16,9 @@
 package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.Container;
+import com.googlecode.mp4parser.AbstractBox;
+import com.googlecode.mp4parser.DataSource;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -35,7 +38,10 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     Properties mapping;
     Pattern constuctorPattern = Pattern.compile("(.*)\\((.*?)\\)");
 
-    public PropertyBoxParserImpl(String... customProperties) {
+    private final boolean parseDetails;
+
+    public PropertyBoxParserImpl(boolean parseDetails, String... customProperties) {
+        this.parseDetails = parseDetails;
         InputStream is = getClass().getResourceAsStream("/isoparser-default.properties");
         try {
             mapping = new Properties();
@@ -72,10 +78,18 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         }
     }
 
-    public PropertyBoxParserImpl(Properties mapping) {
+    public PropertyBoxParserImpl(String... customProperties) {
+        this(true, customProperties);
+    }
+
+    public PropertyBoxParserImpl(boolean parseDetails, Properties mapping) {
+        this.parseDetails = parseDetails;
         this.mapping = mapping;
     }
 
+    public PropertyBoxParserImpl(Properties mapping) {
+        this(true, mapping);
+    }
 
     @Override
     public Box createBox(String type, byte[] userType, String parent) {
@@ -172,5 +186,20 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
             }
         }
 
+    }
+
+    @Override
+    public Box parseBox(DataSource byteChannel, Container parent) throws IOException {
+        Box box = super.parseBox(byteChannel, parent);
+
+        if (parseDetails && box instanceof AbstractBox) {
+            AbstractBox abstractBox = (AbstractBox)box;
+            if (!abstractBox.isParsed()) {
+                //System.err.println(String.format("parsed detail %s", box.getClass().getSimpleName()));
+                abstractBox.parseDetails();
+            }
+        }
+
+        return box;
     }
 }
