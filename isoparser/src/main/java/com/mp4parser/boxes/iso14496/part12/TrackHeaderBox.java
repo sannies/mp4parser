@@ -22,6 +22,7 @@ import com.mp4parser.tools.IsoTypeWriter;
 import com.mp4parser.support.AbstractFullBox;
 import com.mp4parser.tools.DateHelper;
 import com.mp4parser.support.Matrix;
+import com.mp4parser.support.Logger;
 
 import java.nio.ByteBuffer;
 import java.util.Date;
@@ -37,6 +38,7 @@ import java.util.Date;
  * to 0, so that they are ignored for local playback and preview.
  */
 public class TrackHeaderBox extends AbstractFullBox {
+    private static Logger LOG = Logger.getLogger(TrackHeaderBox.class);
 
     public static final String TYPE = "tkhd";
 
@@ -117,17 +119,18 @@ public class TrackHeaderBox extends AbstractFullBox {
             trackId = IsoTypeReader.readUInt32(content);
             IsoTypeReader.readUInt32(content);
             duration = content.getLong();
-            if (duration < -1) {
-                throw new RuntimeException("The tracks duration is bigger than Long.MAX_VALUE");
-            }
-
         } else {
             creationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             modificationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             trackId = IsoTypeReader.readUInt32(content);
             IsoTypeReader.readUInt32(content);
-            duration = IsoTypeReader.readUInt32(content);
+            duration = content.getInt();
         } // 196
+
+        if (duration < -1) {
+            LOG.logWarn("tkhd duration is not in expected range");
+        }
+
         IsoTypeReader.readUInt32(content);
         IsoTypeReader.readUInt32(content);
         layer = IsoTypeReader.readUInt16(content);    // 204
@@ -146,13 +149,13 @@ public class TrackHeaderBox extends AbstractFullBox {
             IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, trackId);
             IsoTypeWriter.writeUInt32(byteBuffer, 0);
-            IsoTypeWriter.writeUInt64(byteBuffer, duration);
+            byteBuffer.putLong(duration);
         } else {
             IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(creationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, trackId);
             IsoTypeWriter.writeUInt32(byteBuffer, 0);
-            IsoTypeWriter.writeUInt32(byteBuffer, duration);
+            byteBuffer.putInt((int) duration);
         } // 196
         IsoTypeWriter.writeUInt32(byteBuffer, 0);
         IsoTypeWriter.writeUInt32(byteBuffer, 0);

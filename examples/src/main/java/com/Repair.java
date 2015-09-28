@@ -13,10 +13,10 @@ import java.nio.channels.WritableByteChannel;
 
 public class Repair {
     public static void main(String[] args) throws IOException {
-        Movie m = MovieCreator.build("C:\\dev\\drmtoday_cloud_encoder\\live.mp4");
+        Movie m = MovieCreator.build("c:\\content\\tears-of-steel-1080p-4min-handbraked.mp4");
         DefaultMp4Builder defaultMp4Builder = new DefaultMp4Builder();
         Container c = defaultMp4Builder.build(m);
-        FileOutputStream fos = new FileOutputStream("C:\\dev\\drmtoday_cloud_encoder\\live-repaired.mp4");
+        FileOutputStream fos = new FileOutputStream("C:\\content\\out.mp4");
         WritableByteChannel wbc = Channels.newChannel(fos);
         for (Box box : c.getBoxes()) {
             box.getBox(wbc);

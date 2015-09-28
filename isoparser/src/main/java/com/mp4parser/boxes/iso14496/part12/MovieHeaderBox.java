@@ -21,6 +21,7 @@ import com.mp4parser.tools.IsoTypeWriter;
 import com.mp4parser.support.AbstractFullBox;
 import com.mp4parser.tools.DateHelper;
 import com.mp4parser.support.Matrix;
+import com.mp4parser.support.Logger;
 
 import java.nio.ByteBuffer;
 import java.util.Date;
@@ -37,6 +38,8 @@ import java.util.Date;
  * considered as a whole.
  */
 public class MovieHeaderBox extends AbstractFullBox {
+    private static Logger LOG = Logger.getLogger(MovieHeaderBox.class);
+
     private Date creationTime;
     private Date modificationTime;
     private long timescale;
@@ -110,13 +113,19 @@ public class MovieHeaderBox extends AbstractFullBox {
             creationTime = DateHelper.convert(IsoTypeReader.readUInt64(content));
             modificationTime = DateHelper.convert(IsoTypeReader.readUInt64(content));
             timescale = IsoTypeReader.readUInt32(content);
-            duration = IsoTypeReader.readUInt64(content);
+            duration = content.getLong();
+
         } else {
             creationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             modificationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             timescale = IsoTypeReader.readUInt32(content);
-            duration = IsoTypeReader.readUInt32(content);
+            duration = content.getInt();
         }
+        if (duration < -1) {
+            LOG.logWarn("mvhd duration is not in expected range");
+        }
+
+
         rate = IsoTypeReader.readFixedPoint1616(content);
         volume = IsoTypeReader.readFixedPoint88(content);
         IsoTypeReader.readUInt16(content);
@@ -166,12 +175,12 @@ public class MovieHeaderBox extends AbstractFullBox {
             IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(creationTime));
             IsoTypeWriter.writeUInt64(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, timescale);
-            IsoTypeWriter.writeUInt64(byteBuffer, duration);
+            byteBuffer.putLong(duration);
         } else {
             IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(creationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, DateHelper.convert(modificationTime));
             IsoTypeWriter.writeUInt32(byteBuffer, timescale);
-            IsoTypeWriter.writeUInt32(byteBuffer, duration);
+            byteBuffer.putInt((int) duration);
         }
         IsoTypeWriter.writeFixedPoint1616(byteBuffer, rate);
         IsoTypeWriter.writeFixedPoint88(byteBuffer, volume);

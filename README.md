@@ -1,5 +1,7 @@
 <a href='https://pledgie.com/campaigns/28717'><img alt='Click here to lend your support to: MP4Parser and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/28717.png?skin_name=chrome' border='0' ></a> 
-[![Build Status](https://travis-ci.org/sannies/mp4parser.svg?branch=master)](https://travis-ci.org/sannies/mp4parser)
+
+ * Build status: [![Build Status](https://travis-ci.org/sannies/mp4parser.svg?branch=master)](https://travis-ci.org/sannies/mp4parser)
+ * Current central released version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.googlecode.mp4parser/isoparser/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.googlecode.mp4parser/isoparser)
 
 Java MP4 Parser
 ====================
@@ -15,7 +17,7 @@ The library is published to Maven repositories. Each release is pushed to a stag
   <dependency>
     <groupId>com.googlecode.mp4parser</groupId>
     <artifactId>isoparser</artifactId>
-    <version>1.0.5.4</version>
+    <version>1.1.7</version>
   </dependency>
 ```
 

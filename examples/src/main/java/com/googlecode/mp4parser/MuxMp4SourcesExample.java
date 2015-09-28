@@ -43,7 +43,7 @@ public class MuxMp4SourcesExample {
         }
         {
             FragmentedMp4Builder fragmentedMp4Builder = new FragmentedMp4Builder();
-            fragmentedMp4Builder.setIntersectionFinder(new SyncSampleIntersectFinderImpl(countVideo, null, -1));
+            fragmentedMp4Builder.setFragmenter(new SyncSampleIntersectFinderImpl(countVideo, null, -1));
             Container out = fragmentedMp4Builder.build(countVideo);
             FileOutputStream fos = new FileOutputStream(new File("output-frag.mp4"));
             out.writeContainer(fos.getChannel());
