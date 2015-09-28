@@ -1,6 +1,7 @@
-package com.mp4parser;
+package com.mp4parser.examples.metadata;
 
 
+import com.mp4parser.IsoFile;
 import com.mp4parser.boxes.iso14496.part12.XmlBox;
 import com.mp4parser.tools.Path;
 

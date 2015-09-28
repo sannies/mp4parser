@@ -1,6 +1,8 @@
-package com.mp4parser;
+package com.mp4parser.examples.metadata;
 
 
+import com.mp4parser.Box;
+import com.mp4parser.IsoFile;
 import com.mp4parser.boxes.iso14496.part12.*;
 import com.mp4parser.tools.Path;
 
@@ -44,7 +46,7 @@ public class MetaDataInsert {
 
 
     private boolean needsOffsetCorrection(IsoFile isoFile) {
-        if (Path.getPath(isoFile, "/moov[0]/mvex[0]") != null) {
+        if (Path.getPath(isoFile, "moov[0]/mvex[0]") != null) {
             // Fragmented files don't need a correction
             return false;
         } else {
