@@ -8,16 +8,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
-/**
- * Created by sannies on 1/9/14.
- */
 public class TimeBasedFragmenterTest {
 
     /**
@@ -33,7 +29,7 @@ public class TimeBasedFragmenterTest {
                 return new Date(0);
             }
         };
-        mp4Builder.setIntersectionFinder(new TimeBasedFragmenter(movie, 2));
+        mp4Builder.setFragmenter(new TimeBasedFragmenter(2));
         Container fMp4 = mp4Builder.build(movie);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         fMp4.writeContainer(Channels.newChannel(baos));

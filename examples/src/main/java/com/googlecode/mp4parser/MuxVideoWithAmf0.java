@@ -36,7 +36,7 @@ public class MuxVideoWithAmf0 {
         video.addTrack(amf0Track);
 
         FragmentedMp4Builder fragmentedMp4Builder = new FragmentedMp4Builder();
-        fragmentedMp4Builder.setIntersectionFinder(new TimeBasedFragmenter(video, 2));
+        fragmentedMp4Builder.setFragmenter(new TimeBasedFragmenter( 2));
 
         Container out = fragmentedMp4Builder.build(video);
         FileOutputStream fos = new FileOutputStream(new File(String.format("output.mp4")));

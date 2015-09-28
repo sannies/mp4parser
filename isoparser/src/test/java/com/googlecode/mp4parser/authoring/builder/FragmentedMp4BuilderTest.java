@@ -5,12 +5,11 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import org.junit.Test;
 
-import java.io.FileOutputStream;
-
-import static org.junit.Assert.*;
+import java.io.ByteArrayOutputStream;
+import java.nio.channels.Channels;
 
 /**
- * Created by sannies on 04.09.2015.
+ * Not really a test but at least makes sure muxing kind of works
  */
 public class FragmentedMp4BuilderTest {
     @Test
@@ -23,10 +22,10 @@ public class FragmentedMp4BuilderTest {
         m.addTrack(a.getTracks().get(0));
 
         FragmentedMp4Builder fragmentedMp4Builder = new FragmentedMp4Builder();
-        fragmentedMp4Builder.setIntersectionFinder(new TimeBasedFragmenter(m, 5));
+        fragmentedMp4Builder.setFragmenter(new TimeBasedFragmenter(5));
 
         Container c = fragmentedMp4Builder.build(m);
-        // c.writeContainer(new FileOutputStream("output.mp4").getChannel());
+        c.writeContainer(Channels.newChannel(new ByteArrayOutputStream()));
 
     }
 }

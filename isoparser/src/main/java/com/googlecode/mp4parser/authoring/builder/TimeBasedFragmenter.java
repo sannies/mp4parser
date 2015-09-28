@@ -26,15 +26,11 @@ import java.util.Arrays;
  * snippets.
  */
 public class TimeBasedFragmenter implements Fragmenter {
-    private int fragmentLength = 2;
-    private Movie movie;
+    private double fragmentLength = 2;
 
-
-    public TimeBasedFragmenter(Movie movie, int fragmentLength) {
-        this.movie = movie;
+    public TimeBasedFragmenter(double fragmentLength) {
         this.fragmentLength = fragmentLength;
     }
-
 
     /**
      * {@inheritDoc}
@@ -58,4 +54,8 @@ public class TimeBasedFragmenter implements Fragmenter {
         return segmentStartSamples;
     }
 
+    public static void main(String[] args) {
+        DefaultMp4Builder b = new DefaultMp4Builder();
+        b.setFragmenter(new TimeBasedFragmenter(0.5));
+    }
 }

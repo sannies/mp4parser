@@ -90,7 +90,7 @@ public class DefaultMp4Builder implements Mp4Builder {
      */
     public Container build(Movie movie) {
         if (fragmenter == null) {
-            fragmenter = new TimeBasedFragmenter(movie, 2);
+            fragmenter = new TimeBasedFragmenter(2);
         }
         LOG.fine("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
@@ -112,7 +112,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         Map<Track, int[]> chunks = new HashMap<Track, int[]>();
         for (Track track : movie.getTracks()) {
-            chunks.put(track, getChunkSizes(track, movie));
+            chunks.put(track, getChunkSizes(track));
         }
         Box moov = createMovieBox(movie, chunks);
         isoFile.addBox(moov);
@@ -192,7 +192,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         long duration = 0;
 
         for (Track track : movie.getTracks()) {
-            long tracksDuration = 0;
+            long tracksDuration;
 
             if (track.getEdits() == null || track.getEdits().isEmpty()) {
                 tracksDuration = (track.getDuration() * movieTimeScale / track.getTrackMetaData().getTimescale());
@@ -599,11 +599,10 @@ public class DefaultMp4Builder implements Mp4Builder {
     /**
      * Gets the chunk sizes for the given track.
      *
-     * @param track
-     * @param movie
-     * @return
+     * @param track the track we are talking about
+     * @return the size of each chunk in number of samples
      */
-    int[] getChunkSizes(Track track, Movie movie) {
+    int[] getChunkSizes(Track track) {
 
         long[] referenceChunkStarts = fragmenter.sampleNumbers(track);
         int[] chunkSizes = new int[referenceChunkStarts.length];

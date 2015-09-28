@@ -51,7 +51,7 @@ import static com.googlecode.mp4parser.util.CastUtils.l2i;
 public class FragmentedMp4Builder implements Mp4Builder {
     private static final Logger LOG = Logger.getLogger(FragmentedMp4Builder.class.getName());
 
-    protected Fragmenter intersectionFinder;
+    protected Fragmenter fragmenter;
 
     public FragmentedMp4Builder() {
     }
@@ -112,7 +112,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         HashMap<Track, Double> track2currentTime = new HashMap<Track, Double>();
 
         for (Track track : movie.getTracks()) {
-            long[] intersects = intersectionFinder.sampleNumbers(track);
+            long[] intersects = fragmenter.sampleNumbers(track);
             intersectionMap.put(track, intersects);
             track2currentTime.put(track, 0.0);
 
@@ -192,15 +192,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
      */
     public Container build(Movie movie) {
         LOG.fine("Creating movie " + movie);
-        if (intersectionFinder == null) {
-            Track refTrack = null;
-            for (Track track : movie.getTracks()) {
-                if (track.getHandler().equals("vide")) {
-                    refTrack = track;
-                    break;
-                }
-            }
-            intersectionFinder = new SyncSampleIntersectFinderImpl(movie, refTrack, -1);
+        if (fragmenter == null) {
+            fragmenter = new TimeBasedFragmenter(2);
         }
         BasicContainer isoFile = new BasicContainer();
 
@@ -888,12 +881,12 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return dinf;
     }
 
-    public Fragmenter getFragmentIntersectionFinder() {
-        return intersectionFinder;
+    public Fragmenter getFragmenter() {
+        return fragmenter;
     }
 
-    public void setIntersectionFinder(Fragmenter intersectionFinder) {
-        this.intersectionFinder = intersectionFinder;
+    public void setFragmenter(Fragmenter fragmenter) {
+        this.fragmenter = fragmenter;
     }
 
 
