@@ -45,9 +45,8 @@ public class H264AACExample {
         allCallables.forEach(callable -> allFutures.add(ecs.submit(callable)));
         System.out.println("Reading and writing started.");
 
-        boolean complete = false;
 
-        while (!complete) {
+        while (true) {
             allFutures.removeIf(Future::isDone);
             if (!allFutures.isEmpty()) {
                 try {
@@ -57,13 +56,13 @@ public class H264AACExample {
                     throw new RuntimeException(e);
                 } catch (ExecutionException e) {
                     System.out.println("Execution exception " + e.getMessage());
-                    complete = true;
                     for (Future<Void> future : allFutures) {
                         if (!future.isDone()) {
                             System.out.println("Cancelling " + future);
                             future.cancel(true);
                         }
                     }
+                    break;
                 }
             } else {
                 break;
