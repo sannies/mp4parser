@@ -41,12 +41,10 @@ import java.util.logging.Logger;
  * also be referenced and used.
  */
 public final class MediaDataBox implements Box {
-    private static Logger LOG = Logger.getLogger(MediaDataBox.class.getName());
 
     public static final String TYPE = "mdat";
 
     Container parent;
-    boolean largeBox = false;
 
     // These fields are for the special case of a DataSource as input.
     private DataSource dataSource;
