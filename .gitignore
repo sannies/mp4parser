@@ -4,3 +4,11 @@
 *.jar
 *.war
 *.ear
+
+.idea
+*.iml
+
+examples/target
+isoparser/target
+isoparser/aac-sample.mp4
+isoparser/ac3-sample.mp4
