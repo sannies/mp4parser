@@ -9,7 +9,6 @@ import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -44,7 +43,7 @@ public class MuxMp4SourcesExample {
         }
         {
             FragmentedMp4Builder fragmentedMp4Builder = new FragmentedMp4Builder();
-            fragmentedMp4Builder.setIntersectionFinder(new SyncSampleIntersectFinderImpl(countVideo, null, -1));
+            fragmentedMp4Builder.setFragmenter(new SyncSampleIntersectFinderImpl(countVideo, null, -1));
             Container out = fragmentedMp4Builder.build(countVideo);
             FileOutputStream fos = new FileOutputStream(new File("output-frag.mp4"));
             out.writeContainer(fos.getChannel());

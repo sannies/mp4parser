@@ -43,13 +43,14 @@ public class AppendTrack extends AbstractTrack {
     private static Logger LOG = Logger.getLogger(AppendTrack.class);
     Track[] tracks;
     SampleDescriptionBox stsd;
+    List<Sample> lists;
 
-    public static String appendTracknames (Track... tracks) {
+    public static String appendTracknames(Track... tracks) {
         String name = "";
         for (Track track : tracks) {
             name += track.getName() + " + ";
         }
-        return name.substring(0, name.length() -3);
+        return name.substring(0, name.length() - 3);
     }
 
     public AppendTrack(Track... tracks) throws IOException {
@@ -65,6 +66,12 @@ public class AppendTrack extends AbstractTrack {
                 stsd = mergeStsds(stsd, track.getSampleDescriptionBox());
 
             }
+        }
+        lists = new ArrayList<Sample>();
+
+        for (Track track : tracks) {
+            System.err.println("Track " + track + " is about to be appended");
+            lists.addAll(track.getSamples());
         }
     }
 
@@ -366,11 +373,7 @@ public class AppendTrack extends AbstractTrack {
     }
 
     public List<Sample> getSamples() {
-        ArrayList<Sample> lists = new ArrayList<Sample>();
 
-        for (Track track : tracks) {
-            lists.addAll(track.getSamples());
-        }
 
         return lists;
     }
@@ -423,14 +426,14 @@ public class AppendTrack extends AbstractTrack {
         if (tracks[0].getSyncSamples() != null && tracks[0].getSyncSamples().length > 0) {
             int numSyncSamples = 0;
             for (Track track : tracks) {
-                numSyncSamples += track.getSyncSamples()!=null?track.getSyncSamples().length:0;
+                numSyncSamples += track.getSyncSamples() != null ? track.getSyncSamples().length : 0;
             }
             long[] returnSyncSamples = new long[numSyncSamples];
 
             int pos = 0;
             long samplesBefore = 0;
             for (Track track : tracks) {
-                if (track.getSyncSamples()!=null) {
+                if (track.getSyncSamples() != null) {
                     for (long l : track.getSyncSamples()) {
                         returnSyncSamples[pos++] = samplesBefore + l;
                     }

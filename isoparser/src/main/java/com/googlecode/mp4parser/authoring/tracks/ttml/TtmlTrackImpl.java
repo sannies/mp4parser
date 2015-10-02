@@ -125,10 +125,10 @@ public class TtmlTrackImpl extends AbstractTrack {
         return new ArrayList<String>(mimeTypes);
     }
 
-    protected List<byte[]> extractImages(Document ttml) throws XPathExpressionException, URISyntaxException, IOException {
+    protected static List<byte[]> extractImages(Document ttml) throws XPathExpressionException, URISyntaxException, IOException {
         XPathFactory xPathfactory = XPathFactory.newInstance();
         XPath xpath = xPathfactory.newXPath();
-        XPathExpression expr = xpath.compile("//*/@smpte:backgroundImage");
+        XPathExpression expr = xpath.compile("//*/@backgroundImage");
         NodeList nl = (NodeList) expr.evaluate(ttml, XPathConstants.NODESET);
 
         LinkedHashMap<String, String> internalNames2Original = new LinkedHashMap<String, String>();
@@ -216,9 +216,10 @@ public class TtmlTrackImpl extends AbstractTrack {
             });
         }
 
-        xmlSubtitleSampleEntry.setNamespace(String.join(",", getAllNamespaces(ttmls.get(0))));
+
+        xmlSubtitleSampleEntry.setNamespace(join(",", getAllNamespaces(ttmls.get(0))));
         xmlSubtitleSampleEntry.setSchemaLocation("");
-        xmlSubtitleSampleEntry.setAuxiliaryMimeTypes(String.join(",", new ArrayList<String>(mimeTypes).toArray(new String[mimeTypes.size()])));
+        xmlSubtitleSampleEntry.setAuxiliaryMimeTypes(join(",", new ArrayList<String>(mimeTypes).toArray(new String[mimeTypes.size()])));
         sampleDescriptionBox.addBox(xmlSubtitleSampleEntry);
         trackMetaData.setTimescale(30000);
         trackMetaData.setLayer(65535);
@@ -226,7 +227,36 @@ public class TtmlTrackImpl extends AbstractTrack {
 
     }
 
-    private byte[] streamToByteArray(InputStream input) throws IOException {
+    private static String join(String joiner, String[] i) {
+        StringBuilder result = new StringBuilder();
+        for (String s : i) {
+            result.append(s).append(joiner);
+        }
+        result.setLength(result.length()-1);
+        return result.toString();
+    }
+
+
+    private static long latestTimestamp(Document document) {
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        XPath xpath = xPathfactory.newXPath();
+        xpath.setNamespaceContext(TtmlHelpers.NAMESPACE_CONTEXT);
+
+        try {
+            XPathExpression xp = xpath.compile("//*[name()='p']");
+            NodeList timedNodes = (NodeList) xp.evaluate(document, XPathConstants.NODESET);
+            long lastTimeStamp = 0;
+            for (int i = 0; i < timedNodes.getLength(); i++) {
+                lastTimeStamp = Math.max(getEndTime(timedNodes.item(i)), lastTimeStamp);
+            }
+            return lastTimeStamp;
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private static byte[] streamToByteArray(InputStream input) throws IOException {
         byte[] buffer = new byte[8096];
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 

@@ -57,6 +57,7 @@ public class Mp4TrackImpl extends AbstractTrack {
      */
     public Mp4TrackImpl(String name, TrackBox trackBox, IsoFile... fragments) {
         super(name);
+        this.trackBox = trackBox;
         final long trackId = trackBox.getTrackHeaderBox().getTrackId();
         samples = new SampleList(trackBox, fragments);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
@@ -261,8 +262,10 @@ public class Mp4TrackImpl extends AbstractTrack {
         if (c instanceof BasicContainer) {
             ((BasicContainer) c).close();
         }
-        for (IsoFile fragment : fragments) {
-            fragment.close();
+        if (fragments != null) {
+            for (IsoFile fragment : fragments) {
+                fragment.close();
+            }
         }
 
 
