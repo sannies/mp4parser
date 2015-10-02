@@ -9,24 +9,24 @@ import com.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
 import com.mp4parser.boxes.iso14496.part12.TrackBox;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.mp4parser.tools.CastUtils.l2i;
 
 
 public class DefaultMp4SampleList extends AbstractList<Sample> {
-    //private static final long MAX_MAP_SIZE = 4096 * 1024;
-    private static final long MAX_MAP_SIZE = 1024 * 1024 * 256; // Limit maximum mem map to 512MB
+    private static final Logger LOG = Logger.getLogger(DefaultMp4SampleList.class);
 
     Container topLevel;
     TrackBox trackBox = null;
-    SoftReference<ByteBuffer[]>[] cache = null;
+    ByteBuffer[] cache = null;
     int[] chunkNumsStartSampleNum;
     long[] chunkOffsets;
     long[] chunkSizes;
@@ -53,7 +53,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         chunkOffsets = trackBox.getSampleTableBox().getChunkOffsetBox().getChunkOffsets();
         chunkSizes = new long[chunkOffsets.length];
 
-        cache = (SoftReference<ByteBuffer[]>[]) Array.newInstance(SoftReference.class, chunkOffsets.length);
+        cache = new ByteBuffer[chunkOffsets.length];
         sampleOffsetsWithinChunks = new long[chunkOffsets.length][];
         ssb = trackBox.getSampleTableBox().getSampleSizeBox();
         List<SampleToChunkBox.Entry> s2chunkEntries = trackBox.getSampleTableBox().getSampleToChunkBox().getEntries();
@@ -168,49 +168,31 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
 
         int chunkNumber = getChunkForSample(index);
         int chunkStartSample = chunkNumsStartSampleNum[chunkNumber] - 1;
-        long chunkOffset = chunkOffsets[l2i(chunkNumber)];
+        final long chunkOffset = chunkOffsets[l2i(chunkNumber)];
         int sampleInChunk = index - chunkStartSample;
         long[] sampleOffsetsWithinChunk = sampleOffsetsWithinChunks[l2i(chunkNumber)];
-        long offsetWithInChunk = sampleOffsetsWithinChunk[sampleInChunk];
+        final long offsetWithInChunk = sampleOffsetsWithinChunk[sampleInChunk];
 
 
-        SoftReference<ByteBuffer[]> chunkBuffersSr = cache[l2i(chunkNumber)];
-        ByteBuffer[] chunkBuffers = chunkBuffersSr != null ? chunkBuffersSr.get() : null;
-        if (chunkBuffers == null) {
-            List<ByteBuffer> _chunkBuffers = new ArrayList<ByteBuffer>();
-            long currentStart = 0;
+
+        ByteBuffer chunkBuffer = cache[chunkNumber];
+        if (chunkBuffer == null) {
+
             try {
-                for (int i = 0; i < sampleOffsetsWithinChunk.length; i++) {
-                    if (sampleOffsetsWithinChunk[i] + ssb.getSampleSizeAtIndex(i + chunkStartSample) - currentStart > MAX_MAP_SIZE) {
-                        _chunkBuffers.add(randomAccess.get(
-                                chunkOffset + currentStart,
-                                (sampleOffsetsWithinChunk[i] - currentStart)));
-                        currentStart = sampleOffsetsWithinChunk[i];
-                    }
-                }
-                _chunkBuffers.add(randomAccess.get(chunkOffset + currentStart,
-                        (-currentStart + sampleOffsetsWithinChunk[sampleOffsetsWithinChunk.length - 1] + ssb.getSampleSizeAtIndex(chunkStartSample + sampleOffsetsWithinChunk.length - 1))));
-                chunkBuffers = _chunkBuffers.toArray(new ByteBuffer[_chunkBuffers.size()]);
-                cache[l2i(chunkNumber)] = new SoftReference<ByteBuffer[]>(chunkBuffers);
+                cache[chunkNumber] = chunkBuffer = topLevel.getByteBuffer(
+                        chunkOffset,
+                        sampleOffsetsWithinChunk[sampleOffsetsWithinChunk.length - 1] + ssb.getSampleSizeAtIndex(chunkStartSample + sampleOffsetsWithinChunk.length - 1));
             } catch (IOException e) {
+                StringWriter sw = new StringWriter();
+                e.printStackTrace(new PrintWriter(sw));
+                LOG.logError(sw.toString());
                 throw new IndexOutOfBoundsException(e.getMessage());
             }
         }
 
-        ByteBuffer correctPartOfChunk = null;
-
-        for (ByteBuffer chunkBuffer : chunkBuffers) {
-            if (offsetWithInChunk < chunkBuffer.limit()) {
-                correctPartOfChunk = chunkBuffer;
-                break;
-            }
-            offsetWithInChunk -= chunkBuffer.limit();
-        }
-
 
         final long sampleSize = ssb.getSampleSizeAtIndex(index);
-        final ByteBuffer finalCorrectPartOfChunk = correctPartOfChunk;
-        final long finalOffsetWithInChunk = offsetWithInChunk;
+        final ByteBuffer finalChunkBuffer = chunkBuffer.duplicate(); // create duplicate so that we don't run into
         return new Sample() {
 
             public void writeTo(WritableByteChannel channel) throws IOException {
@@ -222,12 +204,12 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             }
 
             public ByteBuffer asByteBuffer() {
-                return (ByteBuffer) ((ByteBuffer) finalCorrectPartOfChunk.position(l2i(finalOffsetWithInChunk))).slice().limit(l2i(sampleSize));
+                return (ByteBuffer) ((ByteBuffer) finalChunkBuffer.position(l2i(offsetWithInChunk))).slice().limit(l2i(sampleSize));
             }
 
             @Override
             public String toString() {
-                return "DefaultMp4Sample(size:" + sampleSize + ")";
+                return "Sample(offset: " + (chunkOffset + offsetWithInChunk) + " size: " + sampleSize + ")";
             }
         };
     }

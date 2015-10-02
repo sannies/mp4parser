@@ -255,6 +255,7 @@ public class Mp4TrackImpl extends AbstractTrack {
     }
 
     public void close() throws IOException {
+        
     }
 
     public List<Sample> getSamples() {
