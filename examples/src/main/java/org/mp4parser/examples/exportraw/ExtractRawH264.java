@@ -1,4 +1,4 @@
-package com.googlecode.mp4parser;
+package org.mp4parser.examples.exportraw;
 
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.TrackBox;
