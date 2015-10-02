@@ -16,4 +16,8 @@ public class FileRandomAccessSourceImpl implements RandomAccessSource {
     public ByteBuffer get(long offset, long size) throws IOException {
         return raf.getChannel().map(FileChannel.MapMode.READ_ONLY, offset, size);
     }
+
+    public void close() throws IOException {
+        raf.close();
+    }
 }
