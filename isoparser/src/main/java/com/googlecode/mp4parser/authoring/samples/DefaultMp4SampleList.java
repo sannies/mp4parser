@@ -22,7 +22,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
 
     Container topLevel;
     TrackBox trackBox = null;
-    SoftReference<ByteBuffer>[] cache = null;
+    ByteBuffer[] cache = null;
     int[] chunkNumsStartSampleNum;
     long[] chunkOffsets;
     long[] chunkSizes;
@@ -47,7 +47,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         chunkOffsets = trackBox.getSampleTableBox().getChunkOffsetBox().getChunkOffsets();
         chunkSizes = new long[chunkOffsets.length];
 
-        cache = (SoftReference<ByteBuffer>[]) Array.newInstance(SoftReference.class, chunkOffsets.length);
+        cache = new ByteBuffer[chunkOffsets.length];
         sampleOffsetsWithinChunks = new long[chunkOffsets.length][];
         ssb = trackBox.getSampleTableBox().getSampleSizeBox();
         List<SampleToChunkBox.Entry> s2chunkEntries = trackBox.getSampleTableBox().getSampleToChunkBox().getEntries();
@@ -168,16 +168,14 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         final long offsetWithInChunk = sampleOffsetsWithinChunk[sampleInChunk];
 
 
-        SoftReference<ByteBuffer> chunkBufferSr = cache[chunkNumber];
-        ByteBuffer chunkBuffer = chunkBufferSr != null ? chunkBufferSr.get() : null;
+
+        ByteBuffer chunkBuffer = cache[chunkNumber];
         if (chunkBuffer == null) {
 
             try {
-                chunkBuffer = topLevel.getByteBuffer(
+                cache[chunkNumber] = chunkBuffer = topLevel.getByteBuffer(
                         chunkOffset,
                         sampleOffsetsWithinChunk[sampleOffsetsWithinChunk.length - 1] + ssb.getSampleSizeAtIndex(chunkStartSample + sampleOffsetsWithinChunk.length - 1));
-
-                cache[chunkNumber] = new SoftReference<ByteBuffer>(chunkBuffer);
             } catch (IOException e) {
                 StringWriter sw = new StringWriter();
                 e.printStackTrace(new PrintWriter(sw));
