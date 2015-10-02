@@ -1,10 +1,10 @@
 package com.mp4parser.examples.syncsamples;
 
-import com.coremedia.iso.boxes.MovieBox;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+
+import com.mp4parser.muxer.FileDataSourceImpl;
+import com.mp4parser.muxer.Movie;
+import com.mp4parser.muxer.Track;
+import com.mp4parser.muxer.container.mp4.MovieCreator;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,12 +19,16 @@ public class ListSyncSamples {
         int maxIndex = 0;
         for (String arg : args) {
             File f = new File(arg);
-            Movie m = MovieCreator.build(new FileDataSourceImpl(f));
-            for (Track track : m.getTracks()) {
-                if ("vide".equals(track.getHandler())) {
-                    ss.put(f.getName() + track.getTrackMetaData().getTrackId(), track.getSyncSamples());
-                    maxIndex = Math.max(maxIndex, track.getSyncSamples().length);
+            if (f.exists()) {
+                Movie m = MovieCreator.build(arg);
+                for (Track track : m.getTracks()) {
+                    if ("vide".equals(track.getHandler())) {
+                        ss.put(f.getName() + track.getTrackMetaData().getTrackId(), track.getSyncSamples());
+                        maxIndex = Math.max(maxIndex, track.getSyncSamples().length);
+                    }
                 }
+            } else {
+                System.err.println("Input file " + arg + " does not exist. Ignoring.");
             }
         }
         for (String s : ss.keySet()) {

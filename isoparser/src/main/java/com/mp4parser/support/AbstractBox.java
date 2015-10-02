@@ -93,18 +93,15 @@ public abstract class AbstractBox implements ParsableBox {
      * {@inheritDoc}
      */
     @DoNotParseDetail
-    public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        this.offset = dataSource.position() - header.remaining();
-        this.dataSource = dataSource;
-
-        content = ByteBuffer.allocate(l2i(contentSize));
-        while (content.remaining() > 0) {
-            dataSource.read(content);
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        content = ByteBuffer.allocateDirect(l2i(contentSize));
+        int bytesRead = 0;
+        int b;
+        while (((((b = dataSource.read(content))) + bytesRead) < contentSize)) {
+            bytesRead += b;
         }
         content.position(0);
-
         isParsed = false;
-
     }
 
     public void getBox(WritableByteChannel os) throws IOException {
@@ -125,8 +122,6 @@ public abstract class AbstractBox implements ParsableBox {
             os.write((ByteBuffer) header.rewind());
             os.write((ByteBuffer) content.position(0));
         }
-
-
     }
 
 

@@ -7,6 +7,7 @@ import com.mp4parser.boxes.iso14496.part12.MovieBox;
 import com.mp4parser.boxes.iso14496.part12.SampleSizeBox;
 import com.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
 import com.mp4parser.boxes.iso14496.part12.TrackBox;
+import com.mp4parser.support.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -179,7 +180,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         if (chunkBuffer == null) {
 
             try {
-                cache[chunkNumber] = chunkBuffer = topLevel.getByteBuffer(
+                cache[chunkNumber] = chunkBuffer = randomAccess.get(
                         chunkOffset,
                         sampleOffsetsWithinChunk[sampleOffsetsWithinChunk.length - 1] + ssb.getSampleSizeAtIndex(chunkStartSample + sampleOffsetsWithinChunk.length - 1));
             } catch (IOException e) {
