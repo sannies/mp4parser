@@ -125,7 +125,6 @@ public class AACTrackImpl extends AbstractTrack {
 
     private DataSource dataSource;
     private List<Sample> samples;
-    private String lang = "eng";
 
     public AACTrackImpl(DataSource dataSource) throws IOException {
         this(dataSource, "eng");
@@ -133,7 +132,6 @@ public class AACTrackImpl extends AbstractTrack {
 
     public AACTrackImpl(DataSource dataSource, String lang) throws IOException {
         super(dataSource.toString());
-        this.lang = lang;
         this.dataSource = dataSource;
         samples = new ArrayList<Sample>();
         firstHeader = readSamples(dataSource);
