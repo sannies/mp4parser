@@ -1,11 +1,11 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
-import com.mp4parser.muxer.Movie;
-import com.mp4parser.muxer.Track;
-import com.mp4parser.muxer.builder.DefaultMp4Builder;
-import com.mp4parser.muxer.container.mp4.MovieCreator;
 import org.apache.commons.io.IOUtils;
+import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -19,7 +19,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static com.mp4parser.tools.CastUtils.l2i;
+import static org.mp4parser.tools.CastUtils.l2i;
 
 /**
  * Created by user on 06.08.2014.

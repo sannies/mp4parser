@@ -1,19 +1,18 @@
 package com.googlecode.mp4parser.boxes;
 
 
-import com.mp4parser.PropertyBoxParserImpl;
-import com.mp4parser.ParsableBox;
-import com.mp4parser.support.AbstractContainerBox;
-import com.mp4parser.tools.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mp4parser.ParsableBox;
+import org.mp4parser.PropertyBoxParserImpl;
+import org.mp4parser.support.AbstractContainerBox;
+import org.mp4parser.tools.ByteBufferByteChannel;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Constructor;
-
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
@@ -22,15 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class BoxWriteReadBase<T extends ParsableBox> {
-
-    String dummyParent = null;
-
-    protected BoxWriteReadBase(String dummyParent) {
-        this.dummyParent = dummyParent;
-    }
-
-    protected BoxWriteReadBase() {
-    }
 
     private static final Collection<String> skipList = Arrays.asList(
             "class",
@@ -44,7 +34,14 @@ public abstract class BoxWriteReadBase<T extends ParsableBox> {
             "type",
             "userType",
             "version");
+    String dummyParent = null;
 
+    protected BoxWriteReadBase(String dummyParent) {
+        this.dummyParent = dummyParent;
+    }
+
+    protected BoxWriteReadBase() {
+    }
 
     public abstract Class<T> getBoxUnderTest();
 

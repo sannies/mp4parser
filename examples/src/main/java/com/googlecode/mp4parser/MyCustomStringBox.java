@@ -1,9 +1,9 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.tools.IsoTypeReader;
-import com.mp4parser.tools.IsoTypeWriter;
-import com.mp4parser.boxes.UserBox;
-import com.mp4parser.tools.UUIDConverter;
+import org.mp4parser.boxes.UserBox;
+import org.mp4parser.tools.IsoTypeReader;
+import org.mp4parser.tools.IsoTypeWriter;
+import org.mp4parser.tools.UUIDConverter;
 
 import java.nio.ByteBuffer;
 import java.util.UUID;
@@ -12,10 +12,10 @@ import java.util.UUID;
  * Created by sannies on 03.09.2014.
  */
 public class MyCustomStringBox extends UserBox {
+    long a, b, c, d;
     public MyCustomStringBox() {
         super(UUIDConverter.convert(UUID.fromString("550e8400-e29b-11d4-a716-446655440000")));
     }
-    long a, b, c, d;
 
     @Override
     public void _parseDetails(ByteBuffer content) {

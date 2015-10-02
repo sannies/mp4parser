@@ -1,10 +1,10 @@
 package com.googlecode.mp4parser.muxformats;
 
-import com.mp4parser.Container;
-import com.mp4parser.muxer.FileDataSourceImpl;
-import com.mp4parser.muxer.Movie;
-import com.mp4parser.muxer.builder.DefaultMp4Builder;
-import com.mp4parser.muxer.tracks.EC3TrackImpl;
+import org.mp4parser.Container;
+import org.mp4parser.muxer.FileDataSourceImpl;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.tracks.EC3TrackImpl;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

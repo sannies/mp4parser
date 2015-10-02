@@ -1,11 +1,11 @@
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
-import com.mp4parser.IsoFile;
-import com.mp4parser.boxes.iso23001.part7.AbstractSampleEncryptionBox;
-import com.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
-import com.mp4parser.boxes.iso23001.part7.SampleEncryptionBox;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso23001.part7.AbstractSampleEncryptionBox;
+import org.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
+import org.mp4parser.boxes.iso23001.part7.SampleEncryptionBox;
 
 import java.io.File;
 import java.io.FileInputStream;

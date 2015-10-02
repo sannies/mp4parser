@@ -1,12 +1,11 @@
 package com.google.code.mp4parser.example;
 
-import com.mp4parser.tools.IsoTypeReader;
+import org.mp4parser.tools.IsoTypeReader;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +18,15 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class PrintStructure {
+    List<String> containers = Arrays.asList(
+            "moov",
+            "trak",
+            "mdia",
+            "minf",
+            "udta",
+            "stbl"
+    );
+
     public static void main(String[] args) throws IOException {
         System.out.println("PWD: " + System.getProperty("user.dir"));
         System.out.println("Input: " + args[0]);
@@ -28,7 +36,6 @@ public class PrintStructure {
         PrintStructure ps = new PrintStructure();
         ps.print(fis.getChannel(), 0, 0, 0);
     }
-
 
     /** Parses the FileChannel, in the range [start, end) and prints the elements found
      *
@@ -74,13 +81,4 @@ public class PrintStructure {
 
         }
     }
-
-    List<String> containers = Arrays.asList(
-            "moov",
-            "trak",
-            "mdia",
-            "minf",
-            "udta",
-            "stbl"
-    );
 }

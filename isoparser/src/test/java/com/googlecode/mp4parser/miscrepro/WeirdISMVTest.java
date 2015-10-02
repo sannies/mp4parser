@@ -1,12 +1,12 @@
 package com.googlecode.mp4parser.miscrepro;
 
-import com.mp4parser.tools.Hex;
-import com.mp4parser.IsoFile;
-import com.mp4parser.boxes.sampleentry.AudioSampleEntry;
-import com.mp4parser.tools.ByteBufferByteChannel;
-import com.mp4parser.tools.Path;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import org.mp4parser.tools.ByteBufferByteChannel;
+import org.mp4parser.tools.Hex;
+import org.mp4parser.tools.Path;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

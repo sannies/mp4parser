@@ -1,13 +1,12 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.IsoFile;
-import com.mp4parser.ParsableBox;
-import com.mp4parser.tools.Path;
+import org.mp4parser.IsoFile;
+import org.mp4parser.ParsableBox;
+import org.mp4parser.tools.Path;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Map;

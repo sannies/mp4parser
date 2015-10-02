@@ -1,8 +1,8 @@
 package com.googlecode.mp4parser.stuff;
 
 
-import com.mp4parser.IsoFile;
-import com.mp4parser.boxes.iso14496.part12.HandlerBox;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso14496.part12.HandlerBox;
 
 import java.io.FileInputStream;
 import java.io.IOException;

@@ -1,9 +1,11 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.muxer.FileDataSourceImpl;
-import com.mp4parser.muxer.tracks.AbstractH26XTrack;
+import org.mp4parser.muxer.FileDataSourceImpl;
+import org.mp4parser.muxer.tracks.AbstractH26XTrack;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 

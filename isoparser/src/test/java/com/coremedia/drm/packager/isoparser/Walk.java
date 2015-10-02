@@ -16,10 +16,10 @@
 
 package com.coremedia.drm.packager.isoparser;
 
-import com.mp4parser.Box;
-import com.mp4parser.Container;
-import com.mp4parser.ParsableBox;
-import com.mp4parser.support.AbstractBox;
+import org.mp4parser.Box;
+import org.mp4parser.Container;
+import org.mp4parser.ParsableBox;
+import org.mp4parser.support.AbstractBox;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;

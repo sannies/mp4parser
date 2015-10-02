@@ -1,18 +1,18 @@
 package com.googlecode.mp4parser.stuff;
 
-import com.mp4parser.Box;
-import com.mp4parser.Container;
-import com.mp4parser.IsoFile;
-import com.mp4parser.boxes.UnknownBox;
-import com.mp4parser.boxes.apple.AppleGPSCoordinatesBox;
-import com.mp4parser.boxes.apple.AppleItemListBox;
-import com.mp4parser.boxes.apple.AppleNameBox;
-import com.mp4parser.boxes.apple.Utf8AppleDataBox;
-import com.mp4parser.boxes.iso14496.part12.*;
-import com.mp4parser.boxes.microsoft.XtraBox;
-import com.mp4parser.tools.Path;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.mp4parser.Box;
+import org.mp4parser.Container;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.UnknownBox;
+import org.mp4parser.boxes.apple.AppleGPSCoordinatesBox;
+import org.mp4parser.boxes.apple.AppleItemListBox;
+import org.mp4parser.boxes.apple.AppleNameBox;
+import org.mp4parser.boxes.apple.Utf8AppleDataBox;
+import org.mp4parser.boxes.iso14496.part12.*;
+import org.mp4parser.boxes.microsoft.XtraBox;
+import org.mp4parser.tools.Path;
 
 import java.io.File;
 import java.io.FileNotFoundException;

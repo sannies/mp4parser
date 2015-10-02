@@ -1,15 +1,15 @@
 package com.googlecode.mp4parser.boxes;
 
 
-import com.mp4parser.IsoFile;
-import com.mp4parser.ParsableBox;
-import com.mp4parser.support.AbstractContainerBox;
-import com.mp4parser.tools.ByteBufferByteChannel;
-import com.mp4parser.Box;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mp4parser.Box;
+import org.mp4parser.IsoFile;
+import org.mp4parser.ParsableBox;
+import org.mp4parser.support.AbstractContainerBox;
+import org.mp4parser.tools.ByteBufferByteChannel;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
@@ -44,19 +44,6 @@ public abstract class BoxRoundtripTest {
 
      */
 
-    String dummyParent = null;
-    ParsableBox parsableBoxUnderTest;
-    Map<String, Object> props;
-
-
-    public BoxRoundtripTest(ParsableBox parsableBoxUnderTest, Map.Entry<String, Object>... properties) {
-        this.parsableBoxUnderTest = parsableBoxUnderTest;
-        this.props = new HashMap<String, Object>();
-        for (Map.Entry<String, Object> property : properties) {
-            props.put(property.getKey(), property.getValue());
-        }
-    }
-
     private static final Collection<String> skipList = Arrays.asList(
             "class",
             "flags",
@@ -69,7 +56,17 @@ public abstract class BoxRoundtripTest {
             "type",
             "userType",
             "version");
+    String dummyParent = null;
+    ParsableBox parsableBoxUnderTest;
+    Map<String, Object> props;
 
+    public BoxRoundtripTest(ParsableBox parsableBoxUnderTest, Map.Entry<String, Object>... properties) {
+        this.parsableBoxUnderTest = parsableBoxUnderTest;
+        this.props = new HashMap<String, Object>();
+        for (Map.Entry<String, Object> property : properties) {
+            props.put(property.getKey(), property.getValue());
+        }
+    }
 
     @Test
     public void roundtrip() throws Exception {
@@ -154,13 +151,6 @@ public abstract class BoxRoundtripTest {
 
     }
 
-    class DummyContainerBox extends AbstractContainerBox {
-
-        public DummyContainerBox(String type) {
-            super(type);
-        }
-    }
-
     protected static class E implements Map.Entry<String,Object> {
 
         private String key;
@@ -198,6 +188,13 @@ public abstract class BoxRoundtripTest {
 
         public String toString() {
             return key +"="+value.toString();
+        }
+    }
+
+    class DummyContainerBox extends AbstractContainerBox {
+
+        public DummyContainerBox(String type) {
+            super(type);
         }
     }
 

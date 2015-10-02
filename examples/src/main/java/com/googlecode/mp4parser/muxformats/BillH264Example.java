@@ -1,12 +1,12 @@
 package com.googlecode.mp4parser.muxformats;
 
-import com.mp4parser.Container;
-import com.mp4parser.muxer.DataSource;
-import com.mp4parser.muxer.FileDataSourceImpl;
-import com.mp4parser.muxer.Movie;
-import com.mp4parser.muxer.builder.DefaultMp4Builder;
-import com.mp4parser.muxer.tracks.AACTrackImpl;
-import com.mp4parser.muxer.tracks.h264.H264TrackImpl;
+import org.mp4parser.Container;
+import org.mp4parser.muxer.DataSource;
+import org.mp4parser.muxer.FileDataSourceImpl;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.tracks.AACTrackImpl;
+import org.mp4parser.muxer.tracks.h264.H264TrackImpl;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -1,9 +1,9 @@
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
-import com.mp4parser.ParsableBox;
 import com.googlecode.mp4parser.boxes.BoxRoundtripTest;
-import com.mp4parser.boxes.dece.AssetInformationBox;
 import org.junit.runners.Parameterized;
+import org.mp4parser.ParsableBox;
+import org.mp4parser.boxes.dece.AssetInformationBox;
 
 import java.util.Arrays;
 import java.util.Collection;

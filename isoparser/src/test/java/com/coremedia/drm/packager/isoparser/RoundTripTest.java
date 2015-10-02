@@ -16,10 +16,10 @@
 
 package com.coremedia.drm.packager.isoparser;
 
-import com.mp4parser.IsoFile;
-import com.mp4parser.support.BoxComparator;
-import com.mp4parser.tools.ByteBufferByteChannel;
 import junit.framework.TestCase;
+import org.mp4parser.IsoFile;
+import org.mp4parser.support.BoxComparator;
+import org.mp4parser.tools.ByteBufferByteChannel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;

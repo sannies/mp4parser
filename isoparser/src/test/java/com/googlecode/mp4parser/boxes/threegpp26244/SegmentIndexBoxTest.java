@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.boxes.threegpp26244;
 
 import com.googlecode.mp4parser.boxes.BoxWriteReadBase;
-import com.mp4parser.boxes.iso14496.part12.SegmentIndexBox;
+import org.mp4parser.boxes.iso14496.part12.SegmentIndexBox;
 
 import java.util.Arrays;
 import java.util.Map;

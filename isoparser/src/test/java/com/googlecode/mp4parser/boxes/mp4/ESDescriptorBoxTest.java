@@ -1,11 +1,11 @@
 package com.googlecode.mp4parser.boxes.mp4;
 
-import com.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
-import com.mp4parser.tools.Hex;
-import com.mp4parser.IsoFile;
-import com.mp4parser.tools.ByteBufferByteChannel;
-import com.mp4parser.tools.Path;
 import org.junit.Test;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
+import org.mp4parser.tools.ByteBufferByteChannel;
+import org.mp4parser.tools.Hex;
+import org.mp4parser.tools.Path;
 
 public class ESDescriptorBoxTest {
     @Test

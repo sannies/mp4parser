@@ -1,8 +1,8 @@
 package com;
 
-import com.mp4parser.IsoFile;
-import com.mp4parser.boxes.iso14496.part12.TrackRunBox;
-import com.mp4parser.tools.Path;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso14496.part12.TrackRunBox;
+import org.mp4parser.tools.Path;
 
 import java.io.IOException;
 

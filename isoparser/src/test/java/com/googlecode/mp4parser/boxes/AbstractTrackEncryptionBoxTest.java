@@ -1,11 +1,11 @@
 package com.googlecode.mp4parser.boxes;
 
 
-import com.mp4parser.IsoFile;
-import com.mp4parser.boxes.iso23001.part7.AbstractTrackEncryptionBox;
-import com.mp4parser.tools.UUIDConverter;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso23001.part7.AbstractTrackEncryptionBox;
+import org.mp4parser.tools.UUIDConverter;
 
 import java.io.File;
 import java.io.FileInputStream;

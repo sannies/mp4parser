@@ -1,11 +1,11 @@
 package com;
 
-import com.mp4parser.Container;
-import com.mp4parser.muxer.Movie;
-import com.mp4parser.muxer.builder.FragmentedMp4Builder;
-import com.mp4parser.muxer.builder.Mp4Builder;
-import com.mp4parser.muxer.container.mp4.MovieCreator;
-import com.mp4parser.muxer.tracks.ttml.TtmlTrackImpl;
+import org.mp4parser.Container;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.builder.FragmentedMp4Builder;
+import org.mp4parser.muxer.builder.Mp4Builder;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
+import org.mp4parser.muxer.tracks.ttml.TtmlTrackImpl;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 

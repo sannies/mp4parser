@@ -1,8 +1,8 @@
 package com.googlecode.mp4parser.boxes.piff;
 
 import com.googlecode.mp4parser.boxes.AbstractTrackEncryptionBoxTest;
-import com.mp4parser.boxes.microsoft.PiffTrackEncryptionBox;
 import org.junit.Before;
+import org.mp4parser.boxes.microsoft.PiffTrackEncryptionBox;
 
 
 public class PiffTrackEncryptionBoxTest extends AbstractTrackEncryptionBoxTest {

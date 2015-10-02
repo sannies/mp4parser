@@ -1,11 +1,11 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.Container;
-import com.mp4parser.muxer.FileRandomAccessSourceImpl;
-import com.mp4parser.IsoFile;
-import com.mp4parser.muxer.Movie;
-import com.mp4parser.muxer.Mp4TrackImpl;
-import com.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.Container;
+import org.mp4parser.IsoFile;
+import org.mp4parser.muxer.FileRandomAccessSourceImpl;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Mp4TrackImpl;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

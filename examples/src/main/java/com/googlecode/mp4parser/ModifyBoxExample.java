@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser;
 
-import com.mp4parser.ParsableBox;
-import com.mp4parser.boxes.dece.BaseLocationBox;
+import org.mp4parser.ParsableBox;
+import org.mp4parser.boxes.dece.BaseLocationBox;
 
 import java.io.File;
 import java.io.IOException;
