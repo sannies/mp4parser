@@ -31,6 +31,10 @@ public final class AppleLosslessSpecificBox extends AbstractFullBox {
     private long bitRate; // 32bit
     private long sampleRate; // 32bit
 
+    public AppleLosslessSpecificBox() {
+        super("alac");
+    }
+
     public long getMaxSamplePerFrame() {
         return maxSamplePerFrame;
     }
@@ -119,7 +123,6 @@ public final class AppleLosslessSpecificBox extends AbstractFullBox {
         this.sampleRate = sampleRate;
     }
 
-
     @Override
     public void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
@@ -150,26 +153,6 @@ public final class AppleLosslessSpecificBox extends AbstractFullBox {
         IsoTypeWriter.writeUInt32(byteBuffer, maxCodedFrameSize);
         IsoTypeWriter.writeUInt32(byteBuffer, bitRate);
         IsoTypeWriter.writeUInt32(byteBuffer, sampleRate);
-    }
-
-    @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        writeVersionAndFlags(byteBuffer);
-        IsoTypeWriter.writeUInt32(byteBuffer, maxSamplePerFrame);
-        IsoTypeWriter.writeUInt8(byteBuffer, unknown1);
-        IsoTypeWriter.writeUInt8(byteBuffer, sampleSize);
-        IsoTypeWriter.writeUInt8(byteBuffer, historyMult);
-        IsoTypeWriter.writeUInt8(byteBuffer, initialHistory);
-        IsoTypeWriter.writeUInt8(byteBuffer, kModifier);
-        IsoTypeWriter.writeUInt8(byteBuffer, channels);
-        IsoTypeWriter.writeUInt16(byteBuffer, unknown2);
-        IsoTypeWriter.writeUInt32(byteBuffer, maxCodedFrameSize);
-        IsoTypeWriter.writeUInt32(byteBuffer, bitRate);
-        IsoTypeWriter.writeUInt32(byteBuffer, sampleRate);
-    }
-
-    public AppleLosslessSpecificBox() {
-        super("alac");
     }
 
     protected long getContentSize() {

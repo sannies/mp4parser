@@ -27,9 +27,9 @@ import java.nio.ByteBuffer;
  * media. Note that the flags field has the value 1.
  */
 public class VideoMediaHeaderBox extends AbstractMediaHeaderBox {
+    public static final String TYPE = "vmhd";
     private int graphicsmode = 0;
     private int[] opcolor = new int[]{0, 0, 0};
-    public static final String TYPE = "vmhd";
 
     public VideoMediaHeaderBox() {
         super(TYPE);
@@ -40,14 +40,21 @@ public class VideoMediaHeaderBox extends AbstractMediaHeaderBox {
         return graphicsmode;
     }
 
+    public void setGraphicsmode(int graphicsmode) {
+        this.graphicsmode = graphicsmode;
+    }
+
     public int[] getOpcolor() {
         return opcolor;
+    }
+
+    public void setOpcolor(int[] opcolor) {
+        this.opcolor = opcolor;
     }
 
     protected long getContentSize() {
         return 12;
     }
-
 
     @Override
     public void _parseDetails(ByteBuffer content) {
@@ -68,25 +75,7 @@ public class VideoMediaHeaderBox extends AbstractMediaHeaderBox {
         }
     }
 
-
-    @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        writeVersionAndFlags(byteBuffer);
-        IsoTypeWriter.writeUInt16(byteBuffer, graphicsmode);
-        for (int anOpcolor : opcolor) {
-            IsoTypeWriter.writeUInt16(byteBuffer, anOpcolor);
-        }
-    }
-
-    public void setOpcolor(int[] opcolor) {
-        this.opcolor = opcolor;
-    }
-
     public String toString() {
         return "VideoMediaHeaderBox[graphicsmode=" + getGraphicsmode() + ";opcolor0=" + getOpcolor()[0] + ";opcolor1=" + getOpcolor()[1] + ";opcolor2=" + getOpcolor()[2] + "]";
-    }
-
-    public void setGraphicsmode(int graphicsmode) {
-        this.graphicsmode = graphicsmode;
     }
 }
