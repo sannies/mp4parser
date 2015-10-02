@@ -23,4 +23,8 @@ public class InMemRandomAccessSourceImpl implements RandomAccessSource {
         buffer.position(l2i(offset));
         return (ByteBuffer) buffer.slice().limit(l2i(size));
     }
+
+    public void close() throws IOException {
+
+    }
 }
