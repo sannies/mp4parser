@@ -60,7 +60,7 @@ public class Mp4ContainerSource implements Callable<Void> {
     public static void main(String[] args) throws IOException {
         Mp4ContainerSource mp4ContainerSource = null;
         try {
-            mp4ContainerSource = new Mp4ContainerSource(new URI("http://org.mp4parser.s3.amazonaws.com/org.mp4parser.examples/Cosmos%20Laundromat%20small%20faststart.mp4").toURL().openStream());
+            mp4ContainerSource = new Mp4ContainerSource(new URI("http://org.mp4parser.s3.amazonaws.com/examples/Cosmos%20Laundromat%20small%20faststart.mp4").toURL().openStream());
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
@@ -180,16 +180,8 @@ public class Mp4ContainerSource implements Callable<Void> {
                 } else {
                     times.get(0).setCount(times.get(0).getCount() - 1);
                 }
-                final ArrayList<SampleExtension> extensions = new ArrayList<SampleExtension>();
-                if (compositionOffsets != null && !compositionOffsets.isEmpty()) {
-                    final long compositionOffset = compositionOffsets.get(0).getOffset();
-                    if (compositionOffsets.get(0).getCount() == 1) {
-                        compositionOffsets.remove(0);
-                    } else {
-                        compositionOffsets.get(0).setCount(compositionOffsets.get(0).getCount() - 1);
-                    }
-                    extensions.add(CompositionTimeSampleExtension.create(compositionOffset));
-                }
+
+                // Sample Flags Start
                 SampleDependencyTypeBox sdtp = Path.getPath(stbl, "sdtp");
                 SampleFlagsSampleExtension sfse = new SampleFlagsSampleExtension();
                 if (sdtp != null) {
@@ -207,11 +199,11 @@ public class Mp4ContainerSource implements Callable<Void> {
                     }
                 }
 
-
                 DegradationPriorityBox stdp = Path.getPath(stbl, "stdp");
                 if (stdp != null) {
                     sfse.setSampleDegradationPriority(stdp.getPriorities()[l2i(index)]);
                 }
+                // Sample Flags Done
 
                 int sampleSize = l2i(stsz.getSampleSizeAtIndex(l2i(index - 1)));
                 long avail = baos.available();
@@ -228,7 +220,19 @@ public class Mp4ContainerSource implements Callable<Void> {
                 System.err.println("Get sample content @" + offset + " len=" + sampleSize);
                 final byte[] sampleContent = baos.get(offset, sampleSize);
 
-                StreamingSample ss = new StreamingSampleImpl(Collections.singletonList(sampleContent), duration);
+                StreamingSample ss = new StreamingSampleImpl(sampleContent, duration);
+                ss.addSampleExtension(sfse);
+                if (compositionOffsets != null && !compositionOffsets.isEmpty()) {
+                    final long compositionOffset = compositionOffsets.get(0).getOffset();
+                    if (compositionOffsets.get(0).getCount() == 1) {
+                        compositionOffsets.remove(0);
+                    } else {
+                        compositionOffsets.get(0).setCount(compositionOffsets.get(0).getCount() - 1);
+                    }
+                    ss.addSampleExtension(CompositionTimeSampleExtension.create(compositionOffset));
+                }
+
+
 
                 try {
                     //System.out.print("Pushing sample @" + offset + " of " + sampleSize + " bytes (i=" + index + ")");

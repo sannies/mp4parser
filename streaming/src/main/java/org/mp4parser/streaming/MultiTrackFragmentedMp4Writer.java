@@ -13,7 +13,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static org.mp4parser.tools.CastUtils.l2i;
@@ -41,7 +42,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     protected boolean closed = false;
 
     public MultiTrackFragmentedMp4Writer(List<StreamingTrack> source, OutputStream outputStream) throws IOException {
-        this.source = source;
+        this.source = new LinkedList<StreamingTrack>(source);
         this.outputStream = outputStream;
         this.creationTime = new Date();
         HashSet<Long> trackIds = new HashSet<Long>();
@@ -258,59 +259,49 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return movieBox;
     }
 
-    public Void call() throws IOException {
+    public Void call() throws IOException, InterruptedException {
         final WritableByteChannel out = Channels.newChannel(outputStream);
         Container header = createHeader();
         for (Box box : header.getBoxes()) {
             box.getBox(out);
         }
 
-        es = Executors.newFixedThreadPool(source.size());
-        ExecutorCompletionService<Void> ecs = new ExecutorCompletionService<Void>(es);
+
         LOG.info("Start receiving from tracks " + source);
-        List<Future<Void>> futures = new ArrayList<Future<Void>>();
-        for (StreamingTrack streamingTrack : source) {
-            futures.add(ecs.submit(new ConsumeSamplesCallable(streamingTrack)));
-        }
+        int forceEndOfStream = 0;
+        do {
 
-        boolean complete = false;
-        while (!complete) {
-            complete = true;
-            Iterator<Future<Void>> futuresIt = futures.iterator();
-            while (futuresIt.hasNext()) {
-                if (futuresIt.next().isDone()) {
-                    futuresIt.remove();
-                } else {
-                    complete = false;
+            double minTrackTime = Double.MAX_VALUE;
+
+
+            StreamingTrack minStreamingTrack = null;
+            for (StreamingTrack streamingTrack : source) {
+                double trackTime = ((double) currentFragmentStartTime.get(streamingTrack)) / streamingTrack.getTimescale();
+                if (trackTime < minTrackTime) {
+                    minStreamingTrack = streamingTrack;
+                    minTrackTime = trackTime;
                 }
             }
 
-            if (!futures.isEmpty()) {
-                try {
-                    ecs.take().get();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(e);
-                } catch (ExecutionException e) {
-                    System.out.println("Execution exception " + e.getMessage());
-                    close();
-                    complete = true;
-                    for (Future<Void> future : futures) {
-                        if (!future.isDone()) {
-                            System.out.println("Cancelling " + future);
-                            future.cancel(true);
-                        }
-                    }
+            assert minStreamingTrack != null;
+            StreamingSample ss = minStreamingTrack.getSamples().poll(timeOut, TimeUnit.MILLISECONDS);
+            if (ss != null) {
+                consumeSample(minStreamingTrack, ss);
+                if (!minStreamingTrack.hasMoreSamples()) {
+                    consumeSample(minStreamingTrack, FINAL_SAMPLE);
+                    LOG.info("Final ");
+                    source.remove(minStreamingTrack);
                 }
-            }
-        }
 
-        try {
-            es.shutdown();
-            es.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+            } else {
+                LOG.warning("No Sample acquired. 'poll()' timed out.");
+                forceEndOfStream++;
+            }
+
+        } while (!source.isEmpty() && forceEndOfStream < maxTimeOuts && !closed);
+        LOG.info("Finished consuming " + source);
+
+
         return null;
     }
 
@@ -345,7 +336,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     }
 
     private synchronized void consumeSample(StreamingTrack streamingTrack, StreamingSample sample) throws IOException {
-        //System.err.println("Consuming " + streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " " + ss.getDuration());
+        // System.err.println("Consuming " + streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " " + sample.getDuration());
         SampleFlagsSampleExtension sampleDependencySampleExtension = sample.getSampleExtension(SampleFlagsSampleExtension.class);
 
         long ts = currentTime.get(streamingTrack);
@@ -361,9 +352,10 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
                         fragmentBuffers.get(streamingTrack).size() > 0 &&
                         (sampleDependencySampleExtension == null ||
                                 sampleDependencySampleExtension.isSyncSample()))) {
+
             writeFragment(streamingTrack);
             currentFragmentStartTime.put(streamingTrack, ts);
-            LOG.info("fragment written");
+            LOG.info("fragment written. track " + streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " from: " + (((double) cfst) / streamingTrack.getTimescale()) + " to: " + (((double) ts) / streamingTrack.getTimescale()));
 /*            if (fragmentBuffers.get(streamingTrack).size() > 0) {
                 if (fragmentBuffers.get(streamingTrack).get(0).getSampleExtension(SampleFlagsSampleExtension.class).isSyncSample()) {
                     System.err.println("Starts with syncSample");
@@ -428,7 +420,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     protected void createTrun(StreamingTrack streamingTrack, TrackFragmentBox parent) {
         TrackRunBox trun = new TrackRunBox();
         trun.setVersion(1);
-
         trun.setSampleDurationPresent(true);
         trun.setSampleSizePresent(true);
         List<TrackRunBox.Entry> entries = new ArrayList<TrackRunBox.Entry>(fragmentBuffers.size());
@@ -569,38 +560,5 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
             }
 
         };
-    }
-
-    class ConsumeSamplesCallable implements Callable<Void> {
-
-        int forceEndOfStream = 0;
-        private StreamingTrack streamingTrack;
-
-        public ConsumeSamplesCallable(StreamingTrack streamingTrack) {
-            this.streamingTrack = streamingTrack;
-        }
-
-        public Void call() throws Exception {
-            do {
-                try {
-                    StreamingSample ss;
-                    while ((ss = streamingTrack.getSamples().poll(timeOut, TimeUnit.MILLISECONDS)) != null) {
-                        //System.out.println(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " Before consume");
-                        consumeSample(streamingTrack, ss);
-                        //System.out.println(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " consumed");
-                        forceEndOfStream = 0;
-                    }
-                    if (streamingTrack.hasMoreSamples() && !closed) {
-                        LOG.warning("No Sample acquired. 'poll()' timed out.");
-                    }
-                    forceEndOfStream++;
-                } catch (InterruptedException e) {
-                    LOG.info(streamingTrack + " was interrupted.");
-                    return null;
-                }
-            } while (streamingTrack.hasMoreSamples() && forceEndOfStream < maxTimeOuts && !closed);
-            LOG.info("Finished consuming " + streamingTrack);
-            return null;
-        }
     }
 }

@@ -18,6 +18,11 @@ public class StreamingSampleImpl implements StreamingSample {
         this.duration = duration;
     }
 
+    public StreamingSampleImpl(byte[] sample, long duration) {
+        this.duration = duration;
+        s = ByteBuffer.wrap(sample);
+    }
+
     public StreamingSampleImpl(List<byte[]> nals, long duration) {
         this.duration = duration;
         int size = 0;

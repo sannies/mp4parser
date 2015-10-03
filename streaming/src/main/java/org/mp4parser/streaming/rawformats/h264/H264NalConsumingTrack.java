@@ -67,13 +67,16 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         return nalUnitHeader;
     }
 
+    /**
+     * Return true if there are no more sample to be read from the data source.
+     */
     public abstract boolean sourceDepleted();
 
     public boolean hasMoreSamples() {
-        return samples.size() > 0 || !sourceDepleted();
+        return !samples.isEmpty() || !sourceDepleted();
     }
 
-    protected void consumeNal(byte[] nal) throws IOException {
+    protected void consumeNal(byte[] nal) throws IOException, InterruptedException {
         LOG.finest("Consume NAL of " + nal.length + " bytes." + Hex.encodeHex(new byte[]{nal[0], nal[1], nal[2], nal[3], nal[4]}));
         H264NalUnitHeader nalUnitHeader = getNalUnitHeader(nal);
         switch (nalUnitHeader.nal_unit_type) {
@@ -146,7 +149,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
 
     }
 
-    protected void drainDecPictureBuffer(boolean all) {
+    protected void drainDecPictureBuffer(boolean all) throws InterruptedException {
         if (all) {
             while (decFrameBuffer.size() > 0) {
                 drainDecPictureBuffer(false);
@@ -172,13 +175,13 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
 
             first.addSampleExtension(CompositionTimeSampleExtension.create(delay * frametick));
             //System.err.println("Adding sample");
-            samples.add(first);
+            samples.offer(first, 60, TimeUnit.SECONDS);
         }
 
     }
 
 
-    protected StreamingSample createSample(List<byte[]> buffered) throws IOException {
+    protected StreamingSample createSample(List<byte[]> buffered) throws IOException, InterruptedException {
         LOG.finer("Create Sample");
         configure();
         if (timescale == 0 || frametick == 0) {

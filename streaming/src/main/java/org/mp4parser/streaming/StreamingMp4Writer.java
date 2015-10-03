@@ -21,5 +21,5 @@ public interface StreamingMp4Writer extends Closeable, Callable<Void> {
      * @return nothing
      * @throws IOException if writing (or reading) fails.
      */
-    Void call() throws IOException;
+    Void call() throws Exception;
 }

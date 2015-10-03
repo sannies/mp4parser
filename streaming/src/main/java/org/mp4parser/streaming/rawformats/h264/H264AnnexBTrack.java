@@ -39,7 +39,7 @@ public class H264AnnexBTrack extends H264NalConsumingTrack implements Callable<V
         }
     }
 
-    public Void call() throws IOException {
+    public Void call() throws IOException, InterruptedException {
         byte[] nal;
         NalStreamTokenizer st = new NalStreamTokenizer(inputStream, new byte[]{0, 0, 1}, new byte[]{0, 0, 0});
 

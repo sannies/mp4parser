@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -140,7 +142,12 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
     }
 
     public boolean hasMoreSamples() {
-        return false;
+        try {
+            return is.available() > 0 || !samples.isEmpty();
+        } catch (IOException e) {
+            LOG.log(Level.WARNING, e.getMessage(), e);
+            return false;
+        }
     }
 
     public String getHandler() {
@@ -221,6 +228,7 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
 
     public Void call() throws Exception {
         AdtsHeader header;
+        int i = 1;
         try {
             while ((header = readADTSHeader(is)) != null) {
                 if (firstHeader == null) {
@@ -235,7 +243,8 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
                         throw new EOFException();
                     n += count;
                 }
-                samples.add(new StreamingSampleImpl(ByteBuffer.wrap(frame), 1024));
+                //System.err.println("Sample " + i++);
+                samples.offer(new StreamingSampleImpl(ByteBuffer.wrap(frame), 1024), 60, TimeUnit.SECONDS);
 
             }
         } catch (EOFException e) {
