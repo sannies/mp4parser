@@ -45,14 +45,6 @@ public class AppendTrack extends AbstractTrack {
     SampleDescriptionBox stsd;
     List<Sample> lists;
 
-    public static String appendTracknames(Track... tracks) {
-        String name = "";
-        for (Track track : tracks) {
-            name += track.getName() + " + ";
-        }
-        return name.substring(0, name.length() - 3);
-    }
-
     public AppendTrack(Track... tracks) throws IOException {
         super(appendTracknames(tracks));
         this.tracks = tracks;
@@ -70,9 +62,17 @@ public class AppendTrack extends AbstractTrack {
         lists = new ArrayList<Sample>();
 
         for (Track track : tracks) {
-            System.err.println("Track " + track + " is about to be appended");
+            //System.err.println("Track " + track + " is about to be appended");
             lists.addAll(track.getSamples());
         }
+    }
+
+    public static String appendTracknames(Track... tracks) {
+        String name = "";
+        for (Track track : tracks) {
+            name += track.getName() + " + ";
+        }
+        return name.substring(0, name.length() - 3);
     }
 
     public void close() throws IOException {
