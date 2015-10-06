@@ -1,5 +1,7 @@
 package com.googlecode.mp4parser;
 
+import com.googlecode.mp4parser.util.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,6 +11,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 public class FileDataSourceImpl implements DataSource {
+    private static Logger LOG = Logger.getLogger(FileDataSourceImpl.class);
     FileChannel fc;
     String filename;
 
@@ -55,6 +58,7 @@ public class FileDataSourceImpl implements DataSource {
     }
 
     public synchronized ByteBuffer map(long startPosition, long size) throws IOException {
+        LOG.logDebug(startPosition + " " + size);
         return fc.map(FileChannel.MapMode.READ_ONLY, startPosition, size);
     }
 
