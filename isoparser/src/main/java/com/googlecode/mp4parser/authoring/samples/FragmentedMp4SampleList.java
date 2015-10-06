@@ -3,11 +3,9 @@ package com.googlecode.mp4parser.authoring.samples;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
-import com.coremedia.iso.boxes.MovieBox;
 import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.fragment.*;
 import com.googlecode.mp4parser.authoring.Sample;
-import com.googlecode.mp4parser.authoring.SampleImpl;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
@@ -127,7 +125,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                 TrackRunBox trun = (TrackRunBox) box;
 
 
-                if (trun.getEntries().size() < (sampleIndexWithInTraf - previousTrunsSize)) {
+                if (trun.getEntries().size() <= (sampleIndexWithInTraf - previousTrunsSize)) {
                     previousTrunsSize += trun.getEntries().size();
                 } else {
                     // we are in correct trun box
@@ -229,7 +227,10 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
         for (MovieFragmentBox moof : topLevel.getBoxes(MovieFragmentBox.class)) {
             for (TrackFragmentBox trackFragmentBox : moof.getBoxes(TrackFragmentBox.class)) {
                 if (trackFragmentBox.getTrackFragmentHeaderBox().getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
-                    i += trackFragmentBox.getBoxes(TrackRunBox.class).get(0).getSampleCount();
+                    for (TrackRunBox trackRunBox : trackFragmentBox.getBoxes(TrackRunBox.class)) {
+                        i += trackRunBox.getSampleCount();
+                    }
+
                 }
             }
         }
@@ -237,7 +238,9 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
             for (MovieFragmentBox moof : fragment.getBoxes(MovieFragmentBox.class)) {
                 for (TrackFragmentBox trackFragmentBox : moof.getBoxes(TrackFragmentBox.class)) {
                     if (trackFragmentBox.getTrackFragmentHeaderBox().getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
-                        i += trackFragmentBox.getBoxes(TrackRunBox.class).get(0).getSampleCount();
+                        for (TrackRunBox trackRunBox : trackFragmentBox.getBoxes(TrackRunBox.class)) {
+                            i += trackRunBox.getSampleCount();
+                        }
                     }
                 }
             }
