@@ -48,8 +48,13 @@ public class Mp4TrackImpl extends AbstractTrack {
     /**
      * Creates a track from a TrackBox and potentially fragments. Use <b>fragements parameter
      * only</b> to supply additional fragments that are not located in the main file.
+     * @param trackId ID of the track to extract
+     * @param isofile the parsed MP4 file
+     * @param randomAccess the RandomAccessSource to read the samples from
+     * @param name an arbitrary naem to identify track later - e.g. filename
+
      */
-    public Mp4TrackImpl(final long trackId, Container isofile, RandomAccessSource randomAccess, String name) throws IOException {
+    public Mp4TrackImpl(final long trackId, Container isofile, RandomAccessSource randomAccess, String name) {
         super(name);
 
         samples = new SampleList(trackId, isofile, randomAccess);

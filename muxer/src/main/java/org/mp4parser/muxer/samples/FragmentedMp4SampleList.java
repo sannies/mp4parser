@@ -8,7 +8,6 @@ import org.mp4parser.muxer.Sample;
 import org.mp4parser.tools.Offsets;
 import org.mp4parser.tools.Path;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Array;
@@ -32,7 +31,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
     private int size_ = -1;
     private RandomAccessSource randomAccess;
 
-    public FragmentedMp4SampleList(long track, Container isofile, RandomAccessSource randomAccess) throws FileNotFoundException {
+    public FragmentedMp4SampleList(long track, Container isofile, RandomAccessSource randomAccess) {
         this.isofile = isofile;
         this.randomAccess = randomAccess;
         List<TrackBox> tbs = Path.getPaths(isofile, "moov[0]/trak");

@@ -50,7 +50,7 @@ public interface DataSource extends Closeable {
     /**
      * Transfers bytes from this DataSource to the given writable byte
      * channel.
-     * <p/>
+     * <br>
      * An attempt should be made to read up to <tt>count</tt> bytes starting at
      * the given <tt>position</tt> in this DataSource and write them to the
      * target channel.  An invocation of this method may or may not transfer

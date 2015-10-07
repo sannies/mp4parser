@@ -5,7 +5,6 @@ import org.mp4parser.muxer.RandomAccessSource;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.tools.Path;
 
-import java.io.IOException;
 import java.util.AbstractList;
 import java.util.List;
 
@@ -16,7 +15,7 @@ public class SampleList extends AbstractList<Sample> {
     List<Sample> samples;
 
 
-    public SampleList(long trackId, Container isofile, RandomAccessSource source) throws IOException {
+    public SampleList(long trackId, Container isofile, RandomAccessSource source) {
 
         if (Path.getPaths(isofile, "moov/mvex/trex").isEmpty()) {
             samples = new DefaultMp4SampleList(trackId, isofile, source);

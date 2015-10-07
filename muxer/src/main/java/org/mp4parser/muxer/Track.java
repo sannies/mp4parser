@@ -27,7 +27,6 @@ import java.util.Map;
 
 /**
  * Represents a Track. A track is a timed sequence of related samples.<br>
- * <p/>
  * <b>NOTE:</b>
  * For media data, a track corresponds to a sequence of images or sampled audio; for hint tracks, a track
  * corresponds to a streaming channel.
