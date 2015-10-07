@@ -7,10 +7,10 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,14 +21,100 @@ public class AppendExample {
     public static void main(String[] args) throws IOException {
 
 
-        String f1 = "C:\\Users\\sannies\\Downloads\\merge_73677.mp4";
-        String f2 = "C:\\Users\\sannies\\Downloads\\rsmedia-test(1).mp4";
-        //String f2 = AppendExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/1365070285923.mp4";
-        //String f3 = AppendExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/1365070453555.mp4";
+        String[] videoUris = new String[]{
 
-        Movie[] inMovies = new Movie[]{
-                MovieCreator.build(f1),
-                MovieCreator.build(f2)};
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20150930_161515.mp4",
+                "c:\\content\\20150930_161525.mp4",
+                "c:\\content\\20150930_161529.mp4",
+                "c:\\content\\20150930_161534.mp4",
+                "c:\\content\\20150930_161543.mp4",
+                "c:\\content\\20151001_135436.mp4",
+                "c:\\content\\20151001_135446.mp4",
+                "c:\\content\\20151001_135540.mp4"
+
+        };
+
+        List<Movie> inMovies = new ArrayList<Movie>();
+        for (String videoUri : videoUris) {
+            inMovies.add(MovieCreator.build(videoUri));
+        }
 
         List<Track> videoTracks = new LinkedList<Track>();
         List<Track> audioTracks = new LinkedList<Track>();

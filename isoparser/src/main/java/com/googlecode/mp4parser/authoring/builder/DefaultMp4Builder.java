@@ -30,6 +30,7 @@ import com.googlecode.mp4parser.boxes.dece.SampleEncryptionBox;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.GroupEntry;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleGroupDescriptionBox;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleToGroupBox;
+import com.googlecode.mp4parser.util.Logger;
 import com.googlecode.mp4parser.util.Mp4Arrays;
 import com.googlecode.mp4parser.util.Path;
 import com.mp4parser.iso14496.part12.SampleAuxiliaryInformationOffsetsBox;
@@ -40,8 +41,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.googlecode.mp4parser.util.CastUtils.l2i;
 import static com.googlecode.mp4parser.util.Math.lcm;
@@ -51,7 +50,7 @@ import static com.googlecode.mp4parser.util.Math.lcm;
  */
 public class DefaultMp4Builder implements Mp4Builder {
 
-    private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
+    private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class);
     Map<Track, StaticChunkOffsetBox> chunkOffsetBoxes = new HashMap<Track, StaticChunkOffsetBox>();
     Set<SampleAuxiliaryInformationOffsetsBox> sampleAuxiliaryInformationOffsetsBoxes = new HashSet<SampleAuxiliaryInformationOffsetsBox>();
     HashMap<Track, List<Sample>> track2Sample = new HashMap<Track, List<Sample>>();
@@ -92,7 +91,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         if (fragmenter == null) {
             fragmenter = new TimeBasedFragmenter(2);
         }
-        LOG.fine("Creating movie " + movie);
+        LOG.logDebug("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
             // getting the samples may be a time consuming activity
             List<Sample> samples = track.getSamples();
@@ -123,9 +122,10 @@ public class DefaultMp4Builder implements Mp4Builder {
             contentSize += sum(stsz.getSampleSizes());
 
         }
-
+        LOG.logDebug("About to create mdat");
         InterleaveChunkMdat mdat = new InterleaveChunkMdat(movie, chunks, contentSize);
         isoFile.addBox(mdat);
+        LOG.logDebug("mdat crated");
 
         /*
         dataOffset is where the first sample starts. In this special mdat the samples always start
@@ -322,7 +322,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         Box stbl = createStbl(track, movie, chunks);
         minf.addBox(stbl);
         mdia.addBox(minf);
-
+        LOG.logDebug("done with trak for track_" + track.getTrackMetaData().getTrackId());
         return trackBox;
     }
 
@@ -359,6 +359,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         createStsc(track, chunks, stbl);
         createStsz(track, stbl);
         createStco(track, movie, chunks, stbl);
+
 
         Map<String, List<GroupEntry>> groupEntryFamilies = new HashMap<String, List<GroupEntry>>();
         for (Map.Entry<GroupEntry, long[]> sg : track.getSampleGroups().entrySet()) {
@@ -401,7 +402,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             createCencBoxes((CencEncryptedTrack) track, stbl, chunks.get(track));
         }
         createSubs(track, stbl);
-
+        LOG.logDebug("done with stbl for track_" + track.getTrackMetaData().getTrackId());
         return stbl;
     }
 
@@ -468,9 +469,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
             long offset = 0;
             // all tracks have the same number of chunks
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Calculating chunk offsets for track_" + targetTrack.getTrackMetaData().getTrackId());
-            }
+            LOG.logDebug("Calculating chunk offsets for track_" + targetTrack.getTrackMetaData().getTrackId());
 
             List<Track> tracks = new ArrayList<Track>(chunks.keySet());
             Collections.sort(tracks, new Comparator<Track>() {
@@ -512,9 +511,10 @@ public class DefaultMp4Builder implements Mp4Builder {
                 int startSample = trackToSample.get(nextChunksTrack);
                 double time = trackToTime.get(nextChunksTrack);
 
+                long[] durs = nextChunksTrack.getSampleDurations();
                 for (int j = startSample; j < startSample + numberOfSampleInNextChunk; j++) {
                     offset += track2SampleSizes.get(nextChunksTrack)[j];
-                    time += (double) nextChunksTrack.getSampleDurations()[j] / nextChunksTrack.getTrackMetaData().getTimescale();
+                    time += (double) durs[j] / nextChunksTrack.getTrackMetaData().getTimescale();
                 }
                 trackToChunk.put(nextChunksTrack, nextChunksIndex + 1);
                 trackToSample.put(nextChunksTrack, startSample + numberOfSampleInNextChunk);
@@ -752,9 +752,19 @@ public class DefaultMp4Builder implements Mp4Builder {
             }
             bb.rewind();
             writableByteChannel.write(bb);
+            long writtenBytes = 0;
+            long writtenMegaBytes = 0;
+
+            LOG.logDebug("About to write " + contentSize);
             for (List<Sample> samples : chunkList) {
                 for (Sample sample : samples) {
                     sample.writeTo(writableByteChannel);
+                    writtenBytes += sample.getSize();
+                    if (writtenBytes > 1024 * 1024) {
+                        writtenBytes -= 1024 * 1024;
+                        writtenMegaBytes++;
+                        LOG.logDebug("Written " + writtenMegaBytes + "MB");
+                    }
                 }
             }
 
