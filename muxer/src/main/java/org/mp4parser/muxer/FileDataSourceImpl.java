@@ -1,6 +1,6 @@
 package org.mp4parser.muxer;
 
-import com.googlecode.mp4parser.util.Logger;
+import org.mp4parser.support.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;

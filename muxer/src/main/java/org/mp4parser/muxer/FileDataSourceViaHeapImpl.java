@@ -1,6 +1,7 @@
 package org.mp4parser.muxer;
 
-import com.googlecode.mp4parser.util.Logger;
+
+import org.mp4parser.support.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,7 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
+import static org.mp4parser.tools.CastUtils.l2i;
 
 
 public class FileDataSourceViaHeapImpl implements DataSource {

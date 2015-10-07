@@ -33,7 +33,6 @@ import org.mp4parser.tools.Mp4Arrays;
 import org.mp4parser.tools.Offsets;
 import org.mp4parser.tools.Path;
 
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
