@@ -49,6 +49,7 @@ public class AppendTrack extends AbstractTrack {
     Track[] tracks;
     SampleDescriptionBox stsd;
     List<Sample> lists;
+    long[] decodingTimes;
 
     public AppendTrack(Track... tracks) throws IOException {
         super(appendTracknames(tracks));
@@ -67,8 +68,21 @@ public class AppendTrack extends AbstractTrack {
         lists = new ArrayList<Sample>();
 
         for (Track track : tracks) {
-            System.err.println("Track " + track + " is about to be appended");
+            //System.err.println("Track " + track + " is about to be appended");
             lists.addAll(track.getSamples());
+        }
+
+        int numSamples = 0;
+        for (Track track : tracks) {
+            numSamples += track.getSampleDurations().length;
+        }
+        decodingTimes = new long[numSamples];
+        int index = 0;
+        // should use system arraycopy but this works too (yes it's slow ...)
+        for (Track track : tracks) {
+            long[] durs = track.getSampleDurations();
+            System.arraycopy(durs, 0, decodingTimes, index, durs.length);
+            index += durs.length;
         }
     }
 
@@ -388,18 +402,6 @@ public class AppendTrack extends AbstractTrack {
     }
 
     public synchronized long[] getSampleDurations() {
-        int numSamples = 0;
-        for (Track track : tracks) {
-            numSamples += track.getSampleDurations().length;
-        }
-        long[] decodingTimes = new long[numSamples];
-        int index = 0;
-        // should use system arraycopy but this works too (yes it's slow ...)
-        for (Track track : tracks) {
-            for (long l : track.getSampleDurations()) {
-                decodingTimes[index++] = l;
-            }
-        }
         return decodingTimes;
     }
 

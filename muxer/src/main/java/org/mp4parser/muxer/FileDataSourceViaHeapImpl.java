@@ -10,30 +10,33 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
-public class FileDataSourceImpl implements DataSource {
-    private static Logger LOG = Logger.getLogger(FileDataSourceImpl.class);
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
+
+
+public class FileDataSourceViaHeapImpl implements DataSource {
+    private static Logger LOG = Logger.getLogger(FileDataSourceViaHeapImpl.class);
     FileChannel fc;
     String filename;
 
 
-    public FileDataSourceImpl(File f) throws FileNotFoundException {
+    public FileDataSourceViaHeapImpl(File f) throws FileNotFoundException {
         this.fc = new FileInputStream(f).getChannel();
         this.filename = f.getName();
     }
 
-    public FileDataSourceImpl(String f) throws FileNotFoundException {
+    public FileDataSourceViaHeapImpl(String f) throws FileNotFoundException {
         File file = new File(f);
         this.fc = new FileInputStream(file).getChannel();
         this.filename = file.getName();
     }
 
 
-    public FileDataSourceImpl(FileChannel fc) {
+    public FileDataSourceViaHeapImpl(FileChannel fc) {
         this.fc = fc;
         this.filename = "unknown";
     }
 
-    public FileDataSourceImpl(FileChannel fc, String filename) {
+    public FileDataSourceViaHeapImpl(FileChannel fc, String filename) {
         this.fc = fc;
         this.filename = filename;
     }
@@ -59,8 +62,9 @@ public class FileDataSourceImpl implements DataSource {
     }
 
     public synchronized ByteBuffer map(long startPosition, long size) throws IOException {
-        LOG.logDebug(startPosition + " " + size);
-        return fc.map(FileChannel.MapMode.READ_ONLY, startPosition, size);
+        ByteBuffer bb = ByteBuffer.allocate(l2i(size));
+        fc.read(bb, startPosition);
+        return (ByteBuffer) bb.rewind();
     }
 
     public void close() throws IOException {
@@ -71,4 +75,5 @@ public class FileDataSourceImpl implements DataSource {
     public String toString() {
         return filename;
     }
+
 }

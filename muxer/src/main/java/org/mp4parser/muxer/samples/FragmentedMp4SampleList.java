@@ -116,7 +116,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                 TrackRunBox trun = (TrackRunBox) box;
 
 
-                if (trun.getEntries().size() < (sampleIndexWithInTraf - previousTrunsSize)) {
+                if (trun.getEntries().size() <= (sampleIndexWithInTraf - previousTrunsSize)) {
                     previousTrunsSize += trun.getEntries().size();
                 } else {
                     // we are in correct trun box
@@ -221,7 +221,10 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
         for (MovieFragmentBox moof : isofile.getBoxes(MovieFragmentBox.class)) {
             for (TrackFragmentBox trackFragmentBox : moof.getBoxes(TrackFragmentBox.class)) {
                 if (trackFragmentBox.getTrackFragmentHeaderBox().getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
-                    i += trackFragmentBox.getBoxes(TrackRunBox.class).get(0).getSampleCount();
+                    for (TrackRunBox trackRunBox : trackFragmentBox.getBoxes(TrackRunBox.class)) {
+                        i += trackRunBox.getSampleCount();
+                    }
+
                 }
             }
         }
