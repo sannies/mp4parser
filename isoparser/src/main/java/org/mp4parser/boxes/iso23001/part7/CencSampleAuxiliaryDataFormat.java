@@ -14,7 +14,6 @@ import java.util.Arrays;
  * the 'cenc' scheme, the default value for aux_info_type is equal to 'cenc' and the default value for the
  * aux_info_type_parameter is 0 so content may be created omitting these optional fields. Storage of
  * sample auxiliary information shall conform to ISO/IEC 14496-12.<br>
- * <p/>
  * This class can also be used for PIFF as it has been derived from the PIFF spec.
  */
 public class CencSampleAuxiliaryDataFormat {

@@ -29,10 +29,10 @@ import java.util.Vector;
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
  * Windows Media Xtra Box.
- * <p/>
+ * <br>
  * I can't find definitive documentation on this from Microsoft so it's cobbled together from
  * various sources. Mostly ExifTool for Perl.
- * <p/>
+ * <br>
  * Various references:
  * https://msdn.microsoft.com/en-us/library/windows/desktop/dd743066(v=vs.85).aspx
  * https://metacpan.org/source/EXIFTOOL/Image-ExifTool-9.76/lib/Image/ExifTool/Microsoft.pm

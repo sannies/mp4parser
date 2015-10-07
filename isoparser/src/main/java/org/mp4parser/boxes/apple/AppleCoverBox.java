@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by Tobias Bley / UltraMixer on 04/25/2014.
- * <p/>
  * 2014-07-22 @aldenml Added minimal support for image data manipulation (read and write).
  */
 public class AppleCoverBox extends AppleDataBox {

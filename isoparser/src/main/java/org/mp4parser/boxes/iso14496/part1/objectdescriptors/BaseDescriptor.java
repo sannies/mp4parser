@@ -107,11 +107,6 @@ public abstract class BaseDescriptor {
 
     public abstract ByteBuffer serialize();
 
-    /**
-     * without tag and size
-     *
-     * @return
-     */
     abstract int getContentSize();
 
     @Override
