@@ -16,7 +16,6 @@ import org.mp4parser.streaming.extensions.CompositionTimeSampleExtension;
 import org.mp4parser.streaming.extensions.CompositionTimeTrackExtension;
 import org.mp4parser.streaming.extensions.DimensionTrackExtension;
 import org.mp4parser.streaming.extensions.SampleFlagsSampleExtension;
-import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.RangeStartMap;
 
 import java.io.ByteArrayInputStream;
@@ -55,7 +54,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
     List<byte[]> buffered = new ArrayList<byte[]>();
     FirstVclNalDetector fvnd = null;
 
-    public H264NalConsumingTrack() throws IOException {
+    public H264NalConsumingTrack() {
     }
 
     public static H264NalUnitHeader getNalUnitHeader(byte[] nal) {
@@ -77,7 +76,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
     }
 
     protected void consumeNal(byte[] nal) throws IOException, InterruptedException {
-        LOG.finest("Consume NAL of " + nal.length + " bytes." + Hex.encodeHex(new byte[]{nal[0], nal[1], nal[2], nal[3], nal[4]}));
+        //LOG.finest("Consume NAL of " + nal.length + " bytes." + Hex.encodeHex(new byte[]{nal[0], nal[1], nal[2], nal[3], nal[4]}));
         H264NalUnitHeader nalUnitHeader = getNalUnitHeader(nal);
         switch (nalUnitHeader.nal_unit_type) {
             case H264NalUnitTypes.CODED_SLICE_NON_IDR:
@@ -361,9 +360,12 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
                     _timescale = 0;
                     _frametick = 0;
                 }
-
-                if (_timescale / _frametick > 100) {
-                    LOG.warning("Framerate is " + (_timescale / _frametick) + ". That is suspicious.");
+                if (_frametick > 0) {
+                    if (_timescale / _frametick > 100) {
+                        LOG.warning("Framerate is " + (_timescale / _frametick) + ". That is suspicious.");
+                    }
+                } else {
+                    LOG.warning("Frametick is " + _frametick + ". That is suspicious.");
                 }
                 if (sps.vuiParams.bitstreamRestriction != null) {
                     max_dec_frame_buffering = sps.vuiParams.bitstreamRestriction.max_dec_frame_buffering;
