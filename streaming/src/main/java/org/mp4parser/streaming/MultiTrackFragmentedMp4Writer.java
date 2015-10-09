@@ -13,7 +13,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -36,7 +35,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     protected Map<StreamingTrack, Long> currentTime = new HashMap<StreamingTrack, Long>();
 
 
-    protected ExecutorService es;
     protected int maxTimeOuts = 10;
     protected int timeOut = 500;
     protected boolean closed = false;
@@ -82,7 +80,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
     public void close() throws IOException {
         this.closed = true;
-        es.shutdown();
         List<StreamingTrack> source = new LinkedList<StreamingTrack>(this.source);
         Collections.sort(source, new Comparator<StreamingTrack>() {
             public int compare(StreamingTrack o1, StreamingTrack o2) {
@@ -94,12 +91,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         }
         for (StreamingTrack streamingTrack : source) {
             streamingTrack.close();
-        }
-
-        try {
-            es.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            throw new IOException(e);
         }
     }
 
@@ -266,14 +257,10 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
             box.getBox(out);
         }
 
-
         LOG.info("Start receiving from tracks " + source);
         int forceEndOfStream = 0;
         do {
-
             double minTrackTime = Double.MAX_VALUE;
-
-
             StreamingTrack minStreamingTrack = null;
             for (StreamingTrack streamingTrack : source) {
                 double trackTime = ((double) currentFragmentStartTime.get(streamingTrack)) / streamingTrack.getTimescale();
@@ -282,7 +269,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
                     minTrackTime = trackTime;
                 }
             }
-
             assert minStreamingTrack != null;
             StreamingSample ss = minStreamingTrack.getSamples().poll(timeOut, TimeUnit.MILLISECONDS);
             if (ss != null) {
@@ -292,7 +278,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
                     LOG.info("Final ");
                     source.remove(minStreamingTrack);
                 }
-
             } else {
                 LOG.warning("No Sample acquired. 'poll()' timed out.");
                 forceEndOfStream++;
@@ -347,15 +332,15 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         // 3 seconds = 3 * source.getTimescale()
         //System.err.println("consumeSample " + ts + " " + cfst);
         if (sample == FINAL_SAMPLE || (
-
                 ts > cfst + 3 * streamingTrack.getTimescale() &&
                         fragmentBuffers.get(streamingTrack).size() > 0 &&
-                        (sampleDependencySampleExtension == null ||
-                                sampleDependencySampleExtension.isSyncSample()))) {
+                        (sampleDependencySampleExtension == null || sampleDependencySampleExtension.isSyncSample()))) {
 
             writeFragment(streamingTrack);
             currentFragmentStartTime.put(streamingTrack, ts);
-            LOG.info("fragment written. track " + streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " from: " + (((double) cfst) / streamingTrack.getTimescale()) + " to: " + (((double) ts) / streamingTrack.getTimescale()));
+            LOG.info("fragment written. track " + streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() +
+                    " from: " + (((double) cfst) / streamingTrack.getTimescale()) + " to: " + (((double) ts) / streamingTrack.getTimescale()) +
+                    ". Num Samples: " + fragmentBuffers.get(streamingTrack).size() + " finalSample: " + (sample == FINAL_SAMPLE));
 /*            if (fragmentBuffers.get(streamingTrack).size() > 0) {
                 if (fragmentBuffers.get(streamingTrack).get(0).getSampleExtension(SampleFlagsSampleExtension.class).isSyncSample()) {
                     System.err.println("Starts with syncSample");
@@ -368,8 +353,10 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
 
         }
-        fragmentBuffers.get(streamingTrack).add(sample);
-        LOG.finer("sample received");
+        if (sample != FINAL_SAMPLE) {
+            fragmentBuffers.get(streamingTrack).add(sample);
+            LOG.finer("sample received");
+        }
         currentTime.put(streamingTrack, ts + sample.getDuration());
     }
 
