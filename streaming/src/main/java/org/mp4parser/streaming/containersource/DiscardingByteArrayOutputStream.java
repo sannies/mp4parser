@@ -189,7 +189,7 @@ public class DiscardingByteArrayOutputStream extends OutputStream {
     }
 
     public synchronized void discardTo(long n) {
-        System.err.println("discard up to pos " + n);
+        //System.err.println("discard up to pos " + n);
         System.arraycopy(buf, l2i(n - startOffset), buf, 0, l2i(buf.length - (n - startOffset)));
         count -= (n - startOffset);
         startOffset = n;

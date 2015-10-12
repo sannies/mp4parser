@@ -3,21 +3,20 @@ package org.mp4parser.streaming;
 import org.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
 
 import java.util.HashMap;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 public abstract class AbstractStreamingTrack implements StreamingTrack {
-    protected BlockingQueue<StreamingSample> samples = new ArrayBlockingQueue<StreamingSample>(1000);
     protected TrackHeaderBox tkhd;
     protected HashMap<Class<? extends TrackExtension>, TrackExtension> trackExtensions = new HashMap<Class<? extends TrackExtension>, TrackExtension>();
+
+    protected SampleSink sampleSink;
 
     public AbstractStreamingTrack() {
         tkhd = new TrackHeaderBox();
         tkhd.setTrackId(1);
     }
 
-    public BlockingQueue<StreamingSample> getSamples() {
-        return samples;
+    public void setSampleSink(SampleSink sampleSink) {
+        this.sampleSink = sampleSink;
     }
 
 

@@ -1,22 +1,15 @@
 package org.mp4parser.streaming.rawformats.h264;
 
 import org.junit.Test;
-import org.mp4parser.IsoFile;
-import org.mp4parser.muxer.InMemRandomAccessSourceImpl;
-import org.mp4parser.muxer.Sample;
-import org.mp4parser.muxer.samples.SampleList;
 import org.mp4parser.streaming.MultiTrackFragmentedMp4Writer;
 import org.mp4parser.streaming.StreamingTrack;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.nio.channels.Channels;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by sannies on 16.08.2015.
@@ -27,25 +20,19 @@ public class H264AnnexBTrackTest {
 
     @Test
     public void testMuxing() throws Exception {
-        H264AnnexBTrack b = new H264AnnexBTrack(H264AnnexBTrackTest.class.getResourceAsStream("/org/mp4parser/streaming/rawformats/h264/tos.h264"));
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        //H264AnnexBTrack b = new H264AnnexBTrack(H264AnnexBTrackTest.class.getResourceAsStream("/org/mp4parser/streaming/rawformats/h264/tos.h264"));
+        H264AnnexBTrack b = new H264AnnexBTrack(new FileInputStream("C:\\dev\\mp4parser\\out.264"));
+        OutputStream baos = new FileOutputStream("output.mp4");
         MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), baos);
         //MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new ByteArrayOutputStream());
-        Future<Void> f = es.submit(b);
-        writer.call();
-        es.shutdown();
-        es.awaitTermination(1, TimeUnit.MINUTES);
-        try {
-            f.get();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        IsoFile isoFile = new IsoFile(Channels.newChannel(new ByteArrayInputStream(baos.toByteArray())));
-        Walk.through(isoFile);
-        List<Sample> s = new SampleList(1, isoFile, new InMemRandomAccessSourceImpl(baos.toByteArray()));
-        for (Sample sample : s) {
-            //System.err.println("s: " + sample.getSize());
-            sample.asByteBuffer();
-        }
+        b.call();
+        writer.close();
+
+        //Walk.through(isoFile);
+        //List<Sample> s = new SampleList(1, isoFile, new InMemRandomAccessSourceImpl(baos.toByteArray()));
+        //for (Sample sample : s) {
+//            System.err.println("s: " + sample.getSize());
+        //          sample.asByteBuffer();
+        //    }
     }
 }

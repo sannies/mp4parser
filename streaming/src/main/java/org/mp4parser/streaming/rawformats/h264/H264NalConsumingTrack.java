@@ -16,7 +16,6 @@ import org.mp4parser.streaming.extensions.CompositionTimeSampleExtension;
 import org.mp4parser.streaming.extensions.CompositionTimeTrackExtension;
 import org.mp4parser.streaming.extensions.DimensionTrackExtension;
 import org.mp4parser.streaming.extensions.SampleFlagsSampleExtension;
-import org.mp4parser.tools.RangeStartMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -40,8 +39,6 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
     LinkedHashMap<Integer, SeqParameterSet> spsIdToSps = new LinkedHashMap<Integer, SeqParameterSet>();
     LinkedHashMap<Integer, byte[]> ppsIdToPpsBytes = new LinkedHashMap<Integer, byte[]>();
     LinkedHashMap<Integer, PictureParameterSet> ppsIdToPps = new LinkedHashMap<Integer, PictureParameterSet>();
-    RangeStartMap<Integer, byte[]> seqParameterRangeMap = new RangeStartMap<Integer, byte[]>();
-    RangeStartMap<Integer, byte[]> pictureParameterRangeMap = new RangeStartMap<Integer, byte[]>();
     BlockingQueue<SeqParameterSet> spsForConfig = new LinkedBlockingDeque<SeqParameterSet>();
 
     int timescale = 0;
@@ -66,14 +63,6 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         return nalUnitHeader;
     }
 
-    /**
-     * Return true if there are no more sample to be read from the data source.
-     */
-    public abstract boolean sourceDepleted();
-
-    public boolean hasMoreSamples() {
-        return !samples.isEmpty() || !sourceDepleted();
-    }
 
     protected void consumeNal(byte[] nal) throws IOException, InterruptedException {
         //LOG.finest("Consume NAL of " + nal.length + " bytes." + Hex.encodeHex(new byte[]{nal[0], nal[1], nal[2], nal[3], nal[4]}));
@@ -148,7 +137,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
 
     }
 
-    protected void drainDecPictureBuffer(boolean all) throws InterruptedException {
+    protected void drainDecPictureBuffer(boolean all) throws IOException {
         if (all) {
             while (decFrameBuffer.size() > 0) {
                 drainDecPictureBuffer(false);
@@ -174,7 +163,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
 
             first.addSampleExtension(CompositionTimeSampleExtension.create(delay * frametick));
             //System.err.println("Adding sample");
-            samples.offer(first, 60, TimeUnit.SECONDS);
+            sampleSink.acceptSample(first, this);
         }
 
     }
@@ -253,7 +242,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
                 }*/
             throw new IOException("pic_order_cnt_type == 1 needs to be implemented");
         } else if (sh.sps.pic_order_cnt_type == 2) {
-            samples.add(ssi);
+            sampleSink.acceptSample(ssi, this);
         }
         buffered.clear();
         return ssi;
@@ -420,9 +409,6 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         if (oldPpsSameId != null && !Arrays.equals(oldPpsSameId, data)) {
             throw new IOException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
         } else {
-            if (oldPpsSameId == null) {
-                pictureParameterRangeMap.put(samples.size(), data);
-            }
             ppsIdToPpsBytes.put(_pictureParameterSet.pic_parameter_set_id, data);
             ppsIdToPps.put(_pictureParameterSet.pic_parameter_set_id, _pictureParameterSet);
         }
@@ -440,9 +426,6 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         if (oldSpsSameId != null && !Arrays.equals(oldSpsSameId, data)) {
             throw new IOException("OMG - I got two SPS with same ID but different settings!");
         } else {
-            if (oldSpsSameId != null) {
-                seqParameterRangeMap.put(samples.size(), data);
-            }
             spsIdToSpsBytes.put(_seqParameterSet.seq_parameter_set_id, data);
             spsIdToSps.put(_seqParameterSet.seq_parameter_set_id, _seqParameterSet);
             spsForConfig.add(_seqParameterSet);

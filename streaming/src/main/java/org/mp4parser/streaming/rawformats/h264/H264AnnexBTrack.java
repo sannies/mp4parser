@@ -1,11 +1,13 @@
 package org.mp4parser.streaming.rawformats.h264;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -18,16 +20,11 @@ public class H264AnnexBTrack extends H264NalConsumingTrack implements Callable<V
 
     public H264AnnexBTrack(InputStream inputStream) throws IOException {
         assert inputStream != null;
-        this.inputStream = inputStream;
+        this.inputStream = new BufferedInputStream(inputStream);
     }
 
-    @Override
-    public boolean sourceDepleted() {
-        try {
-            return inputStream.available() == 0;
-        } catch (IOException e) {
-            return true;
-        }
+    public boolean isClosed() {
+        return closed;
     }
 
     public void close() throws IOException {
@@ -41,7 +38,7 @@ public class H264AnnexBTrack extends H264NalConsumingTrack implements Callable<V
 
     public Void call() throws IOException, InterruptedException {
         byte[] nal;
-        NalStreamTokenizer st = new NalStreamTokenizer(inputStream, new byte[]{0, 0, 1}, new byte[]{0, 0, 0});
+        NalStreamTokenizer st = new NalStreamTokenizer(inputStream);
 
         while ((nal = st.getNext()) != null && !closed) {
             //System.err.println("NAL before consume");
@@ -49,80 +46,91 @@ public class H264AnnexBTrack extends H264NalConsumingTrack implements Callable<V
             //System.err.println("NAL after consume");
         }
         drainDecPictureBuffer(true);
+        closed = true;
         countDownLatch.countDown();
         return null;
     }
 
     public static class NalStreamTokenizer {
         private static final Logger LOG = Logger.getLogger(NalStreamTokenizer.class.getName());
+        MyByteArrayOutputStream next = new MyByteArrayOutputStream();
         private InputStream inputStream;
-
-        private byte[] startPattern;
-        private byte[] stopPattern;
-        private byte[] buffer;
         private State state;
 
-        public NalStreamTokenizer(InputStream inputStream, byte[] startPattern, byte[] stopPattern) {
+        public NalStreamTokenizer(InputStream inputStream) {
             this.inputStream = inputStream;
-            this.startPattern = startPattern;
-            this.stopPattern = stopPattern;
-            buffer = new byte[startPattern.length];
-            Arrays.fill(buffer, (byte) 0x3f);
             state = State.OUT;
         }
 
         public byte[] getNext() throws IOException {
-            LOG.finest("getNext() called");
-            ByteArrayOutputStream next = new ByteArrayOutputStream();
-            switch (state) {
-                case IN:
-                    while (!(Arrays.equals(buffer, startPattern) || Arrays.equals(buffer, stopPattern))) {
-                        int c = inputStream.read();
-                        if (c == -1) {
-                            state = State.DONE;
-                            next.write(buffer);
-                            return next.toByteArray();
-                        } else {
-                            next.write(buffer[0]);
-                            System.arraycopy(buffer, 1, buffer, 0, buffer.length - 1);
-                            buffer[buffer.length - 1] = (byte) c;
-                        }
-                    }
-                    state = State.OUT;
-                    return next.toByteArray();
-                case OUT:
-                    while (!Arrays.equals(buffer, startPattern)) {
-                        int c = inputStream.read();
-                        if (c == -1) {
-                            state = State.DONE;
-                            return null;
-                        } else {
-                            System.arraycopy(buffer, 1, buffer, 0, buffer.length - 1);
-                            buffer[buffer.length - 1] = (byte) c;
-                        }
-                    }
-                    // drain stopword from buffer
-                    for (int i = 0; i < buffer.length; i++) {
-                        int c = inputStream.read();
-                        if (c == -1) {
-                            state = State.DONE;
-                            return null;
-                        } else {
-                            System.arraycopy(buffer, 1, buffer, 0, buffer.length - 1);
-                            buffer[buffer.length - 1] = (byte) c;
-                        }
-                    }
-                    state = State.IN;
-                    return getNext();
-                case DONE:
-                    return null;
-
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.finest("getNext() called");
             }
-            return null;
+
+            outerwhile:
+            while (true) {
+
+                switch (state) {
+                    case IN:
+                        int c;
+                        while ((c = inputStream.read()) != -1) {
+                            next.write(c);
+                            if (next.lastThreeEqual((byte) 0, (byte) 0, (byte) 1)) {
+                                // this closes last NAL and open new NAL at the same time
+                                state = State.IN;
+                                byte[] s = next.toByteArrayLess3();
+                                next.reset();
+                                return s;
+                            }
+                            if (next.lastThreeEqual((byte) 0, (byte) 0, (byte) 0)) {
+                                state = State.OUT;
+                                byte[] s = next.toByteArrayLess3();
+                                next.keepLast3();
+                                return s;
+                            }
+
+                        }
+                        state = State.DONE;
+                        return next.toByteArray();
+                    case OUT:
+
+                        while ((c = inputStream.read()) != -1) {
+                            next.write(c);
+                            if (next.lastThreeEqual((byte) 0, (byte) 0, (byte) 1)) {
+                                state = State.IN;
+                                next.reset();
+                                continue outerwhile;
+                            }
+                        }
+                        state = State.DONE;
+                    case DONE:
+                        return null;
+
+                }
+            }
         }
 
         private enum State {
             IN, OUT, DONE
+        }
+    }
+
+    static class MyByteArrayOutputStream extends ByteArrayOutputStream {
+        public boolean lastThreeEqual(byte a, byte b, byte c) {
+            int i = count;
+            return i > 3 && buf[count - 3] == a && buf[count - 2] == b && buf[count - 1] == c;
+        }
+
+        public byte[] toByteArrayLess3() {
+            return Arrays.copyOf(buf, count - 3 > 0 ? count - 3 : 0);
+
+        }
+
+        public void keepLast3() {
+            buf[0] = buf[count - 3];
+            buf[1] = buf[count - 2];
+            buf[2] = buf[count - 1];
+            count = 3;
         }
     }
 }

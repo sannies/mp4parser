@@ -37,6 +37,16 @@ public class SampleFlagsSampleExtension implements SampleExtension {
         return c;
     }
 
+    @Override
+    public String toString() {
+        return "isLeading=" + isLeading +
+                ", dependsOn=" + sampleDependsOn +
+                ", isDependedOn=" + sampleIsDependedOn +
+                ", hasRedundancy=" + sampleHasRedundancy +
+                ", paddingValue=" + samplePaddingValue +
+                ", isSyncSample=" + !sampleIsNonSyncSample +
+                ", sampleDegradationPriority=" + sampleDegradationPriority;
+    }
 
     public byte getIsLeading() {
         return isLeading;

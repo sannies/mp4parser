@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
 
 import static org.mp4parser.tools.CastUtils.l2i;
 
@@ -65,60 +65,13 @@ public class Mp4ContainerSource implements Callable<Void> {
             throw new IOException(e);
         }
         List<StreamingTrack> streamingTracks = mp4ContainerSource.getTracks();
-
-        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(streamingTracks, new FileOutputStream("output.mp4"));
-        ExecutorService es = Executors.newCachedThreadPool();
-        final ExecutorCompletionService<Void> ecs = new ExecutorCompletionService<Void>(es);
-
-        ecs.submit(mp4ContainerSource);
-        ecs.submit(writer);
-
-
-        final List<Future<Void>> allFutures = new ArrayList<Future<Void>>();
-        List<Callable<Void>> allCallables = new ArrayList<Callable<Void>>();
-        allCallables.add(mp4ContainerSource);
-        allCallables.add(writer);
-
-        for (Callable<Void> callable : allCallables) {
-            allFutures.add(ecs.submit(callable));
-        }
-
+        File f = new File("output.mp4");
+        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(streamingTracks, new FileOutputStream(f));
 
         System.out.println("Reading and writing started.");
-
-        boolean complete = false;
-
-        while (!complete) {
-            complete = true;
-            Iterator<Future<Void>> futuresIt = allFutures.iterator();
-            while (futuresIt.hasNext()) {
-                if (futuresIt.next().isDone()) {
-                    futuresIt.remove();
-                } else {
-                    complete = false;
-                }
-            }
-
-            if (!allFutures.isEmpty()) {
-                try {
-                    ecs.take().get();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(e);
-                } catch (ExecutionException e) {
-                    System.out.println("Execution exception " + e.getMessage());
-                    e.printStackTrace();
-                    for (Future<Void> future : allFutures) {
-                        if (!future.isDone()) {
-                            System.out.println("Cancelling " + future);
-                            future.cancel(true);
-                        }
-                    }
-                    complete = true;
-                }
-            }
-        }
-        es.shutdown();
+        mp4ContainerSource.call();
+        writer.close();
+        System.err.println(f.getAbsolutePath());
 
     }
 
@@ -211,17 +164,21 @@ public class Mp4ContainerSource implements Callable<Void> {
 
                 while (avail + bytesRead <= offset + sampleSize) {
                     try {
-                        bytesRead += readableByteChannel.read(BUFFER);
+                        int br = readableByteChannel.read(BUFFER);
+                        if (br == -1) {
+                            break;
+                        }
+                        bytesRead += br;
                         BUFFER.rewind();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
-                System.err.println("Get sample content @" + offset + " len=" + sampleSize);
+                //System.err.println("Get sample content @" + offset + " len=" + sampleSize);
                 final byte[] sampleContent = baos.get(offset, sampleSize);
 
-                StreamingSample ss = new StreamingSampleImpl(sampleContent, duration);
-                ss.addSampleExtension(sfse);
+                StreamingSample streamingSample = new StreamingSampleImpl(sampleContent, duration);
+                streamingSample.addSampleExtension(sfse);
                 if (compositionOffsets != null && !compositionOffsets.isEmpty()) {
                     final long compositionOffset = compositionOffsets.get(0).getOffset();
                     if (compositionOffsets.get(0).getCount() == 1) {
@@ -229,18 +186,15 @@ public class Mp4ContainerSource implements Callable<Void> {
                     } else {
                         compositionOffsets.get(0).setCount(compositionOffsets.get(0).getCount() - 1);
                     }
-                    ss.addSampleExtension(CompositionTimeSampleExtension.create(compositionOffset));
+                    streamingSample.addSampleExtension(CompositionTimeSampleExtension.create(compositionOffset));
                 }
 
-
-
-                try {
-                    //System.out.print("Pushing sample @" + offset + " of " + sampleSize + " bytes (i=" + index + ")");
-                    tracks.get(firstInLine).getSamples().put(ss);
-                    //System.out.println("Pushed");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if (firstInLine.getTrackHeaderBox().getTrackId() == 1) {
+                    System.out.println("Pushing sample @" + offset + " of " + sampleSize + " bytes (i=" + index + ")");
                 }
+                tracks.get(firstInLine).getSampleSink().acceptSample(streamingSample, tracks.get(firstInLine));
+
+
                 offset += sampleSize;
 
 
@@ -264,7 +218,7 @@ public class Mp4ContainerSource implements Callable<Void> {
         private final TrackBox trackBox;
         protected HashMap<Class<? extends TrackExtension>, TrackExtension> trackExtensions = new HashMap<Class<? extends TrackExtension>, TrackExtension>();
         boolean allSamplesRead = false;
-        private BlockingQueue<StreamingSample> samples = new ArrayBlockingQueue<StreamingSample>(1000);
+        SampleSink sampleSink;
 
         public Mp4StreamingTrack(TrackBox trackBox) {
             this.trackBox = trackBox;
@@ -274,18 +228,21 @@ public class Mp4ContainerSource implements Callable<Void> {
             allSamplesRead = true;
         }
 
+        public boolean isClosed() {
+            return allSamplesRead;
+        }
+
         public long getTimescale() {
             return trackBox.getMediaBox().getMediaHeaderBox().getTimescale();
         }
 
-        public BlockingQueue<StreamingSample> getSamples() {
-            return samples;
+        public SampleSink getSampleSink() {
+            return sampleSink;
         }
 
-        public boolean hasMoreSamples() {
-            return !allSamplesRead && !samples.isEmpty();
+        public void setSampleSink(SampleSink sampleSink) {
+            this.sampleSink = sampleSink;
         }
-
 
         public String getHandler() {
             return trackBox.getMediaBox().getHandlerBox().getHandlerType();

@@ -2,12 +2,11 @@ package org.mp4parser.streaming;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.Callable;
 
 /**
  * Very basic interface to start and stop the creation of an MP4.
  */
-public interface StreamingMp4Writer extends Closeable, Callable<Void> {
+public interface SampleSink extends Closeable {
     /**
      * Should free all resources blocked and interrupts the process of writing the output.
      *
@@ -16,10 +15,11 @@ public interface StreamingMp4Writer extends Closeable, Callable<Void> {
     void close() throws IOException;
 
     /**
-     * Starts writing the MP4. This might involve starting the read process.
+     * Adds a samples to the SampleSink. This might or might not cause writing the sample any output stream or channel.
+     * Once this method is called the <code>StreamingTrack</code> must be ready and accept calls to any method.
      *
      * @return nothing
      * @throws IOException if writing (or reading) fails.
      */
-    Void call() throws Exception;
+    void acceptSample(StreamingSample streamingSample, StreamingTrack streamingTrack) throws IOException;
 }

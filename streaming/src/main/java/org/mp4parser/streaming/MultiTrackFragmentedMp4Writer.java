@@ -13,7 +13,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static org.mp4parser.tools.CastUtils.l2i;
@@ -22,9 +21,9 @@ import static org.mp4parser.tools.CastUtils.l2i;
 /**
  *
  */
-public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
+public class MultiTrackFragmentedMp4Writer implements SampleSink {
     private static final Logger LOG = Logger.getLogger(MultiTrackFragmentedMp4Writer.class.getName());
-    private static StreamingSample FINAL_SAMPLE = new StreamingSampleImpl(ByteBuffer.allocate(1), 333);
+
     protected final OutputStream outputStream;
     protected List<StreamingTrack> source;
 
@@ -34,13 +33,18 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
     protected Map<StreamingTrack, Long> currentFragmentStartTime = new HashMap<StreamingTrack, Long>();
     protected Map<StreamingTrack, Long> currentTime = new HashMap<StreamingTrack, Long>();
 
-
-    protected int maxTimeOuts = 10;
-    protected int timeOut = 500;
+    protected Map<StreamingTrack, long[]> tfraOffsets = new HashMap<StreamingTrack, long[]>();
+    protected Map<StreamingTrack, long[]> tfraTimes = new HashMap<StreamingTrack, long[]>();
     protected boolean closed = false;
+    long bytesWritten = 0;
+    boolean headerWritten = false;
+
 
     public MultiTrackFragmentedMp4Writer(List<StreamingTrack> source, OutputStream outputStream) throws IOException {
         this.source = new LinkedList<StreamingTrack>(source);
+        for (StreamingTrack streamingTrack : source) {
+            streamingTrack.setSampleSink(this);
+        }
         this.outputStream = outputStream;
         this.creationTime = new Date();
         HashSet<Long> trackIds = new HashSet<Long>();
@@ -70,30 +74,22 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
     }
 
-    public void setMaxTimeOuts(int maxTimeOuts) {
-        this.maxTimeOuts = maxTimeOuts;
-    }
-
-    public void setTimeOut(int timeOut) {
-        this.timeOut = timeOut;
-    }
-
     public void close() throws IOException {
         this.closed = true;
-        List<StreamingTrack> source = new LinkedList<StreamingTrack>(this.source);
-        Collections.sort(source, new Comparator<StreamingTrack>() {
-            public int compare(StreamingTrack o1, StreamingTrack o2) {
-                return currentFragmentStartTime.get(o1).compareTo(currentFragmentStartTime.get(o2));
-            }
-        });
+
+
         for (StreamingTrack streamingTrack : source) {
-            consumeSample(streamingTrack, FINAL_SAMPLE);
-        }
-        for (StreamingTrack streamingTrack : source) {
+            writeFragment(createFragment(streamingTrack, fragmentBuffers.get(streamingTrack)));
             streamingTrack.close();
         }
+
+        writeMovieFragmentRandomAccess(createMfra());
     }
 
+    public void writeMovieFragmentRandomAccess(Box mfra) throws IOException {
+        WritableByteChannel out = Channels.newChannel(outputStream);
+        mfra.getBox(out);
+    }
 
     protected ParsableBox createMvhd() {
         MovieHeaderBox mvhd = new MovieHeaderBox();
@@ -130,7 +126,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         mdhd.setLanguage(streamingTrack.getLanguage());
         return mdhd;
     }
-
 
     protected ParsableBox createMdia(StreamingTrack streamingTrack) {
         MediaBox mdia = new MediaBox();
@@ -171,7 +166,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return stbl;
     }
 
-
     protected DataInformationBox createDinf() {
         DataInformationBox dinf = new DataInformationBox();
         DataReferenceBox dref = new DataReferenceBox();
@@ -200,13 +194,14 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return tkhd;
     }
 
-
     public ParsableBox createFtyp() {
         List<String> minorBrands = new LinkedList<String>();
         minorBrands.add("isom");
-        minorBrands.add("iso6");
+        minorBrands.add("iso2");
         minorBrands.add("avc1");
-        return new FileTypeBox("isom", 0, minorBrands);
+        minorBrands.add("iso6");
+        minorBrands.add("mp41");
+        return new FileTypeBox("isom", 512, minorBrands);
     }
 
     protected ParsableBox createMvex() {
@@ -235,7 +230,6 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return trex;
     }
 
-
     protected ParsableBox createMoov() {
         MovieBox movieBox = new MovieBox();
 
@@ -250,44 +244,12 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return movieBox;
     }
 
-    public Void call() throws IOException, InterruptedException {
+    protected void writeHeader(Container container) throws IOException {
         final WritableByteChannel out = Channels.newChannel(outputStream);
-        Container header = createHeader();
-        for (Box box : header.getBoxes()) {
+        for (Box box : container.getBoxes()) {
             box.getBox(out);
+            bytesWritten += box.getSize();
         }
-
-        LOG.info("Start receiving from tracks " + source);
-        int forceEndOfStream = 0;
-        do {
-            double minTrackTime = Double.MAX_VALUE;
-            StreamingTrack minStreamingTrack = null;
-            for (StreamingTrack streamingTrack : source) {
-                double trackTime = ((double) currentFragmentStartTime.get(streamingTrack)) / streamingTrack.getTimescale();
-                if (trackTime < minTrackTime) {
-                    minStreamingTrack = streamingTrack;
-                    minTrackTime = trackTime;
-                }
-            }
-            assert minStreamingTrack != null;
-            StreamingSample ss = minStreamingTrack.getSamples().poll(timeOut, TimeUnit.MILLISECONDS);
-            if (ss != null) {
-                consumeSample(minStreamingTrack, ss);
-                if (!minStreamingTrack.hasMoreSamples()) {
-                    consumeSample(minStreamingTrack, FINAL_SAMPLE);
-                    LOG.info("Final ");
-                    source.remove(minStreamingTrack);
-                }
-            } else {
-                LOG.warning("No Sample acquired. 'poll()' timed out.");
-                forceEndOfStream++;
-            }
-
-        } while (!source.isEmpty() && forceEndOfStream < maxTimeOuts && !closed);
-        LOG.info("Finished consuming " + source);
-
-
-        return null;
     }
 
     protected Container createHeader() {
@@ -297,74 +259,104 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         return b;
     }
 
-    protected Container createFragment(StreamingTrack streamingTrack) throws IOException {
+    private void sortTracks() {
+        Collections.sort(source, new Comparator<StreamingTrack>() {
+            public int compare(StreamingTrack o1, StreamingTrack o2) {
+                return currentFragmentStartTime.get(o1).compareTo(currentFragmentStartTime.get(o2));
+            }
+        });
+    }
+
+    public synchronized void acceptSample(StreamingSample streamingSample, StreamingTrack streamingTrack) throws IOException {
+        if (!headerWritten) {
+            boolean allTracksAtLeastOneSample = true;
+            for (StreamingTrack track : source) {
+                allTracksAtLeastOneSample &= (currentTime.get(track) > 0 || track == streamingTrack);
+            }
+            if (allTracksAtLeastOneSample) {
+                writeHeader(createHeader());
+                headerWritten = true;
+            }
+        }
+
+        fragmentBuffers.get(streamingTrack).add(streamingSample);
+        currentTime.put(streamingTrack, currentTime.get(streamingTrack) + streamingSample.getDuration());
+
+        if (this.source.get(0) == streamingTrack) {
+            // we might have a fragment to write if
+            while (true) {
+                if (!(emitFragment())) break;
+            }
+        }
+    }
+
+
+    protected boolean emitFragment() throws IOException {
+        StreamingTrack streamingTrack = source.get(0);
+        // As the fragment start times need to increase fragment by fragment
+        // wo only have to look at the first track in this list as it is always
+        // sorted by next fragment start time.
+        long ts = currentTime.get(streamingTrack);
+        long cfst = currentFragmentStartTime.get(streamingTrack);
+
+        if ((ts > cfst + 3 * streamingTrack.getTimescale())) {
+            List<StreamingSample> fragmentCandidates = fragmentBuffers.get(streamingTrack);
+            List<StreamingSample> inFragment = new ArrayList<StreamingSample>(fragmentCandidates.size());
+            long time = 0;
+            boolean found = false;
+            for (StreamingSample fragmentCandidate : fragmentCandidates) {
+                if (time > 3 * streamingTrack.getTimescale()) {
+                    SampleFlagsSampleExtension sampleFlagsSampleExtension = fragmentCandidate.getSampleExtension(SampleFlagsSampleExtension.class);
+                    if (sampleFlagsSampleExtension == null || sampleFlagsSampleExtension.isSyncSample()) {
+                        // I'll assume that we have a sync sample if we don't have any sample flag extension
+                        found = true;
+                        break;
+                    }
+                }
+                time += (double) fragmentCandidate.getDuration();
+                inFragment.add(fragmentCandidate);
+            }
+            if (found) {
+                fragmentCandidates.removeAll(inFragment);
+                writeFragment(createFragment(streamingTrack, inFragment));
+                currentFragmentStartTime.put(streamingTrack, currentFragmentStartTime.get(streamingTrack) + time);
+                sortTracks();
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+
+    protected Container createFragment(StreamingTrack streamingTrack, List<StreamingSample> samples) throws IOException {
+        currentFragmentStartTime.get(streamingTrack);
+        tfraOffsets.put(streamingTrack, Mp4Arrays.copyOfAndAppend(tfraOffsets.get(streamingTrack), bytesWritten));
+        tfraTimes.put(streamingTrack, Mp4Arrays.copyOfAndAppend(tfraTimes.get(streamingTrack), currentFragmentStartTime.get(streamingTrack)));
+
         Container b = new BasicContainer();
         LOG.finest("Container created");
-        b.getBoxes().add(createMoof(streamingTrack));
+        b.getBoxes().add(createMoof(streamingTrack, samples));
         LOG.finest("moof created");
-        b.getBoxes().add(createMdat(streamingTrack));
+        b.getBoxes().add(createMdat(samples));
         LOG.finest("mdat created");
         return b;
     }
 
-    protected void writeFragment(StreamingTrack streamingTrack) throws IOException {
-        //LOG.info("About to write segemnt of " + streamingTrack + " sequence number " + sequenceNumber);
+    protected void writeFragment(Container fragment) throws IOException {
         WritableByteChannel out = Channels.newChannel(outputStream);
-        //LOG.info("Channel created for " + streamingTrack + " sequence number " + sequenceNumber);
-        Container b = createFragment(streamingTrack);
-        //LOG.info("Fragment with " + b.getBoxes().size() + " boxes.");
-        for (Box box : b.getBoxes()) {
+        for (Box box : fragment.getBoxes()) {
             box.getBox(out);
+            bytesWritten += box.getSize();
         }
-        LOG.info("Written segment of " + streamingTrack + " sequence number " + sequenceNumber);
-        sequenceNumber++;
     }
 
-    private synchronized void consumeSample(StreamingTrack streamingTrack, StreamingSample sample) throws IOException {
-        // System.err.println("Consuming " + streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() + " " + sample.getDuration());
-        SampleFlagsSampleExtension sampleDependencySampleExtension = sample.getSampleExtension(SampleFlagsSampleExtension.class);
 
-        long ts = currentTime.get(streamingTrack);
-
-
-        long cfst = currentFragmentStartTime.get(streamingTrack);
-        currentTime.put(streamingTrack, ts);
-        // 3 seconds = 3 * source.getTimescale()
-        //System.err.println("consumeSample " + ts + " " + cfst);
-        if (sample == FINAL_SAMPLE || (
-                ts > cfst + 3 * streamingTrack.getTimescale() &&
-                        fragmentBuffers.get(streamingTrack).size() > 0 &&
-                        (sampleDependencySampleExtension == null || sampleDependencySampleExtension.isSyncSample()))) {
-
-            writeFragment(streamingTrack);
-            currentFragmentStartTime.put(streamingTrack, ts);
-            LOG.info("fragment written. track " + streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId() +
-                    " from: " + (((double) cfst) / streamingTrack.getTimescale()) + " to: " + (((double) ts) / streamingTrack.getTimescale()) +
-                    ". Num Samples: " + fragmentBuffers.get(streamingTrack).size() + " finalSample: " + (sample == FINAL_SAMPLE));
-/*            if (fragmentBuffers.get(streamingTrack).size() > 0) {
-                if (fragmentBuffers.get(streamingTrack).get(0).getSampleExtension(SampleFlagsSampleExtension.class).isSyncSample()) {
-                    System.err.println("Starts with syncSample");
-                } else {
-                    System.err.println("WRONGWRONGWRONGWRONGWRONGWRONGWRONGWRONGWRONGWRONG");
-                }
-            }*/
-            fragmentBuffers.get(streamingTrack).clear();
-            LOG.finest("fragment buffer cleared");
-
-
-        }
-        if (sample != FINAL_SAMPLE) {
-            fragmentBuffers.get(streamingTrack).add(sample);
-            LOG.finer("sample received");
-        }
-        currentTime.put(streamingTrack, ts + sample.getDuration());
-    }
-
-    private ParsableBox createMoof(StreamingTrack streamingTrack) {
+    private ParsableBox createMoof(StreamingTrack streamingTrack, List<StreamingSample> samples) {
 
         MovieFragmentBox moof = new MovieFragmentBox();
         createMfhd(sequenceNumber, moof);
-        createTraf(streamingTrack, moof);
+        createTraf(streamingTrack, moof, samples);
 
         TrackRunBox firstTrun = moof.getTrackRunBoxes().get(0);
         firstTrun.setDataOffset(1); // dummy to make size correct
@@ -404,12 +396,12 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         parent.addBox(tfdt);
     }
 
-    protected void createTrun(StreamingTrack streamingTrack, TrackFragmentBox parent) {
+    protected void createTrun(StreamingTrack streamingTrack, TrackFragmentBox parent, List<StreamingSample> samples) {
         TrackRunBox trun = new TrackRunBox();
         trun.setVersion(1);
         trun.setSampleDurationPresent(true);
         trun.setSampleSizePresent(true);
-        List<TrackRunBox.Entry> entries = new ArrayList<TrackRunBox.Entry>(fragmentBuffers.size());
+        List<TrackRunBox.Entry> entries = new ArrayList<TrackRunBox.Entry>(samples.size());
 
 
         trun.setSampleCompositionTimeOffsetPresent(streamingTrack.getTrackExtension(CompositionTimeTrackExtension.class) != null);
@@ -417,7 +409,7 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         DefaultSampleFlagsTrackExtension defaultSampleFlagsTrackExtension = streamingTrack.getTrackExtension(DefaultSampleFlagsTrackExtension.class);
         trun.setSampleFlagsPresent(defaultSampleFlagsTrackExtension == null);
 
-        for (StreamingSample streamingSample : fragmentBuffers.get(streamingTrack)) {
+        for (StreamingSample streamingSample : samples) {
             TrackRunBox.Entry entry = new TrackRunBox.Entry();
             entry.setSampleSize(streamingSample.getContent().remaining());
             if (defaultSampleFlagsTrackExtension == null) {
@@ -452,12 +444,12 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
         parent.addBox(trun);
     }
 
-    private void createTraf(StreamingTrack streamingTrack, MovieFragmentBox moof) {
+    private void createTraf(StreamingTrack streamingTrack, MovieFragmentBox moof, List<StreamingSample> samples) {
         TrackFragmentBox traf = new TrackFragmentBox();
         moof.addBox(traf);
         createTfhd(streamingTrack, traf);
         createTfdt(streamingTrack, traf);
-        createTrun(streamingTrack, traf);
+        createTrun(streamingTrack, traf, samples);
 
         if (streamingTrack.getTrackExtension(CencEncryptTrackExtension.class) != null) {
             //     createSaiz(getTrackExtension(source, CencEncryptTrackExtension.class), sequenceNumber, traf);
@@ -507,14 +499,52 @@ public class MultiTrackFragmentedMp4Writer implements StreamingMp4Writer {
 
     }
 
+    protected ParsableBox createMfra() {
+        MovieFragmentRandomAccessBox mfra = new MovieFragmentRandomAccessBox();
+
+        for (StreamingTrack track : source) {
+            mfra.addBox(createTfra(track));
+        }
+
+        MovieFragmentRandomAccessOffsetBox mfro = new MovieFragmentRandomAccessOffsetBox();
+        mfra.addBox(mfro);
+        mfro.setMfraSize(mfra.getSize());
+        return mfra;
+    }
+
+    /**
+     * Creates a 'tfra' - track fragment random access box for the given track with the isoFile.
+     * The tfra contains a map of random access points with time as key and offset within the isofile
+     * as value.
+     *
+     * @param track the concerned track
+     * @return a track fragment random access box.
+     */
+    protected ParsableBox createTfra(StreamingTrack track) {
+        TrackFragmentRandomAccessBox tfra = new TrackFragmentRandomAccessBox();
+        tfra.setVersion(1); // use long offsets and times
+        long[] offsets = tfraOffsets.get(track);
+        long[] times = tfraTimes.get(track);
+        List<TrackFragmentRandomAccessBox.Entry> entries = new ArrayList<TrackFragmentRandomAccessBox.Entry>(times.length);
+        for (int i = 0; i < times.length; i++) {
+            entries.add(new TrackFragmentRandomAccessBox.Entry(times[i], offsets[i], 1, 1, 1));
+        }
+
+
+        tfra.setEntries(entries);
+        tfra.setTrackId(track.getTrackExtension(TrackIdTrackExtension.class).getTrackId());
+        return tfra;
+    }
+
+
     private void createMfhd(long sequenceNumber, MovieFragmentBox moof) {
         MovieFragmentHeaderBox mfhd = new MovieFragmentHeaderBox();
         mfhd.setSequenceNumber(sequenceNumber);
         moof.addBox(mfhd);
     }
 
-    private Box createMdat(final StreamingTrack streamingTrack) {
-        final List<StreamingSample> samples = new ArrayList<StreamingSample>(fragmentBuffers.get(streamingTrack));
+    private Box createMdat(final List<StreamingSample> samples) {
+
         return new Box() {
             public String getType() {
                 return "mdat";

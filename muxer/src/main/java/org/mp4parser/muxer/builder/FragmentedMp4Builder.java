@@ -594,7 +594,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
      * @param isoFile the track is contained in
      * @return a track fragment random access box.
      */
-    protected ParsableBox createTfra(Track track, Container isoFile) {
+    protected Box createTfra(Track track, Container isoFile) {
         TrackFragmentRandomAccessBox tfra = new TrackFragmentRandomAccessBox();
         tfra.setVersion(1); // use long offsets and times
         List<TrackFragmentRandomAccessBox.Entry> offset2timeEntries = new LinkedList<TrackFragmentRandomAccessBox.Entry>();

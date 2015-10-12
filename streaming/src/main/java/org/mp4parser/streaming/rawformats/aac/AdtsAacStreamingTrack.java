@@ -19,15 +19,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Created by sannies on 01.09.2015.
  */
 public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Callable<Void> {
-    public static Map<Integer, Integer> samplingFrequencyIndexMap = new HashMap<Integer, Integer>();
+    private static Map<Integer, Integer> samplingFrequencyIndexMap = new HashMap<Integer, Integer>();
     private static Logger LOG = Logger.getLogger(AdtsAacStreamingTrack.class.getName());
 
     static {
@@ -60,6 +58,7 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
     CountDownLatch gotFirstSample = new CountDownLatch(1);
     SampleDescriptionBox stsd = null;
     private InputStream is;
+    private boolean closed;
     private AdtsHeader firstHeader;
     private String lang = "und";
     private long avgBitrate;
@@ -80,6 +79,9 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
         this.addTrackExtension(defaultSampleFlagsTrackExtension);
     }
 
+    public boolean isClosed() {
+        return closed;
+    }
 
     public synchronized SampleDescriptionBox getSampleDescriptionBox() {
         waitForFirstSample();
@@ -141,15 +143,6 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
         return firstHeader.sampleRate;
     }
 
-    public boolean hasMoreSamples() {
-        try {
-            return is.available() > 0 || !samples.isEmpty();
-        } catch (IOException e) {
-            LOG.log(Level.WARNING, e.getMessage(), e);
-            return false;
-        }
-    }
-
     public String getHandler() {
         return "soun";
     }
@@ -163,6 +156,7 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
     }
 
     public void close() throws IOException {
+        closed = true;
         is.close();
     }
 
@@ -244,8 +238,7 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
                     n += count;
                 }
                 //System.err.println("Sample " + i++);
-                samples.offer(new StreamingSampleImpl(ByteBuffer.wrap(frame), 1024), 60, TimeUnit.SECONDS);
-
+                sampleSink.acceptSample(new StreamingSampleImpl(ByteBuffer.wrap(frame), 1024), this);
             }
         } catch (EOFException e) {
             LOG.info("Done reading ADTS AAC file.");

@@ -17,8 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by sannies on 02.09.2015.
@@ -30,17 +28,9 @@ public class AdtsAacStreamingTrackTest {
     public void testMuxing() throws Exception {
         AdtsAacStreamingTrack b = new AdtsAacStreamingTrack(AdtsAacStreamingTrackTest.class.getResourceAsStream("/org/mp4parser/streaming/rawformats/aac/somesound.aac"), 65000, 80000);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), baos);
+        new MultiTrackFragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), baos);
         //MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new ByteArrayOutputStream());
-        Future<Void> f = es.submit(b);
-        writer.call();
-        es.shutdown();
-        es.awaitTermination(1, TimeUnit.MINUTES);
-        try {
-            f.get();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        b.call();
         IsoFile isoFile = new IsoFile(Channels.newChannel(new ByteArrayInputStream(baos.toByteArray())));
         new FileOutputStream("output.mp4").write(baos.toByteArray());
         Walk.through(isoFile);

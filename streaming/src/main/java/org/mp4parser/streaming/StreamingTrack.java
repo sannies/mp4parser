@@ -3,32 +3,28 @@ package org.mp4parser.streaming;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 
 import java.io.Closeable;
-import java.util.concurrent.BlockingQueue;
 
 public interface StreamingTrack extends Closeable {
+    /**
+     * Gets the time scale of the track. Typically called by the SampleSink.
+     * Might throw IllegalStateException if called before the first sample has been pushed into the SampleSink.
+     * @return the track's time scale
+     */
     long getTimescale();
 
-    BlockingQueue<StreamingSample> getSamples();
-
-    /**
-     * Returns false if and only if the BlockingQueue returned by getSamples() is empty
-     * and the streams source is depleted.
-     *
-     * @return false if we can stop processing
-     */
-    boolean hasMoreSamples();
-
-    /**
-     * Returns the original TrackHeaderBox. Changes on the returned box should always
-     * be visible. Do not return a copy or create on the fly.
-     *
-     * @return the original TrackHeaderBox
-     */
-    //TrackHeaderBox getTrackHeaderBox();
+    boolean isClosed();
 
     String getHandler();
 
     String getLanguage();
+
+    /**
+     * All implementing classes must make sure the all generated samples are pushed to the sampleSink.
+     * When a sample is pushed all methods must yield valid results.
+     *
+     * @param sampleSink the sink for all generated samples.
+     */
+    void setSampleSink(SampleSink sampleSink);
 
     SampleDescriptionBox getSampleDescriptionBox();
 
