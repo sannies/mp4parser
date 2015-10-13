@@ -43,6 +43,10 @@ public class AbstractDescriptorBox extends AbstractFullBox {
         return data;
     }
 
+    public void setData(ByteBuffer data) {
+        this.data = data;
+    }
+
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
@@ -59,16 +63,12 @@ public class AbstractDescriptorBox extends AbstractFullBox {
         return descriptor;
     }
 
-    public String getDescriptorAsString() {
-        return descriptor.toString();
-    }
-
     public void setDescriptor(BaseDescriptor descriptor) {
         this.descriptor = descriptor;
     }
 
-    public void setData(ByteBuffer data) {
-        this.data = data;
+    public String getDescriptorAsString() {
+        return descriptor.toString();
     }
 
     @Override
@@ -78,7 +78,7 @@ public class AbstractDescriptorBox extends AbstractFullBox {
         content.position(content.position() + content.remaining());
         try {
             data.rewind();
-            descriptor = ObjectDescriptorFactory.createFrom(-1, data);
+            descriptor = ObjectDescriptorFactory.createFrom(-1, data.duplicate());
         } catch (IOException e) {
             log.log(Level.WARNING, "Error parsing ObjectDescriptor", e);
             //that's why we copied it ;)

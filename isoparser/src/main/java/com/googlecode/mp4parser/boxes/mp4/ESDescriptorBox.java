@@ -57,12 +57,22 @@ public class ESDescriptorBox extends AbstractDescriptorBox {
     }
 
     protected long getContentSize() {
-        return 4 + getEsDescriptor().getSize();
+        ESDescriptor esd = getEsDescriptor();
+        if (esd != null) {
+            return 4 + esd.getSize();
+        } else {
+            return 4 + data.remaining();
+        }
     }
 
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
-        byteBuffer.put((ByteBuffer) getEsDescriptor().serialize().rewind());
+        ESDescriptor esd = getEsDescriptor();
+        if (esd != null) {
+            byteBuffer.put((ByteBuffer) esd.serialize().rewind());
+        } else {
+            byteBuffer.put(data.duplicate());
+        }
     }
 }
