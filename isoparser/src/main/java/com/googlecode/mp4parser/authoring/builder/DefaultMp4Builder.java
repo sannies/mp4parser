@@ -176,9 +176,10 @@ public class DefaultMp4Builder implements Mp4Builder {
         List<String> minorBrands = new LinkedList<String>();
 
         minorBrands.add("mp42");
+        minorBrands.add("iso6");
+        minorBrands.add("avc1");
         minorBrands.add("isom");
-
-        return new FileTypeBox("mp42", 0, minorBrands);
+        return new FileTypeBox("iso6", 1, minorBrands);
     }
 
     protected MovieBox createMovieBox(Movie movie, Map<Track, int[]> chunks) {
