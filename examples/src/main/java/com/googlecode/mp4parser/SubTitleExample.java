@@ -1,226 +1,172 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.IsoTypeReaderVariable;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Sample;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.WrappingTrack;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.builder.Fragmenter;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.TextTrackImpl;
-import com.googlecode.mp4parser.authoring.tracks.h264.H264NalUnitHeader;
-import com.googlecode.mp4parser.authoring.tracks.h264.H264NalUnitTypes;
-import com.googlecode.mp4parser.authoring.tracks.h264.H264TrackImpl;
-import com.googlecode.mp4parser.authoring.tracks.h264.SliceHeader;
-import com.googlecode.mp4parser.authoring.tracks.webvtt.WebVttTrack;
-import com.googlecode.mp4parser.h264.model.PictureParameterSet;
-import com.googlecode.mp4parser.h264.model.SeqParameterSet;
-import com.googlecode.mp4parser.h264.read.CAVLCReader;
-import com.googlecode.mp4parser.srt.SrtParser;
 import com.googlecode.mp4parser.util.Mp4Arrays;
-import com.googlecode.mp4parser.util.Path;
-import com.mp4parser.iso14496.part15.AvcConfigurationBox;
-import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Adds subtitles.
  */
 public class SubTitleExample {
     public static void main(String[] args) throws IOException {
+        Movie m1 = MovieCreator.build(new FileDataSourceImpl("C:\\dev\\DRMTODAY-872\\Tears_Of_Steel_128000_eng.mp4"));
+        Movie m2 = MovieCreator.build(new FileDataSourceImpl("C:\\dev\\DRMTODAY-872\\Tears_Of_Steel_600000.mp4"));
+        //WebVttTrack webVttTrack = new WebVttTrack(new , "subs", Locale.ENGLISH);
+        TextTrackImpl textTrack = new TextTrackImpl();
+        textTrack.getSubs().addAll(
+                WebVttParser.parse(new FileInputStream("C:\\dev\\DRMTODAY-872\\Tears_Of_Steel_eng.vtt")));
+
         Movie m = new Movie();
-        String bd = "C:\\dev\\DRMTODAY-872\\";
-
-        //Track eng = MovieCreator.build(bd  + "31245689abb7c52a3d0721447bddd6cd_Tears_Of_Steel_128000_eng.mp4").getTracks().get(0);
-        // Track eng = MovieCreator.build("C:\\dev\\mp4parser\\31245689abb7c52a3d0721447bddd6cd_Tears_Of_Steel_128000_eng.mp4").getTracks().get(0);
-        //m.addTrack(eng);
-
-        //Track vid = MovieCreator.build(bd  + "31245689abb7c52a3d0721447bddd6cd_Tears_Of_Steel_600000.mp4").getTracks().get(0);
-        //Track vid = MovieCreator.build("C:\\content\\843D111F-E839-4597-B60C-3B8114E0AA72_ABR01.mp4").getTracks().get(0);
-        Track vid = new H264TrackImpl(new FileDataSourceImpl("C:\\dev\\mp4parser\\check-b-frames.h264"), "eng", 25, 1);
-        //Track vid = MovieCreator.build(new FileDataSourceImpl("C:\\dev\\mp4parser\\tos-vid.mp4")).getTracks().get(0);//, "eng", 25, 1);
-        m.addTrack(vid);
-
-
-        long refSize = 0;
-        long fullSize = 0;
-
-        final List<Sample> nuSamples = new ArrayList<Sample>();
-
-        List<CompositionTimeToSample.Entry> nuCompOffsets = new ArrayList<CompositionTimeToSample.Entry>();
-        long[] nuDurations = new long[0];
-        int[] compOffsets = CompositionTimeToSample.blowupCompositionTimes(vid.getCompositionTimeEntries());
-        long[] nuSyncSamples = new long[0];
-        long durationAddon = 0;
-        AvcConfigurationBox avcC = Path.getPath((Container) vid.getSampleDescriptionBox(), "avc1/avcC");
-        PictureParameterSet pps = PictureParameterSet.read(avcC.getPictureParameterSets().get(0));
-        // ppss.get(pic_parameter_set_id);
-        SeqParameterSet sps = SeqParameterSet.read(avcC.getSequenceParameterSets().get(0));
-
-        System.err.println(sps.pic_order_cnt_type);
-
-        for (int i = 0; i < vid.getSamples().size(); i++) {
-            Sample sample = vid.getSamples().get(i);
-            fullSize += sample.getSize();
-            ByteBuffer bb = sample.asByteBuffer();
-            int nalRefIdc = 0;
-            boolean syncSample = false;
-            boolean isP = false;
-            while (bb.remaining() > 0) {
-                int nalLength = l2i(IsoTypeReaderVariable.read(bb, 4));
-                ByteBuffer nal = (ByteBuffer) bb.slice().limit(nalLength);
-
-                H264NalUnitHeader nuh = H264TrackImpl.getNalUnitHeader(nal);
-                switch (nuh.nal_unit_type) {
-                    case H264NalUnitTypes.CODED_SLICE_NON_IDR:
-                    case H264NalUnitTypes.CODED_SLICE_DATA_PART_A:
-                    case H264NalUnitTypes.CODED_SLICE_DATA_PART_B:
-                    case H264NalUnitTypes.CODED_SLICE_DATA_PART_C:
-                    case H264NalUnitTypes.CODED_SLICE_IDR:
-
-                        byte[] restOfNal = new byte[nal.remaining()];
-                        nal.get(restOfNal);
-                        CAVLCReader reader = new CAVLCReader(new ByteArrayInputStream(restOfNal, 1, restOfNal.length - 1));
-                        int first_mb_in_slice = reader.readUE("SliceHeader: first_mb_in_slice");
-                        int sliceTypeInt = reader.readUE("SliceHeader: slice_type");
-
-                        switch (sliceTypeInt % 5) {
-                            case 0:
-                                System.out.print("P " + nuh.nal_ref_idc + " " + nuh.nal_unit_type + " ");
-                                isP = true;
-                                break;
-                            case 1:
-                                System.out.print("B " + nuh.nal_ref_idc + " " + nuh.nal_unit_type + " ");
-                                break;
-                            case 2:
-                                System.out.print("I " + nuh.nal_ref_idc + " " + nuh.nal_unit_type + " ");
-                                break;
-                            case 3:
-                                System.out.print("SP " + nuh.nal_ref_idc + " " + nuh.nal_unit_type + " ");
-                                isP = true;
-                                break;
-                            case 4:
-                                System.out.print("SI " + nuh.nal_ref_idc + " " + nuh.nal_unit_type + " ");
-                                break;
-
-                        }
-
-
-                        PictureParameterSet.read(avcC.getPictureParameterSets().get(0));
-                        int pic_parameter_set_id = reader.readUE("SliceHeader: pic_parameter_set_id");
-                        //SeqParameterSet sps = spss.get(pps.seq_parameter_set_id);
-                        if (sps.residual_color_transform_flag) {
-                            int colour_plane_id = reader.readU(2, "SliceHeader: colour_plane_id");
-                        }
-                        int frame_num = reader.readU(sps.log2_max_frame_num_minus4 + 4, "SliceHeader: frame_num");
-                        //System.out.print(" frameNum " + frame_num + " ");
-                        // System.out.print(sliceTypeInt + " ");
-                        boolean field_pic_flag = false;
-                        boolean bottom_field_flag = false;
-                        if (!sps.frame_mbs_only_flag) {
-                            field_pic_flag = reader.readBool("SliceHeader: field_pic_flag");
-                            if (field_pic_flag) {
-                                bottom_field_flag = reader.readBool("SliceHeader: bottom_field_flag");
-                            }
-                        }
-                        if (nuh.nal_unit_type == H264NalUnitTypes.CODED_SLICE_IDR) {
-
-                            int idr_pic_id = reader.readUE("SliceHeader: idr_pic_id");
-                        }
-                        if (sps.pic_order_cnt_type == 0) {
-                            int pic_order_cnt_lsb = reader.readU(sps.log2_max_pic_order_cnt_lsb_minus4 + 4, "SliceHeader: pic_order_cnt_lsb");
-
-                            int max_pic_order_count = (1 << (sps.log2_max_pic_order_cnt_lsb_minus4 + 4));
-                            // System.out.print(" pic_order_cnt_lsb " + pic_order_cnt_lsb + " " + max_pic_order_count);
-                            int pic_order_cnt = pic_order_cnt_lsb;
-                            while (pic_order_cnt+(max_pic_order_count/2)<i) {
-                                pic_order_cnt += max_pic_order_count;
-                            }
-                            System.out.print("dec" + i + " poc " + pic_order_cnt + " " + (pic_order_cnt - i) + " ");
-                            if (pps.bottom_field_pic_order_in_frame_present_flag && !field_pic_flag) {
-                                int delta_pic_order_cnt_bottom = reader.readSE("SliceHeader: delta_pic_order_cnt_bottom");
-                            }
-                        }
-
-                        if (sps.pic_order_cnt_type == 1 && !sps.delta_pic_order_always_zero_flag) {
-
-                            int delta_pic_order_cnt_0 = reader.readSE("delta_pic_order_cnt_0");
-                            if (pps.bottom_field_pic_order_in_frame_present_flag && !field_pic_flag) {
-                                int delta_pic_order_cnt_1 = reader.readSE("delta_pic_order_cnt_1");
-                            }
-                        }
-
-
-                }
-                System.out.println();
-                //System.out.print("NAL Unit Type " + nuh.nal_unit_type + " Ref Idc " + nuh.nal_ref_idc + " | ");
-                bb.position(bb.position() + nalLength);
-                if (nuh.nal_unit_type == 5) {
-                    syncSample = true;
-                }
-            }
-
-            if (!isP) {
-                refSize += sample.getSize();
-                nuSamples.add(sample);
-                nuDurations = Mp4Arrays.copyOfAndAppend(nuDurations, vid.getSampleDurations()[i] + durationAddon);
-                nuCompOffsets.add(new CompositionTimeToSample.Entry(1, compOffsets[i]));
-                if (syncSample) {
-                    nuSyncSamples = Mp4Arrays.copyOfAndAppend(nuSyncSamples, nuSamples.size());
-                }
-                durationAddon = 0;
-            } else {
-                durationAddon += vid.getSampleDurations()[i];
-            }
-//            System.out.println("---------------");
-
+        for (Track track : m2.getTracks()) {
+            m.addTrack(track);
         }
-        System.out.println("" + refSize + " vs. " + fullSize);
+        for (Track track : m1.getTracks()) {
+            m.addTrack(track);
+        }
+        m.addTrack(textTrack);
+        DefaultMp4Builder builder = new DefaultMp4Builder();
+        builder.setFragmenter(new Fragmenter() {
+            public long[] sampleNumbers(Track track) {
+                int inc = (int) (track.getSamples().size() / (((double) track.getDuration() / track.getTrackMetaData().getTimescale()) * 2));
+                int pos = 1;
+                long[] samples = new long[0];
+                do {
+                    samples = Mp4Arrays.copyOfAndAppend(samples, pos);
+                    pos += inc;
+                } while (pos < track.getSamples().size());
+                return samples;
+            }
+        });
+        Container c = builder.build(m);
+        WritableByteChannel wbc = new FileOutputStream("output.mp4").getChannel();
+        c.writeContainer(wbc);
+    }
 
-        Track sub = new WebVttTrack(new FileInputStream(bd + "31245689abb7c52a3d0721447bddd6cd_Tears_Of_Steel_deu.vtt"), "subs", Locale.GERMAN);
-        //m.addTrack(sub);
+    public static class WebVttParser {
+        private static final String WEBVTT_FILE_HEADER_STRING = "^\uFEFF?WEBVTT((\\u0020|\u0009).*)?$";
+        private static final Pattern WEBVTT_FILE_HEADER =
+                Pattern.compile(WEBVTT_FILE_HEADER_STRING);
 
-        Container c = new DefaultMp4Builder().build(m);
-        c.writeContainer(new FileOutputStream("output.mp4").getChannel());
+        private static final String WEBVTT_METADATA_HEADER_STRING = "\\S*[:=]\\S*";
+        private static final Pattern WEBVTT_METADATA_HEADER =
+                Pattern.compile(WEBVTT_METADATA_HEADER_STRING);
 
+        private static final String WEBVTT_CUE_IDENTIFIER_STRING = "^(?!.*(-->)).*$";
+        private static final Pattern WEBVTT_CUE_IDENTIFIER =
+                Pattern.compile(WEBVTT_CUE_IDENTIFIER_STRING);
 
-        final long[] finalNuDurations = nuDurations;
-        final long[] finalNuSyncSamples = nuSyncSamples;
-        WrappingTrack wrappingTrack = new WrappingTrack(vid) {
-            @Override
-            public long[] getSampleDurations() {
-                return finalNuDurations;
+        private static final String WEBVTT_TIMESTAMP_STRING = "(\\d+:)?[0-5]\\d:[0-5]\\d\\.\\d{3}";
+        private static final Pattern WEBVTT_TIMESTAMP = Pattern.compile(WEBVTT_TIMESTAMP_STRING);
+
+        private static final String WEBVTT_CUE_SETTING_STRING = "\\S*:\\S*";
+        private static final Pattern WEBVTT_CUE_SETTING = Pattern.compile(WEBVTT_CUE_SETTING_STRING);
+
+        static List<TextTrackImpl.Line> parse(InputStream in) throws IOException {
+            BufferedReader webvttData = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+            String line;
+            List<TextTrackImpl.Line> samples = new ArrayList<TextTrackImpl.Line>();
+
+            // file should start with "WEBVTT"
+            line = webvttData.readLine();
+            if (line == null || !WEBVTT_FILE_HEADER.matcher(line).matches()) {
+                throw new IOException("Expected WEBVTT. Got " + line);
+            }
+            while (true) {
+                line = webvttData.readLine();
+                if (line == null) {
+                    // we reached EOF before finishing the header
+                    throw new IOException("Expected an empty line after webvtt header");
+                } else if (line.isEmpty()) {
+                    // we've read the newline that separates the header from the body
+                    break;
+                }
+
+                Matcher matcher = WEBVTT_METADATA_HEADER.matcher(line);
+                if (!matcher.find()) {
+                    throw new IOException("Expected WebVTT metadata header. Got " + line);
+                }
             }
 
-            @Override
-            public long[] getSyncSamples() {
-                return finalNuSyncSamples;
+
+            // process the cues and text
+            while ((line = webvttData.readLine()) != null) {
+                if ("".equals(line.trim())) {
+                    continue;
+                }
+                // parse the cue identifier (if present) {
+                Matcher matcher = WEBVTT_CUE_IDENTIFIER.matcher(line);
+                if (matcher.find()) {
+                    // ignore the identifier (we currently don't use it) and read the next line
+                    line = webvttData.readLine();
+                }
+
+                long startTime;
+                long endTime;
+
+                // parse the cue timestamps
+                matcher = WEBVTT_TIMESTAMP.matcher(line);
+
+                // parse start timestamp
+                if (!matcher.find()) {
+                    throw new IOException("Expected cue start time: " + line);
+                } else {
+                    startTime = parseTimestampUs(matcher.group());
+                }
+
+                // parse end timestamp
+                String endTimeString;
+                if (!matcher.find()) {
+                    throw new IOException("Expected cue end time: " + line);
+                } else {
+                    endTimeString = matcher.group();
+                    endTime = parseTimestampUs(endTimeString);
+                }
+
+                // parse the (optional) cue setting list
+                line = line.substring(line.indexOf(endTimeString) + endTimeString.length());
+                matcher = WEBVTT_CUE_SETTING.matcher(line);
+                String settings = null;
+                while (matcher.find()) {
+                    settings = matcher.group();
+                }
+                StringBuilder payload = new StringBuilder();
+                while (((line = webvttData.readLine()) != null) && (!line.isEmpty())) {
+                    if (payload.length() > 0) {
+                        payload.append("\n");
+                    }
+                    payload.append(line.trim());
+                }
+
+
+                samples.add(new TextTrackImpl.Line(startTime, endTime, payload.toString()));
+            }
+            return samples;
+        }
+
+        private static long parseTimestampUs(String s) throws NumberFormatException {
+            if (!s.matches(WEBVTT_TIMESTAMP_STRING)) {
+                throw new NumberFormatException("has invalid format");
             }
 
-            @Override
-            public List<Sample> getSamples() {
-                return nuSamples;
+            String[] parts = s.split("\\.", 2);
+            long value = 0;
+            for (String group : parts[0].split(":")) {
+                value = value * 60 + Long.parseLong(group);
             }
-        };
-
-        Movie m2 = new Movie();
-        m2.addTrack(wrappingTrack);
-        //m2.addTrack(eng);
-        Container c2 = new DefaultMp4Builder().build(m2);
-        c2.writeContainer(new FileOutputStream("output-small.mp4").getChannel());
-
-
+            return (value * 1000 + Long.parseLong(parts[1]));
+        }
     }
 
 }

@@ -15,7 +15,10 @@
  */
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SubSampleInformationBox;
 import com.coremedia.iso.boxes.sampleentry.TextSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Sample;
@@ -37,12 +40,8 @@ public class TextTrackImpl extends AbstractTrack {
     SampleDescriptionBox sampleDescriptionBox;
     List<Line> subs = new LinkedList<Line>();
 
-    public List<Line> getSubs() {
-        return subs;
-    }
-
     public TextTrackImpl() {
-        super("subtiles");
+        super("subtitles");
         sampleDescriptionBox = new SampleDescriptionBox();
         TextSampleEntry tx3g = new TextSampleEntry("tx3g");
         tx3g.setDataReferenceIndex(1);
@@ -61,6 +60,10 @@ public class TextTrackImpl extends AbstractTrack {
         trackMetaData.setTimescale(1000); // Text tracks use millieseconds
 
 
+    }
+
+    public List<Line> getSubs() {
+        return subs;
     }
 
     public void close() throws IOException {
@@ -139,6 +142,9 @@ public class TextTrackImpl extends AbstractTrack {
         return "sbtl";
     }
 
+    public SubSampleInformationBox getSubsampleInformationBox() {
+        return null;
+    }
 
     public static class Line {
         long from;
@@ -163,10 +169,5 @@ public class TextTrackImpl extends AbstractTrack {
         public long getTo() {
             return to;
         }
-    }
-
-
-    public SubSampleInformationBox getSubsampleInformationBox() {
-        return null;
     }
 }

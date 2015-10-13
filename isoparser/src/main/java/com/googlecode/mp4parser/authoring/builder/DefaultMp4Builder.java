@@ -252,8 +252,8 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         tkhd.setEnabled(true);
         tkhd.setInMovie(true);
-        tkhd.setInPreview(true);
-        tkhd.setInPoster(true);
+//        tkhd.setInPreview(true);
+//        tkhd.setInPoster(true);
         tkhd.setMatrix(track.getTrackMetaData().getMatrix());
 
         tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
