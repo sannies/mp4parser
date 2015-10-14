@@ -49,11 +49,11 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
     /**
      * Contains the next sample's start time.
      */
-    protected Map<StreamingTrack, Long> nextSampleStartTime = new ConcurrentHashMap<StreamingTrack, Long>();
+    protected Map<StreamingTrack, Long> nextSampleStartTime = new HashMap<StreamingTrack, Long>();
     /**
      * Buffers the samples per track until there are enough samples to form a Segment.
      */
-    protected Map<StreamingTrack, List<StreamingSample>> sampleBuffers = new ConcurrentHashMap<StreamingTrack, List<StreamingSample>>();
+    protected Map<StreamingTrack, List<StreamingSample>> sampleBuffers = new HashMap<StreamingTrack, List<StreamingSample>>();
     /**
      * Buffers segements until it's time for a segment to be written.
      */
