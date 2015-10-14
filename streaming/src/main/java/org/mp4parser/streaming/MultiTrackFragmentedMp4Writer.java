@@ -322,7 +322,7 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
         if (isFragmentReady(streamingTrack, streamingSample)) {
 
             FragmentContainer fragmentContainer = createFragmentContainer(streamingTrack);
-            System.err.println("Creating fragment for " + streamingTrack);
+            //System.err.println("Creating fragment for " + streamingTrack);
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("created fragment for " + streamingTrack + " of " + ((double) fragmentContainer.duration / streamingTrack.getTimescale()) + " seconds");
             }
@@ -356,7 +356,7 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
                 } else {
                     if (fragmentQueue.size() > 10) {
                         // if there are more than 10 fragments in the queue we don't want more samples of this track
-                        System.err.println("Stopping " + streamingTrack);
+                        // System.err.println("Stopping " + streamingTrack);
                         congestionControl.put(streamingTrack, new CountDownLatch(fragmentQueue.size()));
                     }
                 }
