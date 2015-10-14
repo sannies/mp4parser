@@ -10,6 +10,7 @@ import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
 import org.mp4parser.streaming.AbstractStreamingTrack;
 import org.mp4parser.streaming.StreamingSampleImpl;
 import org.mp4parser.streaming.extensions.DefaultSampleFlagsTrackExtension;
+import org.mp4parser.streaming.extensions.TrackIdTrackExtension;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -21,9 +22,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 
-/**
- * Created by sannies on 01.09.2015.
- */
 public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Callable<Void> {
     private static Map<Integer, Integer> samplingFrequencyIndexMap = new HashMap<Integer, Integer>();
     private static Logger LOG = Logger.getLogger(AdtsAacStreamingTrack.class.getName());
@@ -244,5 +242,15 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
             LOG.info("Done reading ADTS AAC file.");
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        TrackIdTrackExtension trackIdTrackExtension = this.getTrackExtension(TrackIdTrackExtension.class);
+        if (trackIdTrackExtension != null) {
+            return "AdtsAacStreamingTrack{trackId=" + trackIdTrackExtension.getTrackId() + "}";
+        } else {
+            return "AdtsAacStreamingTrack{}";
+        }
     }
 }

@@ -19,11 +19,10 @@ package org.mp4parser.boxes.iso14496.part12;
 import org.mp4parser.support.AbstractContainerBox;
 
 /**
- * <h1>4cc = "{@value #TYPE}"</h1>
- * aligned(8) class MovieFragmentRandomAccessBox
- * extends Box('mfra')
- * {
- * }
+ * The Movie Fragment Random Access Box ('mfra') provides a table which may assist
+ * readers in finding random access points in a file using movie fragments.It contains
+ * a track fragment random access box for each track for which information is provided
+ * (which may notbe all tracks).
  */
 public class MovieFragmentRandomAccessBox extends AbstractContainerBox {
     public static final String TYPE = "mfra";

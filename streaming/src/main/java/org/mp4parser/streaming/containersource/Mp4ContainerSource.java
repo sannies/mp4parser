@@ -66,7 +66,7 @@ public class Mp4ContainerSource implements Callable<Void> {
         }
         List<StreamingTrack> streamingTracks = mp4ContainerSource.getTracks();
         File f = new File("output.mp4");
-        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(streamingTracks, new FileOutputStream(f));
+        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(streamingTracks, new FileOutputStream(f).getChannel());
 
         System.out.println("Reading and writing started.");
         mp4ContainerSource.call();

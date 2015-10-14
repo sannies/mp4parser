@@ -28,7 +28,7 @@ public class AdtsAacStreamingTrackTest {
     public void testMuxing() throws Exception {
         AdtsAacStreamingTrack b = new AdtsAacStreamingTrack(AdtsAacStreamingTrackTest.class.getResourceAsStream("/org/mp4parser/streaming/rawformats/aac/somesound.aac"), 65000, 80000);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new MultiTrackFragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), baos);
+        new MultiTrackFragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), Channels.newChannel(baos));
         //MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new ByteArrayOutputStream());
         b.call();
         IsoFile isoFile = new IsoFile(Channels.newChannel(new ByteArrayInputStream(baos.toByteArray())));

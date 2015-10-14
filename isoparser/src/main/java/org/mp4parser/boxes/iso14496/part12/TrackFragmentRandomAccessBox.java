@@ -28,29 +28,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * <h1>4cc = "{@value #TYPE}"</h1>
- * <pre>
- * aligned(8) class TrackFragmentRandomAccessBox extends FullBox('tfra', version, 0) {
- *  unsigned int(32) track_ID;
- *  const unsigned int(26) reserved = 0;
- *  unsigned int(2) length_size_of_traf_num;
- *  unsigned int(2) length_size_of_trun_num;
- *  unsigned int(2) length_size_of_sample_num;
- *  unsigned int(32) number_of_entry;
- *  for(i=1; i &lt;= number_of_entry; i++){
- *   if(version==1){
- *    unsigned int(64) time;
- *    unsigned int(64) moof_offset;
- *   }else{
- *    unsigned int(32) time;
- *    unsigned int(32) moof_offset;
- *   }
- *  unsigned int((length_size_of_traf_num+1) * 8) traf_number;
- *  unsigned int((length_size_of_trun_num+1) * 8) trun_number;
- *  unsigned int((length_size_of_sample_num+1) * 8) sample_number;
- *  }
- * }
- * </pre>
+ * Each entry contains the location and the presentation time of the random accessible sample.
+ * It indicates that the sample in the entry can be randomaccessed. Note that not every random
+ * accessible sample in the track needs to be listed in the table.
+ * @see MovieFragmentRandomAccessBox
  */
 public class TrackFragmentRandomAccessBox extends AbstractFullBox {
     public static final String TYPE = "tfra";

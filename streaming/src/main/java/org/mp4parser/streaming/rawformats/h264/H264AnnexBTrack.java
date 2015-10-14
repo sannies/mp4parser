@@ -1,5 +1,7 @@
 package org.mp4parser.streaming.rawformats.h264;
 
+import org.mp4parser.streaming.extensions.TrackIdTrackExtension;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,6 +51,16 @@ public class H264AnnexBTrack extends H264NalConsumingTrack implements Callable<V
         closed = true;
         countDownLatch.countDown();
         return null;
+    }
+
+    @Override
+    public String toString() {
+        TrackIdTrackExtension trackIdTrackExtension = this.getTrackExtension(TrackIdTrackExtension.class);
+        if (trackIdTrackExtension != null) {
+            return "H264AnnexBTrack{trackId=" + trackIdTrackExtension.getTrackId() + "}";
+        } else {
+            return "H264AnnexBTrack{}";
+        }
     }
 
     public static class NalStreamTokenizer {

@@ -7,6 +7,7 @@ import org.mp4parser.streaming.StreamingTrack;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,7 +24,7 @@ public class H264AnnexBTrackTest {
         //H264AnnexBTrack b = new H264AnnexBTrack(H264AnnexBTrackTest.class.getResourceAsStream("/org/mp4parser/streaming/rawformats/h264/tos.h264"));
         H264AnnexBTrack b = new H264AnnexBTrack(new FileInputStream("C:\\dev\\mp4parser\\out.264"));
         OutputStream baos = new FileOutputStream("output.mp4");
-        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), baos);
+        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), Channels.newChannel(baos));
         //MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new ByteArrayOutputStream());
         b.call();
         writer.close();
