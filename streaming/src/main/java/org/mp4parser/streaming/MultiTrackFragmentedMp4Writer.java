@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,46 +31,38 @@ import static org.mp4parser.tools.CastUtils.l2i;
  * samples and the footer.
  */
 public class MultiTrackFragmentedMp4Writer implements SampleSink {
+    public static final Object OBJ = new Object();
     private static final Logger LOG = Logger.getLogger(MultiTrackFragmentedMp4Writer.class.getName());
-
     protected final WritableByteChannel sink;
     protected List<StreamingTrack> source;
-
     protected Date creationTime;
-
     protected long sequenceNumber = 1;
-
+    protected Map<StreamingTrack, CountDownLatch> congestionControl = new ConcurrentHashMap<StreamingTrack, CountDownLatch>();
     /**
      * Contains the start time of the next segment in line that will be created.
      */
-    protected Map<StreamingTrack, Long> nextFragmentCreateStartTime = new HashMap<StreamingTrack, Long>();
-
+    protected Map<StreamingTrack, Long> nextFragmentCreateStartTime = new ConcurrentHashMap<StreamingTrack, Long>();
     /**
      * Contains the start time of the next segment in line that will be written.
      */
-    protected Map<StreamingTrack, Long> nextFragmentWriteStartTime = new HashMap<StreamingTrack, Long>();
-
+    protected Map<StreamingTrack, Long> nextFragmentWriteStartTime = new ConcurrentHashMap<StreamingTrack, Long>();
     /**
      * Contains the next sample's start time.
      */
-    protected Map<StreamingTrack, Long> nextSampleStartTime = new HashMap<StreamingTrack, Long>();
+    protected Map<StreamingTrack, Long> nextSampleStartTime = new ConcurrentHashMap<StreamingTrack, Long>();
     /**
      * Buffers the samples per track until there are enough samples to form a Segment.
      */
-    protected Map<StreamingTrack, List<StreamingSample>> sampleBuffers = new HashMap<StreamingTrack, List<StreamingSample>>();
+    protected Map<StreamingTrack, List<StreamingSample>> sampleBuffers = new ConcurrentHashMap<StreamingTrack, List<StreamingSample>>();
     /**
      * Buffers segements until it's time for a segment to be written.
      */
-    protected Map<StreamingTrack, Queue<FragmentContainer>> fragmentBuffers = new HashMap<StreamingTrack, Queue<FragmentContainer>>();
-
-
+    protected Map<StreamingTrack, Queue<FragmentContainer>> fragmentBuffers = new ConcurrentHashMap<StreamingTrack, Queue<FragmentContainer>>();
     protected Map<StreamingTrack, long[]> tfraOffsets = new HashMap<StreamingTrack, long[]>();
     protected Map<StreamingTrack, long[]> tfraTimes = new HashMap<StreamingTrack, long[]>();
-
     protected boolean closed = false;
     long bytesWritten = 0;
-    boolean headerWritten = false;
-
+    volatile boolean headerWritten = false;
 
     public MultiTrackFragmentedMp4Writer(List<StreamingTrack> source, WritableByteChannel sink) throws IOException {
         this.source = new LinkedList<StreamingTrack>(source);
@@ -83,6 +77,7 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
             nextFragmentCreateStartTime.put(streamingTrack, 0L);
             nextFragmentWriteStartTime.put(streamingTrack, 0L);
             nextSampleStartTime.put(streamingTrack, 0L);
+            congestionControl.put(streamingTrack, new CountDownLatch(0));
             if (streamingTrack.getTrackExtension(TrackIdTrackExtension.class) != null) {
                 TrackIdTrackExtension trackIdTrackExtension = streamingTrack.getTrackExtension(TrackIdTrackExtension.class);
                 assert trackIdTrackExtension != null;
@@ -124,7 +119,6 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
 
         writeFooter(createFooter());
     }
-
 
     protected void write(WritableByteChannel out, Box... boxes) throws IOException {
         for (Box box1 : boxes) {
@@ -302,48 +296,72 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
         });
     }
 
-    public synchronized void acceptSample(StreamingSample streamingSample, StreamingTrack streamingTrack) throws IOException {
+    public void acceptSample(StreamingSample streamingSample, StreamingTrack streamingTrack) throws IOException {
 
-        if (!headerWritten) {
-            boolean allTracksAtLeastOneSample = true;
-            for (StreamingTrack track : source) {
-                allTracksAtLeastOneSample &= (nextSampleStartTime.get(track) > 0 || track == streamingTrack);
-            }
-            if (allTracksAtLeastOneSample) {
-                writeHeader(createHeader());
-                headerWritten = true;
+        synchronized (OBJ) {
+            // need to synchronized here - I don't want two headers written under any circumstances
+            if (!headerWritten) {
+                boolean allTracksAtLeastOneSample = true;
+                for (StreamingTrack track : source) {
+                    allTracksAtLeastOneSample &= (nextSampleStartTime.get(track) > 0 || track == streamingTrack);
+                }
+                if (allTracksAtLeastOneSample) {
+
+                    writeHeader(createHeader());
+                    headerWritten = true;
+                }
             }
         }
+
+        try {
+            congestionControl.get(streamingTrack).await();
+        } catch (InterruptedException e) {
+            // don't care just move on
+        }
+
         if (isFragmentReady(streamingTrack, streamingSample)) {
 
             FragmentContainer fragmentContainer = createFragmentContainer(streamingTrack);
+            System.err.println("Creating fragment for " + streamingTrack);
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("created fragment for " + streamingTrack + " of " + ((double) fragmentContainer.duration / streamingTrack.getTimescale()) + " seconds");
             }
             sampleBuffers.get(streamingTrack).clear();
             sampleBuffers.get(streamingTrack).add(streamingSample);
             nextFragmentCreateStartTime.put(streamingTrack, nextFragmentCreateStartTime.get(streamingTrack) + fragmentContainer.duration);
-            fragmentBuffers.get(streamingTrack).add(fragmentContainer);
-            if (headerWritten && this.source.get(0) == streamingTrack) {
+            Queue<FragmentContainer> fragmentQueue = fragmentBuffers.get(streamingTrack);
+            fragmentQueue.add(fragmentContainer);
+            synchronized (OBJ) {
+                if (headerWritten && this.source.get(0) == streamingTrack) {
 
-                Queue<FragmentContainer> tracksFragmentQueue;
-                StreamingTrack currentStreamingTrack;
-                // This will write AT LEAST the currently created fragment and possibly a few more
-                while (!(tracksFragmentQueue = fragmentBuffers.get(
-                        (currentStreamingTrack = this.source.get(0))
-                )).isEmpty()) {
+                    Queue<FragmentContainer> tracksFragmentQueue;
+                    StreamingTrack currentStreamingTrack;
+                    // This will write AT LEAST the currently created fragment and possibly a few more
+                    while (!(tracksFragmentQueue = fragmentBuffers.get(
+                            (currentStreamingTrack = this.source.get(0))
+                    )).isEmpty()) {
 
-                    FragmentContainer currentFragmentContainer = tracksFragmentQueue.remove();
+                        FragmentContainer currentFragmentContainer = tracksFragmentQueue.remove();
 
-                    writeFragment(currentFragmentContainer.fragmentContent);
-                    long ts = nextFragmentWriteStartTime.get(currentStreamingTrack) + currentFragmentContainer.duration;
-                    nextFragmentWriteStartTime.put(currentStreamingTrack, ts);
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine(currentStreamingTrack + " advanced to " + (double) ts / currentStreamingTrack.getTimescale());
+                        writeFragment(currentFragmentContainer.fragmentContent);
+
+                        congestionControl.get(currentStreamingTrack).countDown();
+                        long ts = nextFragmentWriteStartTime.get(currentStreamingTrack) + currentFragmentContainer.duration;
+                        nextFragmentWriteStartTime.put(currentStreamingTrack, ts);
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine(currentStreamingTrack + " advanced to " + (double) ts / currentStreamingTrack.getTimescale());
+                        }
+                        sortTracks();
                     }
-                    sortTracks();
+                } else {
+                    if (fragmentQueue.size() > 10) {
+                        // if there are more than 10 fragments in the queue we don't want more samples of this track
+                        System.err.println("Stopping " + streamingTrack);
+                        congestionControl.put(streamingTrack, new CountDownLatch(fragmentQueue.size()));
+                    }
                 }
             }
+
 
         }
 
