@@ -109,15 +109,12 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
      * @see MovieFragmentRandomAccessBox
      */
     public synchronized void close() throws IOException {
-        this.closed = true;
-
-
         for (StreamingTrack streamingTrack : source) {
             writeFragment(createFragment(streamingTrack, sampleBuffers.get(streamingTrack)));
             streamingTrack.close();
         }
-
         writeFooter(createFooter());
+        this.closed = true;
     }
 
     protected void write(WritableByteChannel out, Box... boxes) throws IOException {

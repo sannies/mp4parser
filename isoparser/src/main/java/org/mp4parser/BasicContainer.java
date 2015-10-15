@@ -14,6 +14,10 @@ public class BasicContainer implements Container {
     public BasicContainer() {
     }
 
+    public BasicContainer(List<Box> boxes) {
+        this.boxes = boxes;
+    }
+
     public List<Box> getBoxes() {
         return boxes;
     }

@@ -12,8 +12,6 @@ public interface StreamingTrack extends Closeable {
      */
     long getTimescale();
 
-    boolean isClosed();
-
     String getHandler();
 
     String getLanguage();
