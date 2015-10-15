@@ -1,8 +1,6 @@
 package org.mp4parser.streaming;
 
-import org.mp4parser.BasicContainer;
 import org.mp4parser.Box;
-import org.mp4parser.Container;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.*;
 import org.mp4parser.streaming.extensions.*;
@@ -323,9 +321,6 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
 
             FragmentContainer fragmentContainer = createFragmentContainer(streamingTrack);
             //System.err.println("Creating fragment for " + streamingTrack);
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("created fragment for " + streamingTrack + " of " + ((double) fragmentContainer.duration / streamingTrack.getTimescale()) + " seconds");
-            }
             sampleBuffers.get(streamingTrack).clear();
             sampleBuffers.get(streamingTrack).add(streamingSample);
             nextFragmentCreateStartTime.put(streamingTrack, nextFragmentCreateStartTime.get(streamingTrack) + fragmentContainer.duration);
@@ -407,12 +402,16 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
         tfraOffsets.put(streamingTrack, Mp4Arrays.copyOfAndAppend(tfraOffsets.get(streamingTrack), bytesWritten));
         tfraTimes.put(streamingTrack, Mp4Arrays.copyOfAndAppend(tfraTimes.get(streamingTrack), nextFragmentCreateStartTime.get(streamingTrack)));
 
-        Container b = new BasicContainer();
         LOG.finest("Container created");
         Box moof = createMoof(streamingTrack, samples);
         LOG.finest("moof created");
         Box mdat = createMdat(samples);
         LOG.finest("mdat created");
+
+        if (LOG.isLoggable(Level.FINE)) {
+            double duration = nextSampleStartTime.get(streamingTrack) - nextFragmentCreateStartTime.get(streamingTrack);
+            LOG.fine("created fragment for " + streamingTrack + " of " + (duration / streamingTrack.getTimescale()) + " seconds");
+        }
         return new Box[]{moof, mdat};
     }
 
@@ -662,18 +661,16 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
             public long getSize() {
                 long l = 8;
                 for (StreamingSample streamingSample : samples) {
-                    l += streamingSample.getContent().remaining();
+                    l += streamingSample.getContent().limit();
                 }
                 return l;
             }
 
             public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-                ArrayList<ByteBuffer> sampleContents = new ArrayList<ByteBuffer>();
                 long l = 8;
                 for (StreamingSample streamingSample : samples) {
                     ByteBuffer sampleContent = streamingSample.getContent();
-                    sampleContent.rewind();
-                    sampleContents.add(sampleContent);
+                    sampleContent.limit();
                     l += sampleContent.remaining();
                 }
                 ByteBuffer bb = ByteBuffer.allocate(8);
@@ -681,8 +678,8 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
                 bb.put(IsoFile.fourCCtoBytes(getType()));
                 writableByteChannel.write((ByteBuffer) bb.rewind());
 
-                for (ByteBuffer sampleContent : sampleContents) {
-                    writableByteChannel.write(sampleContent);
+                for (StreamingSample streamingSample : samples) {
+                    writableByteChannel.write((ByteBuffer) streamingSample.getContent().rewind());
                 }
             }
 

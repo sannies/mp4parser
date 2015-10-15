@@ -16,12 +16,14 @@
 package org.mp4parser;
 
 import org.mp4parser.boxes.UserBox;
+import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.IsoTypeReader;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -93,6 +95,9 @@ public abstract class AbstractBoxParser implements BoxParser {
                 usertype[i - (header.get().position() - 16)] = header.get().get(i);
             }
             contentSize -= 16;
+        }
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("Creating " + type + " " + Hex.encodeHex(new byte[]{header.get().get(4), header.get().get(5), header.get().get(6), header.get().get(7)}));
         }
         ParsableBox parsableBox = createBox(type, usertype, parentType);
         //LOG.finest("Parsing " + box.getType());
