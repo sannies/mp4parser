@@ -7,6 +7,7 @@ import org.mp4parser.streaming.rawformats.h264.H264AnnexBTrack;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,10 +25,11 @@ public class H264AACExample {
         H264AnnexBTrack h264 = new H264AnnexBTrack(
                 new URI("http://org.mp4parser.s3.amazonaws.com/examples/Cosmos%20Laundromat%20small.264").
                         toURL().openStream());*/
+        InputStream aacInputStream = new FileInputStream("c:\\dev\\mp4parser\\843D111F-E839-4597-B60C-3B8114E0AA72_AU01.aac");
         AdtsAacStreamingTrack aac = new AdtsAacStreamingTrack(
-                new FileInputStream("c:\\dev\\mp4parser\\843D111F-E839-4597-B60C-3B8114E0AA72_AU01.aac"), 48000, 64000); // How should I know avg bitrate in advance?
-        H264AnnexBTrack h264 = new H264AnnexBTrack(
-                new FileInputStream("c:\\dev\\mp4parser\\843D111F-E839-4597-B60C-3B8114E0AA72_ABR01.h264"));
+                aacInputStream, 48000, 64000); // How should I know avg bitrate in advance?
+        InputStream h264InputStream = new FileInputStream("c:\\dev\\mp4parser\\843D111F-E839-4597-B60C-3B8114E0AA72_ABR05.h264");
+        H264AnnexBTrack h264 = new H264AnnexBTrack(h264InputStream);
 
         ExecutorService es = Executors.newCachedThreadPool();
         CompletionService<Void> ecs
@@ -35,7 +37,8 @@ public class H264AACExample {
 
         FileOutputStream fos = new FileOutputStream("c:\\dev\\mp4parser\\output.mp4");
         WritableByteChannel wbc = fos.getChannel();
-        MultiTrackFragmentedMp4Writer mtfmw = new MultiTrackFragmentedMp4Writer(Arrays.<StreamingTrack>asList(h264, aac), wbc);
+        //AsyncWritableByteChannel asyncWritableByteChannel = new AsyncWritableByteChannel(wbc);
+        MultiTrackFragmentedMp4Writer multiTrackFragmentedMp4Writer = new MultiTrackFragmentedMp4Writer(Arrays.<StreamingTrack>asList(h264, aac), wbc);
 
 
         final List<Future<Void>> allFutures = new ArrayList<>();
@@ -69,8 +72,12 @@ public class H264AACExample {
                 break;
             }
         }
-        mtfmw.close(); // writes the remaining samples
-        wbc.close(); // close file
+        //asyncWritableByteChannel.close();
+        multiTrackFragmentedMp4Writer.close(); // writes the remaining samples
+
+        aacInputStream.close();
+        h264InputStream.close();
+        fos.close();
         es.shutdown();
     }
 

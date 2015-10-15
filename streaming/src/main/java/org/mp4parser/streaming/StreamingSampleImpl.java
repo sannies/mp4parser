@@ -47,7 +47,7 @@ public class StreamingSampleImpl implements StreamingSample {
     }
 
     public ByteBuffer getContent() {
-        return s.duplicate();
+        return s;
     }
 
     public long getDuration() {

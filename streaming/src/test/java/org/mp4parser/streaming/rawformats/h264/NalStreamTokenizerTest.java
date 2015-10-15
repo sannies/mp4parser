@@ -19,7 +19,7 @@ public class NalStreamTokenizerTest {
 
         int i = 0;
         while ((nal = nst.getNext()) != null) {
-//            System.err.println(Hex.encodeHex(nal));
+            //System.err.println(Hex.encodeHex(nal));
             i++;
         }
         Assert.assertEquals(1019, i);

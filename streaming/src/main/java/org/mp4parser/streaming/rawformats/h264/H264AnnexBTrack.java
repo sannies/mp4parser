@@ -66,83 +66,68 @@ public class H264AnnexBTrack extends H264NalConsumingTrack implements Callable<V
     public static class NalStreamTokenizer {
         private static final Logger LOG = Logger.getLogger(NalStreamTokenizer.class.getName());
         MyByteArrayOutputStream next = new MyByteArrayOutputStream();
+        int pattern = 0;
         private InputStream inputStream;
-        private State state;
 
         public NalStreamTokenizer(InputStream inputStream) {
             this.inputStream = inputStream;
-            state = State.OUT;
+
         }
 
         public byte[] getNext() throws IOException {
+            //System.err.println("getNext() called");
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.finest("getNext() called");
             }
+            int c;
 
-            outerwhile:
-            while (true) {
 
-                switch (state) {
-                    case IN:
-                        int c;
-                        while ((c = inputStream.read()) != -1) {
-                            next.write(c);
-                            if (next.lastThreeEqual((byte) 0, (byte) 0, (byte) 1)) {
-                                // this closes last NAL and open new NAL at the same time
-                                state = State.IN;
-                                byte[] s = next.toByteArrayLess3();
-                                next.reset();
-                                return s;
-                            }
-                            if (next.lastThreeEqual((byte) 0, (byte) 0, (byte) 0)) {
-                                state = State.OUT;
-                                byte[] s = next.toByteArrayLess3();
-                                next.keepLast3();
-                                return s;
-                            }
-
-                        }
-                        state = State.DONE;
-                        return next.toByteArray();
-                    case OUT:
-
-                        while ((c = inputStream.read()) != -1) {
-                            next.write(c);
-                            if (next.lastThreeEqual((byte) 0, (byte) 0, (byte) 1)) {
-                                state = State.IN;
-                                next.reset();
-                                continue outerwhile;
-                            }
-                        }
-                        state = State.DONE;
-                    case DONE:
-                        return null;
-
+            while ((c = inputStream.read()) != -1) {
+                next.write(c);
+                if (pattern == 0 && c == 0) {
+                    pattern = 1;
+                } else if (pattern == 1 && c == 0) {
+                    pattern = 2;
+                } else if (pattern == 2 && c == 0) {
+                    byte[] s = next.toByteArrayLess3();
+                    next.reset();
+                    if (s != null) {
+                        return s;
+                    }
+                } else if (pattern == 2 && c == 1) {
+                    byte[] s = next.toByteArrayLess3();
+                    next.reset();
+                    pattern = 0;
+                    if (s != null) {
+                        return s;
+                    }
+                } else if (pattern != 0) {
+                    pattern = 0;
                 }
+            }
+            byte[] s = next.toByteArray();
+            next.reset();
+            if (s.length > 0) {
+                return s;
+            } else {
+                return null;
             }
         }
 
-        private enum State {
-            IN, OUT, DONE
-        }
+
     }
 
     static class MyByteArrayOutputStream extends ByteArrayOutputStream {
-        public boolean lastThreeEqual(byte a, byte b, byte c) {
-            int i = count;
-            return i > 3 && buf[count - 3] == a && buf[count - 2] == b && buf[count - 1] == c;
-        }
 
         public byte[] toByteArrayLess3() {
-            return Arrays.copyOf(buf, count - 3 > 0 ? count - 3 : 0);
+            if (count > 3) {
+                return Arrays.copyOf(buf, count - 3 > 0 ? count - 3 : 0);
+            } else {
+                return null;
+            }
 
         }
 
-        public void keepLast3() {
-            buf[0] = buf[count - 3];
-            buf[1] = buf[count - 2];
-            buf[2] = buf[count - 1];
-            count = 3;
-        }
+
     }
 }

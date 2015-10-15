@@ -314,7 +314,10 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
         }
 
         try {
-            congestionControl.get(streamingTrack).await();
+            CountDownLatch cdl = congestionControl.get(streamingTrack);
+            if (cdl.getCount() > 0) {
+                cdl.await();
+            }
         } catch (InterruptedException e) {
             // don't care just move on
         }
@@ -672,6 +675,7 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
                 long l = 8;
                 for (StreamingSample streamingSample : samples) {
                     ByteBuffer sampleContent = streamingSample.getContent();
+                    sampleContent.rewind();
                     sampleContents.add(sampleContent);
                     l += sampleContent.remaining();
                 }

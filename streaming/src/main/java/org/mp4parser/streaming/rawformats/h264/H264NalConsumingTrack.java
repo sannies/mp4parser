@@ -77,7 +77,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
                         nalUnitHeader.nal_ref_idc, nalUnitHeader.nal_unit_type);
                 if (fvnd != null && fvnd.isFirstInNew(current)) {
                     LOG.finer("Wrapping up cause of first vcl nal is found");
-                    createSample(buffered);
+                    createSample(buffered, fvnd.sliceHeader);
                 }
                 fvnd = current;
                 //System.err.println("" + nalUnitHeader.nal_unit_type);
@@ -88,7 +88,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
             case H264NalUnitTypes.SEI:
                 if (fvnd != null) {
                     LOG.finer("Wrapping up cause of SEI after vcl marks new sample");
-                    createSample(buffered);
+                    createSample(buffered, fvnd.sliceHeader);
                     fvnd = null;
                 }
                 //System.err.println("" + nalUnitHeader.nal_unit_type);
@@ -98,7 +98,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
             case H264NalUnitTypes.AU_UNIT_DELIMITER:
                 if (fvnd != null) {
                     LOG.finer("Wrapping up cause of AU after vcl marks new sample");
-                    createSample(buffered);
+                    createSample(buffered, fvnd.sliceHeader);
                     fvnd = null;
                 }
                 //System.err.println("" + nalUnitHeader.nal_unit_type);
@@ -107,7 +107,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
             case H264NalUnitTypes.SEQ_PARAMETER_SET:
                 if (fvnd != null) {
                     LOG.finer("Wrapping up cause of SPS after vcl marks new sample");
-                    createSample(buffered);
+                    createSample(buffered, fvnd.sliceHeader);
                     fvnd = null;
                 }
                 handleSPS(nal);
@@ -115,7 +115,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
             case 8:
                 if (fvnd != null) {
                     LOG.finer("Wrapping up cause of PPS after vcl marks new sample");
-                    createSample(buffered);
+                    createSample(buffered, fvnd.sliceHeader);
                     fvnd = null;
                 }
                 handlePPS(nal);
@@ -169,7 +169,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
     }
 
 
-    protected StreamingSample createSample(List<byte[]> buffered) throws IOException, InterruptedException {
+    protected StreamingSample createSample(List<byte[]> buffered, SliceHeader sliceHeader) throws IOException, InterruptedException {
         LOG.finer("Create Sample");
         configure();
         if (timescale == 0 || frametick == 0) {
@@ -203,14 +203,13 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         }
 
         assert slice != null;
-        SliceHeader sh = new SliceHeader(new ByteArrayInputStream(slice), spsIdToSps, ppsIdToPps, idrPicFlag);
 
         if (nu.nal_ref_idc == 0) {
             sampleFlagsSampleExtension.setSampleIsDependedOn(2);
         } else {
             sampleFlagsSampleExtension.setSampleIsDependedOn(1);
         }
-        if ((sh.slice_type == SliceHeader.SliceType.I) || (sh.slice_type == SliceHeader.SliceType.SI)) {
+        if ((sliceHeader.slice_type == SliceHeader.SliceType.I) || (sliceHeader.slice_type == SliceHeader.SliceType.SI)) {
             sampleFlagsSampleExtension.setSampleDependsOn(2);
         } else {
             sampleFlagsSampleExtension.setSampleDependsOn(1);
@@ -221,16 +220,16 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         ssi.addSampleExtension(sampleFlagsSampleExtension);
 
 
-        if (sh.sps.pic_order_cnt_type == 0) {
+        if (sliceHeader.sps.pic_order_cnt_type == 0) {
             ssi.addSampleExtension(new PictureOrderCountType0SampleExtension(
-                    sh, decFrameBuffer.size() > 0 ?
+                    sliceHeader, decFrameBuffer.size() > 0 ?
                     decFrameBuffer.get(decFrameBuffer.size() - 1).getSampleExtension(PictureOrderCountType0SampleExtension.class) :
                     null));
             decFrameBuffer.add(ssi);
             if (decFrameBuffer.size() - 1 > max_dec_frame_buffering) { // just added one
                 drainDecPictureBuffer(false);
             }
-        } else if (sh.sps.pic_order_cnt_type == 1) {
+        } else if (sliceHeader.sps.pic_order_cnt_type == 1) {
                 /*if (seiMessage != null && seiMessage.clock_timestamp_flag) {
                     offset = seiMessage.n_frames - frameNrInGop;
                 } else if (seiMessage != null && seiMessage.removal_delay_flag) {
@@ -241,7 +240,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
                     LOG.warning("CTS timing in ctts box is most likely not OK");
                 }*/
             throw new IOException("pic_order_cnt_type == 1 needs to be implemented");
-        } else if (sh.sps.pic_order_cnt_type == 2) {
+        } else if (sliceHeader.sps.pic_order_cnt_type == 2) {
             sampleSink.acceptSample(ssi, this);
         }
         buffered.clear();
@@ -435,6 +434,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
 
     class FirstVclNalDetector {
 
+        public final SliceHeader sliceHeader;
         int frame_num;
         int pic_parameter_set_id;
         boolean field_pic_flag;
@@ -451,6 +451,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         public FirstVclNalDetector(byte[] nal, int nal_ref_idc, int nal_unit_type) {
             InputStream bs = new CleanInputStream(new ByteArrayInputStream(nal));
             SliceHeader sh = new SliceHeader(bs, spsIdToSps, ppsIdToPps, nal_unit_type == 5);
+            this.sliceHeader = sh;
             this.frame_num = sh.frame_num;
             this.pic_parameter_set_id = sh.pic_parameter_set_id;
             this.field_pic_flag = sh.field_pic_flag;
