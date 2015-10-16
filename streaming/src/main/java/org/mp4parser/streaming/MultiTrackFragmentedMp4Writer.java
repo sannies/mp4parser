@@ -58,7 +58,6 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
     protected Map<StreamingTrack, Queue<FragmentContainer>> fragmentBuffers = new ConcurrentHashMap<StreamingTrack, Queue<FragmentContainer>>();
     protected Map<StreamingTrack, long[]> tfraOffsets = new HashMap<StreamingTrack, long[]>();
     protected Map<StreamingTrack, long[]> tfraTimes = new HashMap<StreamingTrack, long[]>();
-    protected boolean closed = false;
     long bytesWritten = 0;
     volatile boolean headerWritten = false;
 
@@ -112,7 +111,6 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
             streamingTrack.close();
         }
         writeFooter(createFooter());
-        this.closed = true;
     }
 
     protected void write(WritableByteChannel out, Box... boxes) throws IOException {
@@ -322,7 +320,6 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
             FragmentContainer fragmentContainer = createFragmentContainer(streamingTrack);
             //System.err.println("Creating fragment for " + streamingTrack);
             sampleBuffers.get(streamingTrack).clear();
-            sampleBuffers.get(streamingTrack).add(streamingSample);
             nextFragmentCreateStartTime.put(streamingTrack, nextFragmentCreateStartTime.get(streamingTrack) + fragmentContainer.duration);
             Queue<FragmentContainer> fragmentQueue = fragmentBuffers.get(streamingTrack);
             fragmentQueue.add(fragmentContainer);
