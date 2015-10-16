@@ -35,7 +35,7 @@ import java.util.ListIterator;
  * <li>In H264 this is every sample that is marked in the SyncSampleBox</li>
  * </ul>
  */
-public class CroppedTrack extends AbstractTrack {
+public class ClippedTrack extends AbstractTrack {
     Track origTrack;
     private int fromSample;
     private int toSample;
@@ -48,7 +48,7 @@ public class CroppedTrack extends AbstractTrack {
      * @param fromSample first sample in the new <code>Track</code> - beginning with 0
      * @param toSample   first sample not in the new <code>Track</code> - beginning with 0
      */
-    public CroppedTrack(Track origTrack, long fromSample, long toSample) {
+    public ClippedTrack(Track origTrack, long fromSample, long toSample) {
         super("crop(" + origTrack.getName() + ")");
         this.origTrack = origTrack;
         assert fromSample <= Integer.MAX_VALUE;

@@ -5,7 +5,7 @@ import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.Track;
 import org.mp4parser.muxer.builder.DefaultMp4Builder;
 import org.mp4parser.muxer.container.mp4.MovieCreator;
-import org.mp4parser.muxer.tracks.CroppedTrack;
+import org.mp4parser.muxer.tracks.ClippedTrack;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,7 +37,7 @@ public class SingleTrackShortenExample {
         long startSample = findNextSyncSample(track, startTime);
         long endSample = findNextSyncSample(track, endTime);
 
-        movie.addTrack(new CroppedTrack(track, startSample, endSample));
+        movie.addTrack(new ClippedTrack(track, startSample, endSample));
 
         Container out = new DefaultMp4Builder().build(movie);
         FileOutputStream fos = new FileOutputStream(String.format("output-%f-%f.mp4", startTime, endTime));

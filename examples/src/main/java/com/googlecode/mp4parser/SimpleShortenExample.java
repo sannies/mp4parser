@@ -6,7 +6,7 @@ import org.mp4parser.muxer.Track;
 import org.mp4parser.muxer.builder.DefaultMp4Builder;
 import org.mp4parser.muxer.container.mp4.MovieCreator;
 import org.mp4parser.muxer.tracks.AppendTrack;
-import org.mp4parser.muxer.tracks.CroppedTrack;
+import org.mp4parser.muxer.tracks.ClippedTrack;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -75,7 +75,7 @@ public class SimpleShortenExample {
                 currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
                 currentSample++;
             }
-            movie.addTrack(new AppendTrack(new CroppedTrack(track, startSample1, endSample1)));
+            movie.addTrack(new AppendTrack(new ClippedTrack(track, startSample1, endSample1)));
         }
         long start1 = System.currentTimeMillis();
         Container out = new DefaultMp4Builder().build(movie);

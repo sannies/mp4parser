@@ -8,7 +8,7 @@ import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.Track;
 import org.mp4parser.muxer.builder.DefaultMp4Builder;
 import org.mp4parser.muxer.container.mp4.MovieCreator;
-import org.mp4parser.muxer.tracks.CroppedTrack;
+import org.mp4parser.muxer.tracks.ClippedTrack;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -124,7 +124,7 @@ public class ServeMp4 extends AbstractHandler {
                 currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
                 currentSample++;
             }
-            movie.addTrack(new CroppedTrack(track, startSample, endSample));
+            movie.addTrack(new ClippedTrack(track, startSample, endSample));
         }
 
         Container out = new DefaultMp4Builder().build(movie);

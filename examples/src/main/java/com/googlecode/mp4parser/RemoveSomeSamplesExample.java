@@ -6,7 +6,7 @@ import org.mp4parser.muxer.Track;
 import org.mp4parser.muxer.builder.DefaultMp4Builder;
 import org.mp4parser.muxer.container.mp4.MovieCreator;
 import org.mp4parser.muxer.tracks.AppendTrack;
-import org.mp4parser.muxer.tracks.CroppedTrack;
+import org.mp4parser.muxer.tracks.ClippedTrack;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,7 +23,7 @@ public class RemoveSomeSamplesExample {
         Track audio = originalMovie.getTracks().get(0);
 
         Movie nuMovie = new Movie();
-        nuMovie.addTrack(new AppendTrack(new CroppedTrack(audio, 0, 10), new CroppedTrack(audio, 100, audio.getSamples().size())));
+        nuMovie.addTrack(new AppendTrack(new ClippedTrack(audio, 0, 10), new ClippedTrack(audio, 100, audio.getSamples().size())));
 
         Container out = new DefaultMp4Builder().build(nuMovie);
         FileOutputStream fos = new FileOutputStream(new File("output.mp4"));
