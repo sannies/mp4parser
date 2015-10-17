@@ -3,17 +3,17 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.mp4parser</groupId>
     <artifactId>streaming</artifactId>
-    <version>1.9.22</version>
+    <version>1.9.23-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>org.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.9.22</version>
+            <version>1.9.23-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.mp4parser</groupId>
             <artifactId>muxer</artifactId>
-            <version>1.9.22</version>
+            <version>1.9.23-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <name>Stream Muxer</name>
@@ -91,6 +91,6 @@
     </developers>
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
-        <tag>mp4parser-project-1.9.22</tag>
+        <tag>mp4parser-project-1.9.5</tag>
     </scm>
 </project>
