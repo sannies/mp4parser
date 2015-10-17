@@ -4,13 +4,18 @@ import java.io.Closeable;
 import java.io.IOException;
 
 /**
- * Very basic interface to start and stop the creation of an MP4.
+ * Controls the creation of media files.
+ * @see MultiTrackFragmentedMp4Writer
+ * @see StreamingTrack#setSampleSink(SampleSink)
  */
 public interface SampleSink extends Closeable {
     /**
-     * Should free all resources blocked and interrupts the process of writing the output.
+     * Free all resources blocked and interrupts the process of
+     * writing the output. An implementation should flush all samples
+     * that have not yet been written and write the file footer -
+     * if exists - before actually freeing the resources.
      *
-     * @throws IOException
+     * @throws IOException if closing fails
      */
     void close() throws IOException;
 
@@ -18,7 +23,6 @@ public interface SampleSink extends Closeable {
      * Adds a samples to the SampleSink. This might or might not cause writing the sample any output stream or channel.
      * Once this method is called the <code>StreamingTrack</code> must be ready and accept calls to any method.
      *
-     * @return nothing
      * @throws IOException if writing (or reading) fails.
      */
     void acceptSample(StreamingSample streamingSample, StreamingTrack streamingTrack) throws IOException;

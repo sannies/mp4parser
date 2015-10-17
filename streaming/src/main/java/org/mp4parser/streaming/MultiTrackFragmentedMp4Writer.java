@@ -102,7 +102,7 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
      * a segment have not yet been met) and writes the MovieFragmentRandomAccessBox.
      * It does not close the sink!
      *
-     * @throws IOException
+     * @throws IOException if writing to the underlying data sink fails
      * @see MovieFragmentRandomAccessBox
      */
     public synchronized void close() throws IOException {
@@ -364,17 +364,14 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
 
     }
 
-    private FragmentContainer createFragmentContainer(StreamingTrack streamingTrack) {
-        FragmentContainer fragmentContainer = new FragmentContainer();
-        List<StreamingSample> samples = new ArrayList<StreamingSample>(sampleBuffers.get(streamingTrack));
-        fragmentContainer.fragmentContent = createFragment(streamingTrack, samples);
-        fragmentContainer.duration = nextSampleStartTime.get(streamingTrack) - nextFragmentCreateStartTime.get(streamingTrack);
-        return fragmentContainer;
-    }
-
     /**
-     * @param streamingTrack
-     * @param next
+     * Tests if the currently received samples for a given track
+     * form a valid fragment taking the latest received sample into
+     * account. The next sample is not part of the segment and
+     * will be added to the fragment buffer later.
+     *
+     * @param streamingTrack track to test
+     * @param next           the lastest samples
      * @return true if a fragment has been created.
      */
     protected boolean isFragmentReady(StreamingTrack streamingTrack, StreamingSample next) {
@@ -410,6 +407,14 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
             LOG.fine("created fragment for " + streamingTrack + " of " + (duration / streamingTrack.getTimescale()) + " seconds");
         }
         return new Box[]{moof, mdat};
+    }
+
+    private FragmentContainer createFragmentContainer(StreamingTrack streamingTrack) {
+        FragmentContainer fragmentContainer = new FragmentContainer();
+        List<StreamingSample> samples = new ArrayList<StreamingSample>(sampleBuffers.get(streamingTrack));
+        fragmentContainer.fragmentContent = createFragment(streamingTrack, samples);
+        fragmentContainer.duration = nextSampleStartTime.get(streamingTrack) - nextFragmentCreateStartTime.get(streamingTrack);
+        return fragmentContainer;
     }
 
 

@@ -23,6 +23,14 @@ import java.util.concurrent.Callable;
 
 import static org.mp4parser.tools.CastUtils.l2i;
 
+/**
+ * Creates a List of StreamingTrack from a classic MP4. Fragmented MP4s don't
+ * work and the implementation will consume a lot of heap when the MP4
+ * is not a 'fast-start' MP4 (order: ftyp, moov, mdat good;
+ * order ftyp, mdat, moov bad).
+ */
+// @todo implement FragmentedMp4ContainerSource
+// @todo store mdat of non-fast-start MP4 on disk
 public class Mp4ContainerSource implements Callable<Void> {
     final HashMap<TrackBox, Mp4StreamingTrack> tracks = new LinkedHashMap<TrackBox, Mp4StreamingTrack>();
     final HashMap<TrackBox, Long> currentChunks = new HashMap<TrackBox, Long>();
@@ -160,15 +168,17 @@ public class Mp4ContainerSource implements Callable<Void> {
 
                 int sampleSize = l2i(stsz.getSampleSizeAtIndex(l2i(index - 1)));
                 long avail = baos.available();
-                int bytesRead = 0;
 
-                while (avail + bytesRead <= offset + sampleSize) {
+                // as long as the sample has not yet been fully read
+                // read more bytes from the input channel to fill
+                //
+                while (avail <= offset + sampleSize) {
                     try {
                         int br = readableByteChannel.read(BUFFER);
                         if (br == -1) {
                             break;
                         }
-                        bytesRead += br;
+                        avail = baos.available();
                         BUFFER.rewind();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
