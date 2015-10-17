@@ -1,9 +1,9 @@
 package org.mp4parser.examples.mux.streaming;
 
-import org.mp4parser.streaming.MultiTrackFragmentedMp4Writer;
 import org.mp4parser.streaming.StreamingTrack;
-import org.mp4parser.streaming.rawformats.aac.AdtsAacStreamingTrack;
-import org.mp4parser.streaming.rawformats.h264.H264AnnexBTrack;
+import org.mp4parser.streaming.input.aac.AdtsAacStreamingTrack;
+import org.mp4parser.streaming.input.h264.H264AnnexBTrack;
+import org.mp4parser.streaming.output.mp4.FragmentedMp4Writer;
 
 import java.io.FileOutputStream;
 import java.net.URI;
@@ -37,8 +37,8 @@ public class H264AACExample {
         FileOutputStream fos = new FileOutputStream("c:\\dev\\mp4parser\\output.mp4");
         WritableByteChannel wbc = fos.getChannel();
         //AsyncWritableByteChannel asyncWritableByteChannel = new AsyncWritableByteChannel(wbc);
-        MultiTrackFragmentedMp4Writer multiTrackFragmentedMp4Writer =
-                new MultiTrackFragmentedMp4Writer(Arrays.<StreamingTrack>asList(aac, h264), wbc);
+        FragmentedMp4Writer multiTrackFragmentedMp4Writer =
+                new FragmentedMp4Writer(Arrays.<StreamingTrack>asList(aac, h264), wbc);
 
 
         final List<Future<Void>> allFutures = new ArrayList<>();

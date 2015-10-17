@@ -1,4 +1,4 @@
-package org.mp4parser.streaming.rawformats.h264;
+package org.mp4parser.streaming.input.h264;
 
 import org.junit.Assert;
 import org.junit.Test;

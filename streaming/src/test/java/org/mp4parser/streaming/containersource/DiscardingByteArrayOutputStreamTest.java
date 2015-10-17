@@ -2,6 +2,7 @@ package org.mp4parser.streaming.containersource;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mp4parser.streaming.input.mp4.DiscardingByteArrayOutputStream;
 
 /**
  * Created by sannies on 05.08.2015.

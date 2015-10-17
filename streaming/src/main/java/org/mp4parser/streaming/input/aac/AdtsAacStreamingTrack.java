@@ -1,4 +1,4 @@
-package org.mp4parser.streaming.rawformats.aac;
+package org.mp4parser.streaming.input.aac;
 
 import org.mp4parser.boxes.iso14496.part1.objectdescriptors.AudioSpecificConfig;
 import org.mp4parser.boxes.iso14496.part1.objectdescriptors.DecoderConfigDescriptor;
@@ -7,10 +7,10 @@ import org.mp4parser.boxes.iso14496.part1.objectdescriptors.SLConfigDescriptor;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
 import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
-import org.mp4parser.streaming.AbstractStreamingTrack;
-import org.mp4parser.streaming.StreamingSampleImpl;
 import org.mp4parser.streaming.extensions.DefaultSampleFlagsTrackExtension;
 import org.mp4parser.streaming.extensions.TrackIdTrackExtension;
+import org.mp4parser.streaming.input.AbstractStreamingTrack;
+import org.mp4parser.streaming.input.StreamingSampleImpl;
 
 import java.io.EOFException;
 import java.io.IOException;

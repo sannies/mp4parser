@@ -1,4 +1,4 @@
-package org.mp4parser.streaming.rawformats.aac;
+package org.mp4parser.streaming.input.aac;
 
 /**
  * Created by sannies on 01.09.2015.

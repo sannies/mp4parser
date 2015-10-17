@@ -14,7 +14,7 @@
  * limitations under the License. 
  */
 
-package org.mp4parser.streaming.rawformats.h264;
+package org.mp4parser.streaming.input.h264;
 
 import org.mp4parser.Box;
 import org.mp4parser.Container;

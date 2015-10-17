@@ -1,4 +1,4 @@
-package org.mp4parser.streaming.containersource;
+package org.mp4parser.streaming.input.mp4;
 
 import java.io.IOException;
 import java.io.OutputStream;

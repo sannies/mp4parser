@@ -1,12 +1,12 @@
-package org.mp4parser.streaming;
+package org.mp4parser.streaming.input;
+
+import org.mp4parser.streaming.SampleExtension;
+import org.mp4parser.streaming.StreamingSample;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * Created by sannies on 17.08.2015.
- */
 public class StreamingSampleImpl implements StreamingSample {
 
     private ByteBuffer s;

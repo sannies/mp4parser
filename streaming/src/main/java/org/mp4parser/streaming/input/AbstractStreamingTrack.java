@@ -1,6 +1,9 @@
-package org.mp4parser.streaming;
+package org.mp4parser.streaming.input;
 
 import org.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
+import org.mp4parser.streaming.StreamingTrack;
+import org.mp4parser.streaming.TrackExtension;
+import org.mp4parser.streaming.output.SampleSink;
 
 import java.util.HashMap;
 

@@ -1,4 +1,4 @@
-package org.mp4parser.streaming.rawformats.aac;
+package org.mp4parser.streaming.input.aac;
 
 public class AdtsHeader {
     int sampleFrequencyIndex;

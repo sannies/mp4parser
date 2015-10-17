@@ -1,9 +1,12 @@
-package org.mp4parser.streaming;
+package org.mp4parser.streaming.output.mp4;
 
 import org.mp4parser.Box;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.*;
+import org.mp4parser.streaming.StreamingSample;
+import org.mp4parser.streaming.StreamingTrack;
 import org.mp4parser.streaming.extensions.*;
+import org.mp4parser.streaming.output.SampleSink;
 import org.mp4parser.tools.IsoTypeWriter;
 import org.mp4parser.tools.Mp4Arrays;
 import org.mp4parser.tools.Mp4Math;
@@ -28,9 +31,9 @@ import static org.mp4parser.tools.CastUtils.l2i;
  * It has to be closed ({@link #close()}) actively to trigger the write of remaining buffered
  * samples and the footer.
  */
-public class MultiTrackFragmentedMp4Writer implements SampleSink {
+public class FragmentedMp4Writer implements SampleSink {
     public static final Object OBJ = new Object();
-    private static final Logger LOG = Logger.getLogger(MultiTrackFragmentedMp4Writer.class.getName());
+    private static final Logger LOG = Logger.getLogger(FragmentedMp4Writer.class.getName());
     protected final WritableByteChannel sink;
     protected List<StreamingTrack> source;
     protected Date creationTime;
@@ -61,7 +64,7 @@ public class MultiTrackFragmentedMp4Writer implements SampleSink {
     long bytesWritten = 0;
     volatile boolean headerWritten = false;
 
-    public MultiTrackFragmentedMp4Writer(List<StreamingTrack> source, WritableByteChannel sink) throws IOException {
+    public FragmentedMp4Writer(List<StreamingTrack> source, WritableByteChannel sink) throws IOException {
         this.source = new LinkedList<StreamingTrack>(source);
         this.sink = sink;
         this.creationTime = new Date();

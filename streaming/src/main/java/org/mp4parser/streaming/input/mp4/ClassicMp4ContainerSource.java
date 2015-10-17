@@ -1,15 +1,20 @@
-package org.mp4parser.streaming.containersource;
+package org.mp4parser.streaming.input.mp4;
 
 import org.mp4parser.BasicContainer;
 import org.mp4parser.Box;
 import org.mp4parser.BoxParser;
 import org.mp4parser.PropertyBoxParserImpl;
 import org.mp4parser.boxes.iso14496.part12.*;
-import org.mp4parser.streaming.*;
+import org.mp4parser.streaming.StreamingSample;
+import org.mp4parser.streaming.StreamingTrack;
+import org.mp4parser.streaming.TrackExtension;
 import org.mp4parser.streaming.extensions.CompositionTimeSampleExtension;
 import org.mp4parser.streaming.extensions.CompositionTimeTrackExtension;
 import org.mp4parser.streaming.extensions.SampleFlagsSampleExtension;
 import org.mp4parser.streaming.extensions.TrackIdTrackExtension;
+import org.mp4parser.streaming.input.StreamingSampleImpl;
+import org.mp4parser.streaming.output.SampleSink;
+import org.mp4parser.streaming.output.mp4.FragmentedMp4Writer;
 import org.mp4parser.tools.Path;
 
 import java.io.*;
@@ -31,7 +36,7 @@ import static org.mp4parser.tools.CastUtils.l2i;
  */
 // @todo implement FragmentedMp4ContainerSource
 // @todo store mdat of non-fast-start MP4 on disk
-public class Mp4ContainerSource implements Callable<Void> {
+public class ClassicMp4ContainerSource implements Callable<Void> {
     final HashMap<TrackBox, Mp4StreamingTrack> tracks = new LinkedHashMap<TrackBox, Mp4StreamingTrack>();
     final HashMap<TrackBox, Long> currentChunks = new HashMap<TrackBox, Long>();
     final HashMap<TrackBox, Long> currentSamples = new HashMap<TrackBox, Long>();
@@ -40,7 +45,7 @@ public class Mp4ContainerSource implements Callable<Void> {
     private final ByteBuffer BUFFER = ByteBuffer.allocateDirect(65535);
 
 
-    public Mp4ContainerSource(InputStream is) throws IOException {
+    public ClassicMp4ContainerSource(InputStream is) throws IOException {
         readableByteChannel = Channels.newChannel(new TeeInputStream(is, baos));
         BasicContainer container = new BasicContainer();
         BoxParser boxParser = new PropertyBoxParserImpl();
@@ -66,18 +71,18 @@ public class Mp4ContainerSource implements Callable<Void> {
     }
 
     public static void main(String[] args) throws IOException {
-        Mp4ContainerSource mp4ContainerSource = null;
+        ClassicMp4ContainerSource classicMp4ContainerSource = null;
         try {
-            mp4ContainerSource = new Mp4ContainerSource(new URI("http://org.mp4parser.s3.amazonaws.com/examples/Cosmos%20Laundromat%20small%20faststart.mp4").toURL().openStream());
+            classicMp4ContainerSource = new ClassicMp4ContainerSource(new URI("http://org.mp4parser.s3.amazonaws.com/examples/Cosmos%20Laundromat%20small%20faststart.mp4").toURL().openStream());
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
-        List<StreamingTrack> streamingTracks = mp4ContainerSource.getTracks();
+        List<StreamingTrack> streamingTracks = classicMp4ContainerSource.getTracks();
         File f = new File("output.mp4");
-        MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(streamingTracks, new FileOutputStream(f).getChannel());
+        FragmentedMp4Writer writer = new FragmentedMp4Writer(streamingTracks, new FileOutputStream(f).getChannel());
 
         System.out.println("Reading and writing started.");
-        mp4ContainerSource.call();
+        classicMp4ContainerSource.call();
         writer.close();
         System.err.println(f.getAbsolutePath());
 

@@ -1,11 +1,15 @@
-package org.mp4parser.streaming;
+package org.mp4parser.streaming.output;
+
+import org.mp4parser.streaming.StreamingSample;
+import org.mp4parser.streaming.StreamingTrack;
+import org.mp4parser.streaming.output.mp4.FragmentedMp4Writer;
 
 import java.io.Closeable;
 import java.io.IOException;
 
 /**
  * Controls the creation of media files.
- * @see MultiTrackFragmentedMp4Writer
+ * @see FragmentedMp4Writer
  * @see StreamingTrack#setSampleSink(SampleSink)
  */
 public interface SampleSink extends Closeable {

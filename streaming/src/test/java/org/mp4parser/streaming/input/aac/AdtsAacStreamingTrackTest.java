@@ -1,13 +1,13 @@
-package org.mp4parser.streaming.rawformats.aac;
+package org.mp4parser.streaming.input.aac;
 
 import org.junit.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.muxer.InMemRandomAccessSourceImpl;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.samples.SampleList;
-import org.mp4parser.streaming.MultiTrackFragmentedMp4Writer;
 import org.mp4parser.streaming.StreamingTrack;
-import org.mp4parser.streaming.rawformats.h264.Walk;
+import org.mp4parser.streaming.input.h264.Walk;
+import org.mp4parser.streaming.output.mp4.FragmentedMp4Writer;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,7 +28,7 @@ public class AdtsAacStreamingTrackTest {
     public void testMuxing() throws Exception {
         AdtsAacStreamingTrack b = new AdtsAacStreamingTrack(AdtsAacStreamingTrackTest.class.getResourceAsStream("/org/mp4parser/streaming/rawformats/aac/somesound.aac"), 65000, 80000);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new MultiTrackFragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), Channels.newChannel(baos));
+        new FragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), Channels.newChannel(baos));
         //MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new ByteArrayOutputStream());
         b.call();
         IsoFile isoFile = new IsoFile(Channels.newChannel(new ByteArrayInputStream(baos.toByteArray())));

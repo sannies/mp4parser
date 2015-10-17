@@ -1,4 +1,4 @@
-package org.mp4parser.streaming.rawformats.h264;
+package org.mp4parser.streaming.input.h264;
 
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part15.AvcConfigurationBox;
@@ -9,13 +9,13 @@ import org.mp4parser.muxer.tracks.h264.H264NalUnitTypes;
 import org.mp4parser.muxer.tracks.h264.SliceHeader;
 import org.mp4parser.muxer.tracks.h264.parsing.model.PictureParameterSet;
 import org.mp4parser.muxer.tracks.h264.parsing.model.SeqParameterSet;
-import org.mp4parser.streaming.AbstractStreamingTrack;
 import org.mp4parser.streaming.StreamingSample;
-import org.mp4parser.streaming.StreamingSampleImpl;
 import org.mp4parser.streaming.extensions.CompositionTimeSampleExtension;
 import org.mp4parser.streaming.extensions.CompositionTimeTrackExtension;
 import org.mp4parser.streaming.extensions.DimensionTrackExtension;
 import org.mp4parser.streaming.extensions.SampleFlagsSampleExtension;
+import org.mp4parser.streaming.input.AbstractStreamingTrack;
+import org.mp4parser.streaming.input.StreamingSampleImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

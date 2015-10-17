@@ -1,6 +1,7 @@
 package org.mp4parser.streaming;
 
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
+import org.mp4parser.streaming.output.SampleSink;
 
 import java.io.Closeable;
 
