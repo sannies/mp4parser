@@ -31,7 +31,7 @@ import static org.mp4parser.tools.CastUtils.l2i;
  * It has to be closed ({@link #close()}) actively to trigger the write of remaining buffered
  * samples and the footer.
  */
-public class FragmentedMp4Writer implements SampleSink {
+public class FragmentedMp4Writer extends DefaultBoxes implements SampleSink {
     public static final Object OBJ = new Object();
     private static final Logger LOG = Logger.getLogger(FragmentedMp4Writer.class.getName());
     protected final WritableByteChannel sink;
@@ -123,32 +123,6 @@ public class FragmentedMp4Writer implements SampleSink {
         }
     }
 
-    protected Box createMvhd() {
-        MovieHeaderBox mvhd = new MovieHeaderBox();
-        mvhd.setVersion(1);
-        mvhd.setCreationTime(creationTime);
-        mvhd.setModificationTime(creationTime);
-        mvhd.setDuration(0);//no duration in moov for fragmented movies
-
-        long[] timescales = new long[0];
-        long maxTrackId = 0;
-        for (StreamingTrack streamingTrack : source) {
-            timescales = Mp4Arrays.copyOfAndAppend(timescales, streamingTrack.getTimescale());
-            maxTrackId = Math.max(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId(), maxTrackId);
-        }
-
-        mvhd.setTimescale(Mp4Math.lcm(timescales));
-        // find the next available trackId
-        mvhd.setNextTrackId(maxTrackId + 1);
-        return mvhd;
-    }
-
-    protected Box createMdiaHdlr(StreamingTrack streamingTrack) {
-        HandlerBox hdlr = new HandlerBox();
-        hdlr.setHandlerType(streamingTrack.getHandler());
-        return hdlr;
-    }
-
     protected Box createMdhd(StreamingTrack streamingTrack) {
         MediaHeaderBox mdhd = new MediaHeaderBox();
         mdhd.setCreationTime(creationTime);
@@ -159,82 +133,7 @@ public class FragmentedMp4Writer implements SampleSink {
         return mdhd;
     }
 
-    protected Box createMdia(StreamingTrack streamingTrack) {
-        MediaBox mdia = new MediaBox();
-        mdia.addBox(createMdhd(streamingTrack));
-        mdia.addBox(createMdiaHdlr(streamingTrack));
-        mdia.addBox(createMinf(streamingTrack));
-        return mdia;
-    }
 
-    protected Box createMinf(StreamingTrack streamingTrack) {
-        MediaInformationBox minf = new MediaInformationBox();
-        if (streamingTrack.getHandler().equals("vide")) {
-            minf.addBox(new VideoMediaHeaderBox());
-        } else if (streamingTrack.getHandler().equals("soun")) {
-            minf.addBox(new SoundMediaHeaderBox());
-        } else if (streamingTrack.getHandler().equals("text")) {
-            minf.addBox(new NullMediaHeaderBox());
-        } else if (streamingTrack.getHandler().equals("subt")) {
-            minf.addBox(new SubtitleMediaHeaderBox());
-        } else if (streamingTrack.getHandler().equals("hint")) {
-            minf.addBox(new HintMediaHeaderBox());
-        } else if (streamingTrack.getHandler().equals("sbtl")) {
-            minf.addBox(new NullMediaHeaderBox());
-        }
-        minf.addBox(createDinf());
-        minf.addBox(createStbl(streamingTrack));
-        return minf;
-    }
-
-    protected Box createStbl(StreamingTrack streamingTrack) {
-        SampleTableBox stbl = new SampleTableBox();
-
-        stbl.addBox(streamingTrack.getSampleDescriptionBox());
-        stbl.addBox(new TimeToSampleBox());
-        stbl.addBox(new SampleToChunkBox());
-        stbl.addBox(new SampleSizeBox());
-        stbl.addBox(new StaticChunkOffsetBox());
-        return stbl;
-    }
-
-    protected DataInformationBox createDinf() {
-        DataInformationBox dinf = new DataInformationBox();
-        DataReferenceBox dref = new DataReferenceBox();
-        dinf.addBox(dref);
-        DataEntryUrlBox url = new DataEntryUrlBox();
-        url.setFlags(1);
-        dref.addBox(url);
-        return dinf;
-    }
-
-    protected Box createTrak(StreamingTrack streamingTrack) {
-        TrackBox trackBox = new TrackBox();
-        trackBox.addBox(createTkhd(streamingTrack));
-        trackBox.addBox(createMdia(streamingTrack));
-        return trackBox;
-    }
-
-    private Box createTkhd(StreamingTrack streamingTrack) {
-        TrackHeaderBox tkhd = new TrackHeaderBox();
-        tkhd.setTrackId(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId());
-        DimensionTrackExtension dte = streamingTrack.getTrackExtension(DimensionTrackExtension.class);
-        if (dte != null) {
-            tkhd.setHeight(dte.getHeight());
-            tkhd.setWidth(dte.getWidth());
-        }
-        return tkhd;
-    }
-
-    public Box createFtyp() {
-        List<String> minorBrands = new LinkedList<String>();
-        minorBrands.add("isom");
-        minorBrands.add("iso2");
-        minorBrands.add("avc1");
-        minorBrands.add("iso6");
-        minorBrands.add("mp41");
-        return new FileTypeBox("isom", 512, minorBrands);
-    }
 
     protected Box createMvex() {
         MovieExtendsBox mvex = new MovieExtendsBox();
@@ -261,6 +160,27 @@ public class FragmentedMp4Writer implements SampleSink {
         trex.setDefaultSampleFlags(sf);
         return trex;
     }
+
+    protected Box createMvhd() {
+        MovieHeaderBox mvhd = new MovieHeaderBox();
+        mvhd.setVersion(1);
+        mvhd.setCreationTime(creationTime);
+        mvhd.setModificationTime(creationTime);
+        mvhd.setDuration(0);//no duration in moov for fragmented movies
+
+        long[] timescales = new long[0];
+        long maxTrackId = 0;
+        for (StreamingTrack streamingTrack : source) {
+            timescales = Mp4Arrays.copyOfAndAppend(timescales, streamingTrack.getTimescale());
+            maxTrackId = Math.max(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId(), maxTrackId);
+        }
+
+        mvhd.setTimescale(Mp4Math.lcm(timescales));
+        // find the next available trackId
+        mvhd.setNextTrackId(maxTrackId + 1);
+        return mvhd;
+    }
+
 
     protected Box createMoov() {
         MovieBox movieBox = new MovieBox();
