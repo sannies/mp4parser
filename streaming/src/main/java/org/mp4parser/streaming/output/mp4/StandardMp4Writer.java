@@ -5,6 +5,7 @@ import org.mp4parser.boxes.iso14496.part12.*;
 import org.mp4parser.streaming.StreamingSample;
 import org.mp4parser.streaming.StreamingTrack;
 import org.mp4parser.streaming.extensions.SampleFlagsSampleExtension;
+import org.mp4parser.streaming.extensions.TrackIdTrackExtension;
 import org.mp4parser.streaming.output.SampleSink;
 import org.mp4parser.tools.Mp4Arrays;
 import org.mp4parser.tools.Path;
@@ -57,15 +58,41 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
     volatile boolean headerWritten = false;
 
 
-    public StandardMp4Writer(List<StreamingTrack> source, WritableByteChannel sink) {
+    public StandardMp4Writer(List<StreamingTrack> source, WritableByteChannel sink) throws IOException {
         this.source = source;
         this.sink = sink;
+
+        HashSet<Long> trackIds = new HashSet<Long>();
         for (StreamingTrack streamingTrack : source) {
             streamingTrack.setSampleSink(this);
             chunkNumbers.put(streamingTrack, 1L);
             sampleNumbers.put(streamingTrack, 1L);
-        }
+            nextSampleStartTime.put(streamingTrack, 0L);
+            nextChunkCreateStartTime.put(streamingTrack, 0L);
+            nextChunkWriteStartTime.put(streamingTrack, 0L);
+            congestionControl.put(streamingTrack, new CountDownLatch(0));
+            sampleBuffers.put(streamingTrack, new ArrayList<StreamingSample>());
+            chunkBuffers.put(streamingTrack, new LinkedList<ChunkContainer>());
+            if (streamingTrack.getTrackExtension(TrackIdTrackExtension.class) != null) {
+                TrackIdTrackExtension trackIdTrackExtension = streamingTrack.getTrackExtension(TrackIdTrackExtension.class);
+                assert trackIdTrackExtension != null;
+                if (trackIds.contains(trackIdTrackExtension.getTrackId())) {
+                    throw new IOException("There may not be two tracks with the same trackID within one file");
+                }
+            }
 
+        }
+        for (StreamingTrack streamingTrack : source) {
+            if (streamingTrack.getTrackExtension(TrackIdTrackExtension.class) == null) {
+                long maxTrackId = 0;
+                for (Long trackId : trackIds) {
+                    maxTrackId = Math.max(trackId, maxTrackId);
+                }
+                TrackIdTrackExtension tiExt = new TrackIdTrackExtension(maxTrackId + 1);
+                trackIds.add(tiExt.getTrackId());
+                streamingTrack.addTrackExtension(tiExt);
+            }
+        }
     }
 
     public void close() throws IOException {
@@ -133,7 +160,9 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
         TimeToSampleBox stts = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]/stts[0]");
         assert stts != null;
         if (stts.getEntries().isEmpty()) {
-            stts.getEntries().add(new TimeToSampleBox.Entry(1, streamingSample.getDuration()));
+            ArrayList<TimeToSampleBox.Entry> entries = new ArrayList<TimeToSampleBox.Entry>(stts.getEntries());
+            entries.add(new TimeToSampleBox.Entry(1, streamingSample.getDuration()));
+            stts.setEntries(entries);
         } else {
             TimeToSampleBox.Entry sttsEntry = stts.getEntries().get(stts.getEntries().size() - 1);
             if (sttsEntry.getDelta() == streamingSample.getDuration()) {
@@ -143,7 +172,12 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
         SampleFlagsSampleExtension sampleFlagsSampleExtension = streamingSample.getSampleExtension(SampleFlagsSampleExtension.class);
         if (sampleFlagsSampleExtension != null && sampleFlagsSampleExtension.isSyncSample()) {
             SyncSampleBox stss = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]/stss[0]");
-            assert stss != null;
+            if (stss == null) {
+                SampleTableBox stbl = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]");
+                stss = new SyncSampleBox();
+                assert stbl != null;
+                stbl.addBox(stss);
+            }
             stss.setSampleNumber(Mp4Arrays.copyOfAndAppend(stss.getSampleNumber(), sampleNumber));
         }
 
@@ -177,8 +211,8 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
             //System.err.println("Creating fragment for " + streamingTrack);
             sampleBuffers.get(streamingTrack).clear();
             nextChunkCreateStartTime.put(streamingTrack, nextChunkCreateStartTime.get(streamingTrack) + fragmentContainer.duration);
-            Queue<ChunkContainer> fragmentQueue = chunkBuffers.get(streamingTrack);
-            fragmentQueue.add(fragmentContainer);
+            Queue<ChunkContainer> chunkQueue = chunkBuffers.get(streamingTrack);
+            chunkQueue.add(fragmentContainer);
             synchronized (OBJ) {
                 if (headerWritten && this.source.get(0) == streamingTrack) {
 
@@ -203,10 +237,10 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
                         sortTracks();
                     }
                 } else {
-                    if (fragmentQueue.size() > 10) {
+                    if (chunkQueue.size() > 10) {
                         // if there are more than 10 fragments in the queue we don't want more samples of this track
                         // System.err.println("Stopping " + streamingTrack);
-                        congestionControl.put(streamingTrack, new CountDownLatch(fragmentQueue.size()));
+                        congestionControl.put(streamingTrack, new CountDownLatch(chunkQueue.size()));
                     }
                 }
             }
@@ -230,8 +264,11 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
         cc.duration = nextSampleStartTime.get(streamingTrack) - nextChunkCreateStartTime.get(streamingTrack);
         TrackBox tb = trackBoxes.get(streamingTrack);
         SampleToChunkBox stsc = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]/stsc[0]");
+        assert stsc != null;
         if (stsc.getEntries().isEmpty()) {
-            stsc.getEntries().add(new SampleToChunkBox.Entry(chunkNumber, samples.size(), 1));
+            List<SampleToChunkBox.Entry> entries = new ArrayList<SampleToChunkBox.Entry>();
+            stsc.setEntries(entries);
+            entries.add(new SampleToChunkBox.Entry(chunkNumber, samples.size(), 1));
         } else {
             SampleToChunkBox.Entry e = stsc.getEntries().get(stsc.getEntries().size() - 1);
             if (e.getSamplesPerChunk() != samples.size()) {
