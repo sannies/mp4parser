@@ -37,6 +37,7 @@ public abstract class DefaultBoxes {
 
     abstract protected Box createMdhd(StreamingTrack streamingTrack);
 
+    abstract protected Box createMvhd();
 
     protected Box createMinf(StreamingTrack streamingTrack) {
         MediaInformationBox minf = new MediaInformationBox();

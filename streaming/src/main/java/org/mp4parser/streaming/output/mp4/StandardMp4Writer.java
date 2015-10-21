@@ -8,6 +8,7 @@ import org.mp4parser.streaming.extensions.SampleFlagsSampleExtension;
 import org.mp4parser.streaming.extensions.TrackIdTrackExtension;
 import org.mp4parser.streaming.output.SampleSink;
 import org.mp4parser.tools.Mp4Arrays;
+import org.mp4parser.tools.Mp4Math;
 import org.mp4parser.tools.Path;
 
 import java.io.IOException;
@@ -28,8 +29,9 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
     private static final Logger LOG = Logger.getLogger(FragmentedMp4Writer.class.getName());
     protected final WritableByteChannel sink;
     protected List<StreamingTrack> source;
-    protected Date creationTime;
-    protected long sequenceNumber = 1;
+    protected Date creationTime = new Date();
+
+
     protected Map<StreamingTrack, CountDownLatch> congestionControl = new ConcurrentHashMap<StreamingTrack, CountDownLatch>();
     /**
      * Contains the start time of the next segment in line that will be created.
@@ -96,7 +98,24 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
     }
 
     public void close() throws IOException {
+        for (StreamingTrack streamingTrack : source) {
+            writeChunkContainer(createChunkContainer(streamingTrack));
+            streamingTrack.close();
+        }
+        write(sink, createMoov());
+    }
 
+    protected Box createMoov() {
+        MovieBox movieBox = new MovieBox();
+
+        movieBox.addBox(createMvhd());
+
+        for (StreamingTrack streamingTrack : source) {
+            movieBox.addBox(trackBoxes.get(streamingTrack));
+        }
+
+        // metadata here
+        return movieBox;
     }
 
     private void sortTracks() {
@@ -109,6 +128,30 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
                 return (int) d;
             }
         });
+    }
+
+    protected Box createMvhd() {
+        MovieHeaderBox mvhd = new MovieHeaderBox();
+        mvhd.setVersion(1);
+        mvhd.setCreationTime(creationTime);
+        mvhd.setModificationTime(creationTime);
+
+
+        long[] timescales = new long[0];
+        long maxTrackId = 0;
+        double duration = 0;
+        for (StreamingTrack streamingTrack : source) {
+            duration = Math.max((double) nextSampleStartTime.get(streamingTrack) / streamingTrack.getTimescale(), duration);
+            timescales = Mp4Arrays.copyOfAndAppend(timescales, streamingTrack.getTimescale());
+            maxTrackId = Math.max(streamingTrack.getTrackExtension(TrackIdTrackExtension.class).getTrackId(), maxTrackId);
+        }
+
+
+        mvhd.setTimescale(Mp4Math.lcm(timescales));
+        mvhd.setDuration((long) (Mp4Math.lcm(timescales) * duration));
+        // find the next available trackId
+        mvhd.setNextTrackId(maxTrackId + 1);
+        return mvhd;
     }
 
     protected void write(WritableByteChannel out, Box... boxes) throws IOException {
@@ -132,19 +175,20 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
         long ts = nextSampleStartTime.get(streamingTrack);
         long cfst = nextChunkCreateStartTime.get(streamingTrack);
 
-        return (ts > cfst + 2 * streamingTrack.getTimescale());
+        return (ts >= cfst + 2 * streamingTrack.getTimescale());
         // chunk interleave of 2 seconds
     }
 
     protected void writeChunkContainer(ChunkContainer chunkContainer) throws IOException {
         TrackBox tb = trackBoxes.get(chunkContainer.streamingTrack);
         ChunkOffsetBox stco = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]/stco[0]");
-        Mp4Arrays.copyOfAndAppend(stco.getChunkOffsets(), bytesWritten + 8);
+        assert stco != null;
+        stco.setChunkOffsets(Mp4Arrays.copyOfAndAppend(stco.getChunkOffsets(), bytesWritten + 8));
         write(sink, chunkContainer.mdat);
     }
 
     public void acceptSample(StreamingSample streamingSample, StreamingTrack streamingTrack) throws IOException {
-        long sampleNumber = sampleNumbers.get(streamingTrack);
+
         TrackBox tb = trackBoxes.get(streamingTrack);
         if (tb == null) {
             tb = new TrackBox();
@@ -154,32 +198,6 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
         }
 
         // We might want to do that when the chunk is created to save memory copy
-        SampleSizeBox stsz = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]/stsz[0]");
-        assert stsz != null;
-        stsz.setSampleSizes(Mp4Arrays.copyOfAndAppend(stsz.getSampleSizes(), streamingSample.getContent().limit()));
-        TimeToSampleBox stts = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]/stts[0]");
-        assert stts != null;
-        if (stts.getEntries().isEmpty()) {
-            ArrayList<TimeToSampleBox.Entry> entries = new ArrayList<TimeToSampleBox.Entry>(stts.getEntries());
-            entries.add(new TimeToSampleBox.Entry(1, streamingSample.getDuration()));
-            stts.setEntries(entries);
-        } else {
-            TimeToSampleBox.Entry sttsEntry = stts.getEntries().get(stts.getEntries().size() - 1);
-            if (sttsEntry.getDelta() == streamingSample.getDuration()) {
-                sttsEntry.setCount(sttsEntry.getCount() + 1);
-            }
-        }
-        SampleFlagsSampleExtension sampleFlagsSampleExtension = streamingSample.getSampleExtension(SampleFlagsSampleExtension.class);
-        if (sampleFlagsSampleExtension != null && sampleFlagsSampleExtension.isSyncSample()) {
-            SyncSampleBox stss = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]/stss[0]");
-            if (stss == null) {
-                SampleTableBox stbl = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]");
-                stss = new SyncSampleBox();
-                assert stbl != null;
-                stbl.addBox(stss);
-            }
-            stss.setSampleNumber(Mp4Arrays.copyOfAndAppend(stss.getSampleNumber(), sampleNumber));
-        }
 
 
         synchronized (OBJ) {
@@ -190,7 +208,7 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
                     allTracksAtLeastOneSample &= (nextSampleStartTime.get(track) > 0 || track == streamingTrack);
                 }
                 if (allTracksAtLeastOneSample) {
-
+                    write(sink, createFtyp());
                     headerWritten = true;
                 }
             }
@@ -207,12 +225,12 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
 
         if (isChunkReady(streamingTrack, streamingSample)) {
 
-            ChunkContainer fragmentContainer = createChunkContainer(streamingTrack);
+            ChunkContainer chunkContainer = createChunkContainer(streamingTrack);
             //System.err.println("Creating fragment for " + streamingTrack);
             sampleBuffers.get(streamingTrack).clear();
-            nextChunkCreateStartTime.put(streamingTrack, nextChunkCreateStartTime.get(streamingTrack) + fragmentContainer.duration);
+            nextChunkCreateStartTime.put(streamingTrack, nextChunkCreateStartTime.get(streamingTrack) + chunkContainer.duration);
             Queue<ChunkContainer> chunkQueue = chunkBuffers.get(streamingTrack);
-            chunkQueue.add(fragmentContainer);
+            chunkQueue.add(chunkContainer);
             synchronized (OBJ) {
                 if (headerWritten && this.source.get(0) == streamingTrack) {
 
@@ -222,12 +240,8 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
                     while (!(tracksFragmentQueue = chunkBuffers.get(
                             (currentStreamingTrack = this.source.get(0))
                     )).isEmpty()) {
-                        TrackBox trackBox = trackBoxes.get(currentStreamingTrack);
-
                         ChunkContainer currentFragmentContainer = tracksFragmentQueue.remove();
-
                         writeChunkContainer(currentFragmentContainer);
-
                         congestionControl.get(currentStreamingTrack).countDown();
                         long ts = nextChunkWriteStartTime.get(currentStreamingTrack) + currentFragmentContainer.duration;
                         nextChunkWriteStartTime.put(currentStreamingTrack, ts);
@@ -251,7 +265,7 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
 
         sampleBuffers.get(streamingTrack).add(streamingSample);
         nextSampleStartTime.put(streamingTrack, nextSampleStartTime.get(streamingTrack) + streamingSample.getDuration());
-        sampleNumbers.put(streamingTrack, sampleNumber + 1);
+
     }
 
     private ChunkContainer createChunkContainer(StreamingTrack streamingTrack) {
@@ -275,7 +289,49 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
                 stsc.getEntries().add(new SampleToChunkBox.Entry(chunkNumber, samples.size(), 1));
             }
         }
+        long sampleNumber = sampleNumbers.get(streamingTrack);
 
+        SampleSizeBox stsz = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]/stsz[0]");
+        TimeToSampleBox stts = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]/stts[0]");
+        SyncSampleBox stss = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]/stss[0]");
+
+        long[] sampleSizes = new long[samples.size()];
+        int i = 0;
+        for (StreamingSample sample : samples) {
+            sampleSizes[i++] = sample.getContent().limit();
+
+            assert stts != null;
+            if (stts.getEntries().isEmpty()) {
+                ArrayList<TimeToSampleBox.Entry> entries = new ArrayList<TimeToSampleBox.Entry>(stts.getEntries());
+                entries.add(new TimeToSampleBox.Entry(1, sample.getDuration()));
+                stts.setEntries(entries);
+            } else {
+                TimeToSampleBox.Entry sttsEntry = stts.getEntries().get(stts.getEntries().size() - 1);
+                if (sttsEntry.getDelta() == sample.getDuration()) {
+                    sttsEntry.setCount(sttsEntry.getCount() + 1);
+                } else {
+                    stts.getEntries().add(new TimeToSampleBox.Entry(1, sample.getDuration()));
+                }
+            }
+            SampleFlagsSampleExtension sampleFlagsSampleExtension = sample.getSampleExtension(SampleFlagsSampleExtension.class);
+            if (sampleFlagsSampleExtension != null && sampleFlagsSampleExtension.isSyncSample()) {
+
+                if (stss == null) {
+                    SampleTableBox stbl = Path.getPath(tb, "mdia[0]/minf[0]/stbl[0]");
+                    stss = new SyncSampleBox();
+                    assert stbl != null;
+                    stbl.addBox(stss);
+                }
+                stss.setSampleNumber(Mp4Arrays.copyOfAndAppend(stss.getSampleNumber(), sampleNumber));
+            }
+            sampleNumber++;
+
+        }
+        assert stsz != null;
+        stsz.setSampleSizes(Mp4Arrays.copyOfAndAppend(stsz.getSampleSizes(), sampleSizes));
+
+        sampleNumbers.put(streamingTrack, sampleNumber);
+        samples.clear();
         return cc;
     }
 
@@ -283,7 +339,7 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
         MediaHeaderBox mdhd = new MediaHeaderBox();
         mdhd.setCreationTime(creationTime);
         mdhd.setModificationTime(creationTime);
-        mdhd.setDuration(0);//no duration in moov for fragmented movies
+        mdhd.setDuration(nextSampleStartTime.get(streamingTrack));
         mdhd.setTimescale(streamingTrack.getTimescale());
         mdhd.setLanguage(streamingTrack.getLanguage());
         return mdhd;
