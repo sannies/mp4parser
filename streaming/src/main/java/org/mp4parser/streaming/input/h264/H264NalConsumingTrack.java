@@ -64,7 +64,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
     }
 
 
-    protected void consumeNal(byte[] nal) throws IOException, InterruptedException {
+    protected void consumeNal(byte[] nal) throws IOException {
         //LOG.finest("Consume NAL of " + nal.length + " bytes." + Hex.encodeHex(new byte[]{nal[0], nal[1], nal[2], nal[3], nal[4]}));
         H264NalUnitHeader nalUnitHeader = getNalUnitHeader(nal);
         switch (nalUnitHeader.nal_unit_type) {
@@ -169,7 +169,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
     }
 
 
-    protected StreamingSample createSample(List<byte[]> buffered, SliceHeader sliceHeader) throws IOException, InterruptedException {
+    protected StreamingSample createSample(List<byte[]> buffered, SliceHeader sliceHeader) throws IOException {
         LOG.finer("Create Sample");
         configure();
         if (timescale == 0 || frametick == 0) {
