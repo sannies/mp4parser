@@ -10,7 +10,7 @@ public class NalStreamTokenizerTest {
     @Test
     public void testTokenize() throws Exception {
         H264AnnexBTrack.NalStreamTokenizer nst = new H264AnnexBTrack.NalStreamTokenizer(
-                NalStreamTokenizerTest.class.getResourceAsStream("/org/mp4parser/streaming/rawformats/h264/tos.h264")
+                NalStreamTokenizerTest.class.getResourceAsStream("/org/mp4parser/streaming/input/h264/tos.h264")
 
 
         );

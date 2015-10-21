@@ -26,7 +26,7 @@ public class AdtsAacStreamingTrackTest {
 
     @Test
     public void testMuxing() throws Exception {
-        AdtsAacStreamingTrack b = new AdtsAacStreamingTrack(AdtsAacStreamingTrackTest.class.getResourceAsStream("/org/mp4parser/streaming/rawformats/aac/somesound.aac"), 65000, 80000);
+        AdtsAacStreamingTrack b = new AdtsAacStreamingTrack(AdtsAacStreamingTrackTest.class.getResourceAsStream("/org/mp4parser/streaming/input/aac/somesound.aac"), 65000, 80000);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         new FragmentedMp4Writer(Collections.<StreamingTrack>singletonList(b), Channels.newChannel(baos));
         //MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new ByteArrayOutputStream());
