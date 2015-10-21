@@ -61,7 +61,7 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
 
 
     public StandardMp4Writer(List<StreamingTrack> source, WritableByteChannel sink) throws IOException {
-        this.source = source;
+        this.source = new ArrayList<StreamingTrack>(source);
         this.sink = sink;
 
         HashSet<Long> trackIds = new HashSet<Long>();
