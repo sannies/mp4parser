@@ -46,11 +46,21 @@ public class H264AACExample {
         allCallables.add(aac);
         allCallables.add(h264);
 
+        for (Callable<Void> callable : allCallables) {
+            allFutures.add(ecs.submit(callable));
+        }
 
-        allCallables.forEach(callable -> allFutures.add(ecs.submit(callable)));
         System.out.println("Reading and writing started.");
         while (true) {
-            allFutures.removeIf(Future::isDone);
+            List<Future<Void>> toBeRemoved = new ArrayList<>();
+            for (Future<Void> future : allFutures) {
+                if (future.isDone()) {
+                    toBeRemoved.add(future);
+                }
+            }
+            allFutures.removeAll(toBeRemoved);
+
+
             if (!allFutures.isEmpty()) {
                 try {
                     ecs.take().get();
