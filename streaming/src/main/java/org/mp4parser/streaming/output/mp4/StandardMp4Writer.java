@@ -60,7 +60,7 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
     volatile boolean headerWritten = false;
 
 
-    public StandardMp4Writer(List<StreamingTrack> source, WritableByteChannel sink) throws IOException {
+    public StandardMp4Writer(List<StreamingTrack> source, WritableByteChannel sink) {
         this.source = new ArrayList<StreamingTrack>(source);
         this.sink = sink;
 
@@ -79,7 +79,7 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
                 TrackIdTrackExtension trackIdTrackExtension = streamingTrack.getTrackExtension(TrackIdTrackExtension.class);
                 assert trackIdTrackExtension != null;
                 if (trackIds.contains(trackIdTrackExtension.getTrackId())) {
-                    throw new IOException("There may not be two tracks with the same trackID within one file");
+                    throw new RuntimeException("There may not be two tracks with the same trackID within one file");
                 }
             }
 
