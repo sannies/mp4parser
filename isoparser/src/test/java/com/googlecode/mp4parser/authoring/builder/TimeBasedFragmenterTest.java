@@ -36,7 +36,7 @@ public class TimeBasedFragmenterTest {
         MessageDigest md = MessageDigest.getInstance("MD5");
         String digest = Hex.encodeHex(md.digest(baos.toByteArray()));
         System.err.println(digest);
-        String oldDigest = "A6E5D718B6123A2768F56E3E44E33BE4";
+        String oldDigest = "EE0F70C1D835ECCC4A86040FB5910B92";
         //new FileOutputStream("c:\\dev\\check.mp4").write(baos.toByteArray());
         Assert.assertEquals(oldDigest, digest);
 

@@ -11,7 +11,6 @@ import com.googlecode.mp4parser.authoring.builder.StaticFragmentIntersectionFind
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.nio.channels.Channels;
 import java.util.Collections;
 
@@ -27,7 +26,7 @@ public class DTSTrackImplTest {
         Container c = mp4Builder.build(m);
 
 
-        //c.writeContainer(new FileOutputStream("C:\\dev\\mp4parser\\isoparser\\src\\test\\resources\\com\\googlecode\\mp4parser\\authoring\\tracks\\dts-sample.mp4").getChannel());
+        //  c.writeContainer(new FileOutputStream("C:\\dev\\mp4parser\\isoparser\\src\\test\\resources\\com\\googlecode\\mp4parser\\authoring\\tracks\\dts-sample.mp4").getChannel());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         c.writeContainer(Channels.newChannel(baos));
         IsoFile ref = new IsoFile(DTSTrackImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/dts-sample.mp4");

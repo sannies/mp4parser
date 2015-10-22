@@ -1,6 +1,6 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.googlecode.mp4parser.DataSource;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
@@ -51,10 +51,6 @@ public class MP3TrackImpl extends AbstractTrack {
 
     public MP3TrackImpl(DataSource channel) throws IOException {
         this(channel, "eng");
-    }
-
-    public void close() throws IOException {
-        dataSource.close();
     }
 
     public MP3TrackImpl(DataSource dataSource, String lang) throws IOException {
@@ -126,6 +122,10 @@ public class MP3TrackImpl extends AbstractTrack {
         Arrays.fill(durations, SAMPLES_PER_FRAME);
     }
 
+    public void close() throws IOException {
+        dataSource.close();
+    }
+
     public SampleDescriptionBox getSampleDescriptionBox() {
         return sampleDescriptionBox;
     }
@@ -144,27 +144,6 @@ public class MP3TrackImpl extends AbstractTrack {
 
     public List<Sample> getSamples() {
         return samples;
-    }
-
-    class MP3Header {
-        int mpegVersion;
-        int layer;
-        int protectionAbsent;
-
-        int bitRateIndex;
-        int bitRate;
-
-        int sampleFrequencyIndex;
-        int sampleRate;
-
-        int padding;
-
-        int channelMode;
-        int channelCount;
-
-        int getFrameLength() {
-            return 144 * bitRate / sampleRate + padding;
-        }
     }
 
     private MP3Header readSamples(DataSource channel) throws IOException {
@@ -192,6 +171,10 @@ public class MP3TrackImpl extends AbstractTrack {
             if (channel.read(bb) == -1) {
                 return null;
             }
+        }
+        if (bb.get(0) == 0x54 && bb.get(1) == 0x41 && bb.get(2) == 0x47) {
+            // encounter id3 tag. That's the end of the file.
+            return null;
         }
 
         BitReaderBuffer brb = new BitReaderBuffer((ByteBuffer) bb.rewind());
@@ -231,5 +214,26 @@ public class MP3TrackImpl extends AbstractTrack {
     @Override
     public String toString() {
         return "MP3TrackImpl";
+    }
+
+    class MP3Header {
+        int mpegVersion;
+        int layer;
+        int protectionAbsent;
+
+        int bitRateIndex;
+        int bitRate;
+
+        int sampleFrequencyIndex;
+        int sampleRate;
+
+        int padding;
+
+        int channelMode;
+        int channelCount;
+
+        int getFrameLength() {
+            return 144 * bitRate / sampleRate + padding;
+        }
     }
 }
