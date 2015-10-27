@@ -23,25 +23,22 @@ public class StreamingSampleImpl implements StreamingSample {
         s = ByteBuffer.wrap(sample);
     }
 
-    public StreamingSampleImpl(List<byte[]> nals, long duration) {
+    public StreamingSampleImpl(List<ByteBuffer> nals, long duration) {
         this.duration = duration;
         int size = 0;
-        for (byte[] nal : nals) {
+        for (ByteBuffer nal : nals) {
             size += 4;
-            size += nal.length;
+            size += nal.limit();
         }
-        byte sample[] = new byte[size];
-        int pos = 0;
-        for (byte[] nal : nals) {
-            sample[pos] = (byte) ((nal.length & 0xff000000) >> 24);
-            sample[pos + 1] = (byte) ((nal.length & 0xff0000) >> 16);
-            sample[pos + 2] = (byte) ((nal.length & 0xff00) >> 8);
-            sample[pos + 3] = (byte) ((nal.length & 0xff));
-            pos += 4;
-            System.arraycopy(nal, 0, sample, pos, nal.length);
-            pos += nal.length;
+        s = ByteBuffer.allocate(size);
+
+        for (ByteBuffer nal : nals) {
+            s.put((byte) ((nal.limit() & 0xff000000) >> 24));
+            s.put((byte) ((nal.limit() & 0xff0000) >> 16));
+            s.put((byte) ((nal.limit() & 0xff00) >> 8));
+            s.put((byte) ((nal.limit() & 0xff)));
+            s.put((ByteBuffer) nal.rewind());
         }
-        s = ByteBuffer.wrap(sample);
 
 
     }

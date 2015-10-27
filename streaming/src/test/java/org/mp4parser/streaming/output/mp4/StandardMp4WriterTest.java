@@ -4,7 +4,6 @@ import org.junit.Test;
 import org.mp4parser.streaming.StreamingTrack;
 import org.mp4parser.streaming.input.h264.H264AnnexBTrack;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
@@ -17,7 +16,7 @@ public class StandardMp4WriterTest {
 
     @Test
     public void testMuxing() throws Exception {
-        H264AnnexBTrack b = new H264AnnexBTrack(new FileInputStream("C:\\dev\\mp4parser\\out.264"));
+        H264AnnexBTrack b = new H264AnnexBTrack(StandardMp4WriterTest.class.getResourceAsStream("/org/mp4parser/streaming/input/h264/tos.h264"));
         OutputStream baos = new FileOutputStream("output.mp4");
         StandardMp4Writer writer = new StandardMp4Writer(Collections.<StreamingTrack>singletonList(b), Channels.newChannel(baos));
         //MultiTrackFragmentedMp4Writer writer = new MultiTrackFragmentedMp4Writer(new StreamingTrack[]{b}, new ByteArrayOutputStream());

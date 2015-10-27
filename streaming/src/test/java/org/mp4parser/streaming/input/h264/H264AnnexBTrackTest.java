@@ -4,12 +4,12 @@ import org.junit.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.muxer.InMemRandomAccessSourceImpl;
 import org.mp4parser.muxer.Sample;
-import org.mp4parser.muxer.container.mp4.MovieCreator;
 import org.mp4parser.muxer.samples.SampleList;
 import org.mp4parser.streaming.StreamingTrack;
 import org.mp4parser.streaming.output.mp4.FragmentedMp4Writer;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.channels.Channels;
 import java.util.Collections;
 import java.util.List;

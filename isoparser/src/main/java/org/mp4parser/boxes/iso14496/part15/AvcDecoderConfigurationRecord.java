@@ -19,14 +19,14 @@ public class AvcDecoderConfigurationRecord {
     public int profileCompatibility;
     public int avcLevelIndication;
     public int lengthSizeMinusOne;
-    public List<byte[]> sequenceParameterSets = new ArrayList<byte[]>();
-    public List<byte[]> pictureParameterSets = new ArrayList<byte[]>();
+    public List<ByteBuffer> sequenceParameterSets = new ArrayList<ByteBuffer>();
+    public List<ByteBuffer> pictureParameterSets = new ArrayList<ByteBuffer>();
 
     public boolean hasExts = true;
     public int chromaFormat = 1;
     public int bitDepthLumaMinus8 = 0;
     public int bitDepthChromaMinus8 = 0;
-    public List<byte[]> sequenceParameterSetExts = new ArrayList<byte[]>();
+    public List<ByteBuffer> sequenceParameterSetExts = new ArrayList<ByteBuffer>();
 
     /**
      * Just for non-spec-conform encoders
@@ -55,14 +55,14 @@ public class AvcDecoderConfigurationRecord {
 
             byte[] sequenceParameterSetNALUnit = new byte[sequenceParameterSetLength];
             content.get(sequenceParameterSetNALUnit);
-            sequenceParameterSets.add(sequenceParameterSetNALUnit);
+            sequenceParameterSets.add(ByteBuffer.wrap(sequenceParameterSetNALUnit));
         }
         long numberOfPictureParameterSets = IsoTypeReader.readUInt8(content);
         for (int i = 0; i < numberOfPictureParameterSets; i++) {
             int pictureParameterSetLength = IsoTypeReader.readUInt16(content);
             byte[] pictureParameterSetNALUnit = new byte[pictureParameterSetLength];
             content.get(pictureParameterSetNALUnit);
-            pictureParameterSets.add(pictureParameterSetNALUnit);
+            pictureParameterSets.add(ByteBuffer.wrap(pictureParameterSetNALUnit));
         }
         if (content.remaining() < 4) {
             hasExts = false;
@@ -82,7 +82,7 @@ public class AvcDecoderConfigurationRecord {
                 int sequenceParameterSetExtLength = IsoTypeReader.readUInt16(content);
                 byte[] sequenceParameterSetExtNALUnit = new byte[sequenceParameterSetExtLength];
                 content.get(sequenceParameterSetExtNALUnit);
-                sequenceParameterSetExts.add(sequenceParameterSetExtNALUnit);
+                sequenceParameterSetExts.add(ByteBuffer.wrap(sequenceParameterSetExtNALUnit));
             }
         } else {
             chromaFormat = -1;
@@ -101,14 +101,14 @@ public class AvcDecoderConfigurationRecord {
         bwb.writeBits(lengthSizeMinusOne, 2);
         bwb.writeBits(numberOfSequenceParameterSetsPaddingBits, 3);
         bwb.writeBits(pictureParameterSets.size(), 5);
-        for (byte[] sequenceParameterSetNALUnit : sequenceParameterSets) {
-            IsoTypeWriter.writeUInt16(byteBuffer, sequenceParameterSetNALUnit.length);
-            byteBuffer.put(sequenceParameterSetNALUnit);
+        for (ByteBuffer sequenceParameterSetNALUnit : sequenceParameterSets) {
+            IsoTypeWriter.writeUInt16(byteBuffer, sequenceParameterSetNALUnit.limit());
+            byteBuffer.put((ByteBuffer) sequenceParameterSetNALUnit.rewind());
         }
         IsoTypeWriter.writeUInt8(byteBuffer, pictureParameterSets.size());
-        for (byte[] pictureParameterSetNALUnit : pictureParameterSets) {
-            IsoTypeWriter.writeUInt16(byteBuffer, pictureParameterSetNALUnit.length);
-            byteBuffer.put(pictureParameterSetNALUnit);
+        for (ByteBuffer pictureParameterSetNALUnit : pictureParameterSets) {
+            IsoTypeWriter.writeUInt16(byteBuffer, pictureParameterSetNALUnit.limit());
+            byteBuffer.put((ByteBuffer) pictureParameterSetNALUnit.rewind());
         }
         if (hasExts && (avcProfileIndication == 100 || avcProfileIndication == 110 || avcProfileIndication == 122 || avcProfileIndication == 144)) {
 
@@ -119,9 +119,9 @@ public class AvcDecoderConfigurationRecord {
             bwb.writeBits(bitDepthLumaMinus8, 3);
             bwb.writeBits(bitDepthChromaMinus8PaddingBits, 5);
             bwb.writeBits(bitDepthChromaMinus8, 3);
-            for (byte[] sequenceParameterSetExtNALUnit : sequenceParameterSetExts) {
-                IsoTypeWriter.writeUInt16(byteBuffer, sequenceParameterSetExtNALUnit.length);
-                byteBuffer.put(sequenceParameterSetExtNALUnit);
+            for (ByteBuffer sequenceParameterSetExtNALUnit : sequenceParameterSetExts) {
+                IsoTypeWriter.writeUInt16(byteBuffer, sequenceParameterSetExtNALUnit.limit());
+                byteBuffer.put((ByteBuffer) sequenceParameterSetExtNALUnit.reset());
             }
         }
     }
@@ -129,20 +129,20 @@ public class AvcDecoderConfigurationRecord {
     public long getContentSize() {
         long size = 5;
         size += 1; // sequenceParamsetLength
-        for (byte[] sequenceParameterSetNALUnit : sequenceParameterSets) {
+        for (ByteBuffer sequenceParameterSetNALUnit : sequenceParameterSets) {
             size += 2; //lengthSizeMinusOne field
-            size += sequenceParameterSetNALUnit.length;
+            size += sequenceParameterSetNALUnit.limit();
         }
         size += 1; // pictureParamsetLength
-        for (byte[] pictureParameterSetNALUnit : pictureParameterSets) {
+        for (ByteBuffer pictureParameterSetNALUnit : pictureParameterSets) {
             size += 2; //lengthSizeMinusOne field
-            size += pictureParameterSetNALUnit.length;
+            size += pictureParameterSetNALUnit.limit();
         }
         if (hasExts && (avcProfileIndication == 100 || avcProfileIndication == 110 || avcProfileIndication == 122 || avcProfileIndication == 144)) {
             size += 4;
-            for (byte[] sequenceParameterSetExtNALUnit : sequenceParameterSetExts) {
+            for (ByteBuffer sequenceParameterSetExtNALUnit : sequenceParameterSetExts) {
                 size += 2;
-                size += sequenceParameterSetExtNALUnit.length;
+                size += sequenceParameterSetExtNALUnit.limit();
             }
         }
 
@@ -152,7 +152,7 @@ public class AvcDecoderConfigurationRecord {
 
     public List<String> getSequenceParameterSetsAsStrings() {
         List<String> result = new ArrayList<String>(sequenceParameterSets.size());
-        for (byte[] parameterSet : sequenceParameterSets) {
+        for (ByteBuffer parameterSet : sequenceParameterSets) {
             result.add(Hex.encodeHex(parameterSet));
         }
         return result;
@@ -160,7 +160,7 @@ public class AvcDecoderConfigurationRecord {
 
     public List<String> getSequenceParameterSetExtsAsStrings() {
         List<String> result = new ArrayList<String>(sequenceParameterSetExts.size());
-        for (byte[] parameterSet : sequenceParameterSetExts) {
+        for (ByteBuffer parameterSet : sequenceParameterSetExts) {
             result.add(Hex.encodeHex(parameterSet));
         }
         return result;
@@ -168,7 +168,7 @@ public class AvcDecoderConfigurationRecord {
 
     public List<String> getPictureParameterSetsAsStrings() {
         List<String> result = new ArrayList<String>(pictureParameterSets.size());
-        for (byte[] parameterSet : pictureParameterSets) {
+        for (ByteBuffer parameterSet : pictureParameterSets) {
             result.add(Hex.encodeHex(parameterSet));
         }
         return result;

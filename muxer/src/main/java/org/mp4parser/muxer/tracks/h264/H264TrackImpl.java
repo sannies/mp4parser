@@ -27,9 +27,9 @@ import java.util.logging.Logger;
 public class H264TrackImpl extends AbstractH26XTrack {
     private static final Logger LOG = Logger.getLogger(H264TrackImpl.class.getName());
 
-    Map<Integer, byte[]> spsIdToSpsBytes = new HashMap<Integer, byte[]>();
+    Map<Integer, ByteBuffer> spsIdToSpsBytes = new HashMap<Integer, ByteBuffer>();
     Map<Integer, SeqParameterSet> spsIdToSps = new HashMap<Integer, SeqParameterSet>();
-    Map<Integer, byte[]> ppsIdToPpsBytes = new HashMap<Integer, byte[]>();
+    Map<Integer, ByteBuffer> ppsIdToPpsBytes = new HashMap<Integer, ByteBuffer>();
     Map<Integer, PictureParameterSet> ppsIdToPps = new HashMap<Integer, PictureParameterSet>();
 
     SampleDescriptionBox sampleDescriptionBox;
@@ -37,8 +37,8 @@ public class H264TrackImpl extends AbstractH26XTrack {
     PictureParameterSet firstPictureParameterSet = null;
     SeqParameterSet currentSeqParameterSet = null;
     PictureParameterSet currentPictureParameterSet = null;
-    RangeStartMap<Integer, byte[]> seqParameterRangeMap = new RangeStartMap<Integer, byte[]>();
-    RangeStartMap<Integer, byte[]> pictureParameterRangeMap = new RangeStartMap<Integer, byte[]>();
+    RangeStartMap<Integer, ByteBuffer> seqParameterRangeMap = new RangeStartMap<Integer, ByteBuffer>();
+    RangeStartMap<Integer, ByteBuffer> pictureParameterRangeMap = new RangeStartMap<Integer, ByteBuffer>();
     int frameNrInGop = 0;
     int[] pictureOrderCounts = new int[0];
     int prevPicOrderCntLsb = 0;
@@ -139,8 +139,8 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
         AvcConfigurationBox avcConfigurationBox = new AvcConfigurationBox();
 
-        avcConfigurationBox.setSequenceParameterSets(new ArrayList<byte[]>(spsIdToSpsBytes.values()));
-        avcConfigurationBox.setPictureParameterSets(new ArrayList<byte[]>(ppsIdToPpsBytes.values()));
+        avcConfigurationBox.setSequenceParameterSets(new ArrayList<ByteBuffer>(spsIdToSpsBytes.values()));
+        avcConfigurationBox.setPictureParameterSets(new ArrayList<ByteBuffer>(ppsIdToPpsBytes.values()));
         avcConfigurationBox.setAvcLevelIndication(firstSeqParameterSet.level_idc);
         avcConfigurationBox.setAvcProfileIndication(firstSeqParameterSet.profile_idc);
         avcConfigurationBox.setBitDepthLumaMinus8(firstSeqParameterSet.bit_depth_luma_minus8);
@@ -477,12 +477,12 @@ public class H264TrackImpl extends AbstractH26XTrack {
         if (seiMessage == null || seiMessage.n_frames == 0) {
             frameNrInGop = 0;
         }
-        int offset = 0;
+
         if (sh.sps.pic_order_cnt_type == 0) {
             int max_pic_order_count_lsb = (1 << (sh.sps.log2_max_pic_order_cnt_lsb_minus4 + 4));
             // System.out.print(" pic_order_cnt_lsb " + pic_order_cnt_lsb + " " + max_pic_order_count);
             int picOrderCountLsb = sh.pic_order_cnt_lsb;
-            int picOrderCntMsb = 0;
+            int picOrderCntMsb;
             if ((picOrderCountLsb < prevPicOrderCntLsb) &&
                     ((prevPicOrderCntLsb - picOrderCountLsb) >= (max_pic_order_count_lsb / 2))) {
                 picOrderCntMsb = prevPicOrderCntMsb + max_pic_order_count_lsb;
@@ -522,73 +522,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
         }
     }
 
-    private int calcPoc(int absFrameNum, H264NalUnitHeader nu, SliceHeader sh) {
-        if (sh.sps.pic_order_cnt_type == 0) {
-            return calcPOC0(nu, sh);
-        } else if (sh.sps.pic_order_cnt_type == 1) {
-            return calcPOC1(absFrameNum, nu, sh);
-        } else {
-            return calcPOC2(absFrameNum, nu, sh);
-        }
-    }
 
-    private int calcPOC2(int absFrameNum, H264NalUnitHeader nu, SliceHeader sh) {
-
-        if (nu.nal_ref_idc == 0)
-            return 2 * absFrameNum - 1;
-        else
-            return 2 * absFrameNum;
-    }
-
-    private int calcPOC1(int absFrameNum, H264NalUnitHeader nu, SliceHeader sh) {
-
-        if (sh.sps.num_ref_frames_in_pic_order_cnt_cycle == 0)
-            absFrameNum = 0;
-        if (nu.nal_ref_idc == 0 && absFrameNum > 0)
-            absFrameNum = absFrameNum - 1;
-
-        int expectedDeltaPerPicOrderCntCycle = 0;
-        for (int i = 0; i < sh.sps.num_ref_frames_in_pic_order_cnt_cycle; i++)
-            expectedDeltaPerPicOrderCntCycle += sh.sps.offsetForRefFrame[i];
-
-        int expectedPicOrderCnt;
-        if (absFrameNum > 0) {
-            int picOrderCntCycleCnt = (absFrameNum - 1) / sh.sps.num_ref_frames_in_pic_order_cnt_cycle;
-            int frameNumInPicOrderCntCycle = (absFrameNum - 1) % sh.sps.num_ref_frames_in_pic_order_cnt_cycle;
-
-            expectedPicOrderCnt = picOrderCntCycleCnt * expectedDeltaPerPicOrderCntCycle;
-            for (int i = 0; i <= frameNumInPicOrderCntCycle; i++)
-                expectedPicOrderCnt = expectedPicOrderCnt + sh.sps.offsetForRefFrame[i];
-        } else {
-            expectedPicOrderCnt = 0;
-        }
-        if (nu.nal_ref_idc == 0)
-            expectedPicOrderCnt = expectedPicOrderCnt + sh.sps.offset_for_non_ref_pic;
-
-        return expectedPicOrderCnt + sh.delta_pic_order_cnt_0;
-    }
-
-    private int calcPOC0(H264NalUnitHeader nu, SliceHeader sh) {
-
-        int pocCntLsb = sh.pic_order_cnt_lsb;
-        int maxPicOrderCntLsb = 1 << (sh.sps.log2_max_pic_order_cnt_lsb_minus4 + 4);
-
-        // TODO prevPicOrderCntMsb should be wrapped!!
-        int picOrderCntMsb;
-        if ((pocCntLsb < prevPicOrderCntLsb) && ((prevPicOrderCntLsb - pocCntLsb) >= (maxPicOrderCntLsb / 2)))
-            picOrderCntMsb = prevPicOrderCntMsb + maxPicOrderCntLsb;
-        else if ((pocCntLsb > prevPicOrderCntLsb) && ((pocCntLsb - prevPicOrderCntLsb) > (maxPicOrderCntLsb / 2)))
-            picOrderCntMsb = prevPicOrderCntMsb - maxPicOrderCntLsb;
-        else
-            picOrderCntMsb = prevPicOrderCntMsb;
-
-        if (nu.nal_ref_idc != 0) {
-            prevPicOrderCntMsb = picOrderCntMsb;
-            prevPicOrderCntLsb = pocCntLsb;
-        }
-
-        return picOrderCntMsb + pocCntLsb;
-    }
 
     private void handlePPS(ByteBuffer data) throws IOException {
         InputStream is = new ByteBufferBackedInputStream(data);
@@ -601,17 +535,17 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
         currentPictureParameterSet = _pictureParameterSet;
 
-        byte[] ppsBytes = toArray((ByteBuffer) data.rewind());
-        byte[] oldPpsSameId = ppsIdToPpsBytes.get(_pictureParameterSet.pic_parameter_set_id);
 
+        ByteBuffer oldPpsSameId = ppsIdToPpsBytes.get(_pictureParameterSet.pic_parameter_set_id);
 
-        if (oldPpsSameId != null && !Arrays.equals(oldPpsSameId, ppsBytes)) {
+        data.rewind();
+        if (oldPpsSameId != null && !oldPpsSameId.equals(data)) {
             throw new RuntimeException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
         } else {
             if (oldPpsSameId == null) {
-                pictureParameterRangeMap.put(samples.size(), ppsBytes);
+                pictureParameterRangeMap.put(samples.size(), data);
             }
-            ppsIdToPpsBytes.put(_pictureParameterSet.pic_parameter_set_id, ppsBytes);
+            ppsIdToPpsBytes.put(_pictureParameterSet.pic_parameter_set_id, data);
             ppsIdToPps.put(_pictureParameterSet.pic_parameter_set_id, _pictureParameterSet);
         }
 
@@ -628,15 +562,15 @@ public class H264TrackImpl extends AbstractH26XTrack {
         }
         currentSeqParameterSet = _seqParameterSet;
 
-        byte[] spsBytes = toArray((ByteBuffer) data.rewind());
-        byte[] oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
-        if (oldSpsSameId != null && !Arrays.equals(oldSpsSameId, spsBytes)) {
+        data.rewind();
+        ByteBuffer oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
+        if (oldSpsSameId != null && !oldSpsSameId.equals(data)) {
             throw new RuntimeException("OMG - I got two SPS with same ID but different settings!");
         } else {
             if (oldSpsSameId != null) {
-                seqParameterRangeMap.put(samples.size(), spsBytes);
+                seqParameterRangeMap.put(samples.size(), data);
             }
-            spsIdToSpsBytes.put(_seqParameterSet.seq_parameter_set_id, spsBytes);
+            spsIdToSpsBytes.put(_seqParameterSet.seq_parameter_set_id, data);
             spsIdToSps.put(_seqParameterSet.seq_parameter_set_id, _seqParameterSet);
 
         }

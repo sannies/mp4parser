@@ -6,9 +6,9 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,8 +16,7 @@ import java.util.logging.Logger;
  * Reads H264 data from an Annex B InputStream.
  */
 public class H264AnnexBTrack extends H264NalConsumingTrack implements Callable<Void> {
-    CountDownLatch countDownLatch = new CountDownLatch(1);
-    private boolean closed = false;
+
     private InputStream inputStream;
 
     public H264AnnexBTrack(InputStream inputStream) throws IOException {
@@ -25,31 +24,17 @@ public class H264AnnexBTrack extends H264NalConsumingTrack implements Callable<V
         this.inputStream = new BufferedInputStream(inputStream);
     }
 
-    public boolean isClosed() {
-        return closed;
-    }
-
-    public void close() throws IOException {
-        closed = true;
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        }
-    }
 
     public Void call() throws IOException, InterruptedException {
         byte[] nal;
         NalStreamTokenizer st = new NalStreamTokenizer(inputStream);
 
-        while ((nal = st.getNext()) != null && !closed) {
+        while ((nal = st.getNext()) != null) {
             //System.err.println("NAL before consume");
-            consumeNal(nal);
+            consumeNal(ByteBuffer.wrap(nal));
             //System.err.println("NAL after consume");
         }
-        drainDecPictureBuffer(true);
-        closed = true;
-        countDownLatch.countDown();
+        pushSample(createSample(buffered, fvnd.sliceHeader, sliceNalUnitHeader), true, true);
         return null;
     }
 
@@ -83,25 +68,31 @@ public class H264AnnexBTrack extends H264NalConsumingTrack implements Callable<V
 
 
             while ((c = inputStream.read()) != -1) {
-                next.write(c);
-                if (pattern == 0 && c == 0) {
-                    pattern = 1;
-                } else if (pattern == 1 && c == 0) {
-                    pattern = 2;
-                } else if (pattern == 2 && c == 0) {
-                    byte[] s = next.toByteArrayLess3();
-                    next.reset();
-                    if (s != null) {
-                        return s;
+                if (!(pattern == 2 && c == 3)) {
+                    next.write(c);
+
+
+                    if (pattern == 0 && c == 0) {
+                        pattern = 1;
+                    } else if (pattern == 1 && c == 0) {
+                        pattern = 2;
+                    } else if (pattern == 2 && c == 0) {
+                        byte[] s = next.toByteArrayLess3();
+                        next.reset();
+                        if (s != null) {
+                            return s;
+                        }
+                    } else if (pattern == 2 && c == 1) {
+                        byte[] s = next.toByteArrayLess3();
+                        next.reset();
+                        pattern = 0;
+                        if (s != null) {
+                            return s;
+                        }
+                    } else if (pattern != 0) {
+                        pattern = 0;
                     }
-                } else if (pattern == 2 && c == 1) {
-                    byte[] s = next.toByteArrayLess3();
-                    next.reset();
-                    pattern = 0;
-                    if (s != null) {
-                        return s;
-                    }
-                } else if (pattern != 0) {
+                } else {
                     pattern = 0;
                 }
             }

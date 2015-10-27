@@ -81,19 +81,19 @@ public final class AvcConfigurationBox extends AbstractBox {
         this.avcDecoderConfigurationRecord.lengthSizeMinusOne = lengthSizeMinusOne;
     }
 
-    public List<byte[]> getSequenceParameterSets() {
+    public List<ByteBuffer> getSequenceParameterSets() {
         return Collections.unmodifiableList(avcDecoderConfigurationRecord.sequenceParameterSets);
     }
 
-    public void setSequenceParameterSets(List<byte[]> sequenceParameterSets) {
+    public void setSequenceParameterSets(List<ByteBuffer> sequenceParameterSets) {
         this.avcDecoderConfigurationRecord.sequenceParameterSets = sequenceParameterSets;
     }
 
-    public List<byte[]> getPictureParameterSets() {
+    public List<ByteBuffer> getPictureParameterSets() {
         return Collections.unmodifiableList(avcDecoderConfigurationRecord.pictureParameterSets);
     }
 
-    public void setPictureParameterSets(List<byte[]> pictureParameterSets) {
+    public void setPictureParameterSets(List<ByteBuffer> pictureParameterSets) {
         this.avcDecoderConfigurationRecord.pictureParameterSets = pictureParameterSets;
     }
 
@@ -121,11 +121,11 @@ public final class AvcConfigurationBox extends AbstractBox {
         this.avcDecoderConfigurationRecord.bitDepthChromaMinus8 = bitDepthChromaMinus8;
     }
 
-    public List<byte[]> getSequenceParameterSetExts() {
+    public List<ByteBuffer> getSequenceParameterSetExts() {
         return avcDecoderConfigurationRecord.sequenceParameterSetExts;
     }
 
-    public void setSequenceParameterSetExts(List<byte[]> sequenceParameterSetExts) {
+    public void setSequenceParameterSetExts(List<ByteBuffer> sequenceParameterSetExts) {
         this.avcDecoderConfigurationRecord.sequenceParameterSetExts = sequenceParameterSetExts;
     }
 

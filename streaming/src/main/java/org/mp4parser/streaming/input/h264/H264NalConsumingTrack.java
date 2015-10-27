@@ -3,25 +3,19 @@ package org.mp4parser.streaming.input.h264;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part15.AvcConfigurationBox;
 import org.mp4parser.boxes.sampleentry.VisualSampleEntry;
-import org.mp4parser.muxer.tracks.CleanInputStream;
-import org.mp4parser.muxer.tracks.h264.H264NalUnitHeader;
-import org.mp4parser.muxer.tracks.h264.H264NalUnitTypes;
-import org.mp4parser.muxer.tracks.h264.SliceHeader;
-import org.mp4parser.muxer.tracks.h264.parsing.model.PictureParameterSet;
-import org.mp4parser.muxer.tracks.h264.parsing.model.SeqParameterSet;
 import org.mp4parser.streaming.StreamingSample;
 import org.mp4parser.streaming.extensions.CompositionTimeSampleExtension;
 import org.mp4parser.streaming.extensions.CompositionTimeTrackExtension;
 import org.mp4parser.streaming.extensions.DimensionTrackExtension;
 import org.mp4parser.streaming.extensions.SampleFlagsSampleExtension;
-import org.mp4parser.streaming.input.AbstractStreamingTrack;
 import org.mp4parser.streaming.input.StreamingSampleImpl;
+import org.mp4parser.streaming.input.h264.spspps.PictureParameterSet;
+import org.mp4parser.streaming.input.h264.spspps.SeqParameterSet;
+import org.mp4parser.streaming.input.h264.spspps.SliceHeader;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -30,14 +24,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 
-public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
+public abstract class H264NalConsumingTrack extends AbstractH264Track {
     private static final Logger LOG = Logger.getLogger(H264NalConsumingTrack.class.getName());
     int max_dec_frame_buffering = 16;
     List<StreamingSample> decFrameBuffer = new ArrayList<StreamingSample>();
     List<StreamingSample> decFrameBuffer2 = new ArrayList<StreamingSample>();
-    LinkedHashMap<Integer, byte[]> spsIdToSpsBytes = new LinkedHashMap<Integer, byte[]>();
+    LinkedHashMap<Integer, ByteBuffer> spsIdToSpsBytes = new LinkedHashMap<Integer, ByteBuffer>();
     LinkedHashMap<Integer, SeqParameterSet> spsIdToSps = new LinkedHashMap<Integer, SeqParameterSet>();
-    LinkedHashMap<Integer, byte[]> ppsIdToPpsBytes = new LinkedHashMap<Integer, byte[]>();
+    LinkedHashMap<Integer, ByteBuffer> ppsIdToPpsBytes = new LinkedHashMap<Integer, ByteBuffer>();
     LinkedHashMap<Integer, PictureParameterSet> ppsIdToPps = new LinkedHashMap<Integer, PictureParameterSet>();
     BlockingQueue<SeqParameterSet> spsForConfig = new LinkedBlockingDeque<SeqParameterSet>();
 
@@ -48,23 +42,23 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
     SampleDescriptionBox stsd;
     SeqParameterSet currentSeqParameterSet = null;
     PictureParameterSet currentPictureParameterSet = null;
-    List<byte[]> buffered = new ArrayList<byte[]>();
+    List<ByteBuffer> buffered = new ArrayList<ByteBuffer>();
     FirstVclNalDetector fvnd = null;
+    H264NalUnitHeader sliceNalUnitHeader;
 
     public H264NalConsumingTrack() {
     }
 
-    public static H264NalUnitHeader getNalUnitHeader(byte[] nal) {
+    public static H264NalUnitHeader getNalUnitHeader(ByteBuffer nal) {
         H264NalUnitHeader nalUnitHeader = new H264NalUnitHeader();
-        int type = nal[0];
+        int type = nal.get(0);
         nalUnitHeader.nal_ref_idc = (type >> 5) & 3;
         nalUnitHeader.nal_unit_type = type & 0x1f;
 
         return nalUnitHeader;
     }
 
-
-    protected void consumeNal(byte[] nal) throws IOException {
+    protected void consumeNal(ByteBuffer nal) throws IOException {
         //LOG.finest("Consume NAL of " + nal.length + " bytes." + Hex.encodeHex(new byte[]{nal[0], nal[1], nal[2], nal[3], nal[4]}));
         H264NalUnitHeader nalUnitHeader = getNalUnitHeader(nal);
         switch (nalUnitHeader.nal_unit_type) {
@@ -75,9 +69,11 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
             case H264NalUnitTypes.CODED_SLICE_IDR:
                 FirstVclNalDetector current = new FirstVclNalDetector(nal,
                         nalUnitHeader.nal_ref_idc, nalUnitHeader.nal_unit_type);
+                sliceNalUnitHeader = nalUnitHeader;
                 if (fvnd != null && fvnd.isFirstInNew(current)) {
                     LOG.finer("Wrapping up cause of first vcl nal is found");
-                    createSample(buffered, fvnd.sliceHeader);
+                    pushSample(createSample(buffered, fvnd.sliceHeader, sliceNalUnitHeader), false, false);
+                    buffered.clear();
                 }
                 fvnd = current;
                 //System.err.println("" + nalUnitHeader.nal_unit_type);
@@ -88,7 +84,8 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
             case H264NalUnitTypes.SEI:
                 if (fvnd != null) {
                     LOG.finer("Wrapping up cause of SEI after vcl marks new sample");
-                    createSample(buffered, fvnd.sliceHeader);
+                    pushSample(createSample(buffered, fvnd.sliceHeader, sliceNalUnitHeader), false, false);
+                    buffered.clear();
                     fvnd = null;
                 }
                 //System.err.println("" + nalUnitHeader.nal_unit_type);
@@ -98,7 +95,8 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
             case H264NalUnitTypes.AU_UNIT_DELIMITER:
                 if (fvnd != null) {
                     LOG.finer("Wrapping up cause of AU after vcl marks new sample");
-                    createSample(buffered, fvnd.sliceHeader);
+                    pushSample(createSample(buffered, fvnd.sliceHeader, sliceNalUnitHeader), false, false);
+                    buffered.clear();
                     fvnd = null;
                 }
                 //System.err.println("" + nalUnitHeader.nal_unit_type);
@@ -107,7 +105,8 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
             case H264NalUnitTypes.SEQ_PARAMETER_SET:
                 if (fvnd != null) {
                     LOG.finer("Wrapping up cause of SPS after vcl marks new sample");
-                    createSample(buffered, fvnd.sliceHeader);
+                    pushSample(createSample(buffered, fvnd.sliceHeader, sliceNalUnitHeader), false, false);
+                    buffered.clear();
                     fvnd = null;
                 }
                 handleSPS(nal);
@@ -115,7 +114,8 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
             case 8:
                 if (fvnd != null) {
                     LOG.finer("Wrapping up cause of PPS after vcl marks new sample");
-                    createSample(buffered, fvnd.sliceHeader);
+                    pushSample(createSample(buffered, fvnd.sliceHeader, sliceNalUnitHeader), false, false);
+                    buffered.clear();
                     fvnd = null;
                 }
                 handlePPS(nal);
@@ -137,73 +137,49 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
 
     }
 
-    protected void drainDecPictureBuffer(boolean all) throws IOException {
+    protected void pushSample(StreamingSample ss, boolean all, boolean force) throws IOException {
+        if (ss != null) {
+            decFrameBuffer.add(ss);
+        }
         if (all) {
             while (decFrameBuffer.size() > 0) {
-                drainDecPictureBuffer(false);
+                pushSample(null, false, true);
             }
         } else {
-            StreamingSample first = decFrameBuffer.remove(0);
-            PictureOrderCountType0SampleExtension poct0se = first.getSampleExtension(PictureOrderCountType0SampleExtension.class);
-            int delay = 0;
-            for (StreamingSample streamingSample : decFrameBuffer) {
-                if (poct0se.getPoc() > streamingSample.getSampleExtension(PictureOrderCountType0SampleExtension.class).getPoc()) {
-                    delay++;
-                }
-            }
-            for (StreamingSample streamingSample : decFrameBuffer2) {
-                if (poct0se.getPoc() < streamingSample.getSampleExtension(PictureOrderCountType0SampleExtension.class).getPoc()) {
-                    delay--;
-                }
-            }
-            decFrameBuffer2.add(first);
-            if (decFrameBuffer2.size() > max_dec_frame_buffering) {
-                decFrameBuffer2.remove(0).removeSampleExtension(PictureOrderCountType0SampleExtension.class);
-            }
+            if ((decFrameBuffer.size() - 1 > max_dec_frame_buffering) || force) {
+                StreamingSample first = decFrameBuffer.remove(0);
+                PictureOrderCountType0SampleExtension poct0se = first.getSampleExtension(PictureOrderCountType0SampleExtension.class);
+                if (poct0se == null) {
+                    sampleSink.acceptSample(first, this);
+                } else {
+                    int delay = 0;
+                    for (StreamingSample streamingSample : decFrameBuffer) {
+                        if (poct0se.getPoc() > streamingSample.getSampleExtension(PictureOrderCountType0SampleExtension.class).getPoc()) {
+                            delay++;
+                        }
+                    }
+                    for (StreamingSample streamingSample : decFrameBuffer2) {
+                        if (poct0se.getPoc() < streamingSample.getSampleExtension(PictureOrderCountType0SampleExtension.class).getPoc()) {
+                            delay--;
+                        }
+                    }
+                    decFrameBuffer2.add(first);
+                    if (decFrameBuffer2.size() > max_dec_frame_buffering) {
+                        decFrameBuffer2.remove(0).removeSampleExtension(PictureOrderCountType0SampleExtension.class);
+                    }
 
-            first.addSampleExtension(CompositionTimeSampleExtension.create(delay * frametick));
-            //System.err.println("Adding sample");
-            sampleSink.acceptSample(first, this);
+                    first.addSampleExtension(CompositionTimeSampleExtension.create(delay * frametick));
+                    //System.err.println("Adding sample");
+                    sampleSink.acceptSample(first, this);
+                }
+            }
         }
 
     }
 
 
-    protected StreamingSample createSample(List<byte[]> buffered, SliceHeader sliceHeader) throws IOException {
-        LOG.finer("Create Sample");
-        configure();
-        if (timescale == 0 || frametick == 0) {
-            throw new IOException("Frame Rate needs to be configured either by hand or by SPS before samples can be created");
-        }
+    protected SampleFlagsSampleExtension createSampleFlagsSampleExtension(H264NalUnitHeader nu, SliceHeader sliceHeader) {
         SampleFlagsSampleExtension sampleFlagsSampleExtension = new SampleFlagsSampleExtension();
-
-
-        boolean idrPicFlag = false;
-        H264NalUnitHeader nu = null;
-        byte[] slice = null;
-        buffered_loop:
-        for (byte[] nal : buffered) {
-            H264NalUnitHeader _nu = getNalUnitHeader(nal);
-
-            switch (_nu.nal_unit_type) {
-                case H264NalUnitTypes.CODED_SLICE_IDR:
-                    idrPicFlag = true;
-                case H264NalUnitTypes.CODED_SLICE_NON_IDR:
-                case H264NalUnitTypes.CODED_SLICE_DATA_PART_A:
-                case H264NalUnitTypes.CODED_SLICE_DATA_PART_B:
-                case H264NalUnitTypes.CODED_SLICE_DATA_PART_C:
-                    nu = _nu;
-                    slice = nal;
-                    break buffered_loop;
-            }
-        }
-        if (nu == null) {
-            LOG.warning("Sample without Slice");
-            return null;
-        }
-
-        assert slice != null;
-
         if (nu.nal_ref_idc == 0) {
             sampleFlagsSampleExtension.setSampleIsDependedOn(2);
         } else {
@@ -214,37 +190,44 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         } else {
             sampleFlagsSampleExtension.setSampleDependsOn(1);
         }
-        sampleFlagsSampleExtension.setSampleIsNonSyncSample(!idrPicFlag);
+        sampleFlagsSampleExtension.setSampleIsNonSyncSample(H264NalUnitTypes.CODED_SLICE_IDR != nu.nal_unit_type);
+        return sampleFlagsSampleExtension;
+    }
 
-        StreamingSampleImpl ssi = new StreamingSampleImpl(buffered, frametick);
-        ssi.addSampleExtension(sampleFlagsSampleExtension);
-
-
+    protected PictureOrderCountType0SampleExtension createPictureOrderCountType0SampleExtension(SliceHeader sliceHeader) {
         if (sliceHeader.sps.pic_order_cnt_type == 0) {
-            ssi.addSampleExtension(new PictureOrderCountType0SampleExtension(
+            return new PictureOrderCountType0SampleExtension(
                     sliceHeader, decFrameBuffer.size() > 0 ?
                     decFrameBuffer.get(decFrameBuffer.size() - 1).getSampleExtension(PictureOrderCountType0SampleExtension.class) :
-                    null));
-            decFrameBuffer.add(ssi);
+                    null);
+/*            decFrameBuffer.add(ssi);
             if (decFrameBuffer.size() - 1 > max_dec_frame_buffering) { // just added one
                 drainDecPictureBuffer(false);
-            }
+            }*/
         } else if (sliceHeader.sps.pic_order_cnt_type == 1) {
-                /*if (seiMessage != null && seiMessage.clock_timestamp_flag) {
-                    offset = seiMessage.n_frames - frameNrInGop;
-                } else if (seiMessage != null && seiMessage.removal_delay_flag) {
-                    offset = seiMessage.dpb_removal_delay / 2;
-                }
-
-                if (seiMessage == null) {
-                    LOG.warning("CTS timing in ctts box is most likely not OK");
-                }*/
-            throw new IOException("pic_order_cnt_type == 1 needs to be implemented");
+            throw new RuntimeException("pic_order_cnt_type == 1 needs to be implemented");
         } else if (sliceHeader.sps.pic_order_cnt_type == 2) {
-            sampleSink.acceptSample(ssi, this);
+            return null; // no ctts
         }
-        buffered.clear();
-        return ssi;
+        throw new RuntimeException("I don't know sliceHeader.sps.pic_order_cnt_type of " + sliceHeader.sps.pic_order_cnt_type);
+    }
+
+
+    protected StreamingSample createSample(List<ByteBuffer> nals, SliceHeader sliceHeader, H264NalUnitHeader nu) throws IOException {
+        LOG.finer("Create Sample");
+        configure();
+        if (timescale == 0 || frametick == 0) {
+            throw new IOException("Frame Rate needs to be configured either by hand or by SPS before samples can be created");
+        }
+
+
+        StreamingSample ss = new StreamingSampleImpl(
+                nals,
+                frametick);
+        ss.addSampleExtension(createSampleFlagsSampleExtension(nu, sliceHeader));
+        ss.addSampleExtension(createPictureOrderCountType0SampleExtension(sliceHeader));
+
+        return ss;
     }
 
 
@@ -254,9 +237,7 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
 
     public synchronized void configure() {
 
-        if (configured) {
-            return;
-        } else {
+        if (!configured) {
             SeqParameterSet sps;
             try {
                 sps = spsForConfig.poll(5L, TimeUnit.SECONDS);
@@ -314,8 +295,8 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
 
             AvcConfigurationBox avcConfigurationBox = new AvcConfigurationBox();
 
-            avcConfigurationBox.setSequenceParameterSets(new ArrayList<byte[]>(spsIdToSpsBytes.values()));
-            avcConfigurationBox.setPictureParameterSets(new ArrayList<byte[]>(ppsIdToPpsBytes.values()));
+            avcConfigurationBox.setSequenceParameterSets(new ArrayList<ByteBuffer>(spsIdToSpsBytes.values()));
+            avcConfigurationBox.setPictureParameterSets(new ArrayList<ByteBuffer>(ppsIdToPpsBytes.values()));
             avcConfigurationBox.setAvcLevelIndication(sps.level_idc);
             avcConfigurationBox.setAvcProfileIndication(sps.profile_idc);
             avcConfigurationBox.setBitDepthLumaMinus8(sps.bit_depth_luma_minus8);
@@ -369,6 +350,11 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
             if (frametick == 0) {
                 frametick = _frametick;
             }
+            if (sps.pic_order_cnt_type == 0) {
+                this.addTrackExtension(new CompositionTimeTrackExtension());
+            } else if (sps.pic_order_cnt_type == 1) {
+                throw new RuntimeException("Have not yet imlemented pic_order_cnt_type 1");
+            }
             configured = true;
         }
     }
@@ -396,39 +382,52 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         return "eng";
     }
 
-    private void handlePPS(byte[] data) throws IOException {
-        InputStream is = new ByteArrayInputStream(data, 1, data.length - 1);
-        PictureParameterSet _pictureParameterSet = PictureParameterSet.read(is);
-        currentPictureParameterSet = _pictureParameterSet;
+    protected void handlePPS(ByteBuffer nal) {
+        nal.position(1);
+        PictureParameterSet _pictureParameterSet = null;
+        try {
+            _pictureParameterSet = PictureParameterSet.read(nal);
+            currentPictureParameterSet = _pictureParameterSet;
 
 
-        byte[] oldPpsSameId = ppsIdToPpsBytes.get(_pictureParameterSet.pic_parameter_set_id);
+            ByteBuffer oldPpsSameId = ppsIdToPpsBytes.get(_pictureParameterSet.pic_parameter_set_id);
 
 
-        if (oldPpsSameId != null && !Arrays.equals(oldPpsSameId, data)) {
-            throw new IOException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
-        } else {
-            ppsIdToPpsBytes.put(_pictureParameterSet.pic_parameter_set_id, data);
-            ppsIdToPps.put(_pictureParameterSet.pic_parameter_set_id, _pictureParameterSet);
+            if (oldPpsSameId != null && !oldPpsSameId.equals(nal)) {
+                throw new RuntimeException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
+            } else {
+                ppsIdToPpsBytes.put(_pictureParameterSet.pic_parameter_set_id, nal);
+                ppsIdToPps.put(_pictureParameterSet.pic_parameter_set_id, _pictureParameterSet);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("That's surprising to get IOException when working on ByteArrayInputStream", e);
         }
 
 
     }
 
-    private void handleSPS(byte[] data) throws IOException {
-        InputStream spsInputStream = new CleanInputStream(new ByteArrayInputStream(data, 1, data.length - 1));
-        SeqParameterSet _seqParameterSet = SeqParameterSet.read(spsInputStream);
+    protected void handleSPS(ByteBuffer data) {
+        data.position(1);
+        try {
+            SeqParameterSet _seqParameterSet = SeqParameterSet.read(data);
 
-        currentSeqParameterSet = _seqParameterSet;
+            currentSeqParameterSet = _seqParameterSet;
 
-        byte[] oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
-        if (oldSpsSameId != null && !Arrays.equals(oldSpsSameId, data)) {
-            throw new IOException("OMG - I got two SPS with same ID but different settings!");
-        } else {
-            spsIdToSpsBytes.put(_seqParameterSet.seq_parameter_set_id, data);
-            spsIdToSps.put(_seqParameterSet.seq_parameter_set_id, _seqParameterSet);
-            spsForConfig.add(_seqParameterSet);
+            ByteBuffer oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
+            if (oldSpsSameId != null && !oldSpsSameId.equals(data)) {
+                throw new RuntimeException("OMG - I got two SPS with same ID but different settings!");
+            } else {
+                spsIdToSpsBytes.put(_seqParameterSet.seq_parameter_set_id, data);
+                spsIdToSps.put(_seqParameterSet.seq_parameter_set_id, _seqParameterSet);
+                spsForConfig.add(_seqParameterSet);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("That's surprising to get IOException when working on ByteArrayInputStream", e);
         }
+
+    }
+
+    public void close() throws IOException {
 
     }
 
@@ -448,9 +447,9 @@ public abstract class H264NalConsumingTrack extends AbstractStreamingTrack {
         boolean idrPicFlag;
         int idr_pic_id;
 
-        public FirstVclNalDetector(byte[] nal, int nal_ref_idc, int nal_unit_type) {
-            InputStream bs = new CleanInputStream(new ByteArrayInputStream(nal));
-            SliceHeader sh = new SliceHeader(bs, spsIdToSps, ppsIdToPps, nal_unit_type == 5);
+        public FirstVclNalDetector(ByteBuffer nal, int nal_ref_idc, int nal_unit_type) {
+
+            SliceHeader sh = new SliceHeader(nal, spsIdToSps, ppsIdToPps, nal_unit_type == 5);
             this.sliceHeader = sh;
             this.frame_num = sh.frame_num;
             this.pic_parameter_set_id = sh.pic_parameter_set_id;

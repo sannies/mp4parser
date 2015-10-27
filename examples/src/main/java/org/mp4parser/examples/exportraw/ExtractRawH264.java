@@ -41,7 +41,7 @@ public class ExtractRawH264 {
 
         fc.write((ByteBuffer) separator.rewind());
         // Write SPS
-        fc.write(ByteBuffer.wrap(
+        fc.write((
                 ((AvcConfigurationBox) Path.getPath(trackBox, "mdia/minf/stbl/stsd/avc1/avcC")
                 ).getSequenceParameterSets().get(0)));
         // Warning:
@@ -49,7 +49,7 @@ public class ExtractRawH264 {
 
         fc.write((ByteBuffer) separator.rewind());
         // Write PPS
-        fc.write(ByteBuffer.wrap(
+        fc.write((
                 ((AvcConfigurationBox) Path.getPath(trackBox, "mdia/minf/stbl/stsd/avc1/avcC")
                 ).getPictureParameterSets().get(0)));
         // Warning:

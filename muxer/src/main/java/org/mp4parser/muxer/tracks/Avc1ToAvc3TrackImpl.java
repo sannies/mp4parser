@@ -74,20 +74,20 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
 
                     public void writeTo(WritableByteChannel channel) throws IOException {
 
-                        for (byte[] bytes : avcC.getSequenceParameterSets()) {
-                            IsoTypeWriterVariable.write(bytes.length, (ByteBuffer) buf.rewind(), len);
+                        for (ByteBuffer bytes : avcC.getSequenceParameterSets()) {
+                            IsoTypeWriterVariable.write(bytes.limit(), (ByteBuffer) buf.rewind(), len);
                             channel.write((ByteBuffer) buf.rewind());
-                            channel.write(ByteBuffer.wrap(bytes));
+                            channel.write(bytes);
                         }
-                        for (byte[] bytes : avcC.getSequenceParameterSetExts()) {
-                            IsoTypeWriterVariable.write(bytes.length, (ByteBuffer) buf.rewind(), len);
+                        for (ByteBuffer bytes : avcC.getSequenceParameterSetExts()) {
+                            IsoTypeWriterVariable.write(bytes.limit(), (ByteBuffer) buf.rewind(), len);
                             channel.write((ByteBuffer) buf.rewind());
-                            channel.write(ByteBuffer.wrap(bytes));
+                            channel.write((bytes));
                         }
-                        for (byte[] bytes : avcC.getPictureParameterSets()) {
-                            IsoTypeWriterVariable.write(bytes.length, (ByteBuffer) buf.rewind(), len);
+                        for (ByteBuffer bytes : avcC.getPictureParameterSets()) {
+                            IsoTypeWriterVariable.write(bytes.limit(), (ByteBuffer) buf.rewind(), len);
                             channel.write((ByteBuffer) buf.rewind());
-                            channel.write(ByteBuffer.wrap(bytes));
+                            channel.write((bytes));
                         }
                         orignalSample.writeTo(channel);
                     }
@@ -95,14 +95,14 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
                     public long getSize() {
 
                         int spsPpsSize = 0;
-                        for (byte[] bytes : avcC.getSequenceParameterSets()) {
-                            spsPpsSize += len + bytes.length;
+                        for (ByteBuffer bytes : avcC.getSequenceParameterSets()) {
+                            spsPpsSize += len + bytes.limit();
                         }
-                        for (byte[] bytes : avcC.getSequenceParameterSetExts()) {
-                            spsPpsSize += len + bytes.length;
+                        for (ByteBuffer bytes : avcC.getSequenceParameterSetExts()) {
+                            spsPpsSize += len + bytes.limit();
                         }
-                        for (byte[] bytes : avcC.getPictureParameterSets()) {
-                            spsPpsSize += len + bytes.length;
+                        for (ByteBuffer bytes : avcC.getPictureParameterSets()) {
+                            spsPpsSize += len + bytes.limit();
                         }
                         return orignalSample.getSize() + spsPpsSize;
                     }
@@ -110,28 +110,28 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
                     public ByteBuffer asByteBuffer() {
 
                         int spsPpsSize = 0;
-                        for (byte[] bytes : avcC.getSequenceParameterSets()) {
-                            spsPpsSize += len + bytes.length;
+                        for (ByteBuffer bytes : avcC.getSequenceParameterSets()) {
+                            spsPpsSize += len + bytes.limit();
                         }
-                        for (byte[] bytes : avcC.getSequenceParameterSetExts()) {
-                            spsPpsSize += len + bytes.length;
+                        for (ByteBuffer bytes : avcC.getSequenceParameterSetExts()) {
+                            spsPpsSize += len + bytes.limit();
                         }
-                        for (byte[] bytes : avcC.getPictureParameterSets()) {
-                            spsPpsSize += len + bytes.length;
+                        for (ByteBuffer bytes : avcC.getPictureParameterSets()) {
+                            spsPpsSize += len + bytes.limit();
                         }
 
 
                         ByteBuffer data = ByteBuffer.allocate(l2i(orignalSample.getSize()) + spsPpsSize);
-                        for (byte[] bytes : avcC.getSequenceParameterSets()) {
-                            IsoTypeWriterVariable.write(bytes.length, data, len);
+                        for (ByteBuffer bytes : avcC.getSequenceParameterSets()) {
+                            IsoTypeWriterVariable.write(bytes.limit(), data, len);
                             data.put(bytes);
                         }
-                        for (byte[] bytes : avcC.getSequenceParameterSetExts()) {
-                            IsoTypeWriterVariable.write(bytes.length, data, len);
+                        for (ByteBuffer bytes : avcC.getSequenceParameterSetExts()) {
+                            IsoTypeWriterVariable.write(bytes.limit(), data, len);
                             data.put(bytes);
                         }
-                        for (byte[] bytes : avcC.getPictureParameterSets()) {
-                            IsoTypeWriterVariable.write(bytes.length, data, len);
+                        for (ByteBuffer bytes : avcC.getPictureParameterSets()) {
+                            IsoTypeWriterVariable.write(bytes.limit(), data, len);
                             data.put(bytes);
                         }
                         data.put(orignalSample.asByteBuffer());

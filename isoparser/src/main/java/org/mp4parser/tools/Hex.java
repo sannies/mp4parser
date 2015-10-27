@@ -21,6 +21,7 @@ Extracted from commons-codec
 package org.mp4parser.tools;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Converts hexadecimal Strings.
@@ -30,6 +31,17 @@ public class Hex {
 
     public static String encodeHex(byte[] data) {
         return encodeHex(data, 0);
+    }
+
+    public static String encodeHex(ByteBuffer data) {
+        ByteBuffer byteBuffer = data.duplicate();
+        StringBuilder sb = new StringBuilder();
+        while (byteBuffer.remaining() > 0) {
+            byte b = byteBuffer.get();
+            sb.append(DIGITS[(0xF0 & b) >>> 4]);
+            sb.append(DIGITS[0x0F & b]);
+        }
+        return sb.toString();
     }
 
     public static String encodeHex(byte[] data, int group) {
@@ -46,6 +58,7 @@ public class Hex {
         }
         return new String(out);
     }
+
 
     public static byte[] decodeHex(String hexString) {
         ByteArrayOutputStream bas = new ByteArrayOutputStream();

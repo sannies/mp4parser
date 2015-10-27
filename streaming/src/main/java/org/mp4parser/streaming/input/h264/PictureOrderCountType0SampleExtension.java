@@ -1,11 +1,8 @@
 package org.mp4parser.streaming.input.h264;
 
-import org.mp4parser.muxer.tracks.h264.SliceHeader;
 import org.mp4parser.streaming.SampleExtension;
+import org.mp4parser.streaming.input.h264.spspps.SliceHeader;
 
-/**
- * Created by sannies on 17.08.2015.
- */
 class PictureOrderCountType0SampleExtension implements SampleExtension {
     int picOrderCntMsb;
     int picOrderCountLsb;
