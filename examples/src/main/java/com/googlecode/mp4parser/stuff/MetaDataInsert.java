@@ -2,7 +2,9 @@ package com.googlecode.mp4parser.stuff;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.apple.AppleItemListBox;
 import com.googlecode.mp4parser.FileDataSourceImpl;
+import com.googlecode.mp4parser.boxes.apple.AppleNameBox;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.*;
@@ -19,7 +21,8 @@ public class MetaDataInsert {
 
     public static void main(String[] args) throws IOException {
         MetaDataInsert cmd = new MetaDataInsert();
-        cmd.writeRandomMetadata("c:\\content\\pbs_sba101d_browser_multi.wvm_0.mp4", "lore ipsum tralalala");
+        cmd.writeRandomMetadata("c:\\content\\Mobile_H264 - Kopie.mp4",
+                "lore ipsum tralalala");
 
     }
 
@@ -34,7 +37,7 @@ public class MetaDataInsert {
         write.position(pos + length);
         tmpWrite.position(0);
         long transferred = 0;
-        while ((transferred += tmpWrite.transferTo(0, tmpWrite.size()-transferred, write))!=tmpWrite.size()) {
+        while ((transferred += tmpWrite.transferTo(0, tmpWrite.size() - transferred, write)) != tmpWrite.size()) {
             System.out.println(transferred);
         }
         System.out.println(transferred);
@@ -50,11 +53,11 @@ public class MetaDataInsert {
             return false;
         } else {
             // no correction needed if mdat is before moov as insert into moov want change the offsets of mdat
-            return Path.getPath(isoFile, "/moov[0]").getOffset() <Path.getPath(isoFile, "/mdat[0]").getOffset();
+            return Path.getPath(isoFile, "/moov[0]").getOffset() < Path.getPath(isoFile, "/mdat[0]").getOffset();
         }
     }
 
-    public void writeRandomMetadata(String videoFilePath, String text) throws IOException {
+    public void writeRandomMetadata(String videoFilePath, String title) throws IOException {
 
         File videoFile = new File(videoFilePath);
         if (!videoFile.exists()) {
@@ -67,12 +70,14 @@ public class MetaDataInsert {
         IsoFile isoFile = new IsoFile(new FileDataSourceImpl(videoFilePath));
 
         MovieBox moov = isoFile.getBoxes(MovieBox.class).get(0);
+        FreeBox freeBox = findFreeBox(moov);
+
         boolean correctOffset = needsOffsetCorrection(isoFile);
         long sizeBefore = moov.getSize();
         long offset = moov.getOffset();
 
+        // Create structure or just navigate to Apple List Box.
         UserDataBox userDataBox;
-
         if ((userDataBox = Path.getPath(moov, "udta")) == null) {
             userDataBox = new UserDataBox();
             moov.addBox(userDataBox);
@@ -80,28 +85,77 @@ public class MetaDataInsert {
         MetaBox metaBox;
         if ((metaBox = Path.getPath(userDataBox, "meta")) == null) {
             metaBox = new MetaBox();
+            HandlerBox hdlr = new HandlerBox();
+            hdlr.setHandlerType("mdir");
+            metaBox.addBox(hdlr);
             userDataBox.addBox(metaBox);
         }
-        XmlBox xmlBox = new XmlBox();
-        xmlBox.setXml(text);
-        metaBox.addBox(xmlBox);
+        AppleItemListBox ilst;
+        if ((ilst = Path.getPath(metaBox, "ilst")) == null) {
+            ilst = new AppleItemListBox();
+            metaBox.addBox(ilst);
+
+        }
+        if (freeBox == null) {
+            freeBox = new FreeBox(128 * 1024);
+            metaBox.addBox(freeBox);
+        }
+        // Got Apple List Box
+
+        AppleNameBox nam;
+        if ((nam = Path.getPath(ilst, "©nam")) == null) {
+            nam = new AppleNameBox();
+        }
+        nam.setDataCountry(0);
+        nam.setDataLanguage(0);
+        nam.setValue(title);
+        ilst.addBox(nam);
+
         long sizeAfter = moov.getSize();
-        if (correctOffset) {
-            correctChunkOffsets(moov, sizeAfter - sizeBefore);
+        long diff = sizeAfter - sizeBefore;
+        // This is the difference of before/after
+
+        // can we compensate by resizing a Free Box we have found?
+        if (freeBox.getData().limit() > diff) {
+            // either shrink or grow!
+            freeBox.setData(ByteBuffer.allocate((int) (freeBox.getData().limit() - diff)));
+            sizeAfter = moov.getSize();
+            diff = sizeAfter - sizeBefore;
+        }
+        if (correctOffset && diff != 0) {
+            correctChunkOffsets(moov, diff);
         }
         BetterByteArrayOutputStream baos = new BetterByteArrayOutputStream();
         moov.getBox(Channels.newChannel(baos));
         isoFile.close();
-        FileChannel fc = splitFileAndInsert(videoFile, offset, sizeAfter - sizeBefore);
+        FileChannel fc;
+        if (diff != 0) {
+            // this is not good: We have to insert bytes in the middle of the file
+            // and this costs time as it requires re-writing most of the file's data
+            fc = splitFileAndInsert(videoFile, offset, sizeAfter - sizeBefore);
+        } else {
+            // simple overwrite of something with the file
+            fc = new RandomAccessFile(videoFile, "rw").getChannel();
+        }
         fc.position(offset);
         fc.write(ByteBuffer.wrap(baos.getBuffer(), 0, baos.size()));
         fc.close();
     }
 
-    private static class BetterByteArrayOutputStream extends ByteArrayOutputStream {
-        byte[] getBuffer() {
-            return buf;
+    FreeBox findFreeBox(Container c) {
+        for (Box box : c.getBoxes()) {
+            System.err.println(box.getType());
+            if (box instanceof FreeBox) {
+                return (FreeBox) box;
+            }
+            if (box instanceof Container) {
+                FreeBox freeBox = findFreeBox((Container) box);
+                if (freeBox != null) {
+                    return freeBox;
+                }
+            }
         }
+        return null;
     }
 
     private void correctChunkOffsets(MovieBox movieBox, long correction) {
@@ -114,6 +168,12 @@ public class MetaDataInsert {
             for (int i = 0; i < cOffsets.length; i++) {
                 cOffsets[i] += correction;
             }
+        }
+    }
+
+    private static class BetterByteArrayOutputStream extends ByteArrayOutputStream {
+        byte[] getBuffer() {
+            return buf;
         }
     }
 

@@ -1,15 +1,13 @@
 package com.googlecode.mp4parser.stuff;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.FileDataSourceImpl;
+import com.googlecode.mp4parser.boxes.apple.AppleNameBox;
 import com.googlecode.mp4parser.util.Path;
 
-import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.util.List;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Change metadata and make sure chunkoffsets are corrected.
@@ -19,7 +17,7 @@ public class MetaDataRead {
 
     public static void main(String[] args) throws IOException {
         MetaDataRead cmd = new MetaDataRead();
-        String xml = cmd.read("c:\\content\\pbs_sba101d_browser_multi.wvm_0.mp4");
+        String xml = cmd.read("C:\\content\\Mobile_H264.mp4");
         System.err.println(xml);
     }
 
@@ -34,8 +32,9 @@ public class MetaDataRead {
             throw new IllegalStateException("No read permissions to file " + videoFilePath);
         }
         IsoFile isoFile = new IsoFile(new FileDataSourceImpl(videoFilePath));
-        XmlBox xmlBox = Path.getPath(isoFile, "/moov[0]/udta[0]/meta[0]/xml [0]");
-        String xml = xmlBox.getXml();
+
+        AppleNameBox nam = Path.getPath(isoFile, "/moov[0]/udta[0]/meta[0]/ilst/©nam");
+        String xml = nam.getValue();
         isoFile.close();
         return xml;
     }
