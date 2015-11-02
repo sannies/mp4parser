@@ -4,10 +4,9 @@ import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.Fragmenter;
+import com.googlecode.mp4parser.authoring.builder.TimeBasedFragmenter;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.TextTrackImpl;
-import com.googlecode.mp4parser.util.Mp4Arrays;
 
 import java.io.*;
 import java.nio.channels.WritableByteChannel;
@@ -37,18 +36,7 @@ public class SubTitleExample {
         }
         m.addTrack(textTrack);
         DefaultMp4Builder builder = new DefaultMp4Builder();
-        builder.setFragmenter(new Fragmenter() {
-            public long[] sampleNumbers(Track track) {
-                int inc = (int) (track.getSamples().size() / (((double) track.getDuration() / track.getTrackMetaData().getTimescale()) * 2));
-                int pos = 1;
-                long[] samples = new long[0];
-                do {
-                    samples = Mp4Arrays.copyOfAndAppend(samples, pos);
-                    pos += inc;
-                } while (pos < track.getSamples().size());
-                return samples;
-            }
-        });
+        builder.setFragmenter(new TimeBasedFragmenter(2));
         Container c = builder.build(m);
         WritableByteChannel wbc = new FileOutputStream("output.mp4").getChannel();
         c.writeContainer(wbc);
