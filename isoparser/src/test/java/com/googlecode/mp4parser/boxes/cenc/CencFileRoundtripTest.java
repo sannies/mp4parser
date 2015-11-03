@@ -10,8 +10,8 @@ import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CencDecryptingTrackImpl;
-import com.googlecode.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
 import com.googlecode.mp4parser.authoring.tracks.CencEncryptedTrack;
+import com.googlecode.mp4parser.authoring.tracks.CencEncryptingTrackImpl;
 import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,7 +20,6 @@ import org.junit.Test;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.*;
@@ -162,7 +161,7 @@ public class CencFileRoundtripTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         c.writeContainer(Channels.newChannel(baos));
-       // new FileOutputStream("c:\\dev\\mp4parser\\m2.mp4").write(baos.toByteArray());
+        //  new FileOutputStream("c:\\dev\\mp4parser\\m2.mp4").write(baos.toByteArray());
 
         Movie m3 = MovieCreator.build(new MemoryDataSourceImpl(baos.toByteArray()));
 

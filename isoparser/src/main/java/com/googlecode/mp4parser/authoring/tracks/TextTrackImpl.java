@@ -39,6 +39,7 @@ public class TextTrackImpl extends AbstractTrack {
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
     List<Line> subs = new LinkedList<Line>();
+    List<Sample> samples;
 
     public TextTrackImpl() {
         super("subtitles");
@@ -70,27 +71,29 @@ public class TextTrackImpl extends AbstractTrack {
         // nothing to close
     }
 
-    public List<Sample> getSamples() {
-        List<Sample> samples = new LinkedList<Sample>();
-        long lastEnd = 0;
-        for (Line sub : subs) {
-            long silentTime = sub.from - lastEnd;
-            if (silentTime > 0) {
-                samples.add(new SampleImpl(ByteBuffer.wrap(new byte[]{0, 0})));
-            } else if (silentTime < 0) {
-                throw new Error("Subtitle display times may not intersect");
+    public synchronized List<Sample> getSamples() {
+        if (samples == null) {
+            samples = new ArrayList<Sample>();
+            long lastEnd = 0;
+            for (Line sub : subs) {
+                long silentTime = sub.from - lastEnd;
+                if (silentTime > 0) {
+                    samples.add(new SampleImpl(ByteBuffer.wrap(new byte[]{0, 0})));
+                } else if (silentTime < 0) {
+                    throw new Error("Subtitle display times may not intersect");
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(baos);
+                try {
+                    dos.writeShort(sub.text.getBytes("UTF-8").length);
+                    dos.write(sub.text.getBytes("UTF-8"));
+                    dos.close();
+                } catch (IOException e) {
+                    throw new Error("VM is broken. Does not support UTF-8");
+                }
+                samples.add(new SampleImpl(ByteBuffer.wrap(baos.toByteArray())));
+                lastEnd = sub.to;
             }
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            DataOutputStream dos = new DataOutputStream(baos);
-            try {
-                dos.writeShort(sub.text.getBytes("UTF-8").length);
-                dos.write(sub.text.getBytes("UTF-8"));
-                dos.close();
-            } catch (IOException e) {
-                throw new Error("VM is broken. Does not support UTF-8");
-            }
-            samples.add(new SampleImpl(ByteBuffer.wrap(baos.toByteArray())));
-            lastEnd = sub.to;
         }
         return samples;
     }

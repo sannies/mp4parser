@@ -313,6 +313,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
             SampleGroupDescriptionBox sgpd = new SampleGroupDescriptionBox();
             String type = sg.getKey();
             sgpd.setGroupEntries(sg.getValue());
+            sgpd.setGroupingType(type);
             SampleToGroupBox sbgp = new SampleToGroupBox();
             sbgp.setGroupingType(type);
             SampleToGroupBox.Entry last = null;
@@ -322,7 +323,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
                     GroupEntry groupEntry = sg.getValue().get(j);
                     long[] sampleNums = track.getSampleGroups().get(groupEntry);
                     if (Arrays.binarySearch(sampleNums, i) >= 0) {
-                        index = j + 1;
+                        index = j + 0x10001;
                     }
                 }
                 if (last == null || last.getGroupDescriptionIndex() != index) {

@@ -375,6 +375,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         for (Map.Entry<String, List<GroupEntry>> sg : groupEntryFamilies.entrySet()) {
             SampleGroupDescriptionBox sgdb = new SampleGroupDescriptionBox();
             String type = sg.getKey();
+            sgdb.setGroupingType(type);
             sgdb.setGroupEntries(sg.getValue());
             SampleToGroupBox sbgp = new SampleToGroupBox();
             sbgp.setGroupingType(type);
