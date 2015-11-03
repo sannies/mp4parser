@@ -171,7 +171,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                             }
                         }
                         try {
-                            System.err.println("Mapped trun - offset: " + offset + " - size: " + size);
+                            //System.err.println("Mapped trun - offset: " + offset + " - size: " + size);
                             trunData = base.getByteBuffer(offset, size);
                             trunDataCache.put(trun, new SoftReference<ByteBuffer>(trunData));
                         } catch (IOException e) {
@@ -196,7 +196,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
 
                     final ByteBuffer finalTrunData = trunData;
                     final int finalOffset = offset;
-                    System.err.println("sNo. " + index + " offset: " + finalOffset + " size: " + sampleSize);
+                    // System.err.println("sNo. " + index + " offset: " + finalOffset + " size: " + sampleSize);
                     Sample sample = new Sample() {
                         public void writeTo(WritableByteChannel channel) throws IOException {
                             channel.write(asByteBuffer());
@@ -210,8 +210,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                             return (ByteBuffer) ((ByteBuffer)finalTrunData.position(finalOffset)).slice().limit(l2i(sampleSize));
                         }
                     };
-                    // todo: enabled cache|remove comment
-                    // sampleCache[index] = new SoftReference<Sample>(sample);
+                    sampleCache[index] = new SoftReference<Sample>(sample);
                     return sample;
                 }
             }
