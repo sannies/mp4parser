@@ -193,7 +193,10 @@ public class Mp4TrackImpl extends AbstractTrack {
             for (MovieFragmentBox movieFragmentBox : movieFragmentBoxes) {
                 for (TrackFragmentBox traf : movieFragmentBox.getBoxes(TrackFragmentBox.class)) {
                     if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
-                        sampleGroups = getSampleGroups(Path.<SampleGroupDescriptionBox>getPaths((Container) traf, "sgpd"), Path.<SampleToGroupBox>getPaths((Container) traf, "sbgp"), sampleGroups);
+                        sampleGroups = getSampleGroups(
+                                stbl.getBoxes(SampleGroupDescriptionBox.class),
+                                Path.<SampleGroupDescriptionBox>getPaths((Container) traf, "sgpd"),
+                                Path.<SampleToGroupBox>getPaths((Container) traf, "sbgp"), sampleGroups, 0);
                     }
                 }
             }

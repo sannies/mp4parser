@@ -1,8 +1,9 @@
 package com;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.googlecode.mp4parser.util.Path;
+
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso14496.part12.SampleSizeBox;
+import org.mp4parser.tools.Path;
 
 import java.io.IOException;
 

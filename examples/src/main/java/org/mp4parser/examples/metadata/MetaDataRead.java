@@ -1,10 +1,11 @@
 package org.mp4parser.examples.metadata;
 
 import org.mp4parser.IsoFile;
-import org.mp4parser.boxes.iso14496.part12.XmlBox;
+import org.mp4parser.boxes.apple.AppleNameBox;
 import org.mp4parser.tools.Path;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -30,7 +31,7 @@ public class MetaDataRead {
         if (!videoFile.canRead()) {
             throw new IllegalStateException("No read permissions to file " + videoFilePath);
         }
-        IsoFile isoFile = new IsoFile(new FileDataSourceImpl(videoFilePath));
+        IsoFile isoFile = new IsoFile(new FileInputStream(videoFilePath).getChannel());
 
         AppleNameBox nam = Path.getPath(isoFile, "/moov[0]/udta[0]/meta[0]/ilst/©nam");
         String xml = nam.getValue();

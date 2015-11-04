@@ -2,7 +2,10 @@ package org.mp4parser.examples.metadata;
 
 
 import org.mp4parser.Box;
+import org.mp4parser.Container;
 import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.apple.AppleItemListBox;
+import org.mp4parser.boxes.apple.AppleNameBox;
 import org.mp4parser.boxes.iso14496.part12.*;
 import org.mp4parser.tools.Path;
 

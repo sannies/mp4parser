@@ -117,9 +117,9 @@ public class H264TrackImpl extends AbstractH26XTrack {
         if (!readSamples(la)) {
             throw new IOException();
         }
-        System.err.println("psize: " + psize + "(" + pcount + ")");
+/*        System.err.println("psize: " + psize + "(" + pcount + ")");
         System.err.println("bsize: " + bsize + "(" + bcount + ")");
-        System.err.println("isize: " + isize + "(" + icount + ")");
+        System.err.println("isize: " + isize + "(" + icount + ")");*/
 
 
         if (!readVariables()) {

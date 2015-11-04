@@ -1,6 +1,5 @@
 package com;
 
-import org.mp4parser.Box;
 import org.mp4parser.Container;
 import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.builder.DefaultMp4Builder;
