@@ -168,6 +168,10 @@ public class MP3TrackImpl extends AbstractTrack {
                 return null;
             }
         }
+        if (bb.get(0) == 0x54 && bb.get(1) == 0x41 && bb.get(2) == 0x47) {
+            // encounter id3 tag. That's the end of the file.
+            return null;
+        }
 
         BitReaderBuffer brb = new BitReaderBuffer((ByteBuffer) bb.rewind());
         int sync = brb.readBits(11); // A

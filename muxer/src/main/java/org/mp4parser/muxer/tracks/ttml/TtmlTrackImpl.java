@@ -145,7 +145,7 @@ public class TtmlTrackImpl extends AbstractTrack {
         for (String s : i) {
             result.append(s).append(joiner);
         }
-        result.setLength(result.length() - 1);
+        result.setLength(result.length() > 0 ? result.length() - 1 : 0);
         return result.toString();
     }
 

@@ -188,8 +188,8 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
 
                     final ByteBuffer finalTrunData = trunData;
                     final int finalOffset = offset;
+                    // System.err.println("sNo. " + index + " offset: " + finalOffset + " size: " + sampleSize);
                     Sample sample = new Sample() {
-
                         public void writeTo(WritableByteChannel channel) throws IOException {
                             channel.write(asByteBuffer());
                         }

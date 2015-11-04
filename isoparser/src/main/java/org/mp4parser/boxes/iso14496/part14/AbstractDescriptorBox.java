@@ -78,7 +78,7 @@ public class AbstractDescriptorBox extends AbstractFullBox {
         content.position(content.position() + content.remaining());
         try {
             data.rewind();
-            descriptor = ObjectDescriptorFactory.createFrom(-1, data);
+            descriptor = ObjectDescriptorFactory.createFrom(-1, data.duplicate());
         } catch (IOException e) {
             log.log(Level.WARNING, "Error parsing ObjectDescriptor", e);
             //that's why we copied it ;)

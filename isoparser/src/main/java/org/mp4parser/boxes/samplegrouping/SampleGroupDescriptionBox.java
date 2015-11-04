@@ -44,13 +44,21 @@ import java.util.List;
  */
 public class SampleGroupDescriptionBox extends AbstractFullBox {
     public static final String TYPE = "sgpd";
-
+    private String groupingType;
     private int defaultLength;
     private List<GroupEntry> groupEntries = new LinkedList<GroupEntry>();
 
     public SampleGroupDescriptionBox() {
         super(TYPE);
         setVersion(1);
+    }
+
+    public String getGroupingType() {
+        return groupingType;
+    }
+
+    public void setGroupingType(String groupingType) {
+        this.groupingType = groupingType;
     }
 
     @Override
@@ -72,7 +80,7 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
-        byteBuffer.put(IsoFile.fourCCtoBytes(groupEntries.get(0).getType()));
+        byteBuffer.put(IsoFile.fourCCtoBytes(groupingType));
         if (this.getVersion() == 1) {
             IsoTypeWriter.writeUInt32(byteBuffer, defaultLength);
         }
@@ -91,7 +99,7 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
         if (this.getVersion() != 1) {
             throw new RuntimeException("SampleGroupDescriptionBox are only supported in version 1");
         }
-        String groupingType = IsoTypeReader.read4cc(content);
+        groupingType = IsoTypeReader.read4cc(content);
         if (this.getVersion() == 1) {
             defaultLength = CastUtils.l2i(IsoTypeReader.readUInt32(content));
         }

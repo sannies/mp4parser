@@ -17,7 +17,6 @@ import org.mp4parser.tools.ByteBufferByteChannel;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.*;
@@ -161,7 +160,7 @@ public class CencFileRoundtripTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         c.writeContainer(Channels.newChannel(baos));
-        new FileOutputStream("c:\\dev\\mp4parser\\m2.mp4").write(baos.toByteArray());
+        //  new FileOutputStream("c:\\dev\\mp4parser\\m2.mp4").write(baos.toByteArray());
 
         Movie m3 = MovieCreator.build(new ByteBufferByteChannel(baos.toByteArray()), new InMemRandomAccessSourceImpl(baos.toByteArray()), "inmem");
 

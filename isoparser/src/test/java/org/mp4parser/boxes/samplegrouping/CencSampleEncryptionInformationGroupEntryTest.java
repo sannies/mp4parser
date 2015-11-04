@@ -29,13 +29,16 @@ public class CencSampleEncryptionInformationGroupEntryTest extends BoxRoundtripT
         return Arrays.asList(
                 new Object[]{new SampleGroupDescriptionBox(),
                         new Map.Entry[]{
+                                new E("groupingType", CencSampleEncryptionInformationGroupEntry.TYPE),
                                 new E("groupEntries", Arrays.asList(seig1))}},
                 new Object[]{new SampleGroupDescriptionBox(),
                         new Map.Entry[]{
+                                new E("groupingType", CencSampleEncryptionInformationGroupEntry.TYPE),
                                 new E("groupEntries", Arrays.asList(seig1, seig2))
                         }},
                 new Object[]{new SampleGroupDescriptionBox(),
                         new Map.Entry[]{
+                                new E("groupingType", CencSampleEncryptionInformationGroupEntry.TYPE),
                                 new E("groupEntries", Arrays.asList(seig2))}});
     }
 

@@ -108,7 +108,11 @@ public class Mp4TrackImpl extends AbstractTrack {
                             List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
                             for (TrackFragmentBox traf : trafs) {
                                 if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
-
+                                    sampleGroups = getSampleGroups(
+                                            stbl.getBoxes(SampleGroupDescriptionBox.class),  // global descriptions
+                                            Path.<SampleGroupDescriptionBox>getPaths((Container) traf, "sgpd"),  // local description
+                                            Path.<SampleToGroupBox>getPaths((Container) traf, "sbgp"),
+                                            sampleGroups, sampleNumber - 1);
 
                                     SubSampleInformationBox subs = Path.getPath(traf, "subs");
                                     if (subs != null) {
@@ -125,6 +129,7 @@ public class Mp4TrackImpl extends AbstractTrack {
                                             subSampleInformationBox.getEntries().add(se);
                                         }
                                     }
+
 
                                     List<TrackRunBox> truns = traf.getBoxes(TrackRunBox.class);
                                     for (TrackRunBox trun : truns) {
@@ -193,7 +198,7 @@ public class Mp4TrackImpl extends AbstractTrack {
                 }
             }
         } else {
-            sampleGroups = getSampleGroups(stbl.getBoxes(SampleGroupDescriptionBox.class), stbl.getBoxes(SampleToGroupBox.class), sampleGroups);
+            sampleGroups = getSampleGroups(stbl.getBoxes(SampleGroupDescriptionBox.class), null, stbl.getBoxes(SampleToGroupBox.class), sampleGroups, 0);
         }
 
         decodingTimes = TimeToSampleBox.blowupTimeToSamples(decodingTimeEntries);
@@ -223,39 +228,46 @@ public class Mp4TrackImpl extends AbstractTrack {
 
     }
 
-    private Map<GroupEntry, long[]> getSampleGroups(List<SampleGroupDescriptionBox> sgdbs, List<SampleToGroupBox> sbgps,
-                                                    Map<GroupEntry, long[]> sampleGroups) {
-        for (SampleGroupDescriptionBox sgdb : sgdbs) {
-            boolean found = false;
-            for (SampleToGroupBox sbgp : sbgps) {
-                if (sbgp.getGroupingType().equals(sgdb.getGroupEntries().get(0).getType())) {
-                    found = true;
-                    int sampleNum = 0;
-                    for (SampleToGroupBox.Entry entry : sbgp.getEntries()) {
-                        if (entry.getGroupDescriptionIndex() > 0) {
-                            GroupEntry groupEntry = sgdb.getGroupEntries().get(entry.getGroupDescriptionIndex() - 1);
-                            long[] samples = sampleGroups.get(groupEntry);
-                            if (samples == null) {
-                                samples = new long[0];
-                            }
+    private Map<GroupEntry, long[]> getSampleGroups(List<SampleGroupDescriptionBox> globalSgdbs, List<SampleGroupDescriptionBox> localSgdbs, List<SampleToGroupBox> sbgps,
+                                                    Map<GroupEntry, long[]> sampleGroups, long startIndex) {
 
-                            long[] nuSamples = new long[l2i(entry.getSampleCount()) + samples.length];
-                            System.arraycopy(samples, 0, nuSamples, 0, samples.length);
-                            for (int i = 0; i < entry.getSampleCount(); i++) {
-                                nuSamples[samples.length + i] = sampleNum + i;
+        for (SampleToGroupBox sbgp : sbgps) {
+            int sampleNum = 0;
+            for (SampleToGroupBox.Entry entry : sbgp.getEntries()) {
+                if (entry.getGroupDescriptionIndex() > 0) {
+                    GroupEntry groupEntry = null;
+                    if (entry.getGroupDescriptionIndex() > 0xffff) {
+                        for (SampleGroupDescriptionBox localSgdb : localSgdbs) {
+                            if (localSgdb.getGroupingType().equals(sbgp.getGroupingType())) {
+                                groupEntry = localSgdb.getGroupEntries().get((entry.getGroupDescriptionIndex() - 1) & 0xffff);
                             }
-                            sampleGroups.put(groupEntry, nuSamples);
-
                         }
-                        sampleNum += entry.getSampleCount();
+                    } else {
+                        for (SampleGroupDescriptionBox globalSgdb : globalSgdbs) {
+                            if (globalSgdb.getGroupingType().equals(sbgp.getGroupingType())) {
+                                groupEntry = globalSgdb.getGroupEntries().get((entry.getGroupDescriptionIndex() - 1));
+                            }
+                        }
+                    }
+                    assert groupEntry != null;
+                    long[] samples = sampleGroups.get(groupEntry);
+                    if (samples == null) {
+                        samples = new long[0];
                     }
 
+                    long[] nuSamples = new long[l2i(entry.getSampleCount()) + samples.length];
+                    System.arraycopy(samples, 0, nuSamples, 0, samples.length);
+                    for (int i = 0; i < entry.getSampleCount(); i++) {
+                        nuSamples[samples.length + i] = startIndex + sampleNum + i;
+                    }
+                    sampleGroups.put(groupEntry, nuSamples);
+
                 }
-            }
-            if (!found) {
-                throw new RuntimeException("Could not find SampleToGroupBox for " + sgdb.getGroupEntries().get(0).getType() + ".");
+                sampleNum += entry.getSampleCount();
             }
         }
+
+
         return sampleGroups;
     }
 

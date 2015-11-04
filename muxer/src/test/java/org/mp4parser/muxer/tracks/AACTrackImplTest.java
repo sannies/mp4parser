@@ -28,6 +28,7 @@ import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.Path;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 

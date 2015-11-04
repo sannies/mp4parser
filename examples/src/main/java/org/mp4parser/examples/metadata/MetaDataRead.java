@@ -1,6 +1,5 @@
 package org.mp4parser.examples.metadata;
 
-
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.XmlBox;
 import org.mp4parser.tools.Path;
@@ -17,7 +16,7 @@ public class MetaDataRead {
 
     public static void main(String[] args) throws IOException {
         MetaDataRead cmd = new MetaDataRead();
-        String xml = cmd.read("c:\\content\\pbs_sba101d_browser_multi.wvm_0.mp4");
+        String xml = cmd.read("C:\\content\\Mobile_H264.mp4");
         System.err.println(xml);
     }
 
@@ -31,9 +30,10 @@ public class MetaDataRead {
         if (!videoFile.canRead()) {
             throw new IllegalStateException("No read permissions to file " + videoFilePath);
         }
-        IsoFile isoFile = new IsoFile(videoFilePath);
-        XmlBox xmlBox = Path.getPath(isoFile, "moov[0]/udta[0]/meta[0]/xml [0]");
-        String xml = xmlBox.getXml();
+        IsoFile isoFile = new IsoFile(new FileDataSourceImpl(videoFilePath));
+
+        AppleNameBox nam = Path.getPath(isoFile, "/moov[0]/udta[0]/meta[0]/ilst/©nam");
+        String xml = nam.getValue();
         isoFile.close();
         return xml;
     }

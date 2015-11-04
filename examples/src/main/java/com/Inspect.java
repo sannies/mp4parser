@@ -1,26 +1,23 @@
 package com;
 
-import org.mp4parser.IsoFile;
-import org.mp4parser.boxes.iso14496.part12.TrackRunBox;
-import org.mp4parser.tools.Path;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.SampleSizeBox;
+import com.googlecode.mp4parser.util.Path;
 
 import java.io.IOException;
-import java.util.logging.LogManager;
 
+/**
+ * Created by sannies on 28.05.2015.
+ */
 public class Inspect {
-
     public static void main(String[] args) throws IOException {
-        //IsoFile isoFile  = new IsoFile("C:\\Users\\sannies\\media-144384.mp4");
-        LogManager.getLogManager().readConfiguration(Inspect.class.getResourceAsStream("/log.properties"));
-        IsoFile isoFile = new IsoFile("C:\\dev\\mp4parser\\output.mp4");
-        TrackRunBox trun = Path.getPath(isoFile, "moof[0]/traf[0]/trun[0]");
-        int i = 0;
-        long duration = 0;
-        assert trun != null;
-        for (TrackRunBox.Entry entry : trun.getEntries()) {
-            duration += (entry.getSampleDuration());
-            i++;
+        IsoFile isoFile = new IsoFile("C:\\Users\\sannies\\Downloads\\mergedvideo.mp4");
+        SampleSizeBox stsz = Path.getPath(isoFile, "/moov[0]/trak[1]/mdia[0]/minf[0]/stbl[0]/stsz[0]");
+        long s = 0;
+
+        for (long l : stsz.getSampleSizes()) {
+            s += l;
         }
-        System.err.println((double)duration / i);
+        System.err.println(s);
     }
 }

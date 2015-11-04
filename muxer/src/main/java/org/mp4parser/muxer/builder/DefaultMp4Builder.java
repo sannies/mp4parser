@@ -160,9 +160,10 @@ public class DefaultMp4Builder implements Mp4Builder {
         List<String> minorBrands = new LinkedList<String>();
 
         minorBrands.add("mp42");
+        minorBrands.add("iso6");
+        minorBrands.add("avc1");
         minorBrands.add("isom");
-
-        return new FileTypeBox("mp42", 0, minorBrands);
+        return new FileTypeBox("iso6", 1, minorBrands);
     }
 
     protected MovieBox createMovieBox(Movie movie, Map<Track, int[]> chunks) {
@@ -235,8 +236,8 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         tkhd.setEnabled(true);
         tkhd.setInMovie(true);
-        tkhd.setInPreview(true);
-        tkhd.setInPoster(true);
+//        tkhd.setInPreview(true);
+//        tkhd.setInPoster(true);
         tkhd.setMatrix(track.getTrackMetaData().getMatrix());
 
         tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
@@ -358,6 +359,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         for (Map.Entry<String, List<GroupEntry>> sg : groupEntryFamilies.entrySet()) {
             SampleGroupDescriptionBox sgdb = new SampleGroupDescriptionBox();
             String type = sg.getKey();
+            sgdb.setGroupingType(type);
             sgdb.setGroupEntries(sg.getValue());
             SampleToGroupBox sbgp = new SampleToGroupBox();
             sbgp.setGroupingType(type);
