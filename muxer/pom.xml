@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.mp4parser</groupId>
-    <version>1.9.24-SNAPSHOT</version>
+    <version>1.9.24</version>
     <artifactId>muxer</artifactId>
     <name>File Muxer</name>
     <url>https://github.com/sannies/mp4parser</url>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.9.24-SNAPSHOT</version>
+            <version>1.9.24</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -93,6 +93,6 @@
     </developers>
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
-        <tag> mp4parser-project-1.9.5</tag>
+        <tag> mp4parser-project-1.9.24</tag>
     </scm>
 </project>
