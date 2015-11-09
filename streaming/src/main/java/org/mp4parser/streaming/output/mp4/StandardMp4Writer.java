@@ -25,7 +25,10 @@ import java.util.logging.Logger;
 import static org.mp4parser.tools.CastUtils.l2i;
 
 /**
- * Creates an MP4
+ * Creates an MP4 file with ftyp, mdat+, moov order.
+ * A very special property of this variant is that it written sequentially. You can start transferring the
+ * data while the <code>sink</code> receives it. (in contrast to typical implementations which need random
+ * access to write length fields at the beginning of the file)
  */
 public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
 
