@@ -31,6 +31,8 @@ import java.util.regex.Pattern;
  * A Property file based BoxFactory
  */
 public class PropertyBoxParserImpl extends AbstractBoxParser {
+    static Properties BOX_MAP_CACHE = null;
+
     static String[] EMPTY_STRING_ARRAY = new String[0];
     Properties mapping;
     Pattern constuctorPattern = Pattern.compile("(.*)\\((.*?)\\)");
@@ -40,37 +42,42 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
 
     public PropertyBoxParserImpl(String... customProperties) {
         InputStream is = getClass().getResourceAsStream("/isoparser-default.properties");
-        try {
-            mapping = new Properties();
+        if (BOX_MAP_CACHE != null) {
+            mapping = new Properties(BOX_MAP_CACHE);
+        } else {
             try {
-                mapping.load(is);
-                ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                if (cl == null) {
-                    cl = ClassLoader.getSystemClassLoader();
-                }
-                Enumeration<URL> enumeration = cl.getResources("isoparser-custom.properties");
-
-                while (enumeration.hasMoreElements()) {
-                    URL url = enumeration.nextElement();
-                    InputStream customIS = url.openStream();
-                    try {
-                        mapping.load(customIS);
-                    } finally {
-                        customIS.close();
+                mapping = new Properties();
+                try {
+                    mapping.load(is);
+                    ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                    if (cl == null) {
+                        cl = ClassLoader.getSystemClassLoader();
                     }
+                    Enumeration<URL> enumeration = cl.getResources("isoparser-custom.properties");
+
+                    while (enumeration.hasMoreElements()) {
+                        URL url = enumeration.nextElement();
+                        InputStream customIS = url.openStream();
+                        try {
+                            mapping.load(customIS);
+                        } finally {
+                            customIS.close();
+                        }
+                    }
+                    for (String customProperty : customProperties) {
+                        mapping.load(getClass().getResourceAsStream(customProperty));
+                    }
+                    BOX_MAP_CACHE = mapping;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-                for (String customProperty : customProperties) {
-                    mapping.load(getClass().getResourceAsStream(customProperty));
+            } finally {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    // ignore - I can't help
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-                // ignore - I can't help
             }
         }
     }
