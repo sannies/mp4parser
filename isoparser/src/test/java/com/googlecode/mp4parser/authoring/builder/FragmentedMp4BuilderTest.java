@@ -22,7 +22,7 @@ public class FragmentedMp4BuilderTest {
         m.addTrack(a.getTracks().get(0));
 
         FragmentedMp4Builder fragmentedMp4Builder = new FragmentedMp4Builder();
-        fragmentedMp4Builder.setFragmenter(new TimeBasedFragmenter(5));
+        fragmentedMp4Builder.setFragmenter(new DefaultFragmenterImpl(5));
 
         Container c = fragmentedMp4Builder.build(m);
         c.writeContainer(Channels.newChannel(new ByteArrayOutputStream()));

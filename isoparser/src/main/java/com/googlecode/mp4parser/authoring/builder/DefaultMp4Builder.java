@@ -89,7 +89,7 @@ public class DefaultMp4Builder implements Mp4Builder {
      */
     public Container build(Movie movie) {
         if (fragmenter == null) {
-            fragmenter = new TimeBasedFragmenter(2);
+            fragmenter = new DefaultFragmenterImpl(2);
         }
         LOG.logDebug("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
@@ -620,7 +620,6 @@ public class DefaultMp4Builder implements Mp4Builder {
             }
 
             chunkSizes[i] = l2i(end - start);
-            // The Stretch makes sure that there are as much audio and video chunks!
         }
         assert DefaultMp4Builder.this.track2Sample.get(track).size() == sum(chunkSizes) : "The number of samples and the sum of all chunk lengths must be equal";
         return chunkSizes;

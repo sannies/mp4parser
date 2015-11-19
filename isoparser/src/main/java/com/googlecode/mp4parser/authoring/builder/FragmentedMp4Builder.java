@@ -194,7 +194,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     public Container build(Movie movie) {
         LOG.fine("Creating movie " + movie);
         if (fragmenter == null) {
-            fragmenter = new TimeBasedFragmenter(2);
+            fragmenter = new DefaultFragmenterImpl(2);
         }
         BasicContainer isoFile = new BasicContainer();
 

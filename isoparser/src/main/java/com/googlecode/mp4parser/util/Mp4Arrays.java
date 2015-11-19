@@ -1,7 +1,5 @@
 package com.googlecode.mp4parser.util;
 
-import java.lang.reflect.Array;
-
 /**
  * Created by sannies on 02.05.2015.
  */
@@ -31,6 +29,19 @@ public final class Mp4Arrays {
             toAppend = new int[]{};
         }
         int[] copy = new int[original.length + toAppend.length];
+        System.arraycopy(original, 0, copy, 0, original.length);
+        System.arraycopy(toAppend, 0, copy, original.length, toAppend.length);
+        return copy;
+    }
+
+    public static double[] copyOfAndAppend(double[] original, double... toAppend) {
+        if (original == null) {
+            original = new double[]{};
+        }
+        if (toAppend == null) {
+            toAppend = new double[]{};
+        }
+        double[] copy = new double[original.length + toAppend.length];
         System.arraycopy(original, 0, copy, 0, original.length);
         System.arraycopy(toAppend, 0, copy, original.length, toAppend.length);
         return copy;

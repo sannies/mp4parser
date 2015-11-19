@@ -3,8 +3,8 @@ package com.googlecode.mp4parser;
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.builder.DefaultFragmenterImpl;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.TimeBasedFragmenter;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.TextTrackImpl;
 
@@ -36,7 +36,7 @@ public class SubTitleExample {
         }
         m.addTrack(textTrack);
         DefaultMp4Builder builder = new DefaultMp4Builder();
-        builder.setFragmenter(new TimeBasedFragmenter(2));
+        builder.setFragmenter(new DefaultFragmenterImpl(2));
         Container c = builder.build(m);
         WritableByteChannel wbc = new FileOutputStream("output.mp4").getChannel();
         c.writeContainer(wbc);
