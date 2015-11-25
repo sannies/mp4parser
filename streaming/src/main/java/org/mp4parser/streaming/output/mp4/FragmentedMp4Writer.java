@@ -595,8 +595,7 @@ public class FragmentedMp4Writer extends DefaultBoxes implements SampleSink {
                 long l = 8;
                 for (StreamingSample streamingSample : samples) {
                     ByteBuffer sampleContent = streamingSample.getContent();
-                    sampleContent.limit();
-                    l += sampleContent.remaining();
+                    l += sampleContent.limit();
                 }
                 ByteBuffer bb = ByteBuffer.allocate(8);
                 IsoTypeWriter.writeUInt32(bb, l);

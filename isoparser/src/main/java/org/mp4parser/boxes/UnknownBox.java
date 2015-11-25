@@ -56,4 +56,11 @@ public class UnknownBox extends AbstractBox {
     public void setData(ByteBuffer data) {
         this.data = data;
     }
+
+    @Override
+    public String toString() {
+        return "UnknownBox{" +
+                "type=" + type +
+                '}';
+    }
 }
