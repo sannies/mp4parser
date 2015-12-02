@@ -41,10 +41,11 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     ThreadLocal<String[]> param = new ThreadLocal<String[]>();
 
     public PropertyBoxParserImpl(String... customProperties) {
-        InputStream is = getClass().getResourceAsStream("/isoparser-default.properties");
+
         if (BOX_MAP_CACHE != null) {
             mapping = new Properties(BOX_MAP_CACHE);
         } else {
+            InputStream is = getClass().getResourceAsStream("/isoparser-default.properties");
             try {
                 mapping = new Properties();
                 try {
