@@ -63,43 +63,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return new FileTypeBox("iso6", 1, minorBrands);
     }
 
-    /**
-     * Sorts fragments by start time.
-     *
-     * @param tracks          the list of tracks to returned sorted
-     * @param cycle           current fragment (sorting may vary between the fragments)
-     * @param intersectionMap a map from tracks to their fragments' first samples.
-     * @return the list of tracks in order of appearance in the fragment
-     */
-    protected List<Track> sortTracksInSequence(List<Track> tracks, final int cycle, final Map<Track, long[]> intersectionMap) {
-        tracks = new LinkedList<Track>(tracks);
-        Collections.sort(tracks, new Comparator<Track>() {
-            public int compare(Track o1, Track o2) {
-                long startSample1 = intersectionMap.get(o1)[cycle];
-                // one based sample numbers - the first sample is 1
-                long startSample2 = intersectionMap.get(o2)[cycle];
-                // one based sample numbers - the first sample is 1
-
-                // now let's get the start times
-                long[] decTimes1 = o1.getSampleDurations();
-                long[] decTimes2 = o2.getSampleDurations();
-                long startTime1 = 0;
-                long startTime2 = 0;
-
-                for (int i = 1; i < startSample1; i++) {
-                    startTime1 += decTimes1[i - 1];
-                }
-                for (int i = 1; i < startSample2; i++) {
-                    startTime2 += decTimes2[i - 1];
-                }
-
-                // and compare
-                return (int) (((double) startTime1 / o1.getTrackMetaData().getTimescale() - (double) startTime2 / o2.getTrackMetaData().getTimescale()) * 100);
-            }
-        });
-        return tracks;
-    }
-
 
     protected List<Box> createMoofMdat(final Movie movie) {
         List<Box> moofsMdats = new ArrayList<Box>();

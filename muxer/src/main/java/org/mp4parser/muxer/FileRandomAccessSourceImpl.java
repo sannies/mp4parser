@@ -3,7 +3,8 @@ package org.mp4parser.muxer;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+
+import static org.mp4parser.tools.CastUtils.l2i;
 
 
 public class FileRandomAccessSourceImpl implements RandomAccessSource {
@@ -14,8 +15,13 @@ public class FileRandomAccessSourceImpl implements RandomAccessSource {
     }
 
     public ByteBuffer get(long offset, long size) throws IOException {
-        return raf.getChannel().map(FileChannel.MapMode.READ_ONLY, offset, size);
+        byte[] b = new byte[l2i(size)];
+        raf.seek(offset);
+        raf.read(b);
+        return ByteBuffer.wrap(b);
     }
+
+
 
     public void close() throws IOException {
         raf.close();
