@@ -92,15 +92,15 @@ public abstract class AbstractBox implements ParsableBox {
      */
     @DoNotParseDetail
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        content = ByteBuffer.allocateDirect(l2i(contentSize));
-        int bytesRead = 0;
-        int b = 0;
-        while ((bytesRead < contentSize) && (b = dataSource.read(content)) != -1) {
-            bytesRead += b;
+        content = ByteBuffer.allocate(l2i(contentSize));
+
+        while ((content.position() < contentSize)) {
+            if (dataSource.read(content) == -1) {
+                LOG.logError(this + " might have been truncated by file end. bytesRead=" + content.position() + " contentSize=" + contentSize);
+                break;
+            }
         }
-        if (b == -1) {
-            LOG.logError(this + " might have been truncated by file end. bytesRead=" + bytesRead + " contentSize=" + contentSize);
-        }
+
         content.position(0);
         isParsed = false;
     }
