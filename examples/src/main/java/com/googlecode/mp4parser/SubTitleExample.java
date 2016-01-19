@@ -1,12 +1,13 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultFragmenterImpl;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.TextTrackImpl;
+
+import org.mp4parser.Container;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.builder.TimeBasedFragmenter;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
+import org.mp4parser.muxer.tracks.TextTrackImpl;
 
 import java.io.*;
 import java.nio.channels.WritableByteChannel;
@@ -20,8 +21,8 @@ import java.util.regex.Pattern;
  */
 public class SubTitleExample {
     public static void main(String[] args) throws IOException {
-        Movie m1 = MovieCreator.build(new FileDataSourceImpl("C:\\dev\\DRMTODAY-872\\Tears_Of_Steel_128000_eng.mp4"));
-        Movie m2 = MovieCreator.build(new FileDataSourceImpl("C:\\dev\\DRMTODAY-872\\Tears_Of_Steel_600000.mp4"));
+        Movie m1 = MovieCreator.build(("C:\\dev\\DRMTODAY-872\\Tears_Of_Steel_128000_eng.mp4"));
+        Movie m2 = MovieCreator.build(("C:\\dev\\DRMTODAY-872\\Tears_Of_Steel_600000.mp4"));
         //WebVttTrack webVttTrack = new WebVttTrack(new , "subs", Locale.ENGLISH);
         TextTrackImpl textTrack = new TextTrackImpl();
         textTrack.getSubs().addAll(

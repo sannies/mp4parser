@@ -1,14 +1,14 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.mp4parser.Container;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
+import org.mp4parser.muxer.tracks.ClippedTrack;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +31,10 @@ public class ServeMp4 extends AbstractHandler {
 
     Movie movie;
 
+    public ServeMp4(Movie movie) {
+        this.movie = movie;
+    }
+
     public static void main(String[] args) throws Exception {
         Movie movie = MovieCreator.build("/home/sannies/CSI.S13E02.HDTV.x264-LOL.mp4");
 
@@ -41,8 +45,31 @@ public class ServeMp4 extends AbstractHandler {
         server.join();
     }
 
-    public ServeMp4(Movie movie) {
-        this.movie = movie;
+    private static double correctTimeToSyncSample(Track track, double cutHere, boolean next) {
+        double[] timeOfSyncSamples = new double[track.getSyncSamples().length];
+        long currentSample = 0;
+        double currentTime = 0;
+        for (int i = 0; i < track.getSampleDurations().length; i++) {
+            long delta = track.getSampleDurations()[i];
+            if (Arrays.binarySearch(track.getSyncSamples(), currentSample + 1) >= 0) {
+                // samples always start with 1 but we start with zero therefore +1
+                timeOfSyncSamples[Arrays.binarySearch(track.getSyncSamples(), currentSample + 1)] = currentTime;
+            }
+            currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
+            currentSample++;
+        }
+        double previous = 0;
+        for (double timeOfSyncSample : timeOfSyncSamples) {
+            if (timeOfSyncSample > cutHere) {
+                if (next) {
+                    return timeOfSyncSample;
+                } else {
+                    return previous;
+                }
+            }
+            previous = timeOfSyncSample;
+        }
+        return timeOfSyncSamples[timeOfSyncSamples.length - 1];
     }
 
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -97,7 +124,7 @@ public class ServeMp4 extends AbstractHandler {
                 currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
                 currentSample++;
             }
-            movie.addTrack(new CroppedTrack(track, startSample, endSample));
+            movie.addTrack(new ClippedTrack(track, startSample, endSample));
         }
 
         Container out = new DefaultMp4Builder().build(movie);
@@ -107,33 +134,6 @@ public class ServeMp4 extends AbstractHandler {
         reponse.close();
 
 
-    }
-
-    private static double correctTimeToSyncSample(Track track, double cutHere, boolean next) {
-        double[] timeOfSyncSamples = new double[track.getSyncSamples().length];
-        long currentSample = 0;
-        double currentTime = 0;
-        for (int i = 0; i < track.getSampleDurations().length; i++) {
-            long delta = track.getSampleDurations()[i];
-            if (Arrays.binarySearch(track.getSyncSamples(), currentSample + 1) >= 0) {
-                // samples always start with 1 but we start with zero therefore +1
-                timeOfSyncSamples[Arrays.binarySearch(track.getSyncSamples(), currentSample + 1)] = currentTime;
-            }
-            currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
-            currentSample++;
-        }
-        double previous = 0;
-        for (double timeOfSyncSample : timeOfSyncSamples) {
-            if (timeOfSyncSample > cutHere) {
-                if (next) {
-                    return timeOfSyncSample;
-                } else {
-                    return previous;
-                }
-            }
-            previous = timeOfSyncSample;
-        }
-        return timeOfSyncSamples[timeOfSyncSamples.length - 1];
     }
 
 }

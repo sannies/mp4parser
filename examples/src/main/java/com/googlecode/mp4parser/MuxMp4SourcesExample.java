@@ -1,12 +1,12 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import org.mp4parser.Container;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.builder.FragmentedMp4Builder;
+import org.mp4parser.muxer.builder.SyncSampleIntersectFinderImpl;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
 
 import java.io.File;
 import java.io.FileOutputStream;

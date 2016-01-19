@@ -1,24 +1,19 @@
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
-import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.boxes.BoxRoundtripTest;
-import com.googlecode.mp4parser.boxes.BoxWriteReadBase;
-import com.googlecode.mp4parser.boxes.dece.AssetInformationBox;
-import com.googlecode.mp4parser.boxes.mp4.samplegrouping.CencSampleEncryptionInformationGroupEntry;
-import com.googlecode.mp4parser.boxes.mp4.samplegrouping.SampleGroupDescriptionBox;
-import com.googlecode.mp4parser.util.UUIDConverter;
 import org.junit.runners.Parameterized;
+import org.mp4parser.ParsableBox;
+import org.mp4parser.boxes.dece.AssetInformationBox;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.UUID;
 
 
 public class AssetInformationBoxTest extends BoxRoundtripTest {
 
-    public AssetInformationBoxTest(Box boxUnderTest, Map.Entry<String, Object>... properties) {
-        super(boxUnderTest, properties);
+    public AssetInformationBoxTest(ParsableBox parsableBoxUnderTest, Map.Entry<String, Object>... properties) {
+        super(parsableBoxUnderTest, properties);
     }
 
     @Parameterized.Parameters

@@ -1,26 +1,23 @@
 package com.googlecode.mp4parser.stuff;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.Box;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.Avc1ToAvc3TrackImpl;
+import org.mp4parser.Box;
+import org.mp4parser.IsoFile;
+import org.mp4parser.muxer.FileRandomAccessSourceImpl;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.FragmentedMp4Builder;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
+import org.mp4parser.muxer.tracks.Avc1ToAvc3TrackImpl;
 
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
-/**
- * Created by sannies on 24.01.2015.
- */
 public class Avc1ToAvc3Example {
     public static void main(String[] args) throws IOException {
-        Movie m = MovieCreator.build(new FileDataSourceImpl(
-                Avc1ToAvc3Example.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/1365070268951.mp4"));
+        String f = Avc1ToAvc3Example.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/1365070268951.mp4";
+        Movie m = MovieCreator.build(new FileInputStream(f).getChannel(), new FileRandomAccessSourceImpl(new RandomAccessFile(f, "r")), "inmem");
 
         Movie m2 = new Movie();
 
@@ -36,7 +33,7 @@ public class Avc1ToAvc3Example {
 
         IsoFile i = new IsoFile("output.mp4");
         for (Box box : i.getBoxes()) {
-            System.err.println(box + "@" + box.getOffset());
+            System.err.println(box + "@-nooffsets");
         }
     }
 }

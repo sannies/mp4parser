@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
 import com.googlecode.mp4parser.boxes.BoxWriteReadBase;
-import com.googlecode.mp4parser.boxes.dece.BaseLocationBox;
+import org.mp4parser.boxes.dece.BaseLocationBox;
 
 import java.util.Map;
 

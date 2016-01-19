@@ -1,14 +1,14 @@
 package com.googlecode.mp4parser.muxformats;
 
-import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.mjpeg.OneJpegPerIframe;
-import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
-import com.googlecode.mp4parser.util.Path;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
+import org.mp4parser.muxer.tracks.mjpeg.OneJpegPerIframe;
+import org.mp4parser.tools.Hex;
+import org.mp4parser.tools.Path;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,9 +16,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
-/**
- * Created by sannies on 13.02.2015.
- */
 public class MjpegTest {
     public static void main(String[] args) throws IOException {
         IsoFile isofile = new IsoFile("C:\\content\\bbb-small\\output_320x180-mjpeg.mp4");

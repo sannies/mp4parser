@@ -1,11 +1,11 @@
 package com.googlecode.mp4parser.muxformats;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.tracks.AC3TrackImpl;
+import org.mp4parser.Container;
+import org.mp4parser.muxer.FileDataSourceImpl;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.tracks.AC3TrackImpl;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

@@ -1,12 +1,12 @@
 package com;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
-import com.googlecode.mp4parser.authoring.tracks.MP3TrackImpl;
+import org.mp4parser.Container;
+import org.mp4parser.muxer.FileDataSourceImpl;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.builder.Mp4Builder;
+import org.mp4parser.muxer.tracks.h264.H264TrackImpl;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,12 +21,11 @@ import java.net.URISyntaxException;
 public class Mux {
     public static void main(String[] args) throws IOException, XPathExpressionException, SAXException, ParserConfigurationException, URISyntaxException {
         Movie v = new Movie(); // = MovieCreator.build("C:\\dev\\DRMTODAY-872\\31245689abb7c52a3d0721447bddd6cd_Tears_Of_Steel_600000.mp4");
-        Track t = new MP3TrackImpl(new FileDataSourceImpl("C:\\Users\\sannies\\Downloads\\Allegro from Duet in C Major.mp3"));
-        // Movie a2 = MovieCreator.build("C:\\dev\\DRMTODAY-872\\31245689abb7c52a3d0721447bddd6cd_Tears_Of_Steel_128000_ita.mp4");
+        Track audio = new H264TrackImpl(new FileDataSourceImpl("C:\\Users\\sannies\\Downloads\\test.h264"));
+        v.addTrack(audio);
 
-        v.addTrack(t);
         Mp4Builder defaultMp4Builder = new DefaultMp4Builder();
-        Container c=  defaultMp4Builder.build(v);
+        Container c = defaultMp4Builder.build(v);
         c.writeContainer(new FileOutputStream("output.mp4").getChannel());
 
     }

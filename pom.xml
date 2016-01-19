@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.googlecode.mp4parser</groupId>
+    <groupId>org.mp4parser</groupId>
     <artifactId>mp4parser-project</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.18-SNAPSHOT</version>
+    <version>1.9.28-SNAPSHOT</version>
     <name>MP4 Parser Project</name>
     <url>http://code.google.com/p/mp4parser/</url>
     <licenses>
@@ -16,6 +16,8 @@
         <module>isoparser</module>
         <!--<module>androidtest</module>-->
         <module>examples</module>
+        <module>muxer</module>
+        <module>streaming</module>
     </modules>
     <prerequisites>
         <maven>3.0</maven>
@@ -83,6 +85,6 @@
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
         <connection>scm:git:git@github.com:sannies/mp4parser.git</connection>
-        <tag> mp4parser-project-1.0.7-SNAPSHOT-4</tag>
+        <tag> mp4parser-project-1.9.5</tag>
     </scm>
 </project>

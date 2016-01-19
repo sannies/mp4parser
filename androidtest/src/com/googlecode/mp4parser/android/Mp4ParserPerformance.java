@@ -6,21 +6,19 @@ import android.os.Debug;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.TextView;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.XmlBox;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
+import org.mp4parser.tools.IsoFile;
+import org.mp4parser.tools.boxes.TimeToSampleBox;
+import org.mp4parser.tools.boxes.XmlBox;
+import org.mp4parser.authoring.Movie;
+import org.mp4parser.authoring.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
+import org.mp4parser.muxer.tracks.CroppedTrack;
 import com.googlecode.mp4parser.util.Path;
 
 import java.io.*;
 import com.googlecode.mp4parser.FileChannel;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 public class Mp4ParserPerformance extends Activity {
 

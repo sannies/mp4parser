@@ -1,15 +1,14 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
-import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
+import org.mp4parser.Container;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
+import org.mp4parser.muxer.tracks.AppendTrack;
+import org.mp4parser.muxer.tracks.ClippedTrack;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -24,7 +23,7 @@ public class RemoveSomeSamplesExample {
         Track audio = originalMovie.getTracks().get(0);
 
         Movie nuMovie = new Movie();
-        nuMovie.addTrack(new AppendTrack(new CroppedTrack(audio, 0, 10), new CroppedTrack(audio, 100, audio.getSamples().size())));
+        nuMovie.addTrack(new AppendTrack(new ClippedTrack(audio, 0, 10), new ClippedTrack(audio, 100, audio.getSamples().size())));
 
         Container out = new DefaultMp4Builder().build(nuMovie);
         FileOutputStream fos = new FileOutputStream(new File("output.mp4"));

@@ -2,6 +2,7 @@ package com.googlecode.mp4parser.util;
 
 import junit.framework.Assert;
 import org.junit.Test;
+import org.mp4parser.tools.RangeStartMap;
 
 public class RangeStartMapTest {
 

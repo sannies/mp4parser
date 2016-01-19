@@ -1,19 +1,18 @@
 package com.googlecode.mp4parser.boxes;
 
 
-import com.coremedia.iso.PropertyBoxParserImpl;
-import com.coremedia.iso.boxes.Box;
-import com.googlecode.mp4parser.AbstractContainerBox;
-import com.googlecode.mp4parser.MemoryDataSourceImpl;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mp4parser.ParsableBox;
+import org.mp4parser.PropertyBoxParserImpl;
+import org.mp4parser.support.AbstractContainerBox;
+import org.mp4parser.tools.ByteBufferByteChannel;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Constructor;
-
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
@@ -21,16 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class BoxWriteReadBase<T extends Box> {
-
-    String dummyParent = null;
-
-    protected BoxWriteReadBase(String dummyParent) {
-        this.dummyParent = dummyParent;
-    }
-
-    protected BoxWriteReadBase() {
-    }
+public abstract class BoxWriteReadBase<T extends ParsableBox> {
 
     private static final Collection<String> skipList = Arrays.asList(
             "class",
@@ -44,7 +34,14 @@ public abstract class BoxWriteReadBase<T extends Box> {
             "type",
             "userType",
             "version");
+    String dummyParent = null;
 
+    protected BoxWriteReadBase(String dummyParent) {
+        this.dummyParent = dummyParent;
+    }
+
+    protected BoxWriteReadBase() {
+    }
 
     public abstract Class<T> getBoxUnderTest();
 
@@ -96,7 +93,7 @@ public abstract class BoxWriteReadBase<T extends Box> {
         baos.close();
 
         DummyContainerBox singleBoxIsoFile = new DummyContainerBox(dummyParent);
-        singleBoxIsoFile.initContainer(new MemoryDataSourceImpl(baos.toByteArray()), baos.size(), new PropertyBoxParserImpl());
+        singleBoxIsoFile.initContainer(new ByteBufferByteChannel(baos.toByteArray()), baos.size(), new PropertyBoxParserImpl());
         Assert.assertEquals("Expected box and file size to be the same", box.getSize(), baos.size());
         Assert.assertEquals("Expected a single box in the IsoFile structure", 1, singleBoxIsoFile.getBoxes().size());
         Assert.assertEquals("Expected to find a box of different type ", clazz, singleBoxIsoFile.getBoxes().get(0).getClass());

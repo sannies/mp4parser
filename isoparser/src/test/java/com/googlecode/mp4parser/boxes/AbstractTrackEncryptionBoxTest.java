@@ -1,13 +1,14 @@
 package com.googlecode.mp4parser.boxes;
 
 
-import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.DataSource;
-import com.googlecode.mp4parser.util.UUIDConverter;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso23001.part7.AbstractTrackEncryptionBox;
+import org.mp4parser.tools.UUIDConverter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -29,7 +30,7 @@ public abstract class AbstractTrackEncryptionBoxTest {
         tenc.getBox(fc);
         fc.close();
 
-        IsoFile iso = new IsoFile(f.getAbsolutePath());
+        IsoFile iso = new IsoFile(new FileInputStream(f).getChannel());
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractTrackEncryptionBox);
         AbstractTrackEncryptionBox tenc2 = (AbstractTrackEncryptionBox) iso.getBoxes().get(0);
         Assert.assertEquals(0, tenc2.getFlags());

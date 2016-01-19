@@ -1,10 +1,11 @@
 package com.googlecode.mp4parser.muxformats;
 
-import com.coremedia.iso.boxes.Container;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.tracks.AACTrackImpl;
+import org.mp4parser.Container;
+import org.mp4parser.muxer.FileDataSourceImpl;
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.tracks.AACTrackImpl;
+import org.mp4parser.muxer.tracks.h264.H264TrackImpl;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,10 +20,12 @@ import java.nio.channels.FileChannel;
  */
 public class AacExample {
     public static void main(String[] args) throws IOException {
-//        AACTrackImpl aacTrack = new AACTrackImpl(Ac3Example.class.getResourceAsStream("/sample.aac"));
-        AACTrackImpl aacTrack = new AACTrackImpl(new FileDataSourceImpl("C:\\content\\midwest\\fwi_897067000483d_browser_multi.wvm_1.mp4-short.aac"));
+
+        AACTrackImpl aacTrack = new AACTrackImpl(new FileDataSourceImpl("C:\\content\\Cosmos Laundromat small.aac"));
+        H264TrackImpl h264Track = new H264TrackImpl(new FileDataSourceImpl("C:\\content\\Cosmos Laundromat small.264"));
         Movie m = new Movie();
         m.addTrack(aacTrack);
+        m.addTrack(h264Track);
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
         Container out = mp4Builder.build(m);
         FileOutputStream fos = new FileOutputStream("output.mp4");

@@ -1,13 +1,14 @@
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
-import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.boxes.AbstractSampleEncryptionBox;
-import com.mp4parser.iso23001.part7.CencSampleAuxiliaryDataFormat;
-import com.googlecode.mp4parser.boxes.dece.SampleEncryptionBox;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso23001.part7.AbstractSampleEncryptionBox;
+import org.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
+import org.mp4parser.boxes.iso23001.part7.SampleEncryptionBox;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -39,7 +40,7 @@ public class SampleEncryptionBoxTest  {
         Assert.assertEquals(f.length(), senc.getSize());
 
 
-        IsoFile iso = new IsoFile(f.getAbsolutePath());
+        IsoFile iso = new IsoFile(new FileInputStream(f).getChannel());
 
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
@@ -73,7 +74,7 @@ public class SampleEncryptionBoxTest  {
         senc.getBox(fc);
         fc.close();
 
-        IsoFile iso = new IsoFile(f.getAbsolutePath());
+        IsoFile iso = new IsoFile(new FileInputStream(f).getChannel());
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);

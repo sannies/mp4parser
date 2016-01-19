@@ -2,10 +2,10 @@ package com.googlecode.mp4parser.miscrepro;
 
 
 import com.coremedia.drm.packager.isoparser.Walk;
-import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.MemoryDataSourceImpl;
 import org.junit.Test;
+import org.mp4parser.IsoFile;
+import org.mp4parser.tools.ByteBufferByteChannel;
+import org.mp4parser.tools.Hex;
 
 import java.beans.IntrospectionException;
 import java.io.IOException;
@@ -16,7 +16,7 @@ public class InitDataChromeCenc {
 
     @Test
     public void ausprobieren() throws IOException, IllegalAccessException, IntrospectionException, InvocationTargetException {
-        IsoFile isoFile = new IsoFile(new MemoryDataSourceImpl(Hex.decodeHex(eInitData)));
+        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(Hex.decodeHex(eInitData)));
         Walk.through(isoFile);
     }
 }

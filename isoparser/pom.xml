@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.googlecode.mp4parser</groupId>
+    <groupId>org.mp4parser</groupId>
     <artifactId>isoparser</artifactId>
     <packaging>jar</packaging>
     <name>ISO Parser</name>
     <description>A generic parser and writer for all ISO 14496 based files (MP4, Quicktime, DCF, PDCF, ...)
     </description>
-    <url>http://code.google.com/p/mp4parser/</url>
-    <version>1.1.18-SNAPSHOT</version>
+    <url>https://github.com/sannies/mp4parser</url>
+    <version>1.9.28-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -25,7 +25,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.5</version>
+                <version>1.7</version>
                 <executions>
                     <execution>
                         <goals>
@@ -38,7 +38,7 @@
                     <dependency>
                         <groupId>org.aspectj</groupId>
                         <artifactId>aspectjtools</artifactId>
-                        <version>1.8.2</version>
+                        <version>1.8.6</version>
                     </dependency>
 
                 </dependencies>
@@ -69,6 +69,11 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.1</version>
+            </plugin>
+            <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.4.1</version>
                 <executions>
@@ -95,7 +100,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.8.2</version>
+            <version>1.8.6</version>
         </dependency>
         <dependency>
             <groupId>com.google.android</groupId>
@@ -107,7 +112,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.10</version>
-            <scope>test</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -137,6 +142,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -147,7 +153,10 @@
                             </execution>
                         </executions>
                     </plugin>
-
+                    <plugin>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <version>2.8.2</version>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -188,16 +197,11 @@
             <name>Nexus Release Repository</name>
             <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
-        <site>
-            <id>mp4parser-svn</id>
-            <name>MP4Parser SVN repository</name>
-            <url>svn:https://mp4parser.googlecode.com/svn/site/${project.version}</url>
-        </site>
     </distributionManagement>
 
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
-      <tag> mp4parser-project-1.0.7-SNAPSHOT-4</tag>
+      <tag> mp4parser-project-1.9.5</tag>
   </scm>
 
     <licenses>
