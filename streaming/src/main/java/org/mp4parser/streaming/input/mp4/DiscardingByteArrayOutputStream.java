@@ -183,6 +183,7 @@ public class DiscardingByteArrayOutputStream extends OutputStream {
 
     /**
      * Returns the last index that is available.
+     *
      * @return the overall size (not taking discarded bytes into account)
      */
     public synchronized long available() {

@@ -44,11 +44,9 @@ public abstract class AbstractBox implements ParsableBox {
     private static Logger LOG = Logger.getLogger(AbstractBox.class);
 
     protected String type;
+    protected ByteBuffer content;
     boolean isParsed;
     private byte[] userType;
-    private ByteBuffer content;
-
-
     private ByteBuffer deadBytes = null;
 
     protected AbstractBox(String type) {

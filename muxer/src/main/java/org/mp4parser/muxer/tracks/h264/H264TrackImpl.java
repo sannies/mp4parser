@@ -523,7 +523,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
     }
 
 
-
     private void handlePPS(ByteBuffer data) throws IOException {
         InputStream is = new ByteBufferBackedInputStream(data);
         is.read();

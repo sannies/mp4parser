@@ -37,7 +37,7 @@ public class ExportTTMLTrack {
             if (track.getHandler().endsWith("soun")) {
                 Movie vide = new Movie(Collections.singletonList(track));
                 DefaultMp4Builder builder = new DefaultMp4Builder();
-                builder.build(vide).writeContainer(new RandomAccessFile("soun_" + track.getTrackMetaData().getTrackId() +".mp4", "rw").getChannel());
+                builder.build(vide).writeContainer(new RandomAccessFile("soun_" + track.getTrackMetaData().getTrackId() + ".mp4", "rw").getChannel());
             }
             if (track.getHandler().endsWith("subt")) {
                 for (int i = 0; i < track.getSamples().size(); i++) {

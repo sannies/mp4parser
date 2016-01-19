@@ -32,31 +32,38 @@
             <p
                     begin="00:00:08.000"
                     end="00:00:40.000"
-                    region="fullscreen" tts:backgroundImage="../ttml/0_08-Rocket-starts.jpg">Rocket Starts</p>
+                    region="fullscreen" tts:backgroundImage="../ttml/0_08-Rocket-starts.jpg">Rocket Starts
+            </p>
             <p
                     begin="00:00:40.000"
                     end="00:03:03.000"
-                    region="fullscreen" tts:backgroundImage="animagehere/0_40-Fourty-Years-Later.jpg">Fourty Years Later</p>
+                    region="fullscreen" tts:backgroundImage="animagehere/0_40-Fourty-Years-Later.jpg">Fourty Years Later
+            </p>
             <p
                     begin="00:03:03.000"
                     end="00:05:29.000"
-                    region="fullscreen" tts:backgroundImage="3_03-Show-Starts.jpg">The Show Starts</p>
+                    region="fullscreen" tts:backgroundImage="3_03-Show-Starts.jpg">The Show Starts
+            </p>
             <p
                     begin="00:05:29.000"
                     end="00:07:05.000"
-                    region="fullscreen" tts:backgroundImage="5_29-Things-go-south.jpg">Things Go South</p>
+                    region="fullscreen" tts:backgroundImage="5_29-Things-go-south.jpg">Things Go South
+            </p>
             <p
                     begin="00:07:05.000"
                     end="00:08:51.000"
-                    region="fullscreen" tts:backgroundImage="7_05-attack-starts.jpg">Attack Peace</p>
+                    region="fullscreen" tts:backgroundImage="7_05-attack-starts.jpg">Attack Peace
+            </p>
             <p
                     begin="00:08:51.000"
                     end="00:09:49.000"
-                    region="fullscreen" tts:backgroundImage="8_51-making-peace.jpg">Making Peace</p>
+                    region="fullscreen" tts:backgroundImage="8_51-making-peace.jpg">Making Peace
+            </p>
             <p
                     begin="00:09:49.000"
                     end="00:12:13.000"
-                    region="fullscreen" tts:backgroundImage="9_49-Epilog.jpg">Epilog</p>
+                    region="fullscreen" tts:backgroundImage="9_49-Epilog.jpg">Epilog
+            </p>
         </div>
     </body>
 </tt>

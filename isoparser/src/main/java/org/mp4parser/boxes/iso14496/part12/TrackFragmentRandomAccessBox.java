@@ -31,6 +31,7 @@ import java.util.List;
  * Each entry contains the location and the presentation time of the random accessible sample.
  * It indicates that the sample in the entry can be randomaccessed. Note that not every random
  * accessible sample in the track needs to be listed in the table.
+ *
  * @see MovieFragmentRandomAccessBox
  */
 public class TrackFragmentRandomAccessBox extends AbstractFullBox {

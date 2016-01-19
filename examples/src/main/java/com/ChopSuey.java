@@ -1,12 +1,13 @@
 package com;
 
-import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.Mp4Builder;
-import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
-import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
-import com.googlecode.mp4parser.util.Mp4Arrays;
+
+import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.builder.Mp4Builder;
+import org.mp4parser.muxer.container.mp4.MovieCreator;
+import org.mp4parser.muxer.tracks.ClippedTrack;
+import org.mp4parser.tools.Mp4Arrays;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -57,13 +58,13 @@ public class ChopSuey {
 
             while (index < numSamples) {
                 if (timeIndex >= syncSampleTimes.length) {
-                    chops.add(new CroppedTrack(track, lastStart, numSamples));
+                    chops.add(new ClippedTrack(track, lastStart, numSamples));
                     System.err.println("Added partial track for " + track.getTrackMetaData().getTrackId() + " from sample " + lastStart + " to " + numSamples);
                     break;
                 }
                 if (time >= syncSampleTimes[timeIndex]) {
                     if (lastStart != index) {
-                        chops.add(new CroppedTrack(track, lastStart, index));
+                        chops.add(new ClippedTrack(track, lastStart, index));
                         System.err.println("Added partial track for " + track.getTrackMetaData().getTrackId() + " from sample " + lastStart + " to " + index);
                         lastStart = index;
                     }

@@ -9,6 +9,7 @@ public interface StreamingTrack extends Closeable {
     /**
      * Gets the time scale of the track. Typically called by the SampleSink.
      * Might throw IllegalStateException if called before the first sample has been pushed into the SampleSink.
+     *
      * @return the track's time scale
      */
     long getTimescale();

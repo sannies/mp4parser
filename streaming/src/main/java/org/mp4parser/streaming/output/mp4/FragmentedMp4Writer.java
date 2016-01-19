@@ -134,7 +134,6 @@ public class FragmentedMp4Writer extends DefaultBoxes implements SampleSink {
     }
 
 
-
     protected Box createMvex() {
         MovieExtendsBox mvex = new MovieExtendsBox();
         final MovieExtendsHeaderBox mved = new MovieExtendsHeaderBox();

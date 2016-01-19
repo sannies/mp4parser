@@ -48,6 +48,7 @@ public final class Mp4Arrays {
         System.arraycopy(toAppend, 0, copy, original.length, toAppend.length);
         return copy;
     }
+
     public static double[] copyOfAndAppend(double[] original, double... toAppend) {
         if (original == null) {
             original = new double[]{};

@@ -4,8 +4,8 @@ package com.googlecode.mp4parser;
 import org.mp4parser.Container;
 import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.Track;
+import org.mp4parser.muxer.builder.DefaultFragmenterImpl;
 import org.mp4parser.muxer.builder.DefaultMp4Builder;
-import org.mp4parser.muxer.builder.TimeBasedFragmenter;
 import org.mp4parser.muxer.container.mp4.MovieCreator;
 import org.mp4parser.muxer.tracks.TextTrackImpl;
 

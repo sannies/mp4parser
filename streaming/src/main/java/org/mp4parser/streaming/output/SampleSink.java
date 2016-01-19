@@ -9,6 +9,7 @@ import java.io.IOException;
 
 /**
  * Controls the creation of media files.
+ *
  * @see FragmentedMp4Writer
  * @see StreamingTrack#setSampleSink(SampleSink)
  */

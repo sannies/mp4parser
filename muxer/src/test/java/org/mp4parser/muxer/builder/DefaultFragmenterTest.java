@@ -15,7 +15,7 @@ public class DefaultFragmenterTest {
     public void testSampleNumbers() throws Exception {
         String f = DefaultFragmenterTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/Beethoven - Bagatelle op.119 no.11 i.m4a";
         Movie m = MovieCreator.build(f);
-        DefaultFragmenterImpl intersectionFinder = new DefaultFragmenterImpl( 2);
+        DefaultFragmenterImpl intersectionFinder = new DefaultFragmenterImpl(2);
         long[] s = intersectionFinder.sampleNumbers(m.getTracks().get(0));
         String sss = "";
         for (long l : s) {

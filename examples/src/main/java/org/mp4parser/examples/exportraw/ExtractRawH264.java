@@ -25,7 +25,7 @@ public class ExtractRawH264 {
         long trackId = -1;
         TrackBox trackBox = null;
         for (TrackBox _trackBox : trackBoxes) {
-            if (Path.getPath(_trackBox, "mdia/minf/stbl/stsd/avc1")!=null) {
+            if (Path.getPath(_trackBox, "mdia/minf/stbl/stsd/avc1") != null) {
                 trackId = _trackBox.getTrackHeaderBox().getTrackId();
                 trackBox = _trackBox;
             }

@@ -33,7 +33,7 @@ import java.util.List;
  * Container: {@link EditBox}('edts')
  * Mandatory: No
  * Quantity  : Zero or one</pre>
- *
+ * <p/>
  * <p>This box contains an explicit timeline map. Each entry defines part of the track time-line: by mapping part of
  * the media time-line, or by indicating 'empty' time, or by defining a 'dwell', where a single time-point in the
  * media is held for a period.</p>
@@ -44,7 +44,7 @@ import java.util.List;
  * in an edit might need slicing. </p>
  * <p>Starting offsets for tracks (streams) are represented by an initial empty edit. For example, to play a track from
  * its start for 30 seconds, but at 10 seconds into the presentation, we have the following edit list:</p>
- *
+ * <p/>
  * <ul>
  * <li>Entry-count = 2</li>
  * <li>Segment-duration = 10 seconds</li>

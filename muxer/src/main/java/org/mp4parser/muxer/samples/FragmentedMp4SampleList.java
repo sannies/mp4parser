@@ -146,7 +146,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                             offset += tfhd.getBaseDataOffset();
                         } else {
                             //if (tfhd.isDefaultBaseIsMoof()) {
-                                offset += Offsets.find(isofile, moof, 0);
+                            offset += Offsets.find(isofile, moof, 0);
                             //} else {
                             //    throw new RuntimeException("Rethink this case");
                             //}

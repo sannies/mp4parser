@@ -44,7 +44,7 @@ public class MovieCreator {
     /**
      * Creates <code>Movie</code> object from a <code>ReadableByteChannel</code>.
      *
-     * @param name track name to identify later
+     * @param name                track name to identify later
      * @param readableByteChannel the box structure is read from this channel
      * @param randomAccessSource  the samples or read from this randomAccessSource
      * @return a representation of the movie
