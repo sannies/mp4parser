@@ -45,7 +45,7 @@ public class CencDecryptingSampleList extends AbstractList<Sample> {
         System.arraycopy(iv, 0, fullIv, 0, iv.length);
         // The IV
         try {
-            if ("cenc".equals(encryptionAlgo)) {
+            if ("cenc".equals(encryptionAlgo) || "piff".equals(encryptionAlgo)) {
                 Cipher c = Cipher.getInstance("AES/CTR/NoPadding");
                 c.init(Cipher.DECRYPT_MODE, sk, new IvParameterSpec(fullIv));
                 return c;
@@ -109,6 +109,10 @@ public class CencDecryptingSampleList extends AbstractList<Sample> {
                         decSampleBuffer.put(fullyEncryptedSample, encryptedLength, fullyEncryptedSample.length - encryptedLength);
                     } else if ("cenc".equals(encryptionAlgo)) {
                         decSampleBuffer.put(cipher.doFinal(fullyEncryptedSample));
+                    } else if ("piff".equals(encryptionAlgo)) {
+                        decSampleBuffer.put(cipher.doFinal(fullyEncryptedSample));
+                    } else {
+                        throw new RuntimeException("unknown encryption algo");
                     }
                 }
                 encSampleBuffer.rewind();

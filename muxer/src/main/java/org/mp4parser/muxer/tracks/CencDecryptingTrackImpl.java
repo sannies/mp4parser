@@ -40,7 +40,9 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
         this.original = original;
         SchemeTypeBox schm = Path.getPath(original.getSampleDescriptionBox(), "enc./sinf/schm");
         assert schm != null;
-        if (!("cenc".equals(schm.getSchemeType()) || "cbc1".equals(schm.getSchemeType()))) {
+        if (!("cenc".equals(schm.getSchemeType()) ||
+                "cbc1".equals(schm.getSchemeType()) ||
+                "piff".equals(schm.getSchemeType()))) {
             throw new RuntimeException("You can only use the CencDecryptingTrackImpl with CENC (cenc or cbc1) encrypted tracks");
         }
 

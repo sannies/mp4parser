@@ -57,8 +57,11 @@ public class MovieCreator {
         for (TrackBox trackBox : trackBoxes) {
             SchemeTypeBox schm = Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schm[0]");
             if (schm != null && (schm.getSchemeType().equals("cenc") || schm.getSchemeType().equals("cbc1"))) {
-
                 m.addTrack(new CencMp4TrackImplImpl(
+                        trackBox.getTrackHeaderBox().getTrackId(), isoFile,
+                        randomAccessSource, name + "[" + trackBox.getTrackHeaderBox().getTrackId() + "]"));
+            } else if (schm != null && (schm.getSchemeType().equals("piff"))) {
+                m.addTrack(new PiffMp4TrackImpl(
                         trackBox.getTrackHeaderBox().getTrackId(), isoFile,
                         randomAccessSource, name + "[" + trackBox.getTrackHeaderBox().getTrackId() + "]"));
             } else {
