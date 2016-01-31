@@ -16,9 +16,19 @@
 
 package org.mp4parser.boxes.iso14496.part12;
 
-import org.mp4parser.support.AbstractBox;
+import org.mp4parser.BoxParser;
+import org.mp4parser.ParsableBox;
+import org.mp4parser.support.DoNotParseDetail;
+import org.mp4parser.support.Logger;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * <h1>4cc = "{@value #TYPE}"</h1>
@@ -32,36 +42,49 @@ import java.nio.ByteBuffer;
  * so Media Data Box headers and free space may easily be skipped, and files without any box structure may
  * also be referenced and used.
  */
-public final class MediaDataBox extends AbstractBox {
+public final class MediaDataBox implements ParsableBox {
     public static final String TYPE = "mdat";
-    ByteBuffer data;
+    private static Logger LOG = Logger.getLogger(MediaDataBox.class);
+    ByteBuffer header;
+    File dataFile;
 
     public MediaDataBox() {
-        super(TYPE);
     }
 
-    @Override
-    protected long getContentSize() {
-        return data.limit();
+    public String getType() {
+        return TYPE;
     }
 
-    @Override
-    public void _parseDetails(ByteBuffer content) {
-        data = content;
-        content.position(content.position() + content.remaining());
+
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write((ByteBuffer) header.rewind());
+        FileChannel fc = new FileInputStream(dataFile).getChannel();
+
+        fc.transferTo(0, dataFile.lastModified(), writableByteChannel);
+        fc.close();
     }
 
-    @Override
-    protected void getContent(ByteBuffer byteBuffer) {
-        data.rewind();
-        byteBuffer.put(data);
+    public long getSize() {
+        return header.limit() + dataFile.length();
     }
 
-    public ByteBuffer getData() {
-        return data;
+    /**
+     * {@inheritDoc}
+     */
+    @DoNotParseDetail
+    public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        dataFile = File.createTempFile("MediaDataBox", super.toString());
+
+        this.header = ByteBuffer.allocate(header.limit());
+        this.header.put(header);
+        RandomAccessFile raf = new RandomAccessFile(dataFile, "rw");
+        try {
+            raf.getChannel().transferFrom(dataSource, 0, contentSize);
+        } finally {
+            raf.close();
+        }
+
     }
 
-    public void setData(ByteBuffer data) {
-        this.data = data;
-    }
+
 }
