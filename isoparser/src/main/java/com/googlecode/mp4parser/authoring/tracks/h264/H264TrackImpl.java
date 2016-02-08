@@ -34,31 +34,24 @@ public class H264TrackImpl extends AbstractH26XTrack {
     Map<Integer, PictureParameterSet> ppsIdToPps = new HashMap<Integer, PictureParameterSet>();
 
     SampleDescriptionBox sampleDescriptionBox;
-
-    private List<Sample> samples;
-
-
     SeqParameterSet firstSeqParameterSet = null;
     PictureParameterSet firstPictureParameterSet = null;
-
     SeqParameterSet currentSeqParameterSet = null;
     PictureParameterSet currentPictureParameterSet = null;
-
     RangeStartMap<Integer, byte[]> seqParameterRangeMap = new RangeStartMap<Integer, byte[]>();
     RangeStartMap<Integer, byte[]> pictureParameterRangeMap = new RangeStartMap<Integer, byte[]>();
-
+    int frameNrInGop = 0;
+    int[] pictureOrderCounts = new int[0];
+    int prevPicOrderCntLsb = 0;
+    int prevPicOrderCntMsb = 0;
+    private List<Sample> samples;
     private int width;
     private int height;
     private long timescale;
     private int frametick;
-
-
     private SEIMessage seiMessage;
-    int frameNrInGop = 0;
     private boolean determineFrameRate = true;
     private String lang = "eng";
-
-    int[] pictureOrderCounts = new int[0];
 
     /**
      * Creates a new <code>Track</code> object from a raw H264 source (<code>DataSource dataSource1</code>).
@@ -90,13 +83,21 @@ public class H264TrackImpl extends AbstractH26XTrack {
         parse(new LookAhead(dataSource));
     }
 
-
     public H264TrackImpl(DataSource dataSource, String lang) throws IOException {
         this(dataSource, lang, -1, -1);
     }
 
     public H264TrackImpl(DataSource dataSource) throws IOException {
         this(dataSource, "eng");
+    }
+
+    public static H264NalUnitHeader getNalUnitHeader(ByteBuffer nal) {
+        H264NalUnitHeader nalUnitHeader = new H264NalUnitHeader();
+        int type = nal.get(0);
+        nalUnitHeader.nal_ref_idc = (type >> 5) & 3;
+        nalUnitHeader.nal_unit_type = type & 0x1f;
+
+        return nalUnitHeader;
     }
 
     private void parse(LookAhead la) throws IOException {
@@ -159,7 +160,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
         return sampleDescriptionBox;
     }
 
-
     public String getHandler() {
         return "vide";
     }
@@ -193,7 +193,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
         return true;
     }
 
-
     private boolean readSamples(LookAhead la) throws IOException {
 
 
@@ -205,6 +204,18 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
         class FirstVclNalDetector {
 
+            int frame_num;
+            int pic_parameter_set_id;
+            boolean field_pic_flag;
+            boolean bottom_field_flag;
+            int nal_ref_idc;
+            int pic_order_cnt_type;
+            int delta_pic_order_cnt_bottom;
+            int pic_order_cnt_lsb;
+            int delta_pic_order_cnt_0;
+            int delta_pic_order_cnt_1;
+            boolean idrPicFlag;
+            int idr_pic_id;
             public FirstVclNalDetector(ByteBuffer nal, int nal_ref_idc, int nal_unit_type) {
                 InputStream bs = cleanBuffer(new ByteBufferBackedInputStream(nal));
                 SliceHeader sh = new SliceHeader(bs, spsIdToSps, ppsIdToPps, nal_unit_type == 5);
@@ -220,19 +231,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
                 this.delta_pic_order_cnt_1 = sh.delta_pic_order_cnt_1;
                 this.idr_pic_id = sh.idr_pic_id;
             }
-
-            int frame_num;
-            int pic_parameter_set_id;
-            boolean field_pic_flag;
-            boolean bottom_field_flag;
-            int nal_ref_idc;
-            int pic_order_cnt_type;
-            int delta_pic_order_cnt_bottom;
-            int pic_order_cnt_lsb;
-            int delta_pic_order_cnt_0;
-            int delta_pic_order_cnt_1;
-            boolean idrPicFlag;
-            int idr_pic_id;
 
             boolean isFirstInNew(FirstVclNalDetector nu) {
                 if (nu.frame_num != frame_num) {
@@ -368,9 +366,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
         return true;
     }
 
-    int prevPicOrderCntLsb = 0;
-    int prevPicOrderCntMsb = 0;
-
     public void calcCtts() {
 
         int pTime = 0;
@@ -388,7 +383,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
             pictureOrderCounts[minIndex] = pTime++;
         }
         for (int i = 0; i < pictureOrderCounts.length; i++) {
-            ctts.add(new CompositionTimeToSample.Entry(1, pictureOrderCounts[i] - i));
+            ctts.add(new CompositionTimeToSample.Entry(1, pictureOrderCounts[i] - i + currentSeqParameterSet.num_ref_frames));
         }
 
         pictureOrderCounts = new int[0];
@@ -555,7 +550,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
         return picOrderCntMsb + pocCntLsb;
     }
 
-
     private void handlePPS(ByteBuffer data) throws IOException {
         InputStream is = new ByteBufferBackedInputStream(data);
         is.read();
@@ -609,7 +603,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
 
     }
-
 
     private void configureFramerate() {
         if (determineFrameRate) {
@@ -839,16 +832,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
             out += '}';
             return out;
         }
-    }
-
-
-    public static H264NalUnitHeader getNalUnitHeader(ByteBuffer nal) {
-        H264NalUnitHeader nalUnitHeader = new H264NalUnitHeader();
-        int type = nal.get(0);
-        nalUnitHeader.nal_ref_idc = (type >> 5) & 3;
-        nalUnitHeader.nal_unit_type = type & 0x1f;
-
-        return nalUnitHeader;
     }
 
 }
