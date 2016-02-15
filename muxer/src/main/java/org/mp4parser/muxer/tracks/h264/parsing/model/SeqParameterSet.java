@@ -36,6 +36,9 @@ import java.io.OutputStream;
  * @author Stanislav Vitvitskiy
  */
 public class SeqParameterSet extends BitstreamElement {
+    private static final String HRD = "HRD: ";
+    private static final String VUI = "VUI: ";
+    private static final String SPS = "SPS: ";
     public int pic_order_cnt_type;
     public boolean field_pic_flag;
     public boolean delta_pic_order_always_zero_flag;
@@ -340,24 +343,24 @@ public class SeqParameterSet extends BitstreamElement {
                 writer.writeBool(residual_color_transform_flag,
                         "SPS: residual_color_transform_flag");
             }
-            writer.writeUE(bit_depth_luma_minus8, "SPS: ");
-            writer.writeUE(bit_depth_chroma_minus8, "SPS: ");
+            writer.writeUE(bit_depth_luma_minus8, SPS);
+            writer.writeUE(bit_depth_chroma_minus8, SPS);
             writer.writeBool(qpprime_y_zero_transform_bypass_flag,
                     "SPS: qpprime_y_zero_transform_bypass_flag");
-            writer.writeBool(scalingMatrix != null, "SPS: ");
+            writer.writeBool(scalingMatrix != null, SPS);
             if (scalingMatrix != null) {
                 for (int i = 0; i < 8; i++) {
                     if (i < 6) {
                         writer.writeBool(
                                 scalingMatrix.ScalingList4x4[i] != null,
-                                "SPS: ");
+                                SPS);
                         if (scalingMatrix.ScalingList4x4[i] != null) {
                             scalingMatrix.ScalingList4x4[i].write(writer);
                         }
                     } else {
                         writer.writeBool(
                                 scalingMatrix.ScalingList8x8[i - 6] != null,
-                                "SPS: ");
+                                SPS);
                         if (scalingMatrix.ScalingList8x8[i - 6] != null) {
                             scalingMatrix.ScalingList8x8[i - 6].write(writer);
                         }
@@ -378,9 +381,9 @@ public class SeqParameterSet extends BitstreamElement {
                     "SPS: offset_for_non_ref_pic");
             writer.writeSE(offset_for_top_to_bottom_field,
                     "SPS: offset_for_top_to_bottom_field");
-            writer.writeUE(offsetForRefFrame.length, "SPS: ");
+            writer.writeUE(offsetForRefFrame.length, SPS);
             for (int i = 0; i < offsetForRefFrame.length; i++)
-                writer.writeSE(offsetForRefFrame[i], "SPS: ");
+                writer.writeSE(offsetForRefFrame[i], SPS);
         }
         writer.writeUE(num_ref_frames, "SPS: num_ref_frames");
         writer.writeBool(gaps_in_frame_num_value_allowed_flag,
@@ -405,7 +408,7 @@ public class SeqParameterSet extends BitstreamElement {
             writer.writeUE(frame_crop_bottom_offset,
                     "SPS: frame_crop_bottom_offset");
         }
-        writer.writeBool(vuiParams != null, "SPS: ");
+        writer.writeBool(vuiParams != null, SPS);
         if (vuiParams != null)
             writeVUIParameters(vuiParams, writer);
 
@@ -464,11 +467,11 @@ public class SeqParameterSet extends BitstreamElement {
             writer.writeBool(vuip.fixed_frame_rate_flag,
                     "VUI: fixed_frame_rate_flag");
         }
-        writer.writeBool(vuip.nalHRDParams != null, "VUI: ");
+        writer.writeBool(vuip.nalHRDParams != null, VUI);
         if (vuip.nalHRDParams != null) {
             writeHRDParameters(vuip.nalHRDParams, writer);
         }
-        writer.writeBool(vuip.vclHRDParams != null, "VUI: ");
+        writer.writeBool(vuip.vclHRDParams != null, VUI);
         if (vuip.vclHRDParams != null) {
             writeHRDParameters(vuip.vclHRDParams, writer);
         }
@@ -480,7 +483,7 @@ public class SeqParameterSet extends BitstreamElement {
         }
         writer.writeBool(vuip.pic_struct_present_flag,
                 "VUI: pic_struct_present_flag");
-        writer.writeBool(vuip.bitstreamRestriction != null, "VUI: ");
+        writer.writeBool(vuip.bitstreamRestriction != null, VUI);
         if (vuip.bitstreamRestriction != null) {
             writer
                     .writeBool(
@@ -511,9 +514,9 @@ public class SeqParameterSet extends BitstreamElement {
         writer.writeNBit(hrd.cpb_size_scale, 4, "HRD: cpb_size_scale");
 
         for (int SchedSelIdx = 0; SchedSelIdx <= hrd.cpb_cnt_minus1; SchedSelIdx++) {
-            writer.writeUE(hrd.bit_rate_value_minus1[SchedSelIdx], "HRD: ");
-            writer.writeUE(hrd.cpb_size_value_minus1[SchedSelIdx], "HRD: ");
-            writer.writeBool(hrd.cbr_flag[SchedSelIdx], "HRD: ");
+            writer.writeUE(hrd.bit_rate_value_minus1[SchedSelIdx], HRD);
+            writer.writeUE(hrd.cpb_size_value_minus1[SchedSelIdx], HRD);
+            writer.writeBool(hrd.cbr_flag[SchedSelIdx], HRD);
         }
         writer.writeNBit(hrd.initial_cpb_removal_delay_length_minus1, 5,
                 "HRD: initial_cpb_removal_delay_length_minus1");

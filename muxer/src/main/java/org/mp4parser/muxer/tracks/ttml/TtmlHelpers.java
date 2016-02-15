@@ -31,6 +31,7 @@ public class TtmlHelpers {
     public static final String SMPTE_TT_NAMESPACE = "http://www.smpte-ra.org/schemas/2052-1/2010/smpte-tt";
     public static final String TTML_NAMESPACE = "http://www.w3.org/ns/ttml";
     public static final NamespaceContext NAMESPACE_CONTEXT = new TextTrackNamespaceContext();
+    private static final String BEGIN = "begin";
     static byte[] namespacesStyleSheet1 = ("<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n" +
             "    <xsl:output method=\"text\"/>\n" +
             "    <xsl:key name=\"kElemByNSURI\"\n" +
@@ -156,13 +157,13 @@ public class TtmlHelpers {
         long time = 0;
         Node current = p;
         while ((current = current.getParentNode()) != null) {
-            if (current.getAttributes() != null && current.getAttributes().getNamedItem("begin") != null) {
-                time += toTime(current.getAttributes().getNamedItem("begin").getNodeValue());
+            if (current.getAttributes() != null && current.getAttributes().getNamedItem(BEGIN) != null) {
+                time += toTime(current.getAttributes().getNamedItem(BEGIN).getNodeValue());
             }
         }
 
-        if (p.getAttributes() != null && p.getAttributes().getNamedItem("begin") != null) {
-            return time + toTime(p.getAttributes().getNamedItem("begin").getNodeValue());
+        if (p.getAttributes() != null && p.getAttributes().getNamedItem(BEGIN) != null) {
+            return time + toTime(p.getAttributes().getNamedItem(BEGIN).getNodeValue());
         }
         return time;
     }
@@ -171,8 +172,8 @@ public class TtmlHelpers {
         long time = 0;
         Node current = p;
         while ((current = current.getParentNode()) != null) {
-            if (current.getAttributes() != null && current.getAttributes().getNamedItem("begin") != null) {
-                time += toTime(current.getAttributes().getNamedItem("begin").getNodeValue());
+            if (current.getAttributes() != null && current.getAttributes().getNamedItem(BEGIN) != null) {
+                time += toTime(current.getAttributes().getNamedItem(BEGIN).getNodeValue());
             }
         }
 
@@ -225,18 +226,20 @@ public class TtmlHelpers {
     private static class TextTrackNamespaceContext implements NamespaceContext {
 
 
+        private static final String SMPTE = "smpte";
+
         public String getNamespaceURI(String prefix) {
             if (prefix.equals("ttml")) {
                 return TTML_NAMESPACE;
             }
-            if (prefix.equals("smpte")) {
+            if (prefix.equals(SMPTE)) {
                 return SMPTE_TT_NAMESPACE;
             }
             return null;
         }
 
         public Iterator getPrefixes(String val) {
-            return Arrays.asList("ttml", "smpte").iterator();
+            return Arrays.asList("ttml", SMPTE).iterator();
         }
 
         public String getPrefix(String uri) {
@@ -244,7 +247,7 @@ public class TtmlHelpers {
                 return "ttml";
             }
             if (uri.equals(SMPTE_TT_NAMESPACE)) {
-                return "smpte";
+                return SMPTE;
             }
             return null;
         }

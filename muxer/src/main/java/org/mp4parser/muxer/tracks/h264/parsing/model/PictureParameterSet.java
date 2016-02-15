@@ -38,6 +38,7 @@ import java.util.Arrays;
  */
 public class PictureParameterSet extends BitstreamElement {
 
+    private static final String PPS = "PPS: ";
     public boolean entropy_coding_mode_flag;
     public int num_ref_idx_l0_active_minus1;
     public int num_ref_idx_l1_active_minus1;
@@ -185,12 +186,12 @@ public class PictureParameterSet extends BitstreamElement {
             int[] run_length_minus1 = new int[1];
             if (slice_group_map_type == 0) {
                 for (int iGroup = 0; iGroup <= num_slice_groups_minus1; iGroup++) {
-                    writer.writeUE(run_length_minus1[iGroup], "PPS: ");
+                    writer.writeUE(run_length_minus1[iGroup], PPS);
                 }
             } else if (slice_group_map_type == 2) {
                 for (int iGroup = 0; iGroup < num_slice_groups_minus1; iGroup++) {
-                    writer.writeUE(top_left[iGroup], "PPS: ");
-                    writer.writeUE(bottom_right[iGroup], "PPS: ");
+                    writer.writeUE(top_left[iGroup], PPS);
+                    writer.writeUE(bottom_right[iGroup], PPS);
                 }
             } else if (slice_group_map_type == 3 || slice_group_map_type == 4
                     || slice_group_map_type == 5) {
@@ -206,7 +207,7 @@ public class PictureParameterSet extends BitstreamElement {
                     NumberBitsPerSliceGroupId = 2;
                 else
                     NumberBitsPerSliceGroupId = 1;
-                writer.writeUE(slice_group_id.length, "PPS: ");
+                writer.writeUE(slice_group_id.length, PPS);
                 for (int i = 0; i <= slice_group_id.length; i++) {
                     writer.writeU(slice_group_id[i], NumberBitsPerSliceGroupId);
                 }
@@ -239,7 +240,7 @@ public class PictureParameterSet extends BitstreamElement {
                         writer
                                 .writeBool(
                                         extended.scalindMatrix.ScalingList4x4[i] != null,
-                                        "PPS: ");
+                                        PPS);
                         if (extended.scalindMatrix.ScalingList4x4[i] != null) {
                             extended.scalindMatrix.ScalingList4x4[i]
                                     .write(writer);
@@ -249,7 +250,7 @@ public class PictureParameterSet extends BitstreamElement {
                         writer
                                 .writeBool(
                                         extended.scalindMatrix.ScalingList8x8[i - 6] != null,
-                                        "PPS: ");
+                                        PPS);
                         if (extended.scalindMatrix.ScalingList8x8[i - 6] != null) {
                             extended.scalindMatrix.ScalingList8x8[i - 6]
                                     .write(writer);
@@ -257,7 +258,7 @@ public class PictureParameterSet extends BitstreamElement {
                     }
                 }
             }
-            writer.writeSE(extended.second_chroma_qp_index_offset, "PPS: ");
+            writer.writeSE(extended.second_chroma_qp_index_offset, PPS);
         }
 
         writer.writeTrailingBits();

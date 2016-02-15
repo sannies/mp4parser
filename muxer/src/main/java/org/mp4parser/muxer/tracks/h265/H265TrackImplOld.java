@@ -23,6 +23,7 @@ import java.util.List;
  * Created by sannies on 08.09.2014.
  */
 public class H265TrackImplOld {
+    private static final String VPS_MAX_DEC_PIC_BUFFERING_MINUS = "vps_max_dec_pic_buffering_minus1[";
     public static final int VPS_NUT = 32;
     public static final int SPS_NUT = 33;
     public static final int PPS_NUT = 34;
@@ -220,9 +221,9 @@ public class H265TrackImplOld {
         int[] vps_max_num_reorder_pics = new int[vps_sub_layer_ordering_info_present_flag ? 0 : vps_max_sub_layers_minus1];
         int[] vps_max_latency_increase_plus1 = new int[vps_sub_layer_ordering_info_present_flag ? 0 : vps_max_sub_layers_minus1];
         for (int i = (vps_sub_layer_ordering_info_present_flag ? 0 : vps_max_sub_layers_minus1); i <= vps_max_sub_layers_minus1; i++) {
-            vps_max_dec_pic_buffering_minus1[i] = r.readUE("vps_max_dec_pic_buffering_minus1[" + i + "]");
-            vps_max_num_reorder_pics[i] = r.readUE("vps_max_dec_pic_buffering_minus1[" + i + "]");
-            vps_max_latency_increase_plus1[i] = r.readUE("vps_max_dec_pic_buffering_minus1[" + i + "]");
+            vps_max_dec_pic_buffering_minus1[i] = r.readUE(VPS_MAX_DEC_PIC_BUFFERING_MINUS + i + "]");
+            vps_max_num_reorder_pics[i] = r.readUE(VPS_MAX_DEC_PIC_BUFFERING_MINUS + i + "]");
+            vps_max_latency_increase_plus1[i] = r.readUE(VPS_MAX_DEC_PIC_BUFFERING_MINUS + i + "]");
         }
         int vps_max_layer_id = r.readU(6, "vps_max_layer_id");
         int vps_num_layer_sets_minus1 = r.readUE("vps_num_layer_sets_minus1");
