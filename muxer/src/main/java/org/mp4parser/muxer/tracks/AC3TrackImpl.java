@@ -453,7 +453,7 @@ public class AC3TrackImpl extends AbstractTrack {
         return audioSampleEntry;
     }
 
-    private int getFrameSize(int code, int fscod) {
+    private static int getFrameSize(int code, int fscod) {
         int frmsizecode = code >>> 1;
         int flag = code & 1;
         if (frmsizecode > 18 || flag > 1 || fscod > 2) {

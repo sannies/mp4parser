@@ -504,7 +504,7 @@ public class SeqParameterSet extends BitstreamElement {
 
     }
 
-    private void writeHRDParameters(HRDParameters hrd, CAVLCWriter writer)
+    private static void writeHRDParameters(HRDParameters hrd, CAVLCWriter writer)
             throws IOException {
         writer.writeUE(hrd.cpb_cnt_minus1, "HRD: cpb_cnt_minus1");
         writer.writeNBit(hrd.bit_rate_scale, 4, "HRD: bit_rate_scale");

@@ -71,7 +71,7 @@ public class SequenceParameterSetRbsp {
         }
     }
 
-    private void scaling_list_data(CAVLCReader bsr) throws IOException {
+    private static void scaling_list_data(CAVLCReader bsr) throws IOException {
         boolean[][] scaling_list_pred_mode_flag = new boolean[4][];
         int[][] scaling_list_pred_matrix_id_delta = new int[4][];
         int[][] scaling_list_dc_coef_minus8 = new int[2][];
@@ -104,7 +104,7 @@ public class SequenceParameterSetRbsp {
     }
 
 
-    private void profile_tier_level(int maxNumSubLayersMinus1, CAVLCReader bsr) throws IOException {
+    private static void profile_tier_level(int maxNumSubLayersMinus1, CAVLCReader bsr) throws IOException {
         int general_profile_space = bsr.readU(2, "general_profile_space");
         boolean general_tier_flag = bsr.readBool("general_tier_flag");
         int general_profile_idc = bsr.readU(5, "general_profile_idc");
