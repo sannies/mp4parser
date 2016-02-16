@@ -251,7 +251,7 @@ public class H265TrackImplOld {
                     cprms_present_flag[0] = true;
                 }
 
-                hrd_parameters(cprms_present_flag[i], vps_max_sub_layers_minus1, r);
+                hrdParameters(cprms_present_flag[i], vps_max_sub_layers_minus1, r);
             }
         }
 
@@ -265,7 +265,7 @@ public class H265TrackImplOld {
         return 0;
     }
 
-    private void hrd_parameters(boolean commonInfPresentFlag, int maxNumSubLayersMinus1, CAVLCReader r) throws IOException {
+    private void hrdParameters(boolean commonInfPresentFlag, int maxNumSubLayersMinus1, CAVLCReader r) throws IOException {
         boolean nal_hrd_parameters_present_flag = false;
         boolean vcl_hrd_parameters_present_flag = false;
         boolean sub_pic_hrd_params_present_flag = false;
@@ -310,16 +310,16 @@ public class H265TrackImplOld {
                 cpb_cnt_minus1[i] = r.readUE("cpb_cnt_minus1[" + i + "]");
             }
             if (nal_hrd_parameters_present_flag) {
-                sub_layer_hrd_parameters(i, cpb_cnt_minus1[i], sub_pic_hrd_params_present_flag, r);
+                subLayerHrdParameters(i, cpb_cnt_minus1[i], sub_pic_hrd_params_present_flag, r);
             }
             if (vcl_hrd_parameters_present_flag) {
-                sub_layer_hrd_parameters(i, cpb_cnt_minus1[i], sub_pic_hrd_params_present_flag, r);
+                subLayerHrdParameters(i, cpb_cnt_minus1[i], sub_pic_hrd_params_present_flag, r);
             }
         }
 
     }
 
-    void sub_layer_hrd_parameters(int subLayerId, int cpbCnt, boolean sub_pic_hrd_params_present_flag, CAVLCReader r) throws IOException {
+    void subLayerHrdParameters(int subLayerId, int cpbCnt, boolean sub_pic_hrd_params_present_flag, CAVLCReader r) throws IOException {
         int bit_rate_value_minus1[] = new int[cpbCnt];
         int cpb_size_value_minus1[] = new int[cpbCnt];
         int cpb_size_du_value_minus1[] = new int[cpbCnt];
