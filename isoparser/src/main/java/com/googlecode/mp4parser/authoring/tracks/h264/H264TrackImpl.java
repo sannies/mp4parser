@@ -383,7 +383,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
             pictureOrderCounts[minIndex] = pTime++;
         }
         for (int i = 0; i < pictureOrderCounts.length; i++) {
-            ctts.add(new CompositionTimeToSample.Entry(1, pictureOrderCounts[i] - i + currentSeqParameterSet.num_ref_frames));
+            ctts.add(new CompositionTimeToSample.Entry(1, pictureOrderCounts[i] - i));
         }
 
         pictureOrderCounts = new int[0];
