@@ -52,7 +52,7 @@ public class DefaultFragmenterImpl implements Fragmenter {
             }
         }
         // In case the last Fragment is shorter: make the previous one a bigger and omit the small one
-        if (time > 0 && segmentStartSamples.length > 1) {
+        if (time > 0 && time < fragmentLength && segmentStartSamples.length > 1) {
             long[] nuSegmentStartSamples = new long[segmentStartSamples.length - 1];
             System.arraycopy(segmentStartSamples, 0, nuSegmentStartSamples, 0, segmentStartSamples.length - 1);
             segmentStartSamples = nuSegmentStartSamples;
