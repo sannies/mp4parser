@@ -36,6 +36,7 @@ import java.util.*;
  */
 public class AACTrackImpl extends AbstractTrack {
 
+    private static final String RESERVED = "Reserved";
     public static Map<Integer, Integer> samplingFrequencyIndexMap = new HashMap<Integer, Integer>();
     static Map<Integer, String> audioObjectTypes = new HashMap<Integer, String>();
 
@@ -49,15 +50,15 @@ public class AACTrackImpl extends AbstractTrack {
         audioObjectTypes.put(7, "TwinVQ");
         audioObjectTypes.put(8, "CELP (Code Excited Linear Prediction)");
         audioObjectTypes.put(9, "HXVC (Harmonic Vector eXcitation Coding)");
-        audioObjectTypes.put(10, "Reserved");
-        audioObjectTypes.put(11, "Reserved");
+        audioObjectTypes.put(10, RESERVED);
+        audioObjectTypes.put(11, RESERVED);
         audioObjectTypes.put(12, "TTSI (Text-To-Speech Interface)");
         audioObjectTypes.put(13, "Main Synthesis");
         audioObjectTypes.put(14, "Wavetable Synthesis");
         audioObjectTypes.put(15, "General MIDI");
         audioObjectTypes.put(16, "Algorithmic Synthesis and Audio Effects");
         audioObjectTypes.put(17, "ER (Error Resilient) AAC LC");
-        audioObjectTypes.put(18, "Reserved");
+        audioObjectTypes.put(18, RESERVED);
         audioObjectTypes.put(19, "ER AAC LTP");
         audioObjectTypes.put(20, "ER AAC Scalable");
         audioObjectTypes.put(21, "ER TwinVQ");

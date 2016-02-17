@@ -14,6 +14,8 @@ import static org.mp4parser.muxer.tracks.ttml.TtmlHelpers.*;
 
 public class TtmlSegmenter {
 
+    private static final String BEGIN = "begin";
+
     public static List<Document> split(Document doc, int splitTimeInSeconds) throws XPathExpressionException {
         int splitTime = splitTimeInSeconds * 1000;
         XPathFactory xPathfactory = XPathFactory.newInstance();
@@ -39,7 +41,7 @@ public class TtmlSegmenter {
                 long endTime = getEndTime(p);
                 //p.appendChild(d.createComment(toTimeExpression(startTime) + " -> " + toTimeExpression(endTime)));
                 if (startTime < segmentStartTime && endTime > segmentStartTime) {
-                    changeTime(p, "begin", segmentStartTime - startTime);
+                    changeTime(p, BEGIN, segmentStartTime - startTime);
                     startTime = segmentStartTime;
 
                 }
@@ -58,7 +60,7 @@ public class TtmlSegmenter {
                     Node parent = p.getParentNode();
                     parent.removeChild(p);
                 } else {
-                    changeTime(p, "begin", -segmentStartTime);
+                    changeTime(p, BEGIN, -segmentStartTime);
                     changeTime(p, "end", -segmentStartTime);
                 }
 
@@ -67,12 +69,12 @@ public class TtmlSegmenter {
 
             XPathExpression bodyXP = xpath.compile("/*[name()='tt']/*[name()='body'][1]");
             Element body = (Element) bodyXP.evaluate(d, XPathConstants.NODE);
-            String beginTime = body.getAttribute("begin");
+            String beginTime = body.getAttribute(BEGIN);
             String endTime = body.getAttribute("end");
             if (beginTime == null || "".equals(beginTime)) {
-                body.setAttribute("begin", toTimeExpression(segmentStartTime));
+                body.setAttribute(BEGIN, toTimeExpression(segmentStartTime));
             } else {
-                changeTime(body, "begin", segmentStartTime);
+                changeTime(body, BEGIN, segmentStartTime);
             }
             if (endTime == null || "".equals(endTime)) {
                 body.setAttribute("end", toTimeExpression(segmentEndTime));
@@ -119,7 +121,7 @@ public class TtmlSegmenter {
         }
         for (int i = 0; i < timedNodes.getLength(); i++) {
             Node p = timedNodes.item(i);
-            removeAfterPushDown(p, "begin");
+            removeAfterPushDown(p, BEGIN);
             removeAfterPushDown(p, "end");
 
         }
@@ -131,13 +133,13 @@ public class TtmlSegmenter {
 
         Node current = p;
         while ((current = current.getParentNode()) != null) {
-            if (current.getAttributes() != null && current.getAttributes().getNamedItem("begin") != null) {
-                time += toTime(current.getAttributes().getNamedItem("begin").getNodeValue());
+            if (current.getAttributes() != null && current.getAttributes().getNamedItem(BEGIN) != null) {
+                time += toTime(current.getAttributes().getNamedItem(BEGIN).getNodeValue());
             }
         }
 
-        if (p.getAttributes() != null && p.getAttributes().getNamedItem("begin") != null) {
-            p.getAttributes().getNamedItem("begin").setNodeValue(toTimeExpression(time + toTime(p.getAttributes().getNamedItem("begin").getNodeValue())));
+        if (p.getAttributes() != null && p.getAttributes().getNamedItem(BEGIN) != null) {
+            p.getAttributes().getNamedItem(BEGIN).setNodeValue(toTimeExpression(time + toTime(p.getAttributes().getNamedItem(BEGIN).getNodeValue())));
         }
         if (p.getAttributes() != null && p.getAttributes().getNamedItem("end") != null) {
             p.getAttributes().getNamedItem("end").setNodeValue(toTimeExpression(time + toTime(p.getAttributes().getNamedItem("end").getNodeValue())));
