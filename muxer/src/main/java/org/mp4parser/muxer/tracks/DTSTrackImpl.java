@@ -673,7 +673,7 @@ public class DTSTrackImpl extends AbstractTrack {
         return mySamples;
     }
 
-    private int getBitRate(int rate) throws IOException {
+    private static int getBitRate(int rate) throws IOException {
         int bitrate;
         switch (rate)
 
@@ -789,7 +789,7 @@ public class DTSTrackImpl extends AbstractTrack {
         return bitrate;
     }
 
-    private int getSampleRate(int sfreq) throws IOException {
+    private static int getSampleRate(int sfreq) throws IOException {
         int samplerate;
         switch (sfreq)
 
