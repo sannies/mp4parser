@@ -176,7 +176,7 @@ public class SeqParameterSet extends BitstreamElement {
         boolean vui_parameters_present_flag = reader
                 .readBool("SPS: vui_parameters_present_flag");
         if (vui_parameters_present_flag)
-            sps.vuiParams = ReadVUIParameters(reader);
+            sps.vuiParams = readVUIParameters(reader);
 
         reader.readTrailingBits();
 
@@ -203,7 +203,7 @@ public class SeqParameterSet extends BitstreamElement {
         }
     }
 
-    private static VUIParameters ReadVUIParameters(CAVLCReader reader)
+    private static VUIParameters readVUIParameters(CAVLCReader reader)
             throws IOException {
         VUIParameters vuip = new VUIParameters();
         vuip.aspect_ratio_info_present_flag = reader

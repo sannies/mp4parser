@@ -15,7 +15,7 @@ public class SequenceParameterSetRbsp {
         int sps_video_parameter_set_id = (int) bsr.readNBit(4, "sps_video_parameter_set_id");
         int sps_max_sub_layers_minus1 = (int) bsr.readNBit(3, "sps_max_sub_layers_minus1");
         boolean sps_temporal_id_nesting_flag = bsr.readBool("sps_temporal_id_nesting_flag");
-        profile_tier_level(sps_max_sub_layers_minus1, bsr);
+        profileTierLevel(sps_max_sub_layers_minus1, bsr);
         int sps_seq_parameter_set_id = bsr.readUE("sps_seq_parameter_set_id");
         int chroma_format_idc = bsr.readUE("chroma_format_idc");
         if (chroma_format_idc == 3) {
@@ -57,7 +57,7 @@ public class SequenceParameterSetRbsp {
         if (scaling_list_enabled_flag) {
             boolean sps_scaling_list_data_present_flag = bsr.readBool("sps_scaling_list_data_present_flag");
             if (sps_scaling_list_data_present_flag) {
-                scaling_list_data(bsr);
+                scalingListData(bsr);
             }
         }
         boolean amp_enabled_flag = bsr.readBool("amp_enabled_flag");
@@ -71,7 +71,7 @@ public class SequenceParameterSetRbsp {
         }
     }
 
-    private void scaling_list_data(CAVLCReader bsr) throws IOException {
+    private void scalingListData(CAVLCReader bsr) throws IOException {
         boolean[][] scaling_list_pred_mode_flag = new boolean[4][];
         int[][] scaling_list_pred_matrix_id_delta = new int[4][];
         int[][] scaling_list_dc_coef_minus8 = new int[2][];
@@ -104,7 +104,7 @@ public class SequenceParameterSetRbsp {
     }
 
 
-    private void profile_tier_level(int maxNumSubLayersMinus1, CAVLCReader bsr) throws IOException {
+    private void profileTierLevel(int maxNumSubLayersMinus1, CAVLCReader bsr) throws IOException {
         int general_profile_space = bsr.readU(2, "general_profile_space");
         boolean general_tier_flag = bsr.readBool("general_tier_flag");
         int general_profile_idc = bsr.readU(5, "general_profile_idc");
