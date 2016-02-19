@@ -17,7 +17,7 @@ import java.util.List;
  */
 public abstract class AbstractH26XTrack extends AbstractTrack {
 
-    public static int BUFFER = 65535 << 10;
+    public static final int BUFFER = 65535 << 10;
     protected long[] decodingTimes;
     protected List<CompositionTimeToSample.Entry> ctts = new ArrayList<CompositionTimeToSample.Entry>();
     protected List<SampleDependencyTypeBox.Entry> sdtp = new ArrayList<SampleDependencyTypeBox.Entry>();

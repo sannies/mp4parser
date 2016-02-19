@@ -26,10 +26,10 @@ package org.mp4parser.muxer.tracks.h264.parsing.model;
  * @author Stanislav Vitvitskiy
  */
 public class ChromaFormat {
-    public static ChromaFormat MONOCHROME = new ChromaFormat(0, 0, 0);
-    public static ChromaFormat YUV_420 = new ChromaFormat(1, 2, 2);
-    public static ChromaFormat YUV_422 = new ChromaFormat(2, 2, 1);
-    public static ChromaFormat YUV_444 = new ChromaFormat(3, 1, 1);
+    public static final ChromaFormat MONOCHROME = new ChromaFormat(0, 0, 0);
+    public static final ChromaFormat YUV_420 = new ChromaFormat(1, 2, 2);
+    public static final ChromaFormat YUV_422 = new ChromaFormat(2, 2, 1);
+    public static final ChromaFormat YUV_444 = new ChromaFormat(3, 1, 1);
 
     private int id;
     private int subWidth;
