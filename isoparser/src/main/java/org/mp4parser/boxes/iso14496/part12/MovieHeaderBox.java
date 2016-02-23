@@ -65,7 +65,7 @@ public class MovieHeaderBox extends AbstractFullBox {
 
     public void setCreationTime(Date creationTime) {
         this.creationTime = creationTime;
-        if (DateHelper.convert(creationTime) >= (1l << 32)) {
+        if (DateHelper.convert(creationTime) >= (1L << 32)) {
             setVersion(1);
         }
 
@@ -77,7 +77,7 @@ public class MovieHeaderBox extends AbstractFullBox {
 
     public void setModificationTime(Date modificationTime) {
         this.modificationTime = modificationTime;
-        if (DateHelper.convert(modificationTime) >= (1l << 32)) {
+        if (DateHelper.convert(modificationTime) >= (1L << 32)) {
             setVersion(1);
         }
 
@@ -97,7 +97,7 @@ public class MovieHeaderBox extends AbstractFullBox {
 
     public void setDuration(long duration) {
         this.duration = duration;
-        if (duration >= (1l << 32)) {
+        if (duration >= (1L << 32)) {
             setVersion(1);
         }
     }

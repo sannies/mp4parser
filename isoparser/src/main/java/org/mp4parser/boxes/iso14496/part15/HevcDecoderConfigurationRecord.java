@@ -149,16 +149,16 @@ public class HevcDecoderConfigurationRecord {
         IsoTypeWriter.writeUInt32(byteBuffer, general_profile_compatibility_flags);
         long _general_constraint_indicator_flags = general_constraint_indicator_flags;
         if (frame_only_constraint_flag) {
-            _general_constraint_indicator_flags |= 1l << 47;
+            _general_constraint_indicator_flags |= 1L << 47;
         }
         if (non_packed_constraint_flag) {
-            _general_constraint_indicator_flags |= 1l << 46;
+            _general_constraint_indicator_flags |= 1L << 46;
         }
         if (interlaced_source_flag) {
-            _general_constraint_indicator_flags |= 1l << 45;
+            _general_constraint_indicator_flags |= 1L << 45;
         }
         if (progressive_source_flag) {
-            _general_constraint_indicator_flags |= 1l << 44;
+            _general_constraint_indicator_flags |= 1L << 44;
         }
 
         IsoTypeWriter.writeUInt48(byteBuffer, _general_constraint_indicator_flags);
