@@ -176,7 +176,7 @@ public class MetaDataInsert {
 
     private void correctChunkOffsets(MovieBox movieBox, long correction) {
         List<ChunkOffsetBox> chunkOffsetBoxes = Path.getPaths((Box) movieBox, "trak/mdia[0]/minf[0]/stbl[0]/stco[0]");
-        if (chunkOffsetBoxes.size() == 0) {
+        if (chunkOffsetBoxes.isEmpty()) {
             chunkOffsetBoxes = Path.getPaths((Box) movieBox, "trak/mdia[0]/minf[0]/stbl[0]/st64[0]");
         }
         for (ChunkOffsetBox chunkOffsetBox : chunkOffsetBoxes) {

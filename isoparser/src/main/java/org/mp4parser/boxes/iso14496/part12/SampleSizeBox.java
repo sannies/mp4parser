@@ -91,7 +91,7 @@ public class SampleSizeBox extends AbstractFullBox {
         sampleCount = CastUtils.l2i(IsoTypeReader.readUInt32(content));
 
         if (sampleSize == 0) {
-            sampleSizes = new long[(int) sampleCount];
+            sampleSizes = new long[sampleCount];
 
             for (int i = 0; i < sampleCount; i++) {
                 sampleSizes[i] = IsoTypeReader.readUInt32(content);

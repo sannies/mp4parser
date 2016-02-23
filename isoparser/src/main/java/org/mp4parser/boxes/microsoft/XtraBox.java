@@ -530,7 +530,7 @@ public class XtraBox extends AbstractBox {
                 case MP4_XTRA_BT_UNICODE:
                     return "[string]" + stringValue;
                 case MP4_XTRA_BT_INT64:
-                    return "[long]" + String.valueOf(longValue);
+                    return "[long]" + longValue;
                 case MP4_XTRA_BT_FILETIME:
                     return "[filetime]" + fileTimeValue.toString();
                 case MP4_XTRA_BT_GUID:

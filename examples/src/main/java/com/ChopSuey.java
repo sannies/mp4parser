@@ -74,7 +74,7 @@ public class ChopSuey {
                 index++;
 
             }
-            if (chops.size() > 0) {
+            if (!chops.isEmpty()) {
                 tracks.put(track, chops);
             }
 
