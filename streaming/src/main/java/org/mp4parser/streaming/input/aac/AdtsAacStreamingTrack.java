@@ -159,7 +159,7 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
     }
 
 
-    private AdtsHeader readADTSHeader(InputStream fis) throws IOException {
+    private static AdtsHeader readADTSHeader(InputStream fis) throws IOException {
         AdtsHeader hdr = new AdtsHeader();
         int x = fis.read(); // A
         int syncword = x << 4;

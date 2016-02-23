@@ -122,7 +122,7 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
 
     }
 
-    private GroupEntry parseGroupEntry(ByteBuffer content, String groupingType) {
+    private static GroupEntry parseGroupEntry(ByteBuffer content, String groupingType) {
         GroupEntry groupEntry;
         if (RollRecoveryEntry.TYPE.equals(groupingType)) {
             groupEntry = new RollRecoveryEntry();
