@@ -35,7 +35,7 @@ public final class IsoTypeReader {
     public static long readUInt32(ByteBuffer bb) {
         long i = bb.getInt();
         if (i < 0) {
-            i += 1l << 32;
+            i += 1L << 32;
         }
         return i;
     }

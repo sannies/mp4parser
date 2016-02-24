@@ -26,7 +26,7 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     }
 
     public int getOffsetToFirstIV() {
-        int offset = (getSize() > (1l << 32) ? 16 : 8);
+        int offset = (getSize() > (1L << 32) ? 16 : 8);
         offset += isOverrideTrackEncryptionBoxParameters() ? (4 + kid.length) : 0;
         offset += 4; //num entries
         return offset;
