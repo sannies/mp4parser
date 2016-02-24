@@ -412,7 +412,7 @@ public class SeqParameterSet extends BitstreamElement {
         writer.writeTrailingBits();
     }
 
-    private void writeVUIParameters(VUIParameters vuip, CAVLCWriter writer)
+    private static void writeVUIParameters(VUIParameters vuip, CAVLCWriter writer)
             throws IOException {
         writer.writeBool(vuip.aspect_ratio_info_present_flag,
                 "VUI: aspect_ratio_info_present_flag");

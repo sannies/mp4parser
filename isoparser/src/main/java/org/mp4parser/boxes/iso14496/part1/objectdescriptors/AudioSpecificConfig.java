@@ -993,7 +993,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         return (ByteBuffer) out.rewind();
     }
 
-    private void writeAudioObjectType(int audioObjectType, BitWriterBuffer bitWriterBuffer) {
+    private static void writeAudioObjectType(int audioObjectType, BitWriterBuffer bitWriterBuffer) {
         if (audioObjectType >= 32) {
             bitWriterBuffer.writeBits(31, 5);
             bitWriterBuffer.writeBits(audioObjectType - 32, 6);
@@ -1002,7 +1002,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         }
     }
 
-    private int getAudioObjectType(BitReaderBuffer in) throws IOException {
+    private static int getAudioObjectType(BitReaderBuffer in) throws IOException {
         int audioObjectType = in.readBits(5);
         if (audioObjectType == 31) {
             audioObjectType = 32 + in.readBits(6);
