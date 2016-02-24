@@ -132,10 +132,10 @@ public class AppendExample {
 
         Movie result = new Movie();
 
-        if (audioTracks.size() > 0) {
+        if (!audioTracks.isEmpty()) {
             result.addTrack(new AppendTrack(audioTracks.toArray(new Track[audioTracks.size()])));
         }
-        if (videoTracks.size() > 0) {
+        if (!videoTracks.isEmpty()) {
             result.addTrack(new AppendTrack(videoTracks.toArray(new Track[videoTracks.size()])));
         }
 
