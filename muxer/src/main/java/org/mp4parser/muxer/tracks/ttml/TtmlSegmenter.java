@@ -23,12 +23,12 @@ public class TtmlSegmenter {
 
         boolean thereIsMore;
 
-        List<Document> subDocs = new ArrayList<Document>();
+        List<Document> subDocs = new ArrayList<>();
 
 
         do {
-            long segmentStartTime = subDocs.size() * splitTime;
-            long segmentEndTime = (subDocs.size() + 1) * splitTime;
+            long segmentStartTime = (long)subDocs.size() * splitTime;
+            long segmentEndTime = (subDocs.size() + 1L) * splitTime;
             Document d = (Document) doc.cloneNode(true);
             NodeList timedNodes = (NodeList) xp.evaluate(d, XPathConstants.NODESET);
             thereIsMore = false;
@@ -37,7 +37,6 @@ public class TtmlSegmenter {
                 Node p = timedNodes.item(i);
                 long startTime = getStartTime(p);
                 long endTime = getEndTime(p);
-                //p.appendChild(d.createComment(toTimeExpression(startTime) + " -> " + toTimeExpression(endTime)));
                 if (startTime < segmentStartTime && endTime > segmentStartTime) {
                     changeTime(p, "begin", segmentStartTime - startTime);
                     startTime = segmentStartTime;
@@ -89,7 +88,7 @@ public class TtmlSegmenter {
         if (p.getAttributes() != null && p.getAttributes().getNamedItem(attribute) != null) {
             String oldValue = p.getAttributes().getNamedItem(attribute).getNodeValue();
             long nuTime = toTime(oldValue) + amount;
-            int frames = 0;
+            int frames;
             if (oldValue.contains(".")) {
                 frames = -1;
             } else {
