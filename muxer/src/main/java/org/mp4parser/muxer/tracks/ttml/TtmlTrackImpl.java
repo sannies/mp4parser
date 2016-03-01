@@ -31,7 +31,7 @@ public class TtmlTrackImpl extends AbstractTrack {
     SampleDescriptionBox sampleDescriptionBox = new SampleDescriptionBox();
     XMLSubtitleSampleEntry xmlSubtitleSampleEntry = new XMLSubtitleSampleEntry();
 
-    List<Sample> samples = new ArrayList<Sample>();
+    List<Sample> samples = new ArrayList<>();
     SubSampleInformationBox subSampleInformationBox = new SubSampleInformationBox();
 
 
@@ -41,12 +41,11 @@ public class TtmlTrackImpl extends AbstractTrack {
     public TtmlTrackImpl(String name, List<Document> ttmls) throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, URISyntaxException {
         super(name);
         extractLanguage(ttmls);
-        Set<String> mimeTypes = new HashSet<String>();
+        Set<String> mimeTypes = new HashSet<>();
         sampleDurations = new long[ttmls.size()];
         XPathFactory xPathfactory = XPathFactory.newInstance();
         XPath xpath = xPathfactory.newXPath();
         xpath.setNamespaceContext(TtmlHelpers.NAMESPACE_CONTEXT);
-        long startTime = 0;
 
         for (int sampleNo = 0; sampleNo < ttmls.size(); sampleNo++) {
             final Document ttml = ttmls.get(sampleNo);
@@ -112,7 +111,7 @@ public class TtmlTrackImpl extends AbstractTrack {
         XPathExpression expr = xpath.compile("//*/@backgroundImage");
         NodeList nl = (NodeList) expr.evaluate(ttml, XPathConstants.NODESET);
 
-        LinkedHashMap<String, String> internalNames2Original = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> internalNames2Original = new LinkedHashMap<>();
 
         int p = 1;
         for (int i = 0; i < nl.getLength(); i++) {
@@ -128,7 +127,7 @@ public class TtmlTrackImpl extends AbstractTrack {
             bgImageNode.setNodeValue(internalName);
 
         }
-        List<byte[]> images = new ArrayList<byte[]>();
+        List<byte[]> images = new ArrayList<>();
         if (!internalNames2Original.isEmpty()) {
             for (Map.Entry<String, String> internalName2Original : internalNames2Original.entrySet()) {
 
@@ -149,30 +148,11 @@ public class TtmlTrackImpl extends AbstractTrack {
         return result.toString();
     }
 
-    private static long latestTimestamp(Document document) {
-        XPathFactory xPathfactory = XPathFactory.newInstance();
-        XPath xpath = xPathfactory.newXPath();
-        xpath.setNamespaceContext(TtmlHelpers.NAMESPACE_CONTEXT);
-
-        try {
-            XPathExpression xp = xpath.compile("//*[name()='p']");
-            NodeList timedNodes = (NodeList) xp.evaluate(document, XPathConstants.NODESET);
-            long lastTimeStamp = 0;
-            for (int i = 0; i < timedNodes.getLength(); i++) {
-                lastTimeStamp = Math.max(getEndTime(timedNodes.item(i)), lastTimeStamp);
-            }
-            return lastTimeStamp;
-        } catch (XPathExpressionException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
     private static byte[] streamToByteArray(InputStream input) throws IOException {
         byte[] buffer = new byte[8096];
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-        int n = 0;
+        int n;
         while (-1 != (n = input.read(buffer))) {
             output.write(buffer, 0, n);
         }
@@ -242,9 +222,8 @@ public class TtmlTrackImpl extends AbstractTrack {
         XPathExpression expr = xpath.compile("//*/@smpte:backgroundImage");
         NodeList nl = (NodeList) expr.evaluate(ttml, XPathConstants.NODESET);
 
-        Set<String> mimeTypes = new LinkedHashSet<String>();
+        Set<String> mimeTypes = new LinkedHashSet<>();
 
-        int p = 1;
         for (int i = 0; i < nl.getLength(); i++) {
             Node bgImageNode = nl.item(i);
             String uri = bgImageNode.getNodeValue();
@@ -255,7 +234,7 @@ public class TtmlTrackImpl extends AbstractTrack {
                 mimeTypes.add("image/png");
             }
         }
-        return new ArrayList<String>(mimeTypes);
+        return new ArrayList<>(mimeTypes);
     }
 
     long extractDuration(Document ttml) {
