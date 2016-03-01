@@ -31,6 +31,7 @@ public class TtmlHelpers {
     public static final String SMPTE_TT_NAMESPACE = "http://www.smpte-ra.org/schemas/2052-1/2010/smpte-tt";
     public static final String TTML_NAMESPACE = "http://www.w3.org/ns/ttml";
     public static final NamespaceContext NAMESPACE_CONTEXT = new TextTrackNamespaceContext();
+    private static final String BEGIN = "begin";
     static byte[] namespacesStyleSheet1 = ("<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n" +
             "    <xsl:output method=\"text\"/>\n" +
             "    <xsl:key name=\"kElemByNSURI\"\n" +
@@ -51,9 +52,6 @@ public class TtmlHelpers {
         DocumentBuilder builder = dbf.newDocumentBuilder();
         Document doc = builder.parse("C:\\dev\\mp4parser\\a.xml");
         List<Document> split = TtmlSegmenter.split(doc, 60);
-/*        for (Document document : split) {
-            pretty(document, System.out, 4);
-        }*/
         Track t = new TtmlTrackImpl("a.xml", split);
         Movie m = new Movie();
         m.addTrack(t);
@@ -68,7 +66,7 @@ public class TtmlHelpers {
             transformer = tf.newTransformer(new StreamSource(new ByteArrayInputStream(namespacesStyleSheet1)));
             StringWriter sw = new StringWriter();
             transformer.transform(new DOMSource(doc), new StreamResult(sw));
-            List<String> r = new ArrayList<String>(new LinkedHashSet<String>(Arrays.asList(sw.getBuffer().toString().split("\n"))));
+            List<String> r = new ArrayList<>(new LinkedHashSet<String>(Arrays.asList(sw.getBuffer().toString().split("\n"))));
             return r.toArray(new String[r.size()]);
         } catch (TransformerConfigurationException e) {
             throw new RuntimeException(e);
@@ -84,20 +82,20 @@ public class TtmlHelpers {
 
     public static String toTimeExpression(long ms, int frames) {
         String minus = ms >= 0 ? "" : "-";
-        ms = Math.abs(ms);
+        long msCalculated = Math.abs(ms);
 
-        long hours = ms / 1000 / 60 / 60;
-        ms -= hours * 1000 * 60 * 60;
+        long hours = msCalculated / 1000 / 60 / 60;
+        msCalculated -= hours * 1000 * 60 * 60;
 
-        long minutes = ms / 1000 / 60;
-        ms -= minutes * 1000 * 60;
+        long minutes = msCalculated / 1000 / 60;
+        msCalculated -= minutes * 1000 * 60;
 
-        long seconds = ms / 1000;
-        ms -= seconds * 1000;
+        long seconds = msCalculated / 1000;
+        msCalculated -= seconds * 1000;
         if (frames >= 0) {
             return String.format("%s%02d:%02d:%02d:%d", minus, hours, minutes, seconds, frames);
         } else {
-            return String.format("%s%02d:%02d:%02d.%03d", minus, hours, minutes, seconds, ms);
+            return String.format("%s%02d:%02d:%02d.%03d", minus, hours, minutes, seconds, msCalculated);
         }
     }
 
@@ -156,13 +154,13 @@ public class TtmlHelpers {
         long time = 0;
         Node current = p;
         while ((current = current.getParentNode()) != null) {
-            if (current.getAttributes() != null && current.getAttributes().getNamedItem("begin") != null) {
-                time += toTime(current.getAttributes().getNamedItem("begin").getNodeValue());
+            if (current.getAttributes() != null && current.getAttributes().getNamedItem(BEGIN) != null) {
+                time += toTime(current.getAttributes().getNamedItem(BEGIN).getNodeValue());
             }
         }
 
-        if (p.getAttributes() != null && p.getAttributes().getNamedItem("begin") != null) {
-            return time + toTime(p.getAttributes().getNamedItem("begin").getNodeValue());
+        if (p.getAttributes() != null && p.getAttributes().getNamedItem(BEGIN) != null) {
+            return time + toTime(p.getAttributes().getNamedItem(BEGIN).getNodeValue());
         }
         return time;
     }
@@ -171,8 +169,8 @@ public class TtmlHelpers {
         long time = 0;
         Node current = p;
         while ((current = current.getParentNode()) != null) {
-            if (current.getAttributes() != null && current.getAttributes().getNamedItem("begin") != null) {
-                time += toTime(current.getAttributes().getNamedItem("begin").getNodeValue());
+            if (current.getAttributes() != null && current.getAttributes().getNamedItem(BEGIN) != null) {
+                time += toTime(current.getAttributes().getNamedItem(BEGIN).getNodeValue());
             }
         }
 
