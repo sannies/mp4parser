@@ -108,8 +108,7 @@ public abstract class AbstractBox implements Box {
         this.offset = dataSource.position() - header.remaining();
         this.dataSource = dataSource;
 
-        //content = ByteBuffer.allocate(l2i(contentSize));
-        content = ChannelHelper.readFully(readableByteChannel, contentSize);
+        content = ByteBuffer.allocate(l2i(contentSize));
         while (content.remaining() > 0) {
             dataSource.read(content);
         }
