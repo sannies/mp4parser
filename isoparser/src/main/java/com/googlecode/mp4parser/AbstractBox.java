@@ -24,6 +24,7 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.UserBox;
 import com.googlecode.mp4parser.annotations.DoNotParseDetail;
+import com.googlecode.mp4parser.util.ChannelHelper;
 import com.googlecode.mp4parser.util.Logger;
 import com.googlecode.mp4parser.util.Path;
 
@@ -107,7 +108,8 @@ public abstract class AbstractBox implements Box {
         this.offset = dataSource.position() - header.remaining();
         this.dataSource = dataSource;
 
-        content = ByteBuffer.allocate(l2i(contentSize));
+        //content = ByteBuffer.allocate(l2i(contentSize));
+        content = ChannelHelper.readFully(readableByteChannel, contentSize);
         while (content.remaining() > 0) {
             dataSource.read(content);
         }
