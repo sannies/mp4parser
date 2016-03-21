@@ -147,36 +147,12 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         return trackId;
     }
 
-    public long getBaseDataOffset() {
-        return baseDataOffset;
-    }
-
-    public long getSampleDescriptionIndex() {
-        return sampleDescriptionIndex;
-    }
-
-    public long getDefaultSampleDuration() {
-        return defaultSampleDuration;
-    }
-
-    public long getDefaultSampleSize() {
-        return defaultSampleSize;
-    }
-
-    public SampleFlags getDefaultSampleFlags() {
-        return defaultSampleFlags;
-    }
-
-    public boolean isDurationIsEmpty() {
-        return durationIsEmpty;
-    }
-
-    public boolean isDefaultBaseIsMoof() {
-        return defaultBaseIsMoof;
-    }
-
     public void setTrackId(long trackId) {
         this.trackId = trackId;
+    }
+
+    public long getBaseDataOffset() {
+        return baseDataOffset;
     }
 
     public void setBaseDataOffset(long baseDataOffset) {
@@ -188,6 +164,10 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         this.baseDataOffset = baseDataOffset;
     }
 
+    public long getSampleDescriptionIndex() {
+        return sampleDescriptionIndex;
+    }
+
     public void setSampleDescriptionIndex(long sampleDescriptionIndex) {
         if (sampleDescriptionIndex == -1) {
             setFlags(getFlags() & (Integer.MAX_VALUE ^ 0x2));
@@ -197,28 +177,66 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         this.sampleDescriptionIndex = sampleDescriptionIndex;
     }
 
+    public long getDefaultSampleDuration() {
+        return defaultSampleDuration;
+    }
+
     public void setDefaultSampleDuration(long defaultSampleDuration) {
+
+
         setFlags(getFlags() | 0x8); // activate the field
         this.defaultSampleDuration = defaultSampleDuration;
     }
 
+    public long getDefaultSampleSize() {
+        return defaultSampleSize;
+    }
+
     public void setDefaultSampleSize(long defaultSampleSize) {
-        setFlags(getFlags() | 0x10); // activate the field
+        if (defaultSampleSize != -1) {
+            setFlags(getFlags() | 0x10);
+        } else {
+            setFlags(getFlags() & (0xFFFFFF ^ 0x10));
+        }
         this.defaultSampleSize = defaultSampleSize;
     }
 
+    public SampleFlags getDefaultSampleFlags() {
+        return defaultSampleFlags;
+    }
+
     public void setDefaultSampleFlags(SampleFlags defaultSampleFlags) {
-        setFlags(getFlags() | 0x20); // activate the field
+        if (defaultSampleFlags != null) {
+            setFlags(getFlags() | 0x20);
+        } else {
+            setFlags(getFlags() & (0xFFFFFF ^ 0x20));
+        }
         this.defaultSampleFlags = defaultSampleFlags;
     }
 
+    public boolean isDurationIsEmpty() {
+        return durationIsEmpty;
+    }
+
     public void setDurationIsEmpty(boolean durationIsEmpty) {
-        setFlags(getFlags() | 0x10000); // activate the field
+        if (defaultBaseIsMoof) {
+            setFlags(getFlags() | 0x10000);
+        } else {
+            setFlags(getFlags() & (0xFFFFFF ^ 0x10000));
+        }
         this.durationIsEmpty = durationIsEmpty;
     }
 
+    public boolean isDefaultBaseIsMoof() {
+        return defaultBaseIsMoof;
+    }
+
     public void setDefaultBaseIsMoof(boolean defaultBaseIsMoof) {
-        setFlags(getFlags() | 0x20000); // activate the field
+        if (defaultBaseIsMoof) {
+            setFlags(getFlags() | 0x20000);
+        } else {
+            setFlags(getFlags() & (0xFFFFFF ^ 0x20000));
+        }
         this.defaultBaseIsMoof = defaultBaseIsMoof;
     }
 
