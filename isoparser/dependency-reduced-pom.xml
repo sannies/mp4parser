@@ -4,7 +4,7 @@
   <groupId>com.googlecode.mp4parser</groupId>
   <artifactId>isoparser</artifactId>
   <name>ISO Parser</name>
-  <version>1.1.19</version>
+  <version>1.1.18-01</version>
   <description>A generic parser and writer for all ISO 14496 based files (MP4, Quicktime, DCF, PDCF, ...)</description>
   <url>http://code.google.com/p/mp4parser/</url>
   <issueManagement>
