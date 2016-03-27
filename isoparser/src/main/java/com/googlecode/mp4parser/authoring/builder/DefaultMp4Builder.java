@@ -89,7 +89,7 @@ public class DefaultMp4Builder implements Mp4Builder {
      */
     public Container build(Movie movie) {
         if (fragmenter == null) {
-            fragmenter = new DefaultFragmenterImpl(2);
+            fragmenter = new BetterFragmenter(2);
         }
         LOG.logDebug("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
