@@ -17,11 +17,13 @@
 package org.mp4parser.boxes.iso14496.part12;
 
 import org.mp4parser.support.AbstractFullBox;
-import org.mp4parser.support.Logger;
 import org.mp4parser.support.Matrix;
 import org.mp4parser.tools.DateHelper;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.Date;
@@ -39,7 +41,7 @@ import java.util.Date;
  */
 public class MovieHeaderBox extends AbstractFullBox {
     public static final String TYPE = "mvhd";
-    private static Logger LOG = Logger.getLogger(MovieHeaderBox.class);
+    private static Logger LOG = LoggerFactory.getLogger(MovieHeaderBox.class);
     private Date creationTime;
     private Date modificationTime;
     private long timescale;
@@ -161,7 +163,7 @@ public class MovieHeaderBox extends AbstractFullBox {
             duration = content.getInt();
         }
         if (duration < -1) {
-            LOG.logWarn("mvhd duration is not in expected range");
+            LOG.warn("mvhd duration is not in expected range");
         }
 
 

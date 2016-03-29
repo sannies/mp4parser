@@ -19,6 +19,9 @@ package org.mp4parser.boxes.microsoft;
 
 import org.mp4parser.support.AbstractBox;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -45,6 +48,7 @@ import java.util.Vector;
  */
 
 public class XtraBox extends AbstractBox {
+    private static Logger LOG = LoggerFactory.getLogger(XtraBox.class);
     public static final String TYPE = "Xtra";
 
     public static final int MP4_XTRA_BT_UNICODE = 8;
@@ -165,8 +169,7 @@ public class XtraBox extends AbstractBox {
             successfulParse = true;
         } catch (Exception e) {
             successfulParse = false;
-            System.err.println("Malformed Xtra Tag detected: " + e.toString());
-            e.printStackTrace();
+            LOG.error("Malformed Xtra Tag detected: {}", e.toString());
             content.position(content.position() + content.remaining());
         } finally {
             content.order(ByteOrder.BIG_ENDIAN); //Just in case we bailed out mid-parse we don't want to leave the byte order in MS land

@@ -23,6 +23,9 @@ import org.mp4parser.tools.CastUtils;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -34,6 +37,7 @@ import java.nio.channels.WritableByteChannel;
  * is appened as boxes after the data described in ISO/IEC 14496-12 chapter 8.16.2.
  */
 public final class AudioSampleEntry extends AbstractSampleEntry {
+    private static Logger LOG = LoggerFactory.getLogger(AudioSampleEntry.class);
 
     public static final String TYPE1 = "samr";
     public static final String TYPE2 = "sawb";
@@ -234,7 +238,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
         }
 
         if ("owma".equals(type)) {
-            System.err.println("owma");
+            LOG.error("owma");
             final long remaining = contentSize - 28
                     - (soundVersion == 1 ? 16 : 0)
                     - (soundVersion == 2 ? 36 : 0);

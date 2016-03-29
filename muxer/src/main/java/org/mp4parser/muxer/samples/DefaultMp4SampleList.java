@@ -7,7 +7,9 @@ import org.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
 import org.mp4parser.boxes.iso14496.part12.TrackBox;
 import org.mp4parser.muxer.RandomAccessSource;
 import org.mp4parser.muxer.Sample;
-import org.mp4parser.support.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -23,7 +25,7 @@ import static org.mp4parser.tools.CastUtils.l2i;
 
 
 public class DefaultMp4SampleList extends AbstractList<Sample> {
-    private static final Logger LOG = Logger.getLogger(DefaultMp4SampleList.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultMp4SampleList.class);
 
     Container topLevel;
     TrackBox trackBox = null;
@@ -213,9 +215,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
                             sampleOffsetsWithinChunk[sampleOffsetsWithinChunk.length - 1] + ssb.getSampleSizeAtIndex(chunkStartSample + sampleOffsetsWithinChunk.length - 1));
                     cache[chunkNumber] = new SoftReference<ByteBuffer>(chunkBuffer);
                 } catch (IOException e) {
-                    StringWriter sw = new StringWriter();
-                    e.printStackTrace(new PrintWriter(sw));
-                    LOG.logError(sw.toString());
+                    LOG.error("", e);
                     throw new IndexOutOfBoundsException(e.getMessage());
                 }
             }
