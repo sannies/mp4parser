@@ -72,7 +72,7 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
             if (getVersion() == 1 && defaultLength == 0) {
                 size += 4;
             }
-            size += groupEntry.size();
+            size += defaultLength == 0 ? groupEntry.size() : defaultLength;
         }
         return size;
     }
@@ -86,19 +86,29 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
         }
         IsoTypeWriter.writeUInt32(byteBuffer, this.groupEntries.size());
         for (GroupEntry entry : groupEntries) {
-            if (this.getVersion() == 1 && defaultLength == 0) {
-                IsoTypeWriter.writeUInt32(byteBuffer, entry.get().limit());
+            ByteBuffer data = entry.get();
+            if (this.getVersion() == 1) {
+                if (defaultLength == 0) {
+                    IsoTypeWriter.writeUInt32(byteBuffer, data.limit());
+                } else {
+                    if (data.limit() > defaultLength) {
+                        throw new RuntimeException(
+                                String.format("SampleGroupDescriptionBox entry size %d more than %d", data.limit(), defaultLength));
+                    }
+                }
             }
-            byteBuffer.put(entry.get());
+            byteBuffer.put(data);
+
+            int deadBytes = defaultLength == 0 ? 0 : defaultLength - data.limit();
+            while (deadBytes-- > 0) {
+                byteBuffer.put((byte) 0);
+            }
         }
     }
 
     @Override
     protected void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
-        if (this.getVersion() != 1) {
-            throw new RuntimeException("SampleGroupDescriptionBox are only supported in version 1");
-        }
         groupingType = IsoTypeReader.read4cc(content);
         if (this.getVersion() == 1) {
             defaultLength = CastUtils.l2i(IsoTypeReader.readUInt32(content));
@@ -111,18 +121,18 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
                     length = CastUtils.l2i(IsoTypeReader.readUInt32(content));
                 }
             } else {
-                throw new RuntimeException("This should be implemented");
+                length = content.limit() - content.position(); 
             }
-            int finalPos = content.position() + length;
             ByteBuffer parseMe = content.slice();
             parseMe.limit(length);
             groupEntries.add(parseGroupEntry(parseMe, groupingType));
-            content.position(finalPos);
+            int parsedBytes = this.getVersion() == 1 ? length : parseMe.position(); 
+            content.position(content.position() + parsedBytes);
         }
 
     }
 
-    private static GroupEntry parseGroupEntry(ByteBuffer content, String groupingType) {
+    private GroupEntry parseGroupEntry(ByteBuffer content, String groupingType) {
         GroupEntry groupEntry;
         if (RollRecoveryEntry.TYPE.equals(groupingType)) {
             groupEntry = new RollRecoveryEntry();
@@ -143,6 +153,9 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
         } else if (StepwiseTemporalLayerEntry.TYPE.equals(groupingType)) {
             groupEntry = new StepwiseTemporalLayerEntry();
         } else {
+            if (this.getVersion() == 0) {
+                throw new RuntimeException("SampleGroupDescriptionBox with UnknownEntry are only supported in version 1");                
+            }
             groupEntry = new UnknownEntry(groupingType);
         }
         groupEntry.parse(content);
