@@ -99,7 +99,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <includes>
-                        <include>**/*BoxTestSuite.java</include>
+                        <include>**/*Test*.java</include>
                     </includes>
                 </configuration>
             </plugin>
