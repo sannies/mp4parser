@@ -18,10 +18,11 @@ package org.mp4parser.boxes.iso14496.part1.objectdescriptors;
 
 import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.IsoTypeWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
 
 /**
  * abstract class ExtensionDescriptor extends BaseDescriptor
@@ -34,7 +35,7 @@ import java.util.logging.Logger;
 public class ExtensionDescriptor extends BaseDescriptor {
 
 
-    private static Logger log = Logger.getLogger(ExtensionDescriptor.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(ExtensionDescriptor.class.getName());
 
     ByteBuffer data;
 
@@ -51,7 +52,7 @@ public class ExtensionDescriptor extends BaseDescriptor {
 
         for (int i = 0x6A; i < 0xFE; i++) {
             final int pos = i - 0x6A;
-            log.finest("pos:" + pos);
+            LOG.trace("pos: {}", pos);
             ints[pos] = i;
         }
         return ints;

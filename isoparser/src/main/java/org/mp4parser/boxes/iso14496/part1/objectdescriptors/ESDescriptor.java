@@ -23,7 +23,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
 class ES_Descriptor extends BaseDescriptor : bit(8) tag=ES_DescrTag {
@@ -60,7 +61,7 @@ ExtensionDescriptor extDescr[0 .. 255];
  */
 @Descriptor(tags = {0x03})
 public class ESDescriptor extends BaseDescriptor {
-    private static Logger log = Logger.getLogger(ESDescriptor.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(ESDescriptor.class);
     int esId;
     int streamDependenceFlag;
     int URLFlag;

@@ -19,17 +19,17 @@ package org.mp4parser.boxes.iso14496.part14;
 import org.mp4parser.boxes.iso14496.part1.objectdescriptors.BaseDescriptor;
 import org.mp4parser.boxes.iso14496.part1.objectdescriptors.ObjectDescriptorFactory;
 import org.mp4parser.support.AbstractFullBox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * ES Descriptor Box.
  */
 public class AbstractDescriptorBox extends AbstractFullBox {
-    private static Logger log = Logger.getLogger(AbstractDescriptorBox.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(AbstractDescriptorBox.class.getName());
 
 
     protected BaseDescriptor descriptor;
@@ -80,10 +80,10 @@ public class AbstractDescriptorBox extends AbstractFullBox {
             data.rewind();
             descriptor = ObjectDescriptorFactory.createFrom(-1, data.duplicate());
         } catch (IOException e) {
-            log.log(Level.WARNING, "Error parsing ObjectDescriptor", e);
+            LOG.warn("Error parsing ObjectDescriptor", e);
             //that's why we copied it ;)
         } catch (IndexOutOfBoundsException e) {
-            log.log(Level.WARNING, "Error parsing ObjectDescriptor", e);
+            LOG.warn("Error parsing ObjectDescriptor", e);
             //that's why we copied it ;)
         }
 

@@ -16,22 +16,21 @@
 package org.mp4parser;
 
 import org.mp4parser.boxes.UserBox;
-import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.IsoTypeReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This BoxParser handles the basic stuff like reading size and extracting box type.
  */
 public abstract class AbstractBoxParser implements BoxParser {
 
-    private static Logger LOG = Logger.getLogger(AbstractBoxParser.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(AbstractBoxParser.class.getName());
     ThreadLocal<ByteBuffer> header = new ThreadLocal<ByteBuffer>() {
         @Override
         protected ByteBuffer initialValue() {
@@ -66,7 +65,7 @@ public abstract class AbstractBoxParser implements BoxParser {
         long size = IsoTypeReader.readUInt32(header.get());
         // do plausibility check
         if (size < 8 && size > 1) {
-            LOG.severe("Plausibility check failed: size < 8 (size = " + size + "). Stop parsing!");
+            LOG.error("Plausibility check failed: size < 8 (size = {}). Stop parsing!", size);
             return null;
         }
 
@@ -96,9 +95,7 @@ public abstract class AbstractBoxParser implements BoxParser {
             }
             contentSize -= 16;
         }
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("Creating " + type + " " + Hex.encodeHex(new byte[]{header.get().get(4), header.get().get(5), header.get().get(6), header.get().get(7)}));
-        }
+        LOG.trace("Creating box {} {}", type, usertype);
         ParsableBox parsableBox = createBox(type, usertype, parentType);
         //LOG.finest("Parsing " + box.getType());
         // System.out.println("parsing " + Mp4Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);

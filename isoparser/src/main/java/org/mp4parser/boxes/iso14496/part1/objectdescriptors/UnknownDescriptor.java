@@ -15,13 +15,14 @@
  */
 
 package org.mp4parser.boxes.iso14496.part1.objectdescriptors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
 
 public class UnknownDescriptor extends BaseDescriptor {
-    private static Logger log = Logger.getLogger(UnknownDescriptor.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(UnknownDescriptor.class);
     private ByteBuffer data;
 
     @Override

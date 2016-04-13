@@ -21,12 +21,14 @@ import org.mp4parser.tools.IsoTypeReader;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
+import java.rmi.server.LogStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /* class tag values of 14496-1
 0x00 Forbidden
@@ -120,7 +122,7 @@ import java.util.logging.Logger;
 0xFF no object type specified h
  */
 public class ObjectDescriptorFactory {
-    protected static Logger log = Logger.getLogger(ObjectDescriptorFactory.class.getName());
+    protected static Logger LOG = LoggerFactory.getLogger(ObjectDescriptorFactory.class);
 
     protected static Map<Integer, Map<Integer, Class<? extends BaseDescriptor>>> descriptorRegistry = new HashMap<Integer, Map<Integer, Class<? extends BaseDescriptor>>>();
 
@@ -172,14 +174,16 @@ public class ObjectDescriptorFactory {
 
         BaseDescriptor baseDescriptor;
         if (aClass == null || aClass.isInterface() || Modifier.isAbstract(aClass.getModifiers())) {
-            log.warning("No ObjectDescriptor found for objectTypeIndication " + Integer.toHexString(objectTypeIndication) +
-                    " and tag " + Integer.toHexString(tag) + " found: " + aClass);
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("No ObjectDescriptor found for objectTypeIndication {} and tag {} found: {}",
+                        Integer.toHexString(objectTypeIndication), Integer.toHexString(tag), aClass);
+            }
             baseDescriptor = new UnknownDescriptor();
         } else {
             try {
                 baseDescriptor = aClass.newInstance();
             } catch (Exception e) {
-                log.log(Level.SEVERE, "Couldn't instantiate BaseDescriptor class " + aClass + " for objectTypeIndication " + objectTypeIndication + " and tag " + tag, e);
+                LOG.error("Couldn't instantiate BaseDescriptor class " + aClass + " for objectTypeIndication " + objectTypeIndication + " and tag " + tag, e);
                 throw new RuntimeException(e);
             }
         }
