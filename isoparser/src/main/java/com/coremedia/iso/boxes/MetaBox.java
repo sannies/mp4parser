@@ -20,11 +20,14 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.AbstractContainerBox;
+import com.googlecode.mp4parser.DataSource;
+import com.googlecode.mp4parser.MemoryDataSourceImpl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import com.googlecode.mp4parser.DataSource;
 import java.nio.channels.WritableByteChannel;
+
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 
 /**
@@ -34,8 +37,14 @@ import java.nio.channels.WritableByteChannel;
 public class MetaBox extends AbstractContainerBox {
     public static final String TYPE = "meta";
 
+    private boolean isFullBox = true; // default is fullbox cause that's what ISO defines, simple box is apple specifc
+
     private int version;
     private int flags;
+
+    public MetaBox() {
+        super(TYPE);
+    }
 
     public int getVersion() {
         return version;
@@ -70,30 +79,41 @@ public class MetaBox extends AbstractContainerBox {
         IsoTypeWriter.writeUInt24(bb, flags);
     }
 
-    public MetaBox() {
-        super(TYPE);
-    }
-
     @Override
     public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(4);
+        ByteBuffer bb = ByteBuffer.allocate(l2i(contentSize));
         dataSource.read(bb);
-        parseVersionAndFlags((ByteBuffer) bb.rewind());
-        initContainer(dataSource, contentSize - 4, boxParser);
+        bb.position(4);
+        String isHdlr = IsoTypeReader.read4cc(bb);
+        if ("hdlr".equals(isHdlr)) {
+            isFullBox = false;
+            initContainer(new MemoryDataSourceImpl((ByteBuffer) bb.rewind()), contentSize, boxParser);
+            // we got apple specifc box here
+        } else {
+            isFullBox = true;
+            parseVersionAndFlags((ByteBuffer) bb.rewind());
+            initContainer(new MemoryDataSourceImpl((ByteBuffer) bb.rewind()), contentSize - 4, boxParser);
+        }
+
     }
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         writableByteChannel.write(getHeader());
-        ByteBuffer bb = ByteBuffer.allocate(4);
-        writeVersionAndFlags(bb);
-        writableByteChannel.write((ByteBuffer) bb.rewind());
+        if (isFullBox) {
+            ByteBuffer bb = ByteBuffer.allocate(4);
+            writeVersionAndFlags(bb);
+            writableByteChannel.write((ByteBuffer) bb.rewind());
+        }
         writeContainer(writableByteChannel);
     }
     @Override
     public long getSize() {
         long s = getContainerSize();
-        long t = 4; // bytes to container start
+        long t = 0; // bytes to container start
+        if (isFullBox) {
+            t += 4;
+        }
         return s + t + ((largeBox || (s + t) >= (1L << 32)) ? 16 : 8);
 
     }
