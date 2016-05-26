@@ -92,7 +92,7 @@ public class MetaBox extends AbstractContainerBox {
         } else {
             isFullBox = true;
             parseVersionAndFlags((ByteBuffer) bb.rewind());
-            initContainer(new MemoryDataSourceImpl((ByteBuffer) bb.rewind()), contentSize - 4, boxParser);
+            initContainer(new MemoryDataSourceImpl(bb), contentSize - 4, boxParser);
         }
 
     }
