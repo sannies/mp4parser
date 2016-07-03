@@ -50,10 +50,9 @@ public class BetterFragmenter implements Fragmenter {
             }
         } else {
 
-
             double time = 0.0D;
             fragments = new long[]{1L};
-            for (int i = 0; i < durations.length; ++i) {
+            for (int i = 1; i < durations.length; ++i) {
                 time += (double) durations[i] / (double) ts;
                 if (time >= targetDuration) {
                     if (i > 0) {
@@ -63,11 +62,10 @@ public class BetterFragmenter implements Fragmenter {
                     time = 0.0D;
                 }
             }
-            // In case the last Fragment is shorter: make the previous one a bigger and omit the small one
+
             if (time < targetDuration && fragments.length > 1) {
-                long[] nuSegmentStartSamples = new long[fragments.length - 1];
-                System.arraycopy(fragments, 0, nuSegmentStartSamples, 0, fragments.length - 1);
-                fragments = nuSegmentStartSamples;
+                long numberSamplesLastTwoSegments = durations.length + 1 - fragments[fragments.length - 2];
+                fragments[fragments.length - 1] = fragments[fragments.length - 2] + numberSamplesLastTwoSegments / 2;
             }
 
         }

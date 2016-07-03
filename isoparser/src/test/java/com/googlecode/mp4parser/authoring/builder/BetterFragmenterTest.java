@@ -20,8 +20,8 @@ import java.util.Map;
 
 public class BetterFragmenterTest {
 
-    public void verify(long additional, long[] in, long[] expectedOut) {
-        Track t = new DummyTrack(additional, in);
+    public void verify(int total, long[] in, long[] expectedOut) {
+        Track t = new DummyTrack(total, in);
         Fragmenter f = new BetterFragmenter(2.0);
         long[] segmentStarter = f.sampleNumbers(t);
         Assert.assertArrayEquals(expectedOut, segmentStarter);
@@ -29,9 +29,12 @@ public class BetterFragmenterTest {
 
     @Test
     public void testPatterns() throws Exception {
-        verify(5, new long[]{1, 51, 62, 101}, new long[]{1, 51});
-        verify(50, new long[]{1, 6, 52, 101}, new long[]{1, 52, 101});
-        verify(50, new long[]{1, 51, 62, 101}, new long[]{1, 51, 101});
+        verify(151, null, new long[]{1, 51, 101, 126});
+        verify(121, null, new long[]{1, 51, 86});
+        verify(106, new long[]{1, 51, 62, 101}, new long[]{1, 51});
+        verify(151, new long[]{1, 6, 52, 101}, new long[]{1, 52, 101});
+        verify(151, new long[]{1, 51, 62, 101}, new long[]{1, 51, 101});
+
     }
 
     class DummyTrack implements Track {
@@ -39,9 +42,9 @@ public class BetterFragmenterTest {
         long[] syncSamples;
         long[] sampleDurations;
 
-        public DummyTrack(long additional, long... syncSamples) {
+        public DummyTrack(int total, long... syncSamples) {
             this.syncSamples = syncSamples;
-            int lastSample = (int) (syncSamples[syncSamples.length - 1] + additional);
+            int lastSample = total;
             sampleDurations = new long[lastSample];
             Arrays.fill(sampleDurations, 40);
 
