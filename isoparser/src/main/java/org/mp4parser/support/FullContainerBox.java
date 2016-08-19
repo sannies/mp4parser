@@ -27,13 +27,14 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract base class for a full tools box only containing ither boxes.
  */
 public abstract class FullContainerBox extends AbstractContainerBox implements FullBox {
-    private static Logger LOG = Logger.getLogger(FullContainerBox.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(FullContainerBox.class);
     private int version;
     private int flags;
 
@@ -57,7 +58,6 @@ public abstract class FullContainerBox extends AbstractContainerBox implements F
         this.flags = flags;
     }
 
-    @SuppressWarnings("unchecked")
     public <T extends Box> List<T> getBoxes(Class<T> clazz) {
         return getBoxes(clazz, false);
     }

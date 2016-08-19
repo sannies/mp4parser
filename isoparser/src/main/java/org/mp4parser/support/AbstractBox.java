@@ -23,6 +23,9 @@ import org.mp4parser.boxes.UserBox;
 import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.IsoTypeWriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -41,7 +44,7 @@ import static org.mp4parser.tools.CastUtils.l2i;
  * it is accessible by the <code>PropertyBoxParserImpl</code>
  */
 public abstract class AbstractBox implements ParsableBox {
-    private static Logger LOG = Logger.getLogger(AbstractBox.class);
+    private static Logger LOG = LoggerFactory.getLogger(AbstractBox.class);
 
     protected String type;
     protected ByteBuffer content;
@@ -94,7 +97,7 @@ public abstract class AbstractBox implements ParsableBox {
 
         while ((content.position() < contentSize)) {
             if (dataSource.read(content) == -1) {
-                LOG.logError(this + " might have been truncated by file end. bytesRead=" + content.position() + " contentSize=" + contentSize);
+                LOG.error("{} might have been truncated by file end. bytesRead={} contentSize={}", this, content.position(), contentSize);
                 break;
             }
         }
@@ -129,7 +132,7 @@ public abstract class AbstractBox implements ParsableBox {
      * which is done
      */
     public synchronized final void parseDetails() {
-        LOG.logDebug("parsing details of " + this.getType());
+        LOG.debug("parsing details of {}", this.getType());
         if (content != null) {
             ByteBuffer content = this.content;
             isParsed = true;
@@ -198,8 +201,7 @@ public abstract class AbstractBox implements ParsableBox {
 
 
         if (content.remaining() != bb.remaining()) {
-            System.err.print(this.getType() + ": remaining differs " + content.remaining() + " vs. " + bb.remaining());
-            LOG.logError(this.getType() + ": remaining differs " + content.remaining() + " vs. " + bb.remaining());
+            LOG.error("{}: remaining differs {}  vs. {}", this.getType(), content.remaining(), bb.remaining());
             return false;
         }
         int p = content.position();
@@ -207,13 +209,13 @@ public abstract class AbstractBox implements ParsableBox {
             byte v1 = content.get(i);
             byte v2 = bb.get(j);
             if (v1 != v2) {
-                LOG.logError(String.format("%s: buffers differ at %d: %2X/%2X", this.getType(), i, v1, v2));
+                LOG.error("{}: buffers differ at {}: {}/{}", this.getType(), i, v1, v2);
                 byte[] b1 = new byte[content.remaining()];
                 byte[] b2 = new byte[bb.remaining()];
                 content.get(b1);
                 bb.get(b2);
-                System.err.println("original      : " + Hex.encodeHex(b1, 4));
-                System.err.println("reconstructed : " + Hex.encodeHex(b2, 4));
+                LOG.error("original      : {}", Hex.encodeHex(b1, 4));
+                LOG.error("reconstructed : {}", Hex.encodeHex(b2, 4));
                 return false;
             }
         }

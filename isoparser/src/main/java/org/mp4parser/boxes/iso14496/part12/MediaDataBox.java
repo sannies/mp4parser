@@ -19,7 +19,9 @@ package org.mp4parser.boxes.iso14496.part12;
 import org.mp4parser.BoxParser;
 import org.mp4parser.ParsableBox;
 import org.mp4parser.support.DoNotParseDetail;
-import org.mp4parser.support.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,7 +46,7 @@ import java.nio.channels.WritableByteChannel;
  */
 public final class MediaDataBox implements ParsableBox {
     public static final String TYPE = "mdat";
-    private static Logger LOG = Logger.getLogger(MediaDataBox.class);
+    private static Logger LOG = LoggerFactory.getLogger(MediaDataBox.class);
     ByteBuffer header;
     File dataFile;
 

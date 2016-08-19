@@ -33,7 +33,9 @@ import org.mp4parser.muxer.AbstractTrack;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.Track;
 import org.mp4parser.muxer.TrackMetaData;
-import org.mp4parser.support.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -45,7 +47,7 @@ import java.util.*;
  * also the decoder settings must be the same.
  */
 public class AppendTrack extends AbstractTrack {
-    private static Logger LOG = Logger.getLogger(AppendTrack.class);
+    private static Logger LOG = LoggerFactory.getLogger(AppendTrack.class);
     Track[] tracks;
     SampleDescriptionBox stsd;
     List<Sample> lists;
@@ -107,7 +109,7 @@ public class AppendTrack extends AbstractTrack {
             stsd1.getBox(Channels.newChannel(curBaos));
             stsd2.getBox(Channels.newChannel(refBaos));
         } catch (IOException e) {
-            LOG.logError(e.getMessage());
+            LOG.error(e.getMessage());
             return null;
         }
         byte[] cur = curBaos.toByteArray();
@@ -141,48 +143,48 @@ public class AppendTrack extends AbstractTrack {
         if (vse1.getHorizresolution() == vse2.getHorizresolution()) {
             vse.setHorizresolution(vse1.getHorizresolution());
         } else {
-            LOG.logError("Horizontal Resolution differs");
+            LOG.error("Horizontal Resolution differs");
             return null;
         }
         vse.setCompressorname(vse1.getCompressorname()); // ignore if they differ
         if (vse1.getDepth() == vse2.getDepth()) {
             vse.setDepth(vse1.getDepth());
         } else {
-            LOG.logError("Depth differs");
+            LOG.error("Depth differs");
             return null;
         }
 
         if (vse1.getFrameCount() == vse2.getFrameCount()) {
             vse.setFrameCount(vse1.getFrameCount());
         } else {
-            LOG.logError("frame count differs");
+            LOG.error("frame count differs");
             return null;
         }
 
         if (vse1.getHeight() == vse2.getHeight()) {
             vse.setHeight(vse1.getHeight());
         } else {
-            LOG.logError("height differs");
+            LOG.error("height differs");
             return null;
         }
         if (vse1.getWidth() == vse2.getWidth()) {
             vse.setWidth(vse1.getWidth());
         } else {
-            LOG.logError("width differs");
+            LOG.error("width differs");
             return null;
         }
 
         if (vse1.getVertresolution() == vse2.getVertresolution()) {
             vse.setVertresolution(vse1.getVertresolution());
         } else {
-            LOG.logError("vert resolution differs");
+            LOG.error("vert resolution differs");
             return null;
         }
 
         if (vse1.getHorizresolution() == vse2.getHorizresolution()) {
             vse.setHorizresolution(vse1.getHorizresolution());
         } else {
-            LOG.logError("horizontal resolution differs");
+            LOG.error("horizontal resolution differs");
             return null;
         }
 
@@ -198,7 +200,7 @@ public class AppendTrack extends AbstractTrack {
                     cur1.getBox(Channels.newChannel(baos1));
                     cur2.getBox(Channels.newChannel(baos2));
                 } catch (IOException e) {
-                    LOG.logWarn(e.getMessage());
+                    LOG.warn(e.getMessage());
                     return null;
                 }
                 if (Arrays.equals(baos1.toByteArray(), baos2.toByteArray())) {
@@ -220,7 +222,7 @@ public class AppendTrack extends AbstractTrack {
         if (ase1.getBytesPerFrame() == ase2.getBytesPerFrame()) {
             ase.setBytesPerFrame(ase1.getBytesPerFrame());
         } else {
-            LOG.logError("BytesPerFrame differ");
+            LOG.error("BytesPerFrame differ");
             return null;
         }
         if (ase1.getBytesPerPacket() == ase2.getBytesPerPacket()) {
@@ -231,7 +233,7 @@ public class AppendTrack extends AbstractTrack {
         if (ase1.getBytesPerSample() == ase2.getBytesPerSample()) {
             ase.setBytesPerSample(ase1.getBytesPerSample());
         } else {
-            LOG.logError("BytesPerSample differ");
+            LOG.error("BytesPerSample differ");
             return null;
         }
         if (ase1.getChannelCount() == ase2.getChannelCount()) {
@@ -242,7 +244,7 @@ public class AppendTrack extends AbstractTrack {
         if (ase1.getPacketSize() == ase2.getPacketSize()) {
             ase.setPacketSize(ase1.getPacketSize());
         } else {
-            LOG.logError("ChannelCount differ");
+            LOG.error("ChannelCount differ");
             return null;
         }
         if (ase1.getCompressionId() == ase2.getCompressionId()) {
@@ -287,7 +289,7 @@ public class AppendTrack extends AbstractTrack {
                     cur1.getBox(Channels.newChannel(baos1));
                     cur2.getBox(Channels.newChannel(baos2));
                 } catch (IOException e) {
-                    LOG.logWarn(e.getMessage());
+                    LOG.warn(e.getMessage());
                     return null;
                 }
                 if (Arrays.equals(baos1.toByteArray(), baos2.toByteArray())) {
@@ -386,7 +388,7 @@ public class AppendTrack extends AbstractTrack {
             }
             return esds1;
         } else {
-            LOG.logError("I can only merge ESDescriptors");
+            LOG.error("I can only merge ESDescriptors");
             return null;
         }
     }

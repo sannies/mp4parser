@@ -27,11 +27,13 @@ import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.Track;
 import org.mp4parser.muxer.tracks.CencEncryptedTrack;
-import org.mp4parser.support.Logger;
 import org.mp4parser.tools.IsoTypeWriter;
 import org.mp4parser.tools.Mp4Arrays;
 import org.mp4parser.tools.Offsets;
 import org.mp4parser.tools.Path;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -46,7 +48,7 @@ import static org.mp4parser.tools.Mp4Math.lcm;
  */
 public class DefaultMp4Builder implements Mp4Builder {
 
-    private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class);
+    private static Logger LOG = LoggerFactory.getLogger(DefaultMp4Builder.class);
     Map<Track, StaticChunkOffsetBox> chunkOffsetBoxes = new HashMap<Track, StaticChunkOffsetBox>();
     Set<SampleAuxiliaryInformationOffsetsBox> sampleAuxiliaryInformationOffsetsBoxes = new HashSet<SampleAuxiliaryInformationOffsetsBox>();
     HashMap<Track, List<Sample>> track2Sample = new HashMap<Track, List<Sample>>();
@@ -82,7 +84,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         if (fragmenter == null) {
             fragmenter = new DefaultFragmenterImpl(2);
         }
-        LOG.logDebug("Creating movie " + movie);
+        LOG.debug("Creating movie {}", movie);
         for (Track track : movie.getTracks()) {
             // getting the samples may be a time consuming activity
             List<Sample> samples = track.getSamples();
@@ -113,7 +115,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             contentSize += sum(stsz.getSampleSizes());
 
         }
-        LOG.logDebug("About to create mdat");
+        LOG.debug("About to create mdat");
         InterleaveChunkMdat mdat = new InterleaveChunkMdat(movie, chunks, contentSize);
 
         long dataOffset = 16;
@@ -121,7 +123,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             dataOffset += lightBox.getSize();
         }
         isoFile.addBox(mdat);
-        LOG.logDebug("mdat crated");
+        LOG.debug("mdat crated");
 
         /*
         dataOffset is where the first sample starts. In this special mdat the samples always start
@@ -307,7 +309,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         ParsableBox stbl = createStbl(track, movie, chunks);
         minf.addBox(stbl);
         mdia.addBox(minf);
-        LOG.logDebug("done with trak for track_" + track.getTrackMetaData().getTrackId());
+        LOG.debug("done with trak for track_{}", track.getTrackMetaData().getTrackId());
         return trackBox;
     }
 
@@ -388,7 +390,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             createCencBoxes((CencEncryptedTrack) track, stbl, chunks.get(track));
         }
         createSubs(track, stbl);
-        LOG.logDebug("done with stbl for track_" + track.getTrackMetaData().getTrackId());
+        LOG.debug("done with stbl for track_{}", track.getTrackMetaData().getTrackId());
         return stbl;
     }
 
@@ -455,7 +457,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
             long offset = 0;
             // all tracks have the same number of chunks
-            LOG.logDebug("Calculating chunk offsets for track_" + targetTrack.getTrackMetaData().getTrackId());
+            LOG.debug("Calculating chunk offsets for track_{}", targetTrack.getTrackMetaData().getTrackId());
 
             List<Track> tracks = new ArrayList<Track>(chunks.keySet());
             Collections.sort(tracks, new Comparator<Track>() {
@@ -709,7 +711,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             long writtenBytes = 0;
             long writtenMegaBytes = 0;
 
-            LOG.logDebug("About to write " + contentSize);
+            LOG.debug("About to write {}", contentSize);
             for (List<Sample> samples : chunkList) {
                 for (Sample sample : samples) {
                     sample.writeTo(writableByteChannel);
@@ -717,7 +719,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                     if (writtenBytes > 1024 * 1024) {
                         writtenBytes -= 1024 * 1024;
                         writtenMegaBytes++;
-                        LOG.logDebug("Written " + writtenMegaBytes + "MB");
+                        LOG.debug("Written {} MB", writtenMegaBytes);
                     }
                 }
             }

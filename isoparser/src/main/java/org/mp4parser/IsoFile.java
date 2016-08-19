@@ -18,7 +18,9 @@ package org.mp4parser;
 
 import org.mp4parser.boxes.iso14496.part12.MovieBox;
 import org.mp4parser.support.DoNotParseDetail;
-import org.mp4parser.support.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.channels.ReadableByteChannel;
@@ -30,7 +32,7 @@ import java.nio.channels.WritableByteChannel;
  */
 @DoNotParseDetail
 public class IsoFile extends BasicContainer implements Closeable {
-    private static Logger LOG = Logger.getLogger(IsoFile.class);
+    private static Logger LOG = LoggerFactory.getLogger(IsoFile.class);
     private ReadableByteChannel readableByteChannel;
 
 

@@ -18,11 +18,13 @@ package org.mp4parser.boxes.iso14496.part12;
 
 
 import org.mp4parser.support.AbstractFullBox;
-import org.mp4parser.support.Logger;
 import org.mp4parser.support.Matrix;
 import org.mp4parser.tools.DateHelper;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.Date;
@@ -39,7 +41,7 @@ import java.util.Date;
  */
 public class TrackHeaderBox extends AbstractFullBox {
     public static final String TYPE = "tkhd";
-    private static Logger LOG = Logger.getLogger(TrackHeaderBox.class);
+    private static Logger LOG = LoggerFactory.getLogger(TrackHeaderBox.class);
     private Date creationTime = new Date(0);
     private Date modificationTime = new Date(0);
     private long trackId;
@@ -176,7 +178,7 @@ public class TrackHeaderBox extends AbstractFullBox {
         } // 196
 
         if (duration < -1) {
-            LOG.logWarn("tkhd duration is not in expected range");
+            LOG.warn("tkhd duration is not in expected range");
         }
 
         IsoTypeReader.readUInt32(content);

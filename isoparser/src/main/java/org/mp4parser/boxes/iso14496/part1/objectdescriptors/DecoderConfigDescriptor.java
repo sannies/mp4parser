@@ -19,13 +19,13 @@ package org.mp4parser.boxes.iso14496.part1.objectdescriptors;
 import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * class DecoderConfigDescriptor extends BaseDescriptor : bit(8)
@@ -44,7 +44,7 @@ import java.util.logging.Logger;
  */
 @Descriptor(tags = {0x04})
 public class DecoderConfigDescriptor extends BaseDescriptor {
-    private static Logger log = Logger.getLogger(DecoderConfigDescriptor.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(DecoderConfigDescriptor.class);
     int objectTypeIndication;
     int streamType;
     int upStream;
@@ -78,7 +78,7 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
             final int begin = bb.position();
             descriptor = ObjectDescriptorFactory.createFrom(objectTypeIndication, bb);
             final int read = bb.position() - begin;
-            log.finer(descriptor + " - DecoderConfigDescr1 read: " + read + ", size: " + (descriptor != null ? descriptor.getSize() : null));
+            LOG.trace("{} - DecoderConfigDescr1 read: {}, size: {}", descriptor, read, descriptor != null ? descriptor.getSize() : null);
             if (descriptor != null) {
                 final int size = descriptor.getSize();
                 if (read < size) {
@@ -214,7 +214,7 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
         sb.append(", decoderSpecificInfo=").append(decoderSpecificInfo);
         sb.append(", audioSpecificInfo=").append(audioSpecificInfo);
         sb.append(", configDescriptorDeadBytes=").append(Hex.encodeHex(configDescriptorDeadBytes != null ? configDescriptorDeadBytes : new byte[]{}));
-        sb.append(", profileLevelIndicationDescriptors=").append(profileLevelIndicationDescriptors == null ? "null" : Arrays.asList(profileLevelIndicationDescriptors).toString());
+        sb.append(", profileLevelIndicationDescriptors=").append(profileLevelIndicationDescriptors == null ? "null" : profileLevelIndicationDescriptors);
         sb.append('}');
         return sb.toString();
     }

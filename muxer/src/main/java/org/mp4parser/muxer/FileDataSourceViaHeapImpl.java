@@ -1,8 +1,6 @@
 package org.mp4parser.muxer;
 
 
-import org.mp4parser.support.Logger;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -11,11 +9,14 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.mp4parser.tools.CastUtils.l2i;
 
 
 public class FileDataSourceViaHeapImpl implements DataSource {
-    private static Logger LOG = Logger.getLogger(FileDataSourceViaHeapImpl.class);
+    private static Logger LOG = LoggerFactory.getLogger(FileDataSourceViaHeapImpl.class);
     FileChannel fc;
     String filename;
 
