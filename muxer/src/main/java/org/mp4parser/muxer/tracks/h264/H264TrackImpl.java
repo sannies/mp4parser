@@ -13,19 +13,21 @@ import org.mp4parser.muxer.tracks.h264.parsing.model.PictureParameterSet;
 import org.mp4parser.muxer.tracks.h264.parsing.model.SeqParameterSet;
 import org.mp4parser.tools.Mp4Arrays;
 import org.mp4parser.tools.RangeStartMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.logging.Logger;
+
 
 /**
  * The <code>H264TrackImpl</code> creates a <code>Track</code> from an H.264
  * Annex B file.
  */
 public class H264TrackImpl extends AbstractH26XTrack {
-    private static final Logger LOG = Logger.getLogger(H264TrackImpl.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(H264TrackImpl.class.getName());
 
     Map<Integer, ByteBuffer> spsIdToSpsBytes = new HashMap<Integer, ByteBuffer>();
     Map<Integer, SeqParameterSet> spsIdToSps = new HashMap<Integer, SeqParameterSet>();
@@ -308,7 +310,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     FirstVclNalDetector current = new FirstVclNalDetector(nal,
                             nalUnitHeader.nal_ref_idc, nalUnitHeader.nal_unit_type);
                     if (fvnd != null && fvnd.isFirstInNew(current)) {
-                        LOG.finest("Wrapping up cause of first vcl nal is found");
+                        LOG.debug("Wrapping up cause of first vcl nal is found");
                         createSample(buffered);
                     }
                     fvnd = current;
@@ -319,7 +321,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
                 case H264NalUnitTypes.SEI:
                     if (fvnd != null) {
-                        LOG.finest("Wrapping up cause of SEI after vcl marks new sample");
+                        LOG.debug("Wrapping up cause of SEI after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -330,7 +332,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
                 case H264NalUnitTypes.AU_UNIT_DELIMITER:
                     if (fvnd != null) {
-                        LOG.finest("Wrapping up cause of AU after vcl marks new sample");
+                        LOG.debug("Wrapping up cause of AU after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -339,7 +341,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     break;
                 case H264NalUnitTypes.SEQ_PARAMETER_SET:
                     if (fvnd != null) {
-                        LOG.finest("Wrapping up cause of SPS after vcl marks new sample");
+                        LOG.debug("Wrapping up cause of SPS after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -347,7 +349,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     break;
                 case 8:
                     if (fvnd != null) {
-                        LOG.finest("Wrapping up cause of PPS after vcl marks new sample");
+                        LOG.debug("Wrapping up cause of PPS after vcl marks new sample");
                         createSample(buffered);
                         fvnd = null;
                     }
@@ -363,7 +365,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
                 default:
                     //  buffered.add(nal);
-                    LOG.warning("Unknown NAL unit type: " + nalUnitHeader.nal_unit_type);
+                    LOG.warn("Unknown NAL unit type: " + nalUnitHeader.nal_unit_type);
 
             }
 
@@ -434,7 +436,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
             }
         }
         if (nu == null) {
-            LOG.warning("Sample without Slice");
+            LOG.warn("Sample without Slice");
             return;
         }
         assert slice != null;
@@ -583,16 +585,16 @@ public class H264TrackImpl extends AbstractH26XTrack {
                 timescale = firstSeqParameterSet.vuiParams.time_scale >> 1; // Not sure why, but I found this in several places, and it works...
                 frametick = firstSeqParameterSet.vuiParams.num_units_in_tick;
                 if (timescale == 0 || frametick == 0) {
-                    LOG.warning("vuiParams contain invalid values: time_scale: " + timescale + " and frame_tick: " + frametick + ". Setting frame rate to 25fps");
+                    LOG.warn("vuiParams contain invalid values: time_scale: " + timescale + " and frame_tick: " + frametick + ". Setting frame rate to 25fps");
                     timescale = 90000;
                     frametick = 3600;
                 }
 
                 if (timescale / frametick > 100) {
-                    LOG.warning("Framerate is " + (timescale / frametick) + ". That is suspicious.");
+                    LOG.warn("Framerate is " + (timescale / frametick) + ". That is suspicious.");
                 }
             } else {
-                LOG.warning("Can't determine frame rate. Guessing 25 fps");
+                LOG.warn("Can't determine frame rate. Guessing 25 fps");
                 timescale = 90000;
                 frametick = 3600;
             }

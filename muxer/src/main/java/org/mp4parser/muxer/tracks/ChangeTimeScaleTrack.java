@@ -24,19 +24,21 @@ import org.mp4parser.muxer.Edit;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.Track;
 import org.mp4parser.muxer.TrackMetaData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+
 
 /**
  * Changes the timescale of a track by wrapping the track.
  */
 public class ChangeTimeScaleTrack implements Track {
-    private static final Logger LOG = Logger.getLogger(ChangeTimeScaleTrack.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(ChangeTimeScaleTrack.class.getName());
 
     Track source;
     List<CompositionTimeToSample.Entry> ctts;
@@ -115,7 +117,7 @@ public class ChangeTimeScaleTrack implements Track {
                 // we are at the sample before sync point
                 if (syncSampleTimes[ssIndex] != summedDurations) {
                     long correction = syncSampleTimes[ssIndex] - (summedDurations + x);
-                    LOG.finest(String.format("Sample %d %d / %d - correct by %d", i, summedDurations, syncSampleTimes[ssIndex], correction));
+                    LOG.debug(String.format("Sample %d %d / %d - correct by %d", i, summedDurations, syncSampleTimes[ssIndex], correction));
                     x += correction;
                 }
             }

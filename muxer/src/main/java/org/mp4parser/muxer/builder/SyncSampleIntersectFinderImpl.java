@@ -21,12 +21,13 @@ import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
 import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.Track;
 import org.mp4parser.tools.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import static org.mp4parser.tools.Mp4Math.lcm;
 
@@ -37,7 +38,7 @@ import static org.mp4parser.tools.Mp4Math.lcm;
  */
 public class SyncSampleIntersectFinderImpl implements Fragmenter {
 
-    private static Logger LOG = Logger.getLogger(SyncSampleIntersectFinderImpl.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(SyncSampleIntersectFinderImpl.class.getName());
 
     private final int minFragmentDurationSeconds;
     private Movie movie;
@@ -238,7 +239,7 @@ public class SyncSampleIntersectFinderImpl implements Fragmenter {
                 log += (String.format("%10d,", l));
             }
             log += ("]");
-            LOG.warning(log);
+            LOG.warn(log);
             log = "";
 
             log += String.format("%5d - In    :  [", syncSamples.length);
@@ -246,13 +247,13 @@ public class SyncSampleIntersectFinderImpl implements Fragmenter {
                 log += (String.format("%10d,", l));
             }
             log += ("]");
-            LOG.warning(log);
-            LOG.warning("There are less than 25% of common sync samples in the given track.");
+            LOG.warn(log);
+            LOG.warn("There are less than 25% of common sync samples in the given track.");
             throw new RuntimeException("There are less than 25% of common sync samples in the given track.");
         } else if (nuSyncSamples.size() < (syncSamples.length * 0.5)) {
-            LOG.fine("There are less than 50% of common sync samples in the given track. This is implausible but I'm ok to continue.");
+            LOG.info("There are less than 50% of common sync samples in the given track. This is implausible but I'm ok to continue.");
         } else if (nuSyncSamples.size() < syncSamples.length) {
-            LOG.finest("Common SyncSample positions vs. this tracks SyncSample positions: " + nuSyncSamples.size() + " vs. " + syncSamples.length);
+            LOG.trace("Common SyncSample positions vs. this tracks SyncSample positions: " + nuSyncSamples.size() + " vs. " + syncSamples.length);
         }
         // End: Warn user if samples are not matching!
 

@@ -10,6 +10,8 @@ import org.mp4parser.streaming.output.SampleSink;
 import org.mp4parser.tools.IsoTypeWriter;
 import org.mp4parser.tools.Mp4Arrays;
 import org.mp4parser.tools.Mp4Math;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -17,8 +19,6 @@ import java.nio.channels.WritableByteChannel;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.mp4parser.tools.CastUtils.l2i;
 
@@ -33,7 +33,7 @@ import static org.mp4parser.tools.CastUtils.l2i;
  */
 public class FragmentedMp4Writer extends DefaultBoxes implements SampleSink {
     public static final Object OBJ = new Object();
-    private static final Logger LOG = Logger.getLogger(FragmentedMp4Writer.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(FragmentedMp4Writer.class.getName());
     protected final WritableByteChannel sink;
     protected List<StreamingTrack> source;
     protected Date creationTime;
@@ -262,8 +262,8 @@ public class FragmentedMp4Writer extends DefaultBoxes implements SampleSink {
                         congestionControl.get(currentStreamingTrack).countDown();
                         long ts = nextFragmentWriteStartTime.get(currentStreamingTrack) + currentFragmentContainer.duration;
                         nextFragmentWriteStartTime.put(currentStreamingTrack, ts);
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine(currentStreamingTrack + " advanced to " + (double) ts / currentStreamingTrack.getTimescale());
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(currentStreamingTrack + " advanced to " + (double) ts / currentStreamingTrack.getTimescale());
                         }
                         sortTracks();
                     }
@@ -318,15 +318,15 @@ public class FragmentedMp4Writer extends DefaultBoxes implements SampleSink {
         tfraOffsets.put(streamingTrack, Mp4Arrays.copyOfAndAppend(tfraOffsets.get(streamingTrack), bytesWritten));
         tfraTimes.put(streamingTrack, Mp4Arrays.copyOfAndAppend(tfraTimes.get(streamingTrack), nextFragmentCreateStartTime.get(streamingTrack)));
 
-        LOG.finest("Container created");
+        LOG.trace("Container created");
         Box moof = createMoof(streamingTrack, samples);
-        LOG.finest("moof created");
+        LOG.trace("moof created");
         Box mdat = createMdat(samples);
-        LOG.finest("mdat created");
+        LOG.trace("mdat created");
 
-        if (LOG.isLoggable(Level.FINE)) {
+        if (LOG.isDebugEnabled()) {
             double duration = nextSampleStartTime.get(streamingTrack) - nextFragmentCreateStartTime.get(streamingTrack);
-            LOG.fine("created fragment for " + streamingTrack + " of " + (duration / streamingTrack.getTimescale()) + " seconds");
+            LOG.debug("created fragment for " + streamingTrack + " of " + (duration / streamingTrack.getTimescale()) + " seconds");
         }
         return new Box[]{moof, mdat};
     }

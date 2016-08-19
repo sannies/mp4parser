@@ -12,6 +12,8 @@ import org.mp4parser.streaming.output.SampleSink;
 import org.mp4parser.tools.Mp4Arrays;
 import org.mp4parser.tools.Mp4Math;
 import org.mp4parser.tools.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -19,8 +21,6 @@ import java.nio.channels.WritableByteChannel;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.mp4parser.tools.CastUtils.l2i;
 
@@ -33,7 +33,7 @@ import static org.mp4parser.tools.CastUtils.l2i;
 public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
 
     public static final Object OBJ = new Object();
-    private static final Logger LOG = Logger.getLogger(FragmentedMp4Writer.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(FragmentedMp4Writer.class.getName());
     protected final WritableByteChannel sink;
     protected List<StreamingTrack> source;
     protected Date creationTime = new Date();
@@ -252,8 +252,8 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
                         congestionControl.get(currentStreamingTrack).countDown();
                         long ts = nextChunkWriteStartTime.get(currentStreamingTrack) + currentFragmentContainer.duration;
                         nextChunkWriteStartTime.put(currentStreamingTrack, ts);
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine(currentStreamingTrack + " advanced to " + (double) ts / currentStreamingTrack.getTimescale());
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace(currentStreamingTrack + " advanced to " + (double) ts / currentStreamingTrack.getTimescale());
                         }
                         sortTracks();
                     }
@@ -354,7 +354,7 @@ public class StandardMp4Writer extends DefaultBoxes implements SampleSink {
 
         sampleNumbers.put(streamingTrack, sampleNumber);
         samples.clear();
-        System.err.println("CC created. mdat size: " + cc.mdat.size);
+        LOG.debug("CC created. mdat size: " + cc.mdat.size);
         return cc;
     }
 

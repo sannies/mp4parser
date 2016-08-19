@@ -12,6 +12,8 @@ import org.mp4parser.streaming.input.StreamingSampleImpl;
 import org.mp4parser.streaming.input.h264.spspps.PictureParameterSet;
 import org.mp4parser.streaming.input.h264.spspps.SeqParameterSet;
 import org.mp4parser.streaming.input.h264.spspps.SliceHeader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -21,11 +23,10 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 
 public abstract class H264NalConsumingTrack extends AbstractH264Track {
-    private static final Logger LOG = Logger.getLogger(H264NalConsumingTrack.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(H264NalConsumingTrack.class.getName());
     int max_dec_frame_buffering = 16;
     List<StreamingSample> decFrameBuffer = new ArrayList<StreamingSample>();
     List<StreamingSample> decFrameBuffer2 = new ArrayList<StreamingSample>();
@@ -71,19 +72,19 @@ public abstract class H264NalConsumingTrack extends AbstractH264Track {
                         nalUnitHeader.nal_ref_idc, nalUnitHeader.nal_unit_type);
                 sliceNalUnitHeader = nalUnitHeader;
                 if (fvnd != null && fvnd.isFirstInNew(current)) {
-                    LOG.finer("Wrapping up cause of first vcl nal is found");
+                    LOG.debug("Wrapping up cause of first vcl nal is found");
                     pushSample(createSample(buffered, fvnd.sliceHeader, sliceNalUnitHeader), false, false);
                     buffered.clear();
                 }
                 fvnd = current;
                 //System.err.println("" + nalUnitHeader.nal_unit_type);
                 buffered.add(nal);
-                //log.finer("NAL Unit Type: " + nalUnitHeader.nal_unit_type + " " + fvnd.frame_num);
+                //LOG.debug("NAL Unit Type: " + nalUnitHeader.nal_unit_type + " " + fvnd.frame_num);
                 break;
 
             case H264NalUnitTypes.SEI:
                 if (fvnd != null) {
-                    LOG.finer("Wrapping up cause of SEI after vcl marks new sample");
+                    LOG.debug("Wrapping up cause of SEI after vcl marks new sample");
                     pushSample(createSample(buffered, fvnd.sliceHeader, sliceNalUnitHeader), false, false);
                     buffered.clear();
                     fvnd = null;
@@ -94,7 +95,7 @@ public abstract class H264NalConsumingTrack extends AbstractH264Track {
 
             case H264NalUnitTypes.AU_UNIT_DELIMITER:
                 if (fvnd != null) {
-                    LOG.finer("Wrapping up cause of AU after vcl marks new sample");
+                    LOG.debug("Wrapping up cause of AU after vcl marks new sample");
                     pushSample(createSample(buffered, fvnd.sliceHeader, sliceNalUnitHeader), false, false);
                     buffered.clear();
                     fvnd = null;
@@ -104,7 +105,7 @@ public abstract class H264NalConsumingTrack extends AbstractH264Track {
                 break;
             case H264NalUnitTypes.SEQ_PARAMETER_SET:
                 if (fvnd != null) {
-                    LOG.finer("Wrapping up cause of SPS after vcl marks new sample");
+                    LOG.debug("Wrapping up cause of SPS after vcl marks new sample");
                     pushSample(createSample(buffered, fvnd.sliceHeader, sliceNalUnitHeader), false, false);
                     buffered.clear();
                     fvnd = null;
@@ -113,7 +114,7 @@ public abstract class H264NalConsumingTrack extends AbstractH264Track {
                 break;
             case 8:
                 if (fvnd != null) {
-                    LOG.finer("Wrapping up cause of PPS after vcl marks new sample");
+                    LOG.debug("Wrapping up cause of PPS after vcl marks new sample");
                     pushSample(createSample(buffered, fvnd.sliceHeader, sliceNalUnitHeader), false, false);
                     buffered.clear();
                     fvnd = null;
@@ -130,7 +131,7 @@ public abstract class H264NalConsumingTrack extends AbstractH264Track {
 
             default:
                 //  buffered.add(nal);
-                LOG.warning("Unknown NAL unit type: " + nalUnitHeader.nal_unit_type);
+                LOG.warn("Unknown NAL unit type: " + nalUnitHeader.nal_unit_type);
 
         }
 
@@ -214,7 +215,7 @@ public abstract class H264NalConsumingTrack extends AbstractH264Track {
 
 
     protected StreamingSample createSample(List<ByteBuffer> nals, SliceHeader sliceHeader, H264NalUnitHeader nu) throws IOException {
-        LOG.finer("Create Sample");
+        LOG.debug("Create Sample");
         configure();
         if (timescale == 0 || frametick == 0) {
             throw new IOException("Frame Rate needs to be configured either by hand or by SPS before samples can be created");
@@ -242,12 +243,12 @@ public abstract class H264NalConsumingTrack extends AbstractH264Track {
             try {
                 sps = spsForConfig.poll(5L, TimeUnit.SECONDS);
                 if (sps == null) {
-                    LOG.warning("Can't determine frame rate as no SPS became available in time");
+                    LOG.warn("Can't determine frame rate as no SPS became available in time");
                     return;
                 }
             } catch (InterruptedException e) {
-                LOG.warning(e.getMessage());
-                LOG.warning("Can't determine frame rate as no SPS became available in time");
+                LOG.warn(e.getMessage());
+                LOG.warn("Can't determine frame rate as no SPS became available in time");
                 return;
             }
 
@@ -325,22 +326,22 @@ public abstract class H264NalConsumingTrack extends AbstractH264Track {
                 _timescale = sps.vuiParams.time_scale >> 1; // Not sure why, but I found this in several places, and it works...
                 _frametick = sps.vuiParams.num_units_in_tick;
                 if (_timescale == 0 || _frametick == 0) {
-                    LOG.warning("vuiParams contain invalid values: time_scale: " + _timescale + " and frame_tick: " + _frametick + ". Setting frame rate to 25fps");
+                    LOG.warn("vuiParams contain invalid values: time_scale: " + _timescale + " and frame_tick: " + _frametick + ". Setting frame rate to 25fps");
                     _timescale = 0;
                     _frametick = 0;
                 }
                 if (_frametick > 0) {
                     if (_timescale / _frametick > 100) {
-                        LOG.warning("Framerate is " + (_timescale / _frametick) + ". That is suspicious.");
+                        LOG.warn("Framerate is " + (_timescale / _frametick) + ". That is suspicious.");
                     }
                 } else {
-                    LOG.warning("Frametick is " + _frametick + ". That is suspicious.");
+                    LOG.warn("Frametick is " + _frametick + ". That is suspicious.");
                 }
                 if (sps.vuiParams.bitstreamRestriction != null) {
                     max_dec_frame_buffering = sps.vuiParams.bitstreamRestriction.max_dec_frame_buffering;
                 }
             } else {
-                LOG.warning("Can't determine frame rate as SPS does not contain vuiParama");
+                LOG.warn("Can't determine frame rate as SPS does not contain vuiParama");
                 _timescale = 0;
                 _frametick = 0;
             }

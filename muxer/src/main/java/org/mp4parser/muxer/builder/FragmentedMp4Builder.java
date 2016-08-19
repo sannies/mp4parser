@@ -30,12 +30,12 @@ import org.mp4parser.muxer.Track;
 import org.mp4parser.muxer.tracks.CencEncryptedTrack;
 import org.mp4parser.tools.IsoTypeWriter;
 import org.mp4parser.tools.Path;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
-import java.util.logging.Logger;
 
 import static org.mp4parser.tools.CastUtils.l2i;
 
@@ -43,11 +43,15 @@ import static org.mp4parser.tools.CastUtils.l2i;
  * Creates a fragmented MP4 file.
  */
 public class FragmentedMp4Builder implements Mp4Builder {
-    private static final Logger LOG = Logger.getLogger(FragmentedMp4Builder.class.getName());
+    private static org.slf4j.Logger LOG = LoggerFactory.getLogger(FragmentedMp4Builder.class.getName());
 
     protected Fragmenter fragmenter;
 
     public FragmentedMp4Builder() {
+    }
+
+    private static long getTrackDuration(Movie movie, Track track) {
+        return (track.getDuration() * movie.getTimescale()) / track.getTrackMetaData().getTimescale();
     }
 
     public Date getDate() {
@@ -62,7 +66,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
         minorBrands.add("isom");
         return new FileTypeBox("iso6", 1, minorBrands);
     }
-
 
     protected List<Box> createMoofMdat(final Movie movie) {
         List<Box> moofsMdats = new ArrayList<Box>();
@@ -149,7 +152,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
      * {@inheritDoc}
      */
     public Container build(Movie movie) {
-        LOG.fine("Creating movie " + movie);
+        LOG.debug("Creating movie " + movie);
         if (fragmenter == null) {
             fragmenter = new DefaultFragmenterImpl(2);
         }
@@ -345,7 +348,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
         }
         parent.addBox(saiz);
     }
-
 
     /**
      * Gets all samples starting with <code>startSample</code> (one based -&gt; one is the first) and
@@ -715,10 +717,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return tkhd;
     }
 
-    private static long getTrackDuration(Movie movie, Track track) {
-        return (track.getDuration() * movie.getTimescale()) / track.getTrackMetaData().getTimescale();
-    }
-
     protected ParsableBox createMdhd(Movie movie, Track track) {
         MediaHeaderBox mdhd = new MediaHeaderBox();
         mdhd.setCreationTime(track.getTrackMetaData().getCreationTime());
@@ -783,7 +781,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     protected ParsableBox createTrak(Track track, Movie movie) {
-        LOG.fine("Creating Track " + track);
+        LOG.debug("Creating Track " + track);
         TrackBox trackBox = new TrackBox();
         trackBox.addBox(createTkhd(movie, track));
         ParsableBox edts = createEdts(track, movie);

@@ -13,6 +13,8 @@ import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.Mp4Arrays;
 import org.mp4parser.tools.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -20,7 +22,6 @@ import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 
 import static org.mp4parser.tools.CastUtils.l2i;
 
@@ -28,7 +29,7 @@ import static org.mp4parser.tools.CastUtils.l2i;
  *
  */
 public class H263TrackImpl extends AbstractH26XTrack {
-    private static Logger LOG = Logger.getLogger(ESDescriptor.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(ESDescriptor.class.getName());
 
     int RECTANGULAR = 0;
     int BINARY = 1;

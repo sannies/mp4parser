@@ -1,6 +1,8 @@
 package org.mp4parser.streaming.input.h264;
 
 import org.mp4parser.streaming.extensions.TrackIdTrackExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -9,8 +11,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Reads H264 data from an Annex B InputStream.
@@ -49,7 +49,7 @@ public class H264AnnexBTrack extends H264NalConsumingTrack implements Callable<V
     }
 
     public static class NalStreamTokenizer {
-        private static final Logger LOG = Logger.getLogger(NalStreamTokenizer.class.getName());
+        private static Logger LOG = LoggerFactory.getLogger(NalStreamTokenizer.class.getName());
         MyByteArrayOutputStream next = new MyByteArrayOutputStream();
         int pattern = 0;
         private InputStream inputStream;
@@ -61,8 +61,8 @@ public class H264AnnexBTrack extends H264NalConsumingTrack implements Callable<V
 
         public byte[] getNext() throws IOException {
             //System.err.println("getNext() called");
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.finest("getNext() called");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("getNext() called");
             }
             int c;
 

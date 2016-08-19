@@ -11,6 +11,8 @@ import org.mp4parser.streaming.extensions.DefaultSampleFlagsTrackExtension;
 import org.mp4parser.streaming.extensions.TrackIdTrackExtension;
 import org.mp4parser.streaming.input.AbstractStreamingTrack;
 import org.mp4parser.streaming.input.StreamingSampleImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -20,11 +22,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Logger;
 
 public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Callable<Void> {
     private static Map<Integer, Integer> samplingFrequencyIndexMap = new HashMap<Integer, Integer>();
-    private static Logger LOG = Logger.getLogger(AdtsAacStreamingTrack.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(AdtsAacStreamingTrack.class.getName());
 
     static {
         samplingFrequencyIndexMap.put(96000, 0);
@@ -75,6 +76,65 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
         defaultSampleFlagsTrackExtension.setSampleHasRedundancy(2);
         defaultSampleFlagsTrackExtension.setSampleIsNonSyncSample(false);
         this.addTrackExtension(defaultSampleFlagsTrackExtension);
+    }
+
+    private static AdtsHeader readADTSHeader(InputStream fis) throws IOException {
+        AdtsHeader hdr = new AdtsHeader();
+        int x = fis.read(); // A
+        int syncword = x << 4;
+        x = fis.read();
+        if (x == -1) {
+            return null;
+        }
+        syncword += (x >> 4);
+        if (syncword != 0xfff) {
+            throw new IOException("Expected Start Word 0xfff");
+        }
+        hdr.mpegVersion = (x & 0x8) >> 3;
+        hdr.layer = (x & 0x6) >> 1;
+        ; // C
+        hdr.protectionAbsent = (x & 0x1);  // D
+
+        x = fis.read();
+
+
+        hdr.profile = ((x & 0xc0) >> 6) + 1;  // E
+        //System.err.println(String.format("Profile %s", audioObjectTypes.get(hdr.profile)));
+        hdr.sampleFrequencyIndex = (x & 0x3c) >> 2;
+        assert hdr.sampleFrequencyIndex != 15;
+        hdr.sampleRate = samplingFrequencyIndexMap.get(hdr.sampleFrequencyIndex); // F
+        hdr.channelconfig = (x & 1) << 2; // H
+
+        x = fis.read();
+        hdr.channelconfig += (x & 0xc0) >> 6;
+
+        hdr.original = (x & 0x20) >> 5; // I
+        hdr.home = (x & 0x10) >> 4; // J
+        hdr.copyrightedStream = (x & 0x8) >> 3; // K
+        hdr.copyrightStart = (x & 0x4) >> 2; // L
+        hdr.frameLength = (x & 0x3) << 9;  // M
+
+        x = fis.read();
+        hdr.frameLength += (x << 3);
+
+        x = fis.read();
+        hdr.frameLength += (x & 0xe0) >> 5;
+
+        hdr.bufferFullness = (x & 0x1f) << 6;
+
+        x = fis.read();
+        hdr.bufferFullness += (x & 0xfc) >> 2;
+        hdr.numAacFramesPerAdtsFrame = ((x & 0x3)) + 1;
+
+
+        if (hdr.numAacFramesPerAdtsFrame != 1) {
+            throw new IOException("This muxer can only work with 1 AAC frame per ADTS frame");
+        }
+        if (hdr.protectionAbsent == 0) {
+            int crc1 = fis.read();
+            int crc2 = fis.read();
+        }
+        return hdr;
     }
 
     public boolean isClosed() {
@@ -156,66 +216,6 @@ public class AdtsAacStreamingTrack extends AbstractStreamingTrack implements Cal
     public void close() throws IOException {
         closed = true;
         is.close();
-    }
-
-
-    private static AdtsHeader readADTSHeader(InputStream fis) throws IOException {
-        AdtsHeader hdr = new AdtsHeader();
-        int x = fis.read(); // A
-        int syncword = x << 4;
-        x = fis.read();
-        if (x == -1) {
-            return null;
-        }
-        syncword += (x >> 4);
-        if (syncword != 0xfff) {
-            throw new IOException("Expected Start Word 0xfff");
-        }
-        hdr.mpegVersion = (x & 0x8) >> 3;
-        hdr.layer = (x & 0x6) >> 1;
-        ; // C
-        hdr.protectionAbsent = (x & 0x1);  // D
-
-        x = fis.read();
-
-
-        hdr.profile = ((x & 0xc0) >> 6) + 1;  // E
-        //System.err.println(String.format("Profile %s", audioObjectTypes.get(hdr.profile)));
-        hdr.sampleFrequencyIndex = (x & 0x3c) >> 2;
-        assert hdr.sampleFrequencyIndex != 15;
-        hdr.sampleRate = samplingFrequencyIndexMap.get(hdr.sampleFrequencyIndex); // F
-        hdr.channelconfig = (x & 1) << 2; // H
-
-        x = fis.read();
-        hdr.channelconfig += (x & 0xc0) >> 6;
-
-        hdr.original = (x & 0x20) >> 5; // I
-        hdr.home = (x & 0x10) >> 4; // J
-        hdr.copyrightedStream = (x & 0x8) >> 3; // K
-        hdr.copyrightStart = (x & 0x4) >> 2; // L
-        hdr.frameLength = (x & 0x3) << 9;  // M
-
-        x = fis.read();
-        hdr.frameLength += (x << 3);
-
-        x = fis.read();
-        hdr.frameLength += (x & 0xe0) >> 5;
-
-        hdr.bufferFullness = (x & 0x1f) << 6;
-
-        x = fis.read();
-        hdr.bufferFullness += (x & 0xfc) >> 2;
-        hdr.numAacFramesPerAdtsFrame = ((x & 0x3)) + 1;
-
-
-        if (hdr.numAacFramesPerAdtsFrame != 1) {
-            throw new IOException("This muxer can only work with 1 AAC frame per ADTS frame");
-        }
-        if (hdr.protectionAbsent == 0) {
-            int crc1 = fis.read();
-            int crc2 = fis.read();
-        }
-        return hdr;
     }
 
     public Void call() throws Exception {
