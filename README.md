@@ -14,7 +14,12 @@ Using the library
 
 The library is published to Maven repositories. Each release is pushed to a staging repository which is published on the release page. On request specific releases can be pushed to maven central. 
 
+Gradle:
+```gradle
+compile 'com.googlecode.mp4parser:isoparser:1.1.21'
 ```
+Maven:
+```xml
   <dependency>
     <groupId>com.googlecode.mp4parser</groupId>
     <artifactId>isoparser</artifactId>
