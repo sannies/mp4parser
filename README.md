@@ -16,7 +16,7 @@ The library is published to Maven repositories. Each release is pushed to a stag
 
 Gradle:
 ```gradle
-compile 'com.googlecode.mp4parser:isoparser:1.1.21'
+  compile 'com.googlecode.mp4parser:isoparser:1.1.21'
 ```
 Maven:
 ```xml
