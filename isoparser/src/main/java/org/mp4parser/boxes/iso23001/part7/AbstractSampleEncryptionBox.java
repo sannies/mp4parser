@@ -47,12 +47,12 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         ByteBuffer parseEight = content.duplicate();
         ByteBuffer parseSixteen = content.duplicate();
 
-        entries = parseEntries(parseEight, numOfEntries, 8);
+        entries = parseEntries(parseSixteen, numOfEntries, 16);
         if (entries == null) {
-            entries = parseEntries(parseSixteen, numOfEntries, 16);
-            content.position(content.position() + content.remaining() - parseSixteen.remaining());
-        } else {
+            entries = parseEntries(parseEight, numOfEntries, 8);
             content.position(content.position() + content.remaining() - parseEight.remaining());
+        } else {
+            content.position(content.position() + content.remaining() - parseSixteen.remaining());
         }
         if (entries == null) {
             throw new RuntimeException("Cannot parse SampleEncryptionBox");
