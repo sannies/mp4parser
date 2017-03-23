@@ -110,7 +110,7 @@ public class MediaHeaderBox extends AbstractFullBox {
             creationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             modificationTime = DateHelper.convert(IsoTypeReader.readUInt32(content));
             timescale = IsoTypeReader.readUInt32(content);
-            duration = content.getInt();
+            duration = IsoTypeReader.readUInt32(content);
         }
         if (duration < -1) {
             LOG.logWarn("mdhd duration is not in expected range");
