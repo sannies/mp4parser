@@ -58,7 +58,7 @@ public class FileDataSourceImpl implements DataSource {
     }
 
     public synchronized ByteBuffer map(long startPosition, long size) throws IOException {
-        LOG.logDebug(startPosition + " " + size);
+        //LOG.logDebug(startPosition + " " + size);
         return fc.map(FileChannel.MapMode.READ_ONLY, startPosition, size);
     }
 
