@@ -7,7 +7,11 @@
 .idea
 *.iml
 
-examples/target
-isoparser/target
+target
 isoparser/aac-sample.mp4
 isoparser/ac3-sample.mp4
+
+.classpath
+.project
+.settings
+

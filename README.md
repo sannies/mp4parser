@@ -16,9 +16,9 @@ The library is published to Maven repositories. Each release is pushed to a stag
 
 ```
   <dependency>
-    <groupId>com.googlecode.mp4parser</groupId>
+    <groupId>org.mp4parser</groupId>
     <artifactId>isoparser</artifactId>
-    <version>1.1.7</version>
+    <version>1.9.27</version>
   </dependency>
 ```
 

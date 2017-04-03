@@ -6,7 +6,7 @@
     <packaging>pom</packaging>
     <version>1.9.28-SNAPSHOT</version>
     <name>MP4 Parser Project</name>
-    <url>http://code.google.com/p/mp4parser/</url>
+    <url>https://github.com/sannies/mp4parser</url>
     <licenses>
         <license>
             <name>Apache License Version 2.0</name>
