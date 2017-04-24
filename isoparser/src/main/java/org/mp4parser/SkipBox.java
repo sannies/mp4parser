@@ -2,8 +2,8 @@ package org.mp4parser;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 public class SkipBox implements ParsableBox {
@@ -44,8 +44,8 @@ public class SkipBox implements ParsableBox {
             throws IOException {
         this.size = contentSize+8;
         
-        if( dataSource instanceof SeekableByteChannel ) {
-            SeekableByteChannel seekable = (SeekableByteChannel) dataSource;
+        if( dataSource instanceof FileChannel ) {
+            FileChannel seekable = (FileChannel) dataSource;
             sourcePosition = seekable.position();
             long newPosition = sourcePosition + contentSize;
             seekable.position(newPosition);
