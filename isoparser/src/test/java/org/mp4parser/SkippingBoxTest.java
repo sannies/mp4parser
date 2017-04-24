@@ -27,10 +27,7 @@ public class SkippingBoxTest {
 
 
     @Test
-    public void testBoxes() {
-        for(Box box: isoFile.getBoxes()) {
-            System.out.println("Box "+box.getSize()+" -> "+box);
-        }
+    public void testBoxesHaveBeenSkipped() {
         MovieBox movieBox = isoFile.getMovieBox();
         assertNotNull(movieBox);
         assertEquals(4, movieBox.getBoxes().size());
@@ -50,8 +47,6 @@ public class SkippingBoxTest {
         
         box = Path.getPath(isoFile, "moov/mvhd");
         assertTrue(box instanceof SkipBox);
-        
-
     }
 
 }
