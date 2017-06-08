@@ -69,7 +69,19 @@ public class SampleSizeBox extends AbstractFullBox {
         } else {
             return sampleSizes.length;
         }
+    }
 
+    /**
+     * Allows to set sample count in the cases when all samples have the same size
+     *
+     * @param sampleCount
+     */
+    public void setSampleCount(int sampleCount) {
+        if (sampleSize > 0) {
+            this.sampleCount = sampleCount;
+        } else {
+            throw new RuntimeException("sample count can be set only in fixed sampleSize case");
+        }
     }
 
     public long[] getSampleSizes() {
