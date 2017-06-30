@@ -3,6 +3,7 @@ package org.mp4parser.muxer.tracks.ttml;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
 import org.mp4parser.boxes.iso14496.part30.XMLSubtitleSampleEntry;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.AbstractTrack;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.TrackMetaData;
@@ -46,7 +47,6 @@ public class TtmlTrackImpl extends AbstractTrack {
         XPathFactory xPathfactory = XPathFactory.newInstance();
         XPath xpath = xPathfactory.newXPath();
         xpath.setNamespaceContext(TtmlHelpers.NAMESPACE_CONTEXT);
-        long startTime = 0;
 
         for (int sampleNo = 0; sampleNo < ttmls.size(); sampleNo++) {
             final Document ttml = ttmls.get(sampleNo);
@@ -87,6 +87,11 @@ public class TtmlTrackImpl extends AbstractTrack {
 
                 public ByteBuffer asByteBuffer() {
                     return ByteBuffer.wrap(finalSample);
+                }
+
+                @Override
+                public SampleEntry getSampleEntry() {
+                    return xmlSubtitleSampleEntry;
                 }
             });
         }

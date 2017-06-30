@@ -5,6 +5,7 @@ import org.mp4parser.boxes.iso14496.part1.objectdescriptors.BitReaderBuffer;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part15.HevcConfigurationBox;
 import org.mp4parser.boxes.iso14496.part15.HevcDecoderConfigurationRecord;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.sampleentry.VisualSampleEntry;
 import org.mp4parser.muxer.*;
 import org.mp4parser.muxer.builder.DefaultMp4Builder;
@@ -31,6 +32,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
     ArrayList<Sample> samples = new ArrayList<Sample>();
 
     SampleDescriptionBox stsd;
+    VisualSampleEntry visualSampleEntry;
 
     public H265TrackImpl(DataSource dataSource) throws IOException {
         super(dataSource);
@@ -137,6 +139,12 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
         Arrays.fill(decodingTimes, 1);
     }
 
+
+    @Override
+    protected SampleEntry getCurrentSampleEntry() {
+        return visualSampleEntry;
+    }
+
     public static H265NalUnitHeader getNalUnitHeader(ByteBuffer nal) {
         nal.position(0);
         int nal_unit_header = IsoTypeReader.readUInt16(nal);
@@ -163,7 +171,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
     private SampleDescriptionBox createSampleDescriptionBox() {
 
         stsd = new SampleDescriptionBox();
-        VisualSampleEntry visualSampleEntry = new VisualSampleEntry("hvc1");
+        visualSampleEntry = new VisualSampleEntry("hvc1");
         visualSampleEntry.setDataReferenceIndex(1);
         visualSampleEntry.setDepth(24);
         visualSampleEntry.setFrameCount(1);

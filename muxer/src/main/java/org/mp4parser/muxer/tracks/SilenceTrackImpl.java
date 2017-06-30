@@ -27,6 +27,7 @@ public class SilenceTrackImpl implements Track {
     String name;
 
     public SilenceTrackImpl(Track ofType, long ms) {
+
         source = ofType;
         name = "" + ms + "ms silence";
         if ("mp4a".equals(ofType.getSampleDescriptionBox().getSampleEntry().getType())) {
@@ -37,9 +38,8 @@ public class SilenceTrackImpl implements Track {
             while (numFrames-- > 0) {
                 samples.add(new SampleImpl((ByteBuffer) ByteBuffer.wrap(new byte[]{
                         0x21, 0x10, 0x04, 0x60, (byte) 0x8c, 0x1c,
-                }).rewind()));
+                }).rewind(), ofType.getSampleDescriptionBox().getSampleEntry()));
             }
-
         } else {
             throw new RuntimeException("Tracks of type " + ofType.getClass().getSimpleName() + " are not supported");
         }

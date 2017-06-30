@@ -6,9 +6,9 @@ import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.Track;
 import org.mp4parser.muxer.builder.DefaultMp4Builder;
 import org.mp4parser.muxer.container.mp4.MovieCreator;
-import org.mp4parser.muxer.tracks.CencDecryptingTrackImpl;
-import org.mp4parser.muxer.tracks.CencEncryptedTrack;
-import org.mp4parser.muxer.tracks.CencEncryptingTrackImpl;
+import org.mp4parser.muxer.tracks.encryption.CencDecryptingTrackImpl;
+import org.mp4parser.muxer.tracks.encryption.CencEncryptedTrack;
+import org.mp4parser.muxer.tracks.encryption.CencEncryptingTrackImpl;
 import org.mp4parser.tools.ByteBufferByteChannel;
 
 import javax.crypto.SecretKey;

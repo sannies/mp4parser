@@ -22,6 +22,7 @@ import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
 import org.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
 import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.AbstractTrack;
 import org.mp4parser.muxer.DataSource;
 import org.mp4parser.muxer.Sample;
@@ -116,6 +117,7 @@ public class AACTrackImpl extends AbstractTrack {
 
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
+    AudioSampleEntry audioSampleEntry;
     long[] decTimes;
     AdtsHeader firstHeader;
 
@@ -133,7 +135,7 @@ public class AACTrackImpl extends AbstractTrack {
     public AACTrackImpl(DataSource dataSource, String lang) throws IOException {
         super(dataSource.toString());
         this.dataSource = dataSource;
-        samples = new ArrayList<Sample>();
+        samples = new ArrayList<>();
         firstHeader = readSamples(dataSource);
 
         double packetsPerSecond = (double) firstHeader.sampleRate / 1024.0;
@@ -165,7 +167,7 @@ public class AACTrackImpl extends AbstractTrack {
         bufferSizeDB = 1536; /* TODO: Calcultate this somehow! */
 
         sampleDescriptionBox = new SampleDescriptionBox();
-        AudioSampleEntry audioSampleEntry = new AudioSampleEntry("mp4a");
+        audioSampleEntry = new AudioSampleEntry("mp4a");
         if (firstHeader.channelconfig == 7) {
             audioSampleEntry.setChannelCount(8);
         } else {
@@ -319,6 +321,11 @@ public class AACTrackImpl extends AbstractTrack {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
+                }
+
+                @Override
+                public SampleEntry getSampleEntry() {
+                    return audioSampleEntry;
                 }
             });
             channel.position(channel.position() + hdr.frameLength - hdr.getSize());

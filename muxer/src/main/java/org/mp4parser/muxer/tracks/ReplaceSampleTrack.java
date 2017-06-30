@@ -26,6 +26,8 @@ import java.nio.ByteBuffer;
 import java.util.AbstractList;
 import java.util.List;
 
+import static org.mp4parser.tools.CastUtils.l2i;
+
 /**
  * Generates a Track where a single sample has been replaced by a given <code>ByteBuffer</code>.
  */
@@ -40,7 +42,7 @@ public class ReplaceSampleTrack extends AbstractTrack {
         super("replace(" + origTrack.getName() + ")");
         this.origTrack = origTrack;
         this.sampleNumber = sampleNumber;
-        this.sampleContent = new SampleImpl(content);
+        this.sampleContent = new SampleImpl(content, this.origTrack.getSamples().get(l2i(sampleNumber)).getSampleEntry());
         this.samples = new ReplaceASingleEntryList();
 
     }

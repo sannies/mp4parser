@@ -7,6 +7,7 @@ import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
 import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.AbstractTrack;
 import org.mp4parser.muxer.DataSource;
 import org.mp4parser.muxer.Sample;
@@ -31,6 +32,7 @@ public class EC3TrackImpl extends AbstractTrack {
     private final DataSource dataSource;
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
+    AudioSampleEntry audioSampleEntry;
 
     private int bitrate;
     private int frameSize;
@@ -67,7 +69,7 @@ public class EC3TrackImpl extends AbstractTrack {
         int samplerate = bitStreamInfos.get(0).samplerate;
 
         sampleDescriptionBox = new SampleDescriptionBox();
-        AudioSampleEntry audioSampleEntry = new AudioSampleEntry("ec-3");
+        audioSampleEntry = new AudioSampleEntry("ec-3");
         audioSampleEntry.setChannelCount(2);  // According to  ETSI TS 102 366 Annex F
         audioSampleEntry.setSampleRate(samplerate);
         audioSampleEntry.setDataReferenceIndex(1);
@@ -399,6 +401,11 @@ public class EC3TrackImpl extends AbstractTrack {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
+                }
+
+                @Override
+                public SampleEntry getSampleEntry() {
+                    return audioSampleEntry;
                 }
             });
         }

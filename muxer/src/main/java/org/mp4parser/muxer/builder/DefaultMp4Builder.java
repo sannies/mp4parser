@@ -26,7 +26,7 @@ import org.mp4parser.muxer.Edit;
 import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.Track;
-import org.mp4parser.muxer.tracks.CencEncryptedTrack;
+import org.mp4parser.muxer.tracks.encryption.CencEncryptedTrack;
 import org.mp4parser.tools.IsoTypeWriter;
 import org.mp4parser.tools.Mp4Arrays;
 import org.mp4parser.tools.Offsets;

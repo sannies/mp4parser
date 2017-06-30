@@ -1,4 +1,4 @@
-package org.mp4parser.muxer.tracks;
+package org.mp4parser.muxer.tracks.encryption;
 
 import org.mp4parser.Box;
 import org.mp4parser.IsoFile;
@@ -43,17 +43,17 @@ import static org.mp4parser.tools.CastUtils.l2i;
 public class CencEncryptingTrackImpl implements CencEncryptedTrack {
 
     private final String encryptionAlgo;
-    Track source;
+    private Track source;
     Map<UUID, SecretKey> keys = new HashMap<UUID, SecretKey>();
-    UUID defaultKeyId;
-    List<Sample> samples;
-    List<CencSampleAuxiliaryDataFormat> cencSampleAuxiliaryData;
-    boolean dummyIvs = false;
-    boolean subSampleEncryption = false;
-    SampleDescriptionBox stsd = null;
+    private UUID defaultKeyId;
+    private List<Sample> samples;
+    private List<CencSampleAuxiliaryDataFormat> cencSampleAuxiliaryData;
+    private boolean dummyIvs = false;
+    private boolean subSampleEncryption = false;
+    private SampleDescriptionBox stsd = null;
 
-    RangeStartMap<Integer, SecretKey> indexToKey;
-    Map<GroupEntry, long[]> sampleGroups;
+    private RangeStartMap<Integer, KeyIdKeyPair> indexToKey;
+    private Map<GroupEntry, long[]> sampleGroups;
 
     Object configurationBox;
 
@@ -89,7 +89,7 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
         this.defaultKeyId = defaultKeyId;
         this.dummyIvs = dummyIvs;
         this.encryptionAlgo = encryptionAlgo;
-        this.sampleGroups = new HashMap<GroupEntry, long[]>();
+        this.sampleGroups = new HashMap<>();
         for (Map.Entry<GroupEntry, long[]> entry : source.getSampleGroups().entrySet()) {
             if (!(entry.getKey() instanceof CencSampleEncryptionInformationGroupEntry)) {
                 sampleGroups.put(entry.getKey(), entry.getValue());
@@ -128,7 +128,7 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
         if (keyRotation != null) {
             groupEntries.addAll(keyRotation.keySet());
         }
-        indexToKey = new RangeStartMap<Integer, SecretKey>();
+        indexToKey = new RangeStartMap<>();
         int lastSampleGroupDescriptionIndex = -1;
         for (int i = 0; i < source.getSamples().size(); i++) {
             int index = 0;
@@ -141,14 +141,16 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
             }
             if (lastSampleGroupDescriptionIndex != index) {
                 if (index == 0) {
-                    indexToKey.put(i, keys.get(defaultKeyId));
+                    indexToKey.put(i, new KeyIdKeyPair(defaultKeyId, keys.get(defaultKeyId)));
                 } else {
                     if (groupEntries.get(index - 1).getKid() != null) {
-                        SecretKey sk = keys.get(groupEntries.get(index - 1).getKid());
-                        if (sk == null) {
+                        UUID keyId = groupEntries.get(index - 1).getKid();
+                        SecretKey key = keys.get(keyId);
+
+                        if (key == null) {
                             throw new RuntimeException("Key " + groupEntries.get(index - 1).getKid() + " was not supplied for decryption");
                         }
-                        indexToKey.put(i, sk);
+                        indexToKey.put(i, new KeyIdKeyPair(keyId, key));
                     } else {
                         indexToKey.put(i, null);
                     }
@@ -179,7 +181,7 @@ public class CencEncryptingTrackImpl implements CencEncryptedTrack {
             Sample origSample = samples.get(i);
             CencSampleAuxiliaryDataFormat e = new CencSampleAuxiliaryDataFormat();
             this.cencSampleAuxiliaryData.add(e);
-            if (indexToKey.get(i) != null) {
+            if (indexToKey.get(i) != null && indexToKey.get(i).getKeyId()!=null) {
                 byte[] iv = ivInt.toByteArray();
                 byte[] eightByteIv = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
                 System.arraycopy(

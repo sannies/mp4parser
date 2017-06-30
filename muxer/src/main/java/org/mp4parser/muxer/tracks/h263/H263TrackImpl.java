@@ -5,6 +5,7 @@ import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part1.objectdescriptors.*;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.sampleentry.VisualSampleEntry;
 import org.mp4parser.muxer.*;
 import org.mp4parser.muxer.builder.DefaultMp4Builder;
@@ -44,6 +45,7 @@ public class H263TrackImpl extends AbstractH26XTrack {
     boolean esdsComplete = false;
     int fixed_vop_time_increment = -1;
     int vop_time_increment_resolution = 0;
+    VisualSampleEntry mp4v;
 
     public H263TrackImpl(DataSource dataSource) throws IOException {
         super(dataSource, false);
@@ -52,7 +54,7 @@ public class H263TrackImpl extends AbstractH26XTrack {
         List<ByteBuffer> nalsInSample = new ArrayList<ByteBuffer>();
         int visual_object_verid = 0;
 
-        VisualSampleEntry mp4v = new VisualSampleEntry("mp4v");
+        mp4v = new VisualSampleEntry("mp4v");
         stsd = new SampleDescriptionBox();
         stsd.addBox(mp4v);
 
@@ -137,6 +139,11 @@ public class H263TrackImpl extends AbstractH26XTrack {
 
         trackMetaData.setTimescale(vop_time_increment_resolution);
 
+    }
+
+    @Override
+    protected SampleEntry getCurrentSampleEntry() {
+        return null;
     }
 
     public static void main1(String[] args) throws IOException {
@@ -396,7 +403,7 @@ public class H263TrackImpl extends AbstractH26XTrack {
             data[2 * i] = startcode;
             data[2 * i + 1] = nals.get(i);
         }
-        return new SampleImpl(data);
+        return new SampleImpl(data, mp4v);
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {

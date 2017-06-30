@@ -9,14 +9,15 @@ import org.mp4parser.muxer.builder.DefaultMp4Builder;
 import org.mp4parser.muxer.builder.FragmentedMp4Builder;
 import org.mp4parser.muxer.builder.Mp4Builder;
 import org.mp4parser.muxer.container.mp4.MovieCreator;
-import org.mp4parser.muxer.tracks.CencDecryptingTrackImpl;
-import org.mp4parser.muxer.tracks.CencEncryptedTrack;
-import org.mp4parser.muxer.tracks.CencEncryptingTrackImpl;
+import org.mp4parser.muxer.tracks.encryption.CencDecryptingTrackImpl;
+import org.mp4parser.muxer.tracks.encryption.CencEncryptedTrack;
+import org.mp4parser.muxer.tracks.encryption.CencEncryptingTrackImpl;
 import org.mp4parser.tools.ByteBufferByteChannel;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.*;
@@ -52,14 +53,14 @@ public class CencFileRoundtripTest {
         cencAlt.setKid(uuidDefault);
         cencAlt.setIvSize(8);
         cencAlt.setEncrypted(true);
-        keyRotation1 = new HashMap<CencSampleEncryptionInformationGroupEntry, long[]>();
+        keyRotation1 = new HashMap<>();
         keyRotation1.put(cencNone, new long[]{0, 1, 2, 3, 4});
         keyRotation1.put(cencAlt, new long[]{10, 11, 12, 13});
 
-        keyRotation2 = new HashMap<CencSampleEncryptionInformationGroupEntry, long[]>();
+        keyRotation2 = new HashMap<>();
         keyRotation2.put(cencNone, new long[]{0, 2, 4, 6, 8});
 
-        keyRotation3 = new HashMap<CencSampleEncryptionInformationGroupEntry, long[]>();
+        keyRotation3 = new HashMap<>();
         keyRotation3.put(cencDefault, new long[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15});
 
     }
@@ -160,7 +161,7 @@ public class CencFileRoundtripTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         c.writeContainer(Channels.newChannel(baos));
-        //  new FileOutputStream("c:\\dev\\mp4parser\\m2.mp4").write(baos.toByteArray());
+        new FileOutputStream("m2.mp4").write(baos.toByteArray());
 
         Movie m3 = MovieCreator.build(new ByteBufferByteChannel(baos.toByteArray()), new InMemRandomAccessSourceImpl(baos.toByteArray()), "inmem");
 

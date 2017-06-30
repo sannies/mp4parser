@@ -2,6 +2,7 @@ package org.mp4parser.muxer.tracks;
 
 import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.*;
 
 import java.io.EOFException;
@@ -68,6 +69,8 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
         }
     }
 
+    abstract protected SampleEntry getCurrentSampleEntry();
+
     /**
      * Builds an MP4 sample from a list of NALs. Each NAL will be preceded by its
      * 4 byte (unit32) length.
@@ -89,7 +92,7 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
             data[2 * i + 1] = nals.get(i);
         }
 
-        return new SampleImpl(data);
+        return new SampleImpl(data, getCurrentSampleEntry());
     }
 
     public long[] getSampleDurations() {

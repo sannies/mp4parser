@@ -1,8 +1,10 @@
 package org.mp4parser.muxer.tracks;
 
+import org.mp4parser.Box;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part15.AvcConfigurationBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.sampleentry.VisualSampleEntry;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.Track;
@@ -16,9 +18,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.AbstractList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.mp4parser.tools.CastUtils.l2i;
 
@@ -27,29 +27,45 @@ import static org.mp4parser.tools.CastUtils.l2i;
  * has all SPS/PPS in the <code>SampleEntry</code> the avc3 track has all required SPS/PPS include in each sync sample.
  */
 public class Avc1ToAvc3TrackImpl extends WrappingTrack {
-    SampleDescriptionBox stsd;
-    AvcConfigurationBox avcC;
+
     List<Sample> samples;
+    Map<SampleEntry, SampleEntry> avc1toavc3 = new LinkedHashMap<>();
 
     public Avc1ToAvc3TrackImpl(Track parent) throws IOException {
         super(parent);
         if (!"avc1".equals(parent.getSampleDescriptionBox().getSampleEntry().getType())) {
             throw new RuntimeException("Only avc1 tracks can be converted to avc3 tracks");
         }
+        boolean foundAvc1 = false;
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        parent.getSampleDescriptionBox().getBox(Channels.newChannel(baos));
-        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
-        this.stsd = Path.getPath(isoFile, "stsd");
-        assert stsd != null;
-        ((VisualSampleEntry) stsd.getSampleEntry()).setType("avc3");
+        for (SampleEntry sampleEntry : parent.getSampleDescriptionBox().getBoxes(SampleEntry.class)) {
+            if (sampleEntry.getType().equals("avc1")) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                try {
+                    // This creates a copy cause I can't change the original instance
+                    sampleEntry.getBox(Channels.newChannel(baos));
+                    VisualSampleEntry avc3SampleEntry = (VisualSampleEntry) new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray()))).getBoxes().get(0);
+                    avc3SampleEntry.setType("avc3");
+                    avc1toavc3.put(sampleEntry, avc3SampleEntry);
+                    foundAvc1 = true;
+                } catch (IOException e) {
+                    throw new RuntimeException("Dumping sample entry to memory failed");
+                }
+            } else {
+                avc1toavc3.put(sampleEntry, sampleEntry);
+            }
 
-        avcC = Path.getPath(stsd, "avc./avcC");
+        }
+
+        assert foundAvc1: "There was no avc1 sample entry to convert it to avc3";
+
 
         samples = new ReplaceSyncSamplesList(parent.getSamples());
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
+        SampleDescriptionBox stsd = new SampleDescriptionBox();
+        stsd.setBoxes(new ArrayList<>(new ArrayList<Box>(avc1toavc3.values())));
         return stsd;
     }
 
@@ -67,10 +83,19 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
         @Override
         public Sample get(final int index) {
             if (Arrays.binarySearch(Avc1ToAvc3TrackImpl.this.getSyncSamples(), index + 1) >= 0) {
+                final Sample orignalSample = parentSamples.get(index);
+                final AvcConfigurationBox avcC = orignalSample.getSampleEntry().getBoxes(AvcConfigurationBox.class).get(0);
                 final int len = avcC.getLengthSizeMinusOne() + 1;
                 final ByteBuffer buf = ByteBuffer.allocate(len);
-                final Sample orignalSample = parentSamples.get(index);
+
+                final SampleEntry se = avc1toavc3.get(orignalSample.getSampleEntry());
+
+
                 return new Sample() {
+
+                    public SampleEntry getSampleEntry() {
+                        return se;
+                    }
 
                     public void writeTo(WritableByteChannel channel) throws IOException {
 

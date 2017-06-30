@@ -4,6 +4,7 @@ import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part15.AvcConfigurationBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.sampleentry.VisualSampleEntry;
 import org.mp4parser.muxer.DataSource;
 import org.mp4parser.muxer.FileDataSourceImpl;
@@ -60,6 +61,13 @@ public class H264TrackImpl extends AbstractH26XTrack {
     private boolean determineFrameRate = true;
     private String lang = "eng";
 
+    VisualSampleEntry visualSampleEntry;
+
+    protected SampleEntry getCurrentSampleEntry() {
+        return visualSampleEntry;
+    }
+
+
     /**
      * Creates a new <code>Track</code> object from a raw H264 source (<code>DataSource dataSource1</code>).
      * Whenever the timescale and frametick are set to negative value (e.g. -1) the H264TrackImpl
@@ -112,6 +120,8 @@ public class H264TrackImpl extends AbstractH26XTrack {
         return nalUnitHeader;
     }
 
+
+
     private void parse(LookAhead la) throws IOException {
 
 
@@ -119,17 +129,12 @@ public class H264TrackImpl extends AbstractH26XTrack {
         if (!readSamples(la)) {
             throw new IOException();
         }
-/*        System.err.println("psize: " + psize + "(" + pcount + ")");
-        System.err.println("bsize: " + bsize + "(" + bcount + ")");
-        System.err.println("isize: " + isize + "(" + icount + ")");*/
-
 
         if (!readVariables()) {
             throw new IOException();
         }
 
-        sampleDescriptionBox = new SampleDescriptionBox();
-        VisualSampleEntry visualSampleEntry = new VisualSampleEntry("avc1");
+        visualSampleEntry = new VisualSampleEntry("avc1");
         visualSampleEntry.setDataReferenceIndex(1);
         visualSampleEntry.setDepth(24);
         visualSampleEntry.setFrameCount(1);
@@ -162,6 +167,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
         );
 
         visualSampleEntry.addBox(avcConfigurationBox);
+        sampleDescriptionBox = new SampleDescriptionBox();
         sampleDescriptionBox.addBox(visualSampleEntry);
 
         trackMetaData.setCreationTime(new Date());

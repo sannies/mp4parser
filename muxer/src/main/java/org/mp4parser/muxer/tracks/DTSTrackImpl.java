@@ -6,6 +6,7 @@ import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.AbstractTrack;
 import org.mp4parser.muxer.DataSource;
 import org.mp4parser.muxer.Sample;
@@ -26,6 +27,7 @@ public class DTSTrackImpl extends AbstractTrack {
     private static final int BUFFER = 1024 * 1024 * 64;
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
+    AudioSampleEntry audioSampleEntry;
     int samplerate;
     int bitrate;
     int frameSize = 0;
@@ -87,7 +89,7 @@ public class DTSTrackImpl extends AbstractTrack {
         }
 
         sampleDescriptionBox = new SampleDescriptionBox();
-        AudioSampleEntry audioSampleEntry = new AudioSampleEntry(type);
+        audioSampleEntry = new AudioSampleEntry(type);
         audioSampleEntry.setChannelCount(channelCount);
         audioSampleEntry.setSampleRate(samplerate);
         audioSampleEntry.setDataReferenceIndex(1);
@@ -665,6 +667,11 @@ public class DTSTrackImpl extends AbstractTrack {
 
                 public ByteBuffer asByteBuffer() {
                     return finalSample;
+                }
+
+                @Override
+                public SampleEntry getSampleEntry() {
+                    return audioSampleEntry;
                 }
             });
             //System.err.println(finalSample.remaining());

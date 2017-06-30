@@ -1,5 +1,7 @@
 package org.mp4parser.muxer;
 
+import org.mp4parser.boxes.sampleentry.SampleEntry;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -10,14 +12,16 @@ public class SampleImpl implements Sample {
     private final long offset;
     private final long size;
     private ByteBuffer[] data;
+    private SampleEntry sampleEntry;
 
-    public SampleImpl(ByteBuffer buf) {
+    public SampleImpl(ByteBuffer buf, SampleEntry sampleEntry) {
         this.offset = -1;
         this.size = buf.limit();
         this.data = new ByteBuffer[]{buf};
+        this.sampleEntry = sampleEntry;
     }
 
-    public SampleImpl(ByteBuffer[] data) {
+    public SampleImpl(ByteBuffer[] data, SampleEntry sampleEntry) {
         this.offset = -1;
         int _size = 0;
         for (ByteBuffer byteBuffer : data) {
@@ -25,18 +29,25 @@ public class SampleImpl implements Sample {
         }
         this.size = _size;
         this.data = data;
+        this.sampleEntry = sampleEntry;
     }
 
-    public SampleImpl(long offset, long sampleSize, ByteBuffer data) {
+    public SampleImpl(long offset, long sampleSize, ByteBuffer data, SampleEntry sampleEntry) {
         this.offset = offset;
         this.size = sampleSize;
         this.data = new ByteBuffer[]{data};
+        this.sampleEntry = sampleEntry;
     }
 
     public void writeTo(WritableByteChannel channel) throws IOException {
         for (ByteBuffer b : data) {
             channel.write(b.duplicate());
         }
+    }
+
+    @Override
+    public SampleEntry getSampleEntry() {
+        return sampleEntry;
     }
 
     public long getSize() {

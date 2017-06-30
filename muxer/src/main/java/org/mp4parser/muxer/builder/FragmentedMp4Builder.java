@@ -27,7 +27,7 @@ import org.mp4parser.muxer.Edit;
 import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.Track;
-import org.mp4parser.muxer.tracks.CencEncryptedTrack;
+import org.mp4parser.muxer.tracks.encryption.CencEncryptedTrack;
 import org.mp4parser.tools.IsoTypeWriter;
 import org.mp4parser.tools.Path;
 import org.slf4j.LoggerFactory;
@@ -295,7 +295,6 @@ public class FragmentedMp4Builder implements Mp4Builder {
     protected void createSaio(long startSample, long endSample,
                               CencEncryptedTrack track, int sequenceNumber,
                               TrackFragmentBox parent, MovieFragmentBox moof) {
-        SchemeTypeBox schm = Path.getPath(track.getSampleDescriptionBox(), "enc.[0]/sinf[0]/schm[0]");
 
         SampleAuxiliaryInformationOffsetsBox saio = new SampleAuxiliaryInformationOffsetsBox();
         parent.addBox(saio);

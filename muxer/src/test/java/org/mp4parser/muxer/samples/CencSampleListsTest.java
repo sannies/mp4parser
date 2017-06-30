@@ -2,9 +2,17 @@ package org.mp4parser.muxer.samples;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso14496.part12.*;
 import org.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
+import org.mp4parser.boxes.iso23001.part7.TrackEncryptionBox;
+import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
+import org.mp4parser.boxes.sampleentry.VisualSampleEntry;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.SampleImpl;
+import org.mp4parser.muxer.tracks.encryption.KeyIdKeyPair;
+import org.mp4parser.tools.ByteBufferByteChannel;
 import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.RangeStartMap;
 
@@ -14,9 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by sannies on 1/9/14.
@@ -55,12 +61,59 @@ public class CencSampleListsTest {
             "BDAA10DB623FBB53D3DB6F7D028990B411B9B5ECB11F423A9D2A4F8AFFC51E8B0C471545B4A545A7" +
             "0C7D89D42F0DC946A43389A6BF0168F546AC1667F43937DC4893DB329249";
 
+    public CencSampleListsTest() {
+
+
+
+    }
+
+    public SampleEntry getEncSampleEntry(SampleEntry orig, String encAlgo) {
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            orig.getBox(Channels.newChannel(baos));
+            SampleEntry copy = (SampleEntry) new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray()))).getBoxes().get(0);
+
+
+
+
+
+        ProtectionSchemeInformationBox sinf = new ProtectionSchemeInformationBox();
+        OriginalFormatBox frma = new OriginalFormatBox();
+        frma.setDataFormat(orig.getType());
+        sinf.addBox(frma);
+
+        SchemeTypeBox schm = new SchemeTypeBox();
+        schm.setSchemeType("cenc");
+        schm.setSchemeVersion(0x00010000);
+        sinf.addBox(schm);
+
+        SchemeInformationBox schi = new SchemeInformationBox();
+        TrackEncryptionBox trackEncryptionBox = new TrackEncryptionBox();
+        trackEncryptionBox.setDefaultIvSize(0);
+        trackEncryptionBox.setDefault_KID(UUID.randomUUID());
+        schi.addBox(trackEncryptionBox);
+
+        sinf.addBox(schi);
+        if (copy instanceof  VisualSampleEntry) {
+            ((VisualSampleEntry)copy).addBox(sinf);
+        } else
+        if (copy instanceof AudioSampleEntry) {
+            ((AudioSampleEntry)copy).addBox(sinf);
+        }else {
+            throw new AssertionError("Assumed VisualSampleEntry or AudioSampleEntry not " + copy.getType());
+        }
+        return copy;
+        } catch (IOException e) {
+            throw new RuntimeException("Dumping stsd to memory failed");
+        }
+
+    }
+
     @Test
     public void test() throws IOException {
-        SecretKey secretKey = new SecretKeySpec(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, "AES");
-
-        List<Sample> clearSamples = Collections.<Sample>singletonList(
-                new SampleImpl(ByteBuffer.wrap(new byte[1230])));
+        SecretKey key = new SecretKeySpec(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, "AES");
+        SampleEntry clearSE = new VisualSampleEntry("avc1");
 
         CencSampleAuxiliaryDataFormat cencSampleAuxiliaryDataFormat = new CencSampleAuxiliaryDataFormat();
         cencSampleAuxiliaryDataFormat.pairs = new CencSampleAuxiliaryDataFormat.Pair[2];
@@ -68,11 +121,16 @@ public class CencSampleListsTest {
         cencSampleAuxiliaryDataFormat.pairs[1] = cencSampleAuxiliaryDataFormat.createPair(105, 640);
         cencSampleAuxiliaryDataFormat.iv = new byte[16];
 
+        List<Sample> clearSamples = Collections.<Sample>singletonList(
+                new SampleImpl(ByteBuffer.wrap(new byte[1230]), clearSE));
 
+
+        UUID keyId = UUID.randomUUID();
         CencEncryptingSampleList cencSamples =
                 new CencEncryptingSampleList(
-                        secretKey, clearSamples,
-                        Collections.singletonList(cencSampleAuxiliaryDataFormat));
+                        keyId,
+                        key, clearSamples,
+                        Collections.singletonList(cencSampleAuxiliaryDataFormat), "cenc");
 
         Assert.assertEquals(1, cencSamples.size());
         Sample encSample = cencSamples.get(0);
@@ -105,26 +163,27 @@ public class CencSampleListsTest {
     }
 
     public void testMultipleKeys(String encAlgo, boolean subSampleEncryption) throws IOException {
-
+        SampleEntry clearSE = new VisualSampleEntry("avc1");
+        SampleEntry encSE = getEncSampleEntry(clearSE, encAlgo);
         SecretKey cek1 = new SecretKeySpec(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, "AES");
         SecretKey cek2 = new SecretKeySpec(new byte[]{2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, "AES");
 
-        RangeStartMap<Integer, SecretKey> keys = new RangeStartMap<Integer, SecretKey>();
-        keys.put(0, cek1);
-        keys.put(3, null);
-        keys.put(5, cek2);
+        RangeStartMap<Integer, KeyIdKeyPair> keys = new RangeStartMap<>();
+        keys.put(0, new KeyIdKeyPair(UUID.randomUUID(), cek1));
+        keys.put(3, new KeyIdKeyPair(null, null));
+        keys.put(5, new KeyIdKeyPair(UUID.randomUUID(), cek2));
 
 
         List<Sample> clearSamples = Arrays.<Sample>asList(
-                new SampleImpl(ByteBuffer.wrap(new byte[1230])),
-                new SampleImpl(ByteBuffer.wrap(new byte[1230])),
-                new SampleImpl(ByteBuffer.wrap(new byte[1230])),
-                new SampleImpl(ByteBuffer.wrap(new byte[1230])),
-                new SampleImpl(ByteBuffer.wrap(new byte[1230])),
-                new SampleImpl(ByteBuffer.wrap(new byte[1230])),
-                new SampleImpl(ByteBuffer.wrap(new byte[1230])),
-                new SampleImpl(ByteBuffer.wrap(new byte[1230])),
-                new SampleImpl(ByteBuffer.wrap(new byte[1230]))
+                new SampleImpl(ByteBuffer.wrap(new byte[1230]), clearSE),
+                new SampleImpl(ByteBuffer.wrap(new byte[1230]), clearSE),
+                new SampleImpl(ByteBuffer.wrap(new byte[1230]), clearSE),
+                new SampleImpl(ByteBuffer.wrap(new byte[1230]), clearSE),
+                new SampleImpl(ByteBuffer.wrap(new byte[1230]), clearSE),
+                new SampleImpl(ByteBuffer.wrap(new byte[1230]), clearSE),
+                new SampleImpl(ByteBuffer.wrap(new byte[1230]), clearSE),
+                new SampleImpl(ByteBuffer.wrap(new byte[1230]), clearSE),
+                new SampleImpl(ByteBuffer.wrap(new byte[1230]), clearSE)
         );
 
 
@@ -146,27 +205,30 @@ public class CencSampleListsTest {
 
 
         CencEncryptingSampleList cencSamples =
-                new CencEncryptingSampleList(
-                        keys, clearSamples, auxInfos, encAlgo);
+                new CencEncryptingSampleList(keys, clearSamples, auxInfos, encAlgo);
 
         Assert.assertEquals(9, cencSamples.size());
         for (int i = 0; i < cencSamples.size(); i++) {
 
             CencDecryptingSampleList dec = new CencDecryptingSampleList(
-                    new RangeStartMap<Integer, SecretKey>(0, keys.get(i)),
+                    new RangeStartMap<>(0, keys.get(i).getKey()),
                     Collections.singletonList(cencSamples.get(i)),
-                    Collections.singletonList(auxInfos.get(i)), encAlgo);
+                    Collections.singletonList(auxInfos.get(i)));
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             dec.get(0).writeTo(Channels.newChannel(baos));
             Assert.assertArrayEquals("Sample " + i + " can not be reconstructed", new byte[1230], baos.toByteArray());
         }
 
+        RangeStartMap<Integer, SecretKey> keys4Decrypt = new RangeStartMap<>();
+        for (Map.Entry<Integer, KeyIdKeyPair> integerKeyIdKeyPairEntry : keys.entrySet()) {
+            keys4Decrypt.put(integerKeyIdKeyPairEntry.getKey(), integerKeyIdKeyPairEntry.getValue().getKey());
+        }
+
         CencDecryptingSampleList decryptingSampleList = new CencDecryptingSampleList(
-                keys,
+                keys4Decrypt,
                 cencSamples,
-                auxInfos,
-                encAlgo);
+                auxInfos);
 
         for (int i = 0; i < cencSamples.size(); i++) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

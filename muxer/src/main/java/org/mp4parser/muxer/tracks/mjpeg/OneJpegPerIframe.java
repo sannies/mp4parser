@@ -5,6 +5,7 @@ import org.mp4parser.boxes.iso14496.part1.objectdescriptors.ObjectDescriptorFact
 import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.sampleentry.VisualSampleEntry;
 import org.mp4parser.muxer.*;
 import org.mp4parser.tools.Hex;
@@ -30,6 +31,7 @@ public class OneJpegPerIframe extends AbstractTrack {
     long[] sampleDurations;
     SampleDescriptionBox stsd;
     long[] syncSamples;
+    VisualSampleEntry mp4v;
 
 
     public OneJpegPerIframe(String name, File[] jpegs, Track alignTo) throws IOException {
@@ -61,7 +63,7 @@ public class OneJpegPerIframe extends AbstractTrack {
         sampleDurations[sampleDurations.length - 1] = duration;
 
         stsd = new SampleDescriptionBox();
-        VisualSampleEntry mp4v = new VisualSampleEntry("mp4v");
+        mp4v = new VisualSampleEntry("mp4v");
         stsd.addBox(mp4v);
         ESDescriptorBox esds = new ESDescriptorBox();
         esds.setData(ByteBuffer.wrap(Hex.decodeHex("038080801B000100048080800D6C11000000000A1CB4000A1CB4068080800102")));
@@ -167,6 +169,11 @@ public class OneJpegPerIframe extends AbstractTrack {
                             }
                         }
                         return sample;
+                    }
+
+                    @Override
+                    public SampleEntry getSampleEntry() {
+                        return mp4v;
                     }
                 };
             }

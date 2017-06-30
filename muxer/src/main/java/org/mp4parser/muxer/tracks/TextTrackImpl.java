@@ -38,6 +38,7 @@ import java.util.*;
 public class TextTrackImpl extends AbstractTrack {
     TrackMetaData trackMetaData = new TrackMetaData();
     SampleDescriptionBox sampleDescriptionBox;
+    TextSampleEntry tx3g;
     List<Line> subs = new LinkedList<Line>();
 
     List<Sample> samples;
@@ -45,7 +46,7 @@ public class TextTrackImpl extends AbstractTrack {
     public TextTrackImpl() {
         super("subtitles");
         sampleDescriptionBox = new SampleDescriptionBox();
-        TextSampleEntry tx3g = new TextSampleEntry("tx3g");
+        tx3g = new TextSampleEntry("tx3g");
         tx3g.setDataReferenceIndex(1);
         tx3g.setStyleRecord(new TextSampleEntry.StyleRecord());
         tx3g.setBoxRecord(new TextSampleEntry.BoxRecord());
@@ -74,12 +75,12 @@ public class TextTrackImpl extends AbstractTrack {
 
     public synchronized List<Sample> getSamples() {
         if (samples == null) {
-            samples = new ArrayList<Sample>();
+            samples = new ArrayList<>();
             long lastEnd = 0;
             for (Line sub : subs) {
                 long silentTime = sub.from - lastEnd;
                 if (silentTime > 0) {
-                    samples.add(new SampleImpl(ByteBuffer.wrap(new byte[]{0, 0})));
+                    samples.add(new SampleImpl(ByteBuffer.wrap(new byte[]{0, 0}), tx3g));
                 } else if (silentTime < 0) {
                     throw new Error("Subtitle display times may not intersect");
                 }
@@ -92,7 +93,7 @@ public class TextTrackImpl extends AbstractTrack {
                 } catch (IOException e) {
                     throw new Error("VM is broken. Does not support UTF-8");
                 }
-                samples.add(new SampleImpl(ByteBuffer.wrap(baos.toByteArray())));
+                samples.add(new SampleImpl(ByteBuffer.wrap(baos.toByteArray()), tx3g));
                 lastEnd = sub.to;
             }
         }

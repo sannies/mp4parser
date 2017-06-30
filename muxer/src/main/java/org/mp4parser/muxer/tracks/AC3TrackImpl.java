@@ -7,6 +7,7 @@ import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
 import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.AbstractTrack;
 import org.mp4parser.muxer.DataSource;
 import org.mp4parser.muxer.Sample;
@@ -22,6 +23,8 @@ import java.util.List;
 
 public class AC3TrackImpl extends AbstractTrack {
     static int[][][][] bitRateAndFrameSizeTable;
+
+    AudioSampleEntry audioSampleEntry;
 
     static {
         bitRateAndFrameSizeTable = new int[19][2][3][2];
@@ -434,7 +437,7 @@ public class AC3TrackImpl extends AbstractTrack {
         if (lfeon == 1) {
             channelCount++;
         }
-        AudioSampleEntry audioSampleEntry = new AudioSampleEntry("ac-3");
+        audioSampleEntry = new AudioSampleEntry("ac-3");
         audioSampleEntry.setChannelCount(2);  // According to  ETSI TS 102 366 Annex F
         audioSampleEntry.setSampleRate(samplerate);
         audioSampleEntry.setDataReferenceIndex(1);
@@ -492,6 +495,10 @@ public class AC3TrackImpl extends AbstractTrack {
                 }
             }
 
+            @Override
+            public SampleEntry getSampleEntry() {
+                return audioSampleEntry;
+            }
         }
 
         ByteBuffer header = ByteBuffer.allocate(5);

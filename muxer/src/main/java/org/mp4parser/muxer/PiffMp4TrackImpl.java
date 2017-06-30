@@ -6,7 +6,7 @@ import org.mp4parser.boxes.iso14496.part12.*;
 import org.mp4parser.boxes.iso23001.part7.AbstractSampleEncryptionBox;
 import org.mp4parser.boxes.iso23001.part7.AbstractTrackEncryptionBox;
 import org.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
-import org.mp4parser.muxer.tracks.CencEncryptedTrack;
+import org.mp4parser.muxer.tracks.encryption.CencEncryptedTrack;
 import org.mp4parser.tools.Path;
 
 import java.io.IOException;

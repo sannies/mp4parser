@@ -43,7 +43,7 @@ public class MP3TrackImpl extends AbstractTrack {
 
     private List<Sample> samples;
     private long[] durations;
-
+    AudioSampleEntry audioSampleEntry;
 
     public MP3TrackImpl(DataSource channel) throws IOException {
         this(channel, "eng");
@@ -82,7 +82,7 @@ public class MP3TrackImpl extends AbstractTrack {
         avgBitRate = (int) (8 * dataSize / duration);
 
         sampleDescriptionBox = new SampleDescriptionBox();
-        AudioSampleEntry audioSampleEntry = new AudioSampleEntry("mp4a");
+        audioSampleEntry = new AudioSampleEntry("mp4a");
         audioSampleEntry.setChannelCount(firstHeader.channelCount);
         audioSampleEntry.setSampleRate(firstHeader.sampleRate);
         audioSampleEntry.setDataReferenceIndex(1);
@@ -155,7 +155,7 @@ public class MP3TrackImpl extends AbstractTrack {
             ByteBuffer data = ByteBuffer.allocate(hdr.getFrameLength());
             channel.read(data);
             data.rewind();
-            samples.add(new SampleImpl(data));
+            samples.add(new SampleImpl(data, audioSampleEntry));
         }
         return first;
     }

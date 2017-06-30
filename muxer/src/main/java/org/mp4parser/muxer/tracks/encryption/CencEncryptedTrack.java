@@ -1,4 +1,4 @@
-package org.mp4parser.muxer.tracks;
+package org.mp4parser.muxer.tracks.encryption;
 
 import org.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import org.mp4parser.muxer.Track;

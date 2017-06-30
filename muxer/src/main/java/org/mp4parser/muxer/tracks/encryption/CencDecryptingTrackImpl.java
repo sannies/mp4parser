@@ -1,4 +1,4 @@
-package org.mp4parser.muxer.tracks;
+package org.mp4parser.muxer.tracks.encryption;
 
 import org.mp4parser.Box;
 import org.mp4parser.IsoFile;
@@ -26,9 +26,9 @@ import java.nio.channels.Channels;
 import java.util.*;
 
 public class CencDecryptingTrackImpl extends AbstractTrack {
-    CencDecryptingSampleList samples;
-    Track original;
-    RangeStartMap<Integer, SecretKey> indexToKey = new RangeStartMap<Integer, SecretKey>();
+    private CencDecryptingSampleList samples;
+    private Track original;
+    private RangeStartMap<Integer, SecretKey> indexToKey = new RangeStartMap<>();
 
     public CencDecryptingTrackImpl(CencEncryptedTrack original, SecretKey sk) {
         this(original, Collections.singletonMap(original.getDefaultKeyId(), sk));
@@ -86,7 +86,7 @@ public class CencDecryptingTrackImpl extends AbstractTrack {
         }
 
 
-        samples = new CencDecryptingSampleList(indexToKey, original.getSamples(), original.getSampleEncryptionEntries(), schm.getSchemeType());
+        samples = new CencDecryptingSampleList(indexToKey, original.getSamples(), original.getSampleEncryptionEntries());
     }
 
     public void close() throws IOException {

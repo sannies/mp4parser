@@ -5,7 +5,7 @@ import org.mp4parser.Container;
 import org.mp4parser.boxes.iso14496.part12.*;
 import org.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import org.mp4parser.boxes.iso23001.part7.TrackEncryptionBox;
-import org.mp4parser.muxer.tracks.CencEncryptedTrack;
+import org.mp4parser.muxer.tracks.encryption.CencEncryptedTrack;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.Path;
 

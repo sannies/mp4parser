@@ -3,6 +3,7 @@ package org.mp4parser.muxer.samples;
 import org.mp4parser.Box;
 import org.mp4parser.Container;
 import org.mp4parser.boxes.iso14496.part12.*;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.RandomAccessSource;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.tools.Offsets;
@@ -30,6 +31,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
     private int firstSamples[];
     private int size_ = -1;
     private RandomAccessSource randomAccess;
+    List<SampleEntry> sampleEntries;
 
     public FragmentedMp4SampleList(long track, Container isofile, RandomAccessSource randomAccess) {
         this.isofile = isofile;
@@ -50,6 +52,10 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                 trex = box;
             }
         }
+        sampleEntries = new ArrayList<>(trackBox.getSampleTableBox().getSampleDescriptionBox().getBoxes(SampleEntry.class));
+
+        if (sampleEntries.size() != trackBox.getSampleTableBox().getSampleDescriptionBox().getBoxes().size())
+            throw new AssertionError("stsd contains not only sample entries. Something's wrong here! Bailing out");
         sampleCache = (SoftReference<Sample>[]) Array.newInstance(SoftReference.class, size());
         initAllFragments();
     }
@@ -122,7 +128,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
 
 
                     List<TrackRunBox.Entry> trackRunEntries = trun.getEntries();
-                    TrackFragmentHeaderBox tfhd = trackFragmentBox.getTrackFragmentHeaderBox();
+                    final TrackFragmentHeaderBox tfhd = trackFragmentBox.getTrackFragmentHeaderBox();
                     boolean sampleSizePresent = trun.isSampleSizePresent();
                     boolean hasDefaultSampleSize = tfhd.hasDefaultSampleSize();
                     long defaultSampleSize = 0;
@@ -200,6 +206,11 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
 
                         public ByteBuffer asByteBuffer() {
                             return (ByteBuffer) ((ByteBuffer) finalTrunData.position(finalOffset)).slice().limit(l2i(sampleSize));
+                        }
+
+                        @Override
+                        public SampleEntry getSampleEntry() {
+                            return sampleEntries.get(l2i(tfhd.getSampleDescriptionIndex()));
                         }
                     };
                     sampleCache[index] = new SoftReference<Sample>(sample);

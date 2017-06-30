@@ -31,10 +31,10 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 public class Amf0Track extends AbstractTrack {
-    SortedMap<Long, byte[]> rawSamples = new TreeMap<Long, byte[]>() {
-    };
+    SortedMap<Long, byte[]> rawSamples = new TreeMap<>();
     private TrackMetaData trackMetaData = new TrackMetaData();
-
+    SampleDescriptionBox stsd;
+    ActionMessageFormat0SampleEntryBox amf0;
 
     /**
      * Creates a new AMF0 track from
@@ -48,12 +48,18 @@ public class Amf0Track extends AbstractTrack {
         trackMetaData.setModificationTime(new Date());
         trackMetaData.setTimescale(1000); // Text tracks use millieseconds
         trackMetaData.setLanguage("eng");
+
+        stsd = new SampleDescriptionBox();
+        amf0 = new ActionMessageFormat0SampleEntryBox();
+        amf0.setDataReferenceIndex(1);
+        stsd.addBox(amf0);
+
     }
 
     public List<Sample> getSamples() {
         LinkedList<Sample> samples = new LinkedList<Sample>();
         for (byte[] bytes : rawSamples.values()) {
-            samples.add(new SampleImpl(ByteBuffer.wrap(bytes)));
+            samples.add(new SampleImpl(ByteBuffer.wrap(bytes), amf0));
         }
         return samples;
     }
@@ -63,10 +69,6 @@ public class Amf0Track extends AbstractTrack {
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {
-        SampleDescriptionBox stsd = new SampleDescriptionBox();
-        ActionMessageFormat0SampleEntryBox amf0 = new ActionMessageFormat0SampleEntryBox();
-        amf0.setDataReferenceIndex(1);
-        stsd.addBox(amf0);
         return stsd;
     }
 

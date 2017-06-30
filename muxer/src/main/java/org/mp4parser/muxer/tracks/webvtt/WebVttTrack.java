@@ -5,6 +5,7 @@ import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part30.WebVTTConfigurationBox;
 import org.mp4parser.boxes.iso14496.part30.WebVTTSampleEntry;
 import org.mp4parser.boxes.iso14496.part30.WebVTTSourceLabelBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.AbstractTrack;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.TrackMetaData;
@@ -43,7 +44,7 @@ public class WebVttTrack extends AbstractTrack {
     private static final Pattern WEBVTT_TIMESTAMP = Pattern.compile(WEBVTT_TIMESTAMP_STRING);
     private static final String WEBVTT_CUE_SETTING_STRING = "\\S*:\\S*";
     private static final Pattern WEBVTT_CUE_SETTING = Pattern.compile(WEBVTT_CUE_SETTING_STRING);
-    private static final Sample EMPTY_SAMPLE = new Sample() {
+    private final Sample EMPTY_SAMPLE = new Sample() {
         ByteBuffer vtte;
 
         {
@@ -68,6 +69,11 @@ public class WebVttTrack extends AbstractTrack {
 
         public ByteBuffer asByteBuffer() {
             return vtte.duplicate();
+        }
+
+        @Override
+        public SampleEntry getSampleEntry() {
+            return sampleEntry;
         }
     };
     TrackMetaData trackMetaData = new TrackMetaData();
@@ -234,7 +240,7 @@ public class WebVttTrack extends AbstractTrack {
 
     }
 
-    private static class BoxBearingSample implements Sample {
+    private class BoxBearingSample implements Sample {
         List<Box> boxes;
 
         public BoxBearingSample(List<Box> boxes) {
@@ -264,6 +270,11 @@ public class WebVttTrack extends AbstractTrack {
             }
 
             return ByteBuffer.wrap(baos.toByteArray());
+        }
+
+        @Override
+        public SampleEntry getSampleEntry() {
+            return WebVttTrack.this.sampleEntry;
         }
     }
 }
