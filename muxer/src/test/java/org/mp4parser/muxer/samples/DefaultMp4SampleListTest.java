@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.muxer.FileRandomAccessSourceImpl;
+import org.mp4parser.muxer.container.mp4.Mp4SampleList;
 import org.mp4parser.tools.Hex;
 
 import java.io.FileInputStream;
@@ -15,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DefaultMp4SampleListTest {
-    List<String> sampleChecksum = Arrays.asList(
+    private List<String> sampleChecksum = Arrays.asList(
             "E8B264863D89C0AA9DA412F5A875E962",
             "4E0EB2B74685E3C67FCD06C78592DE02",
             "D8453125AD7FD1DA1A370A9F66FFEDA1",
@@ -150,9 +151,9 @@ public class DefaultMp4SampleListTest {
     @Test
     public void checkSampleList() throws IOException, NoSuchAlgorithmException {
         String filename = this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() +
-                "/com/mp4parser/muxer/samples/1365070268951.mp4";
+                "/org/mp4parser/muxer/samples/1365070268951.mp4";
         IsoFile isoFile = new IsoFile(new FileInputStream(filename).getChannel());
-        SampleList sl = new SampleList(1, isoFile, new FileRandomAccessSourceImpl(new RandomAccessFile(filename, "r")));
+        Mp4SampleList sl = new Mp4SampleList(1, isoFile, new FileRandomAccessSourceImpl(new RandomAccessFile(filename, "r")));
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         for (int i = 0; i < sl.size(); i++) {
             //System.err.println("\"" + Hex.encodeHex(md5.digest(sl.get(i).asByteBuffer().array())) + "\",");

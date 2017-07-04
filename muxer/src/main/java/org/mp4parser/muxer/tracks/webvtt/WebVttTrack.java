@@ -77,7 +77,6 @@ public class WebVttTrack extends AbstractTrack {
         }
     };
     TrackMetaData trackMetaData = new TrackMetaData();
-    SampleDescriptionBox stsd;
     List<Sample> samples = new ArrayList<Sample>();
     long[] sampleDurations = new long[0];
     WebVTTSampleEntry sampleEntry;
@@ -88,10 +87,8 @@ public class WebVttTrack extends AbstractTrack {
         trackMetaData.setLanguage(locale.getISO3Language());
         long mediaTimestampUs = 0;
 
-        stsd = new SampleDescriptionBox();
 
         sampleEntry = new WebVTTSampleEntry();
-        stsd.addBox(sampleEntry);
         WebVTTConfigurationBox webVttConf = new WebVTTConfigurationBox();
         sampleEntry.addBox(webVttConf);
         sampleEntry.addBox(new WebVTTSourceLabelBox());
@@ -211,8 +208,8 @@ public class WebVttTrack extends AbstractTrack {
         return (value * 1000 + Long.parseLong(parts[1]));
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return stsd;
+    public List<SampleEntry> getSampleEntries() {
+        return Collections.<SampleEntry>singletonList(sampleEntry);
     }
 
     public long[] getSampleDurations() {

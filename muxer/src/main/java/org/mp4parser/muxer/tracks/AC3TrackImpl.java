@@ -4,7 +4,6 @@ import org.mp4parser.boxes.dolby.AC3SpecificBox;
 import org.mp4parser.boxes.iso14496.part1.objectdescriptors.BitReaderBuffer;
 import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
-import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
 import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
 import org.mp4parser.boxes.sampleentry.SampleEntry;
@@ -16,15 +15,12 @@ import org.mp4parser.muxer.TrackMetaData;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class AC3TrackImpl extends AbstractTrack {
-    static int[][][][] bitRateAndFrameSizeTable;
+    private static int[][][][] bitRateAndFrameSizeTable;
 
-    AudioSampleEntry audioSampleEntry;
+    private AudioSampleEntry audioSampleEntry;
 
     static {
         bitRateAndFrameSizeTable = new int[19][2][3][2];
@@ -269,7 +265,6 @@ public class AC3TrackImpl extends AbstractTrack {
     private List<Sample> samples;
     private long[] duration;
     private TrackMetaData trackMetaData = new TrackMetaData();
-    private SampleDescriptionBox sampleDescriptionBox;
 
     public AC3TrackImpl(DataSource dataSource) throws IOException {
         this(dataSource, "eng");
@@ -283,14 +278,12 @@ public class AC3TrackImpl extends AbstractTrack {
         samples = readSamples();
 
 
-        sampleDescriptionBox = new SampleDescriptionBox();
-        AudioSampleEntry ase = createAudioSampleEntry();
-        sampleDescriptionBox.addBox(ase);
+        audioSampleEntry = createAudioSampleEntry();
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
         trackMetaData.setLanguage(lang);
-        trackMetaData.setTimescale(ase.getSampleRate()); // Audio tracks always use samplerate as timescale
+        trackMetaData.setTimescale(audioSampleEntry.getSampleRate()); // Audio tracks always use samplerate as timescale
         trackMetaData.setVolume(1);
 
     }
@@ -304,8 +297,8 @@ public class AC3TrackImpl extends AbstractTrack {
         return samples;
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return sampleDescriptionBox;
+    public List<SampleEntry> getSampleEntries() {
+        return Collections.<SampleEntry>singletonList(audioSampleEntry);
     }
 
     public synchronized long[] getSampleDurations() {
@@ -502,7 +495,7 @@ public class AC3TrackImpl extends AbstractTrack {
         }
 
         ByteBuffer header = ByteBuffer.allocate(5);
-        List<Sample> mysamples = new ArrayList<Sample>();
+        List<Sample> mysamples = new ArrayList<>();
 
         while (-1 != dataSource.read(header)) {
             int frmsizecode = header.get(4) & 63;

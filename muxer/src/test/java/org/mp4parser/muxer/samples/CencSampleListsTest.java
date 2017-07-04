@@ -11,6 +11,9 @@ import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.sampleentry.VisualSampleEntry;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.SampleImpl;
+import org.mp4parser.muxer.tracks.encryption.CencDecryptingSampleList;
+import org.mp4parser.muxer.tracks.encryption.CencEncryptingSampleEntryTransformer;
+import org.mp4parser.muxer.tracks.encryption.CencEncryptingSampleList;
 import org.mp4parser.muxer.tracks.encryption.KeyIdKeyPair;
 import org.mp4parser.tools.ByteBufferByteChannel;
 import org.mp4parser.tools.Hex;
@@ -113,7 +116,10 @@ public class CencSampleListsTest {
     @Test
     public void test() throws IOException {
         SecretKey key = new SecretKeySpec(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, "AES");
+        UUID defaultKeyId = UUID.randomUUID();
         SampleEntry clearSE = new VisualSampleEntry("avc1");
+        CencEncryptingSampleEntryTransformer tx = new CencEncryptingSampleEntryTransformer();
+        SampleEntry encSE = tx.transform(clearSE, "cenc", defaultKeyId);
 
         CencSampleAuxiliaryDataFormat cencSampleAuxiliaryDataFormat = new CencSampleAuxiliaryDataFormat();
         cencSampleAuxiliaryDataFormat.pairs = new CencSampleAuxiliaryDataFormat.Pair[2];
@@ -128,9 +134,10 @@ public class CencSampleListsTest {
         UUID keyId = UUID.randomUUID();
         CencEncryptingSampleList cencSamples =
                 new CencEncryptingSampleList(
-                        keyId,
-                        key, clearSamples,
-                        Collections.singletonList(cencSampleAuxiliaryDataFormat), "cenc");
+                        new RangeStartMap<>(0, new KeyIdKeyPair(keyId, key)),
+                        new RangeStartMap<>(0, encSE),
+                        clearSamples,
+                        Collections.singletonList(cencSampleAuxiliaryDataFormat));
 
         Assert.assertEquals(1, cencSamples.size());
         Sample encSample = cencSamples.get(0);
@@ -165,6 +172,7 @@ public class CencSampleListsTest {
     public void testMultipleKeys(String encAlgo, boolean subSampleEncryption) throws IOException {
         SampleEntry clearSE = new VisualSampleEntry("avc1");
         SampleEntry encSE = getEncSampleEntry(clearSE, encAlgo);
+
         SecretKey cek1 = new SecretKeySpec(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, "AES");
         SecretKey cek2 = new SecretKeySpec(new byte[]{2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, "AES");
 
@@ -172,6 +180,8 @@ public class CencSampleListsTest {
         keys.put(0, new KeyIdKeyPair(UUID.randomUUID(), cek1));
         keys.put(3, new KeyIdKeyPair(null, null));
         keys.put(5, new KeyIdKeyPair(UUID.randomUUID(), cek2));
+
+        RangeStartMap<Integer, SampleEntry> encSampleEntries = new RangeStartMap<>(0, encSE);
 
 
         List<Sample> clearSamples = Arrays.<Sample>asList(
@@ -205,16 +215,18 @@ public class CencSampleListsTest {
 
 
         CencEncryptingSampleList cencSamples =
-                new CencEncryptingSampleList(keys, clearSamples, auxInfos, encAlgo);
+                new CencEncryptingSampleList(keys, encSampleEntries, clearSamples, auxInfos);
 
         Assert.assertEquals(9, cencSamples.size());
+        LinkedHashSet<SampleEntry> ses = new LinkedHashSet<>();
         for (int i = 0; i < cencSamples.size(); i++) {
 
             CencDecryptingSampleList dec = new CencDecryptingSampleList(
                     new RangeStartMap<>(0, keys.get(i).getKey()),
+                    new RangeStartMap<>(0, cencSamples.get(i).getSampleEntry()),
                     Collections.singletonList(cencSamples.get(i)),
                     Collections.singletonList(auxInfos.get(i)));
-
+            ses.add(cencSamples.get(i).getSampleEntry());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             dec.get(0).writeTo(Channels.newChannel(baos));
             Assert.assertArrayEquals("Sample " + i + " can not be reconstructed", new byte[1230], baos.toByteArray());
@@ -227,6 +239,7 @@ public class CencSampleListsTest {
 
         CencDecryptingSampleList decryptingSampleList = new CencDecryptingSampleList(
                 keys4Decrypt,
+                new RangeStartMap<>(0, clearSE),
                 cencSamples,
                 auxInfos);
 

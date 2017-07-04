@@ -17,10 +17,11 @@ package org.mp4parser.muxer;
 
 import org.mp4parser.Container;
 import org.mp4parser.boxes.iso14496.part12.*;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.samplegrouping.GroupEntry;
 import org.mp4parser.boxes.samplegrouping.SampleGroupDescriptionBox;
 import org.mp4parser.boxes.samplegrouping.SampleToGroupBox;
-import org.mp4parser.muxer.samples.SampleList;
+import org.mp4parser.muxer.container.mp4.Mp4SampleList;
 import org.mp4parser.tools.Mp4Arrays;
 import org.mp4parser.tools.Path;
 
@@ -57,7 +58,7 @@ public class Mp4TrackImpl extends AbstractTrack {
     public Mp4TrackImpl(final long trackId, Container isofile, RandomAccessSource randomAccess, String name) {
         super(name);
 
-        samples = new SampleList(trackId, isofile, randomAccess);
+        samples = new Mp4SampleList(trackId, isofile, randomAccess);
         TrackBox trackBox = null;
         for (TrackBox box : Path.<TrackBox>getPaths(isofile, "moov/trak")) {
             if (box.getTrackHeaderBox().getTrackId() == trackId) {
@@ -286,8 +287,8 @@ public class Mp4TrackImpl extends AbstractTrack {
         return decodingTimes;
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return sampleDescriptionBox;
+    public List<SampleEntry> getSampleEntries() {
+        return sampleDescriptionBox.getBoxes(SampleEntry.class);
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {

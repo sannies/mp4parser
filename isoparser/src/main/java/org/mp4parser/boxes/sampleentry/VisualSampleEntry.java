@@ -23,10 +23,13 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 import org.mp4parser.tools.Utf8;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Arrays;
 
 /**
  * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2}" || "{@value #TYPE3}" || "{@value #TYPE4}" || "{@value #TYPE5}"</h1>
@@ -236,6 +239,37 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
         return s + t + ((largeBox || (s + t + 8) >= (1L << 32)) ? 16 : 8);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
+        VisualSampleEntry that = (VisualSampleEntry) o;
+        ByteArrayOutputStream  baos1 = new ByteArrayOutputStream();
+        ByteArrayOutputStream  baos2 = new ByteArrayOutputStream();
+        try {
+            this.getBox(Channels.newChannel(baos1));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            that.getBox(Channels.newChannel(baos2));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return Arrays.equals(baos1.toByteArray(), baos2.toByteArray());
+    }
+
+    @Override
+    public int hashCode() {
+        ByteArrayOutputStream  baos1 = new ByteArrayOutputStream();
+        try {
+            this.getBox(Channels.newChannel(baos1));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return Arrays.hashCode(baos1.toByteArray());
+    }
 }
 

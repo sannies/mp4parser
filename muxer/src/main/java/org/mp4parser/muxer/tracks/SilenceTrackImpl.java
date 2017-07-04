@@ -2,8 +2,8 @@ package org.mp4parser.muxer.tracks;
 
 import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
-import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.samplegrouping.GroupEntry;
 import org.mp4parser.muxer.*;
 
@@ -20,17 +20,18 @@ import static org.mp4parser.tools.CastUtils.l2i;
  * This is just a basic idea how things could work but they don't.
  */
 public class SilenceTrackImpl implements Track {
-    Track source;
+    private Track source;
 
-    List<Sample> samples = new LinkedList<Sample>();
-    long[] decodingTimes;
-    String name;
+    private List<Sample> samples = new LinkedList<Sample>();
+    private long[] decodingTimes;
+    private String name;
 
     public SilenceTrackImpl(Track ofType, long ms) {
 
         source = ofType;
         name = "" + ms + "ms silence";
-        if ("mp4a".equals(ofType.getSampleDescriptionBox().getSampleEntry().getType())) {
+        assert ofType.getSampleEntries().size() == 1: "";
+        if ("mp4a".equals(ofType.getSampleEntries().get(0).getType())) {
             int numFrames = l2i(getTrackMetaData().getTimescale() * ms / 1000 / 1024);
             decodingTimes = new long[numFrames];
             Arrays.fill(decodingTimes, getTrackMetaData().getTimescale() * ms / numFrames / 1000);
@@ -38,7 +39,7 @@ public class SilenceTrackImpl implements Track {
             while (numFrames-- > 0) {
                 samples.add(new SampleImpl((ByteBuffer) ByteBuffer.wrap(new byte[]{
                         0x21, 0x10, 0x04, 0x60, (byte) 0x8c, 0x1c,
-                }).rewind(), ofType.getSampleDescriptionBox().getSampleEntry()));
+                }).rewind(), ofType.getSampleEntries().get(0)));
             }
         } else {
             throw new RuntimeException("Tracks of type " + ofType.getClass().getSimpleName() + " are not supported");
@@ -49,8 +50,8 @@ public class SilenceTrackImpl implements Track {
         // nothing to close
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return source.getSampleDescriptionBox();
+    public List<SampleEntry> getSampleEntries() {
+        return source.getSampleEntries();
     }
 
     public long[] getSampleDurations() {

@@ -31,7 +31,6 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
     ArrayList<ByteBuffer> vps = new ArrayList<ByteBuffer>();
     ArrayList<Sample> samples = new ArrayList<Sample>();
 
-    SampleDescriptionBox stsd;
     VisualSampleEntry visualSampleEntry;
 
     public H265TrackImpl(DataSource dataSource) throws IOException {
@@ -133,7 +132,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
             vclNalUnitSeenInAU[0] |= isVcl(unitHeader);
 
         }
-        stsd = createSampleDescriptionBox();
+        visualSampleEntry = createSampleEntry();
         decodingTimes = new long[samples.size()];
         getTrackMetaData().setTimescale(25);
         Arrays.fill(decodingTimes, 1);
@@ -168,10 +167,10 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
 
     }
 
-    private SampleDescriptionBox createSampleDescriptionBox() {
+    private VisualSampleEntry createSampleEntry() {
 
-        stsd = new SampleDescriptionBox();
-        visualSampleEntry = new VisualSampleEntry("hvc1");
+
+        VisualSampleEntry visualSampleEntry = new VisualSampleEntry("hvc1");
         visualSampleEntry.setDataReferenceIndex(1);
         visualSampleEntry.setDepth(24);
         visualSampleEntry.setFrameCount(1);
@@ -210,9 +209,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
         hevcConfigurationBox.getArrays().addAll(Arrays.asList(spsArray, vpsArray, ppsArray));
 
         visualSampleEntry.addBox(hevcConfigurationBox);
-        stsd.addBox(visualSampleEntry);
-
-        return stsd;
+        return visualSampleEntry;
     }
 
     public void wrapUp(List<ByteBuffer> nals, boolean[] vclNalUnitSeenInAU, boolean[] isIdr) {
@@ -229,7 +226,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
         nals.clear();
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
+    public List<SampleEntry> getSampleEntries() {
         return null;
     }
 

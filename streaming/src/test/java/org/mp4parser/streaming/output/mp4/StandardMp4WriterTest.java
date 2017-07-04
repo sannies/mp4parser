@@ -9,9 +9,7 @@ import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.util.Collections;
 
-/**
- * Created by sannies on 20.10.2015.
- */
+
 public class StandardMp4WriterTest {
 
     @Test
@@ -24,7 +22,7 @@ public class StandardMp4WriterTest {
         writer.close();
 
         //Walk.through(isoFile);
-        //List<Sample> s = new SampleList(1, isoFile, new InMemRandomAccessSourceImpl(baos.toByteArray()));
+        //List<Sample> s = new Mp4SampleList(1, isoFile, new InMemRandomAccessSourceImpl(baos.toByteArray()));
         //for (Sample sample : s) {
 //            System.err.println("s: " + sample.getSize());
         //          sample.asByteBuffer();

@@ -5,6 +5,7 @@ import org.mp4parser.Container;
 import org.mp4parser.boxes.iso14496.part12.*;
 import org.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import org.mp4parser.boxes.iso23001.part7.TrackEncryptionBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.tracks.encryption.CencEncryptedTrack;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.Path;
@@ -16,13 +17,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mp4parser.tools.CastUtils.l2i;
+
 /**
  * This track implementation is to be used when MP4 track is CENC encrypted.
  */
 public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedTrack {
 
     private List<CencSampleAuxiliaryDataFormat> sampleEncryptionEntries;
-    private UUID defaultKeyId;
+
 
 
     /**
@@ -37,6 +40,7 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
      */
     public CencMp4TrackImplImpl(final long trackId, Container isofile, RandomAccessSource randomAccess, String name) throws IOException {
         super(trackId, isofile, randomAccess, name);
+
         TrackBox trackBox = null;
         for (TrackBox box : Path.<TrackBox>getPaths(isofile, "moov/trak")) {
             if (box.getTrackHeaderBox().getTrackId() == trackId) {
@@ -44,10 +48,15 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
                 break;
             }
         }
-        SchemeTypeBox schm = Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schm[0]");
-        assert schm != null && (schm.getSchemeType().equals("cenc") || schm.getSchemeType().equals("cbc1")) : "Track must be CENC (cenc or cbc1) encrypted";
+        assert trackBox != null;
+        List<SchemeTypeBox> schms = Path.getPaths((Container) trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc./sinf[0]/schm[0]");
+        for (SchemeTypeBox schm : schms) {
+            assert schm != null && (schm.getSchemeType().equals("cenc") || schm.getSchemeType().equals("cbc1")) : "Track must be CENC (cenc or cbc1) encrypted";
+        }
+        List<SampleEntry> sampleEntries = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox().getSampleDescriptionBox().getBoxes(SampleEntry.class);
+        assert trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox().getSampleDescriptionBox().getBoxes().size() == sampleEntries.size();
 
-        sampleEncryptionEntries = new ArrayList<CencSampleAuxiliaryDataFormat>();
+        sampleEncryptionEntries = new ArrayList<>();
 
         final List<MovieExtendsBox> movieExtendsBoxes = Path.getPaths(isofile, "moov/mvex");
         if (!movieExtendsBoxes.isEmpty()) {
@@ -57,10 +66,6 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
                 List<TrackFragmentBox> trafs = movieFragmentBox.getBoxes(TrackFragmentBox.class);
                 for (TrackFragmentBox traf : trafs) {
                     if (traf.getTrackFragmentHeaderBox().getTrackId() == trackId) {
-                        TrackEncryptionBox tenc = Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/tenc[0]");
-                        assert tenc != null;
-                        defaultKeyId = tenc.getDefault_KID();
-
                         long baseOffset;
                         if (traf.getTrackFragmentHeaderBox().hasBaseDataOffset()) {
                             baseOffset = traf.getTrackFragmentHeaderBox().getBaseDataOffset();
@@ -71,6 +76,8 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
                                 baseOffset += b.getSize();
                             }
                         }
+                        TrackEncryptionBox tenc = Path.getPath((Container) sampleEntries.get(l2i(traf.getTrackFragmentHeaderBox().getSampleDescriptionIndex()-1)), "sinf[0]/schi[0]/tenc[0]");
+
 
                         FindSaioSaizPair saizSaioPair = new FindSaioSaizPair(traf).invoke();
                         SampleAuxiliaryInformationOffsetsBox saio = saizSaioPair.getSaio();
@@ -94,9 +101,13 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
                             ByteBuffer trunsCencSampleAuxData = randomAccess.get(baseOffset + offset, length);
                             for (int j = sampleNo; j < sampleNo + numSamples; j++) {
                                 int auxInfoSize = saiz.getSize(j);
-                                sampleEncryptionEntries.add(
-                                        parseCencAuxDataFormat(tenc.getDefaultIvSize(), trunsCencSampleAuxData, auxInfoSize)
-                                );
+                                if (tenc!=null) {
+                                    sampleEncryptionEntries.add(
+                                            parseCencAuxDataFormat(tenc.getDefaultIvSize(), trunsCencSampleAuxData, auxInfoSize)
+                                    );
+                                } else {
+                                    sampleEncryptionEntries.add(new CencSampleAuxiliaryDataFormat());
+                                }
 
                             }
 
@@ -107,15 +118,13 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
 
             }
         } else {
-            TrackEncryptionBox tenc = Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stsd[0]/enc.[0]/sinf[0]/schi[0]/tenc[0]");
-            assert tenc != null;
-            defaultKeyId = tenc.getDefault_KID();
+
             ChunkOffsetBox chunkOffsetBox = Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/stco[0]");
 
             if (chunkOffsetBox == null) {
                 chunkOffsetBox = Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]/co64[0]");
             }
-            assert trackBox != null;
+
             assert chunkOffsetBox != null;
             long[] chunkSizes = trackBox.getSampleTableBox().getSampleToChunkBox().blowup(chunkOffsetBox.getChunkOffsets().length);
 
@@ -123,6 +132,9 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
             FindSaioSaizPair saizSaioPair = new FindSaioSaizPair((Container) Path.getPath(trackBox, "mdia[0]/minf[0]/stbl[0]")).invoke();
             SampleAuxiliaryInformationOffsetsBox saio = saizSaioPair.saio;
             SampleAuxiliaryInformationSizesBox saiz = saizSaioPair.saiz;
+            SampleEntry se = null;
+            TrackEncryptionBox tenc = null;
+            List<Sample> samples = this.getSamples();
 
             if (saio.getOffsets().length == 1) {
                 long offset = saio.getOffsets()[0];
@@ -134,15 +146,29 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
                         sizeInTotal += saiz.getSampleInfoSizes()[i];
                     }
                 }
+
                 ByteBuffer chunksCencSampleAuxData = randomAccess.get(offset, sizeInTotal);
+
                 for (int i = 0; i < saiz.getSampleCount(); i++) {
-                    sampleEncryptionEntries.add(
-                            parseCencAuxDataFormat(tenc.getDefaultIvSize(), chunksCencSampleAuxData, saiz.getSize(i))
-                    );
+                    long auxInfoSize = saiz.getSize(i);
+                    SampleEntry _se = samples.get(i).getSampleEntry();
+                    if (se != _se) {
+                        tenc = Path.getPath((Container) _se, "sinf[0]/schi[0]/tenc[0]");
+                    }
+                    se = _se;
+                    if (tenc != null) {
+                        sampleEncryptionEntries.add(
+                                parseCencAuxDataFormat(tenc.getDefaultIvSize(), chunksCencSampleAuxData, auxInfoSize)
+                        );
+                    } else {
+                        sampleEncryptionEntries.add(new CencSampleAuxiliaryDataFormat());
+                    }
                 }
 
             } else if (saio.getOffsets().length == chunkSizes.length) {
                 int currentSampleNo = 0;
+
+
                 for (int i = 0; i < chunkSizes.length; i++) {
                     long offset = saio.getOffsets()[i];
                     long size = 0;
@@ -157,10 +183,18 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
                     ByteBuffer chunksCencSampleAuxData = randomAccess.get(offset, size);
                     for (int j = 0; j < chunkSizes[i]; j++) {
                         long auxInfoSize = saiz.getSize(currentSampleNo + j);
-                        sampleEncryptionEntries.add(
-                                // should I use the iv size from the sample group?
-                                parseCencAuxDataFormat(tenc.getDefaultIvSize(), chunksCencSampleAuxData, auxInfoSize)
-                        );
+                        SampleEntry _se = samples.get(currentSampleNo + j).getSampleEntry();
+                        if (se != _se) {
+                            tenc = Path.getPath((Container) _se, "sinf[0]/schi[0]/tenc[0]");
+                        }
+                        se = _se;
+                        if (tenc != null) {
+                            sampleEncryptionEntries.add(
+                                    parseCencAuxDataFormat(tenc.getDefaultIvSize(), chunksCencSampleAuxData, auxInfoSize)
+                            );
+                        } else {
+                            sampleEncryptionEntries.add(new CencSampleAuxiliaryDataFormat());
+                        }
                     }
                     currentSampleNo += chunkSizes[i];
                 }
@@ -188,9 +222,6 @@ public class CencMp4TrackImplImpl extends Mp4TrackImpl implements CencEncryptedT
         return cadf;
     }
 
-    public UUID getDefaultKeyId() {
-        return defaultKeyId;
-    }
 
     public boolean hasSubSampleEncryption() {
         return false;

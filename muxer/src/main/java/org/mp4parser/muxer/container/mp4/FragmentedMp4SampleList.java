@@ -1,4 +1,4 @@
-package org.mp4parser.muxer.samples;
+package org.mp4parser.muxer.container.mp4;
 
 import org.mp4parser.Box;
 import org.mp4parser.Container;
@@ -19,19 +19,18 @@ import java.util.*;
 import static org.mp4parser.tools.CastUtils.l2i;
 
 public class FragmentedMp4SampleList extends AbstractList<Sample> {
-    Container isofile;
-
-    TrackBox trackBox = null;
-    TrackExtendsBox trex = null;
-    HashMap<TrackFragmentBox, MovieFragmentBox> traf2moof = new HashMap<TrackFragmentBox, MovieFragmentBox>();
+    private Container isofile;
+    private TrackBox trackBox = null;
+    private TrackExtendsBox trex = null;
+    private HashMap<TrackFragmentBox, MovieFragmentBox> traf2moof = new HashMap<>();
     private SoftReference<Sample> sampleCache[];
     private List<TrackFragmentBox> allTrafs;
     private Map<TrackRunBox, SoftReference<ByteBuffer>>
-            trunDataCache = new HashMap<TrackRunBox, SoftReference<ByteBuffer>>();
+            trunDataCache = new HashMap<>();
     private int firstSamples[];
     private int size_ = -1;
     private RandomAccessSource randomAccess;
-    List<SampleEntry> sampleEntries;
+    private List<SampleEntry> sampleEntries;
 
     public FragmentedMp4SampleList(long track, Container isofile, RandomAccessSource randomAccess) {
         this.isofile = isofile;
@@ -60,11 +59,8 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
         initAllFragments();
     }
 
-    private List<TrackFragmentBox> initAllFragments() {
-        if (allTrafs != null) {
-            return allTrafs;
-        }
-        List<TrackFragmentBox> trafs = new ArrayList<TrackFragmentBox>();
+    private void initAllFragments() {
+        List<TrackFragmentBox> trafs = new ArrayList<>();
         for (MovieFragmentBox moof : isofile.getBoxes(MovieFragmentBox.class)) {
             for (TrackFragmentBox trackFragmentBox : moof.getBoxes(TrackFragmentBox.class)) {
                 if (trackFragmentBox.getTrackFragmentHeaderBox().getTrackId() == trackBox.getTrackHeaderBox().getTrackId()) {
@@ -81,7 +77,6 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
             firstSamples[i] = firstSample;
             firstSample += getTrafSize(allTrafs.get(i));
         }
-        return trafs;
     }
 
     private int getTrafSize(TrackFragmentBox traf) {
@@ -151,11 +146,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                         if (tfhd.hasBaseDataOffset()) {
                             offset += tfhd.getBaseDataOffset();
                         } else {
-                            //if (tfhd.isDefaultBaseIsMoof()) {
                             offset += Offsets.find(isofile, moof, 0);
-                            //} else {
-                            //    throw new RuntimeException("Rethink this case");
-                            //}
                         }
 
                         if (trun.isDataOffsetPresent()) {
@@ -171,7 +162,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                         }
                         try {
                             trunData = randomAccess.get(offset, size);
-                            trunDataCache.put(trun, new SoftReference<ByteBuffer>(trunData));
+                            trunDataCache.put(trun, new SoftReference<>(trunData));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -210,10 +201,10 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
 
                         @Override
                         public SampleEntry getSampleEntry() {
-                            return sampleEntries.get(l2i(tfhd.getSampleDescriptionIndex()));
+                            return sampleEntries.get(l2i(tfhd.getSampleDescriptionIndex()-1));
                         }
                     };
-                    sampleCache[index] = new SoftReference<Sample>(sample);
+                    sampleCache[index] = new SoftReference<>(sample);
                     return sample;
                 }
             }

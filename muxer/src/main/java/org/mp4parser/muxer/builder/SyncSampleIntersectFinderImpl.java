@@ -15,10 +15,13 @@
  */
 package org.mp4parser.muxer.builder;
 
+import org.mp4parser.Container;
 import org.mp4parser.boxes.iso14496.part12.OriginalFormatBox;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.Movie;
+import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.Track;
 import org.mp4parser.tools.Path;
 import org.slf4j.Logger;
@@ -59,13 +62,26 @@ public class SyncSampleIntersectFinderImpl implements Fragmenter {
     }
 
     static String getFormat(Track track) {
-        SampleDescriptionBox stsd = track.getSampleDescriptionBox();
-        OriginalFormatBox frma = Path.getPath(stsd, "enc./sinf/frma");
-        if (frma != null) {
-            return frma.getDataFormat();
-        } else {
-            return stsd.getSampleEntry().getType();
+        String type = null;
+        for (SampleEntry sampleEntry : track.getSampleEntries()) {
+
+            OriginalFormatBox frma;
+            frma = Path.getPath((Container) sampleEntry, "sinf/frma");
+            String _type;
+            if (frma != null) {
+                _type = frma.getDataFormat();
+            } else {
+                _type = sampleEntry.getType();
+            }
+            if (type == null) {
+                type = _type;
+            } else {
+                if (!type.equals(_type)) {
+                    throw new RuntimeException("The SyncSampleIntersectionFindler only works when all SampleEntries are of the same type. " + type + " vs. " + _type);
+                }
+            }
         }
+        return type;
     }
 
     /**
@@ -155,7 +171,15 @@ public class SyncSampleIntersectFinderImpl implements Fragmenter {
                 long minSampleRate = 192000;
                 for (Track testTrack : movie.getTracks()) {
                     if (getFormat(track).equals(getFormat(testTrack))) {
-                        AudioSampleEntry ase = (AudioSampleEntry) testTrack.getSampleDescriptionBox().getSampleEntry();
+                        AudioSampleEntry ase = null;
+                        for (SampleEntry sampleEntry : testTrack.getSampleEntries()) {
+                            if (ase == null) {
+                                ase = (AudioSampleEntry) sampleEntry;
+                            } else if (ase.getSampleRate() != ((AudioSampleEntry) sampleEntry).getSampleRate()) {
+                                throw new RuntimeException("Multiple SampleEntries and different sample rates is not supported");
+                            }
+                        }
+                        assert ase != null;
                         if (ase.getSampleRate() < minSampleRate) {
                             minSampleRate = ase.getSampleRate();
                             long sc = testTrack.getSamples().size();
@@ -172,7 +196,15 @@ public class SyncSampleIntersectFinderImpl implements Fragmenter {
                         }
                     }
                 }
-                AudioSampleEntry ase = (AudioSampleEntry) track.getSampleDescriptionBox().getSampleEntry();
+                AudioSampleEntry ase = null;
+                for (SampleEntry sampleEntry : track.getSampleEntries()) {
+                    if (ase == null) {
+                        ase = (AudioSampleEntry) sampleEntry;
+                    } else if (ase.getSampleRate() != ((AudioSampleEntry) sampleEntry).getSampleRate()) {
+                        throw new RuntimeException("Multiple SampleEntries and different sample rates is not supported");
+                    }
+                }
+                assert ase != null;
 
                 long samplesPerFrame = track.getSampleDurations()[0]; // Assuming all audio tracks have the same number of samples per frame, which they do for all known types
                 double factor = (double) ase.getSampleRate() / (double) minSampleRate;

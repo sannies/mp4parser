@@ -20,6 +20,7 @@ import org.mp4parser.boxes.iso14496.part12.*;
 import org.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import org.mp4parser.boxes.iso23001.part7.SampleEncryptionBox;
 import org.mp4parser.boxes.iso23001.part7.TrackEncryptionBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.samplegrouping.GroupEntry;
 import org.mp4parser.boxes.samplegrouping.SampleGroupDescriptionBox;
 import org.mp4parser.boxes.samplegrouping.SampleToGroupBox;
@@ -217,6 +218,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         tfhd.setDefaultSampleFlags(sf);
         tfhd.setBaseDataOffset(-1);
+        tfhd.setSampleDescriptionIndex(track.getSampleEntries().indexOf(track.getSamples().get(l2i(startSample)).getSampleEntry()) + 1);
         tfhd.setTrackId(track.getTrackMetaData().getTrackId());
         tfhd.setDefaultBaseIsMoof(true);
         parent.addBox(tfhd);
@@ -326,8 +328,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     protected void createSaiz(long startSample, long endSample, CencEncryptedTrack track, int sequenceNumber, TrackFragmentBox parent) {
-        SampleDescriptionBox sampleDescriptionBox = track.getSampleDescriptionBox();
-        TrackEncryptionBox tenc = Path.getPath(sampleDescriptionBox, "enc.[0]/sinf[0]/schi[0]/tenc[0]");
+        SampleEntry se =  track.getSampleEntries().get(l2i(parent.getTrackFragmentHeaderBox().getSampleDescriptionIndex()-1));
+
+        TrackEncryptionBox tenc = Path.getPath((Container) se, "sinf[0]/schi[0]/tenc[0]");
 
         SampleAuxiliaryInformationSizesBox saiz = new SampleAuxiliaryInformationSizesBox();
         saiz.setAuxInfoType("cenc");
@@ -738,7 +741,9 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     protected void createStsd(Track track, SampleTableBox stbl) {
-        stbl.addBox(track.getSampleDescriptionBox());
+        SampleDescriptionBox stsd = new SampleDescriptionBox();
+        stsd.setBoxes(track.getSampleEntries());
+        stbl.addBox(stsd);
     }
 
     protected ParsableBox createMinf(Track track, Movie movie) {

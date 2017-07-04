@@ -7,14 +7,12 @@ import org.mp4parser.boxes.iso14496.part1.objectdescriptors.SLConfigDescriptor;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
 import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * MPEG V1 Layer 3 Audio. Does not support IDv3 or any other tags. Only raw stream of MP3 frames.
@@ -35,7 +33,6 @@ public class MP3TrackImpl extends AbstractTrack {
     private final DataSource dataSource;
 
     TrackMetaData trackMetaData = new TrackMetaData();
-    SampleDescriptionBox sampleDescriptionBox;
     MP3Header firstHeader;
 
     long maxBitRate;
@@ -81,7 +78,6 @@ public class MP3TrackImpl extends AbstractTrack {
 
         avgBitRate = (int) (8 * dataSize / duration);
 
-        sampleDescriptionBox = new SampleDescriptionBox();
         audioSampleEntry = new AudioSampleEntry("mp4a");
         audioSampleEntry.setChannelCount(firstHeader.channelCount);
         audioSampleEntry.setSampleRate(firstHeader.sampleRate);
@@ -107,7 +103,6 @@ public class MP3TrackImpl extends AbstractTrack {
         ByteBuffer data = descriptor.serialize();
         esds.setData(data);
         audioSampleEntry.addBox(esds);
-        sampleDescriptionBox.addBox(audioSampleEntry);
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
@@ -122,8 +117,8 @@ public class MP3TrackImpl extends AbstractTrack {
         dataSource.close();
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return sampleDescriptionBox;
+    public List<SampleEntry> getSampleEntries() {
+        return Collections.<SampleEntry>singletonList(audioSampleEntry);
     }
 
     public long[] getSampleDurations() {

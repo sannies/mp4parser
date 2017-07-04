@@ -1,8 +1,6 @@
 package org.mp4parser.muxer.tracks;
 
-import org.mp4parser.Box;
 import org.mp4parser.IsoFile;
-import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part15.AvcConfigurationBox;
 import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.sampleentry.VisualSampleEntry;
@@ -11,7 +9,6 @@ import org.mp4parser.muxer.Track;
 import org.mp4parser.muxer.WrappingTrack;
 import org.mp4parser.tools.ByteBufferByteChannel;
 import org.mp4parser.tools.IsoTypeWriterVariable;
-import org.mp4parser.tools.Path;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,16 +26,11 @@ import static org.mp4parser.tools.CastUtils.l2i;
 public class Avc1ToAvc3TrackImpl extends WrappingTrack {
 
     List<Sample> samples;
-    Map<SampleEntry, SampleEntry> avc1toavc3 = new LinkedHashMap<>();
+    private Map<SampleEntry, SampleEntry> avc1toavc3 = new LinkedHashMap<>();
 
     public Avc1ToAvc3TrackImpl(Track parent) throws IOException {
         super(parent);
-        if (!"avc1".equals(parent.getSampleDescriptionBox().getSampleEntry().getType())) {
-            throw new RuntimeException("Only avc1 tracks can be converted to avc3 tracks");
-        }
-        boolean foundAvc1 = false;
-
-        for (SampleEntry sampleEntry : parent.getSampleDescriptionBox().getBoxes(SampleEntry.class)) {
+        for (SampleEntry sampleEntry : parent.getSampleEntries()) {
             if (sampleEntry.getType().equals("avc1")) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 try {
@@ -47,7 +39,6 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
                     VisualSampleEntry avc3SampleEntry = (VisualSampleEntry) new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray()))).getBoxes().get(0);
                     avc3SampleEntry.setType("avc3");
                     avc1toavc3.put(sampleEntry, avc3SampleEntry);
-                    foundAvc1 = true;
                 } catch (IOException e) {
                     throw new RuntimeException("Dumping sample entry to memory failed");
                 }
@@ -57,16 +48,11 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
 
         }
 
-        assert foundAvc1: "There was no avc1 sample entry to convert it to avc3";
-
-
         samples = new ReplaceSyncSamplesList(parent.getSamples());
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        SampleDescriptionBox stsd = new SampleDescriptionBox();
-        stsd.setBoxes(new ArrayList<>(new ArrayList<Box>(avc1toavc3.values())));
-        return stsd;
+    public List<SampleEntry> getSampleEntries() {
+        return new ArrayList<>(avc1toavc3.values());
     }
 
     public List<Sample> getSamples() {
@@ -82,8 +68,9 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
 
         @Override
         public Sample get(final int index) {
-            if (Arrays.binarySearch(Avc1ToAvc3TrackImpl.this.getSyncSamples(), index + 1) >= 0) {
-                final Sample orignalSample = parentSamples.get(index);
+            final Sample orignalSample = parentSamples.get(index);
+            if (orignalSample.getSampleEntry().getType().equals("avc1") &&  Arrays.binarySearch(Avc1ToAvc3TrackImpl.this.getSyncSamples(), index + 1) >= 0) {
+
                 final AvcConfigurationBox avcC = orignalSample.getSampleEntry().getBoxes(AvcConfigurationBox.class).get(0);
                 final int len = avcC.getLengthSizeMinusOne() + 1;
                 final ByteBuffer buf = ByteBuffer.allocate(len);
@@ -165,7 +152,7 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
                 };
 
             } else {
-                return parentSamples.get(index);
+                return orignalSample;
             }
         }
 
@@ -173,6 +160,8 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
         public int size() {
             return parentSamples.size();
         }
+
+
     }
 
 }

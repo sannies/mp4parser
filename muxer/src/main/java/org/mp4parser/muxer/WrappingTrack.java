@@ -3,8 +3,8 @@ package org.mp4parser.muxer;
 
 import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
-import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.samplegrouping.GroupEntry;
 
 import java.io.IOException;
@@ -15,14 +15,14 @@ import java.util.Map;
  * A simple track wrapper that delegates all calls to parent track. Override certain methods inline to change result.
  */
 public class WrappingTrack implements Track {
-    Track parent;
+    private Track parent;
 
     public WrappingTrack(Track parent) {
         this.parent = parent;
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return parent.getSampleDescriptionBox();
+    public List<SampleEntry> getSampleEntries() {
+        return parent.getSampleEntries();
     }
 
     public long[] getSampleDurations() {

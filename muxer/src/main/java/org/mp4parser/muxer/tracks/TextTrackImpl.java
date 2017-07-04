@@ -19,6 +19,7 @@ import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
 import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.sampleentry.TextSampleEntry;
 import org.mp4parser.boxes.threegpp.ts26245.FontTableBox;
 import org.mp4parser.muxer.AbstractTrack;
@@ -37,7 +38,6 @@ import java.util.*;
  */
 public class TextTrackImpl extends AbstractTrack {
     TrackMetaData trackMetaData = new TrackMetaData();
-    SampleDescriptionBox sampleDescriptionBox;
     TextSampleEntry tx3g;
     List<Line> subs = new LinkedList<Line>();
 
@@ -45,12 +45,10 @@ public class TextTrackImpl extends AbstractTrack {
 
     public TextTrackImpl() {
         super("subtitles");
-        sampleDescriptionBox = new SampleDescriptionBox();
         tx3g = new TextSampleEntry("tx3g");
         tx3g.setDataReferenceIndex(1);
         tx3g.setStyleRecord(new TextSampleEntry.StyleRecord());
         tx3g.setBoxRecord(new TextSampleEntry.BoxRecord());
-        sampleDescriptionBox.addBox(tx3g);
 
         FontTableBox ftab = new FontTableBox();
         ftab.setEntries(Collections.singletonList(new FontTableBox.FontRecord(1, "Serif")));
@@ -100,8 +98,8 @@ public class TextTrackImpl extends AbstractTrack {
         return samples;
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return sampleDescriptionBox;
+    public List<SampleEntry> getSampleEntries() {
+        return Collections.<SampleEntry>singletonList(tx3g);
     }
 
     public long[] getSampleDurations() {

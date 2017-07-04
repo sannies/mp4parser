@@ -20,18 +20,18 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.AbstractList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Created by sannies on 13.02.2015.
  */
 public class OneJpegPerIframe extends AbstractTrack {
-    File[] jpegs;
-    TrackMetaData trackMetaData = new TrackMetaData();
-    long[] sampleDurations;
-    SampleDescriptionBox stsd;
-    long[] syncSamples;
-    VisualSampleEntry mp4v;
+    private File[] jpegs;
+    private TrackMetaData trackMetaData = new TrackMetaData();
+    private long[] sampleDurations;
+    private long[] syncSamples;
+    private VisualSampleEntry mp4v;
 
 
     public OneJpegPerIframe(String name, File[] jpegs, Track alignTo) throws IOException {
@@ -62,9 +62,7 @@ public class OneJpegPerIframe extends AbstractTrack {
         }
         sampleDurations[sampleDurations.length - 1] = duration;
 
-        stsd = new SampleDescriptionBox();
         mp4v = new VisualSampleEntry("mp4v");
-        stsd.addBox(mp4v);
         ESDescriptorBox esds = new ESDescriptorBox();
         esds.setData(ByteBuffer.wrap(Hex.decodeHex("038080801B000100048080800D6C11000000000A1CB4000A1CB4068080800102")));
         esds.setEsDescriptor((ESDescriptor) ObjectDescriptorFactory.createFrom(-1, ByteBuffer.wrap(Hex.decodeHex("038080801B000100048080800D6C11000000000A1CB4000A1CB4068080800102"))));
@@ -114,8 +112,8 @@ public class OneJpegPerIframe extends AbstractTrack {
 
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return stsd;
+    public List<SampleEntry> getSampleEntries() {
+        return Collections.<SampleEntry>singletonList(mp4v);
     }
 
     public long[] getSampleDurations() {

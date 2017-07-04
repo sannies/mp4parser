@@ -26,10 +26,13 @@ import org.mp4parser.tools.IsoTypeWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Arrays;
 
 /**
  * <h1>4cc = "{@value #TYPE1}" || "{@value #TYPE2} || "{@value #TYPE3} || "{@value #TYPE4} || "{@value #TYPE5} || "{@value #TYPE7} || "{@value #TYPE8} || "{@value #TYPE9} || "{@value #TYPE10} || "{@value #TYPE11} || "{@value #TYPE12} || "{@value #TYPE13}"</h1>
@@ -334,6 +337,39 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
                 ", channelCount=" + channelCount +
                 ", boxes=" + getBoxes() +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AudioSampleEntry that = (AudioSampleEntry) o;
+        ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
+        ByteArrayOutputStream  baos2 = new ByteArrayOutputStream();
+        try {
+            this.getBox(Channels.newChannel(baos1));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            that.getBox(Channels.newChannel(baos2));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return Arrays.equals(baos1.toByteArray(), baos2.toByteArray());
+    }
+
+    @Override
+    public int hashCode() {
+        ByteArrayOutputStream  baos1 = new ByteArrayOutputStream();
+        try {
+            this.getBox(Channels.newChannel(baos1));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return Arrays.hashCode(baos1.toByteArray());
     }
 
 }

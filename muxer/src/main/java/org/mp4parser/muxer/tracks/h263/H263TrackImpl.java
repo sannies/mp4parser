@@ -1,27 +1,22 @@
 package org.mp4parser.muxer.tracks.h263;
 
-import org.mp4parser.Container;
-import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part1.objectdescriptors.*;
-import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
 import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.sampleentry.VisualSampleEntry;
-import org.mp4parser.muxer.*;
-import org.mp4parser.muxer.builder.DefaultMp4Builder;
+import org.mp4parser.muxer.DataSource;
+import org.mp4parser.muxer.Sample;
+import org.mp4parser.muxer.SampleImpl;
 import org.mp4parser.muxer.tracks.AbstractH26XTrack;
-import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.Mp4Arrays;
-import org.mp4parser.tools.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mp4parser.tools.CastUtils.l2i;
@@ -32,20 +27,18 @@ import static org.mp4parser.tools.CastUtils.l2i;
 public class H263TrackImpl extends AbstractH26XTrack {
     private static Logger LOG = LoggerFactory.getLogger(ESDescriptor.class.getName());
 
-    int RECTANGULAR = 0;
-    int BINARY = 1;
-    int BINARY_ONLY = 2;
-    int GRAYSCALE = 3;
+    private int RECTANGULAR = 0;
+    private int BINARY = 1;
+    private int BINARY_ONLY = 2;
+    private int GRAYSCALE = 3;
 
-    SampleDescriptionBox stsd;
+    private List<Sample> samples = new ArrayList<>();
 
-
-    List<Sample> samples = new ArrayList<Sample>();
-    List<ByteBuffer> esdsStuff = new ArrayList<ByteBuffer>();
-    boolean esdsComplete = false;
-    int fixed_vop_time_increment = -1;
-    int vop_time_increment_resolution = 0;
-    VisualSampleEntry mp4v;
+    private List<ByteBuffer> esdsStuff = new ArrayList<ByteBuffer>();
+    private boolean esdsComplete = false;
+    private int fixed_vop_time_increment = -1;
+    private int vop_time_increment_resolution = 0;
+    private VisualSampleEntry mp4v;
 
     public H263TrackImpl(DataSource dataSource) throws IOException {
         super(dataSource, false);
@@ -55,8 +48,6 @@ public class H263TrackImpl extends AbstractH26XTrack {
         int visual_object_verid = 0;
 
         mp4v = new VisualSampleEntry("mp4v");
-        stsd = new SampleDescriptionBox();
-        stsd.addBox(mp4v);
 
         long last_sync_point = 0;
         long last_time_code = -1;
@@ -146,40 +137,6 @@ public class H263TrackImpl extends AbstractH26XTrack {
         return null;
     }
 
-    public static void main1(String[] args) throws IOException {
-        File[] files = new File("C:\\dev\\mp4parser\\frames").listFiles();
-        Arrays.sort(files);
-        Movie m = new Movie();
-        Track track = new H263TrackImpl(new MultiFileDataSourceImpl(files));
-        m.addTrack(track);
-        DefaultMp4Builder builder = new DefaultMp4Builder();
-        Container c = builder.build(m);
-        FileOutputStream fos = new FileOutputStream("output.mp4");
-        c.writeContainer(Channels.newChannel(fos));
-    }
-
-    public static void main(String[] args) throws IOException {
-        DataSource ds = new FileDataSourceImpl("C:\\content\\bbb.h263");
-        Movie m = new Movie();
-        Track track = new H263TrackImpl(ds);
-        m.addTrack(track);
-        DefaultMp4Builder builder = new DefaultMp4Builder();
-        Container c = builder.build(m);
-        FileOutputStream fos = new FileOutputStream("output.mp4");
-        c.writeContainer(Channels.newChannel(fos));
-
-    }
-
-    public static void main2(String[] args) throws IOException {
-        ESDescriptorBox esds = Path.getPath(new IsoFile(new FileInputStream("C:\\content\\bbb.mp4").getChannel()), "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stsd[0]/mp4v[0]/esds[0]");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        esds.getBox(Channels.newChannel(baos));
-        System.err.println(Hex.encodeHex(baos.toByteArray()));
-        System.err.println(esds.getEsDescriptor());
-        baos = new ByteArrayOutputStream();
-        esds.getBox(Channels.newChannel(baos));
-        System.err.println(Hex.encodeHex(baos.toByteArray()));
-    }
 
     private int parse0x05Unit(ByteBuffer nal) {
         int visual_object_verid = 0;
@@ -406,9 +363,9 @@ public class H263TrackImpl extends AbstractH26XTrack {
         return new SampleImpl(data, mp4v);
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
+    public List<SampleEntry> getSampleEntries() {
 
-        return stsd;
+        return Collections.<SampleEntry>singletonList(mp4v);
     }
 
     public String getHandler() {

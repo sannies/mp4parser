@@ -29,7 +29,6 @@ public class TtmlTrackImpl extends AbstractTrack {
 
 
     TrackMetaData trackMetaData = new TrackMetaData();
-    SampleDescriptionBox sampleDescriptionBox = new SampleDescriptionBox();
     XMLSubtitleSampleEntry xmlSubtitleSampleEntry = new XMLSubtitleSampleEntry();
 
     List<Sample> samples = new ArrayList<Sample>();
@@ -100,7 +99,6 @@ public class TtmlTrackImpl extends AbstractTrack {
         xmlSubtitleSampleEntry.setNamespace(join(",", getAllNamespaces(ttmls.get(0))));
         xmlSubtitleSampleEntry.setSchemaLocation("");
         xmlSubtitleSampleEntry.setAuxiliaryMimeTypes(join(",", new ArrayList<String>(mimeTypes).toArray(new String[mimeTypes.size()])));
-        sampleDescriptionBox.addBox(xmlSubtitleSampleEntry);
         trackMetaData.setTimescale(30000);
         trackMetaData.setLayer(65535);
 
@@ -267,8 +265,8 @@ public class TtmlTrackImpl extends AbstractTrack {
         return lastTimestamp(ttml) - firstTimestamp(ttml);
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return sampleDescriptionBox;
+    public List<SampleEntry> getSampleEntries() {
+        return Collections.<SampleEntry>singletonList(xmlSubtitleSampleEntry);
     }
 
 

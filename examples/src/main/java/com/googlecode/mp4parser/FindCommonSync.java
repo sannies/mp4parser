@@ -12,22 +12,22 @@ import java.util.*;
 public class FindCommonSync {
 
     public static <T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c) {
-        List<T> list = new ArrayList<T>(c);
+        List<T> list = new ArrayList<>(c);
         java.util.Collections.sort(list);
         return list;
     }
 
     public static void main(String[] args) throws IOException {
-        HashMap<Integer, Integer> common = new HashMap<Integer, Integer>();
+        HashMap<Integer, Integer> common = new HashMap<>();
         boolean first = true;
         for (String arg : args) {
             Movie invideo = MovieCreator.build(arg);
             List<Track> tracks = invideo.getTracks();
 
             for (Track t : tracks) {
-                String type = t.getSampleDescriptionBox().getSampleEntry().getType();
+                String type = t.getSampleEntries().get(0).getType();
                 System.out.println("Track of type " + type );
-                if (t.getSampleDescriptionBox().getSampleEntry() instanceof VisualSampleEntry) {
+                if (t.getSampleEntries().get(0) instanceof VisualSampleEntry) {
                     HashMap<Integer, Integer> previous = (HashMap<Integer, Integer>) common.clone();
                     common.clear();
                     System.out.println("Found video track in " + arg);

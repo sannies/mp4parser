@@ -17,16 +17,12 @@ import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 public class DTSTrackImpl extends AbstractTrack {
     private static final int BUFFER = 1024 * 1024 * 64;
     TrackMetaData trackMetaData = new TrackMetaData();
-    SampleDescriptionBox sampleDescriptionBox;
     AudioSampleEntry audioSampleEntry;
     int samplerate;
     int bitrate;
@@ -88,16 +84,12 @@ public class DTSTrackImpl extends AbstractTrack {
             throw new IOException();
         }
 
-        sampleDescriptionBox = new SampleDescriptionBox();
         audioSampleEntry = new AudioSampleEntry(type);
         audioSampleEntry.setChannelCount(channelCount);
         audioSampleEntry.setSampleRate(samplerate);
         audioSampleEntry.setDataReferenceIndex(1);
         audioSampleEntry.setSampleSize(16);
-
-
         audioSampleEntry.addBox(ddts);
-        sampleDescriptionBox.addBox(audioSampleEntry);
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
@@ -112,8 +104,8 @@ public class DTSTrackImpl extends AbstractTrack {
         return samples;
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return sampleDescriptionBox;
+    public List<SampleEntry> getSampleEntries() {
+        return Collections.<SampleEntry>singletonList(audioSampleEntry);
     }
 
     public long[] getSampleDurations() {

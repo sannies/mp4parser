@@ -26,6 +26,7 @@ import org.mp4parser.muxer.builder.DefaultMp4Builder;
 import org.mp4parser.muxer.tracks.h264.H264TrackImpl;
 import org.mp4parser.support.BoxComparator;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**

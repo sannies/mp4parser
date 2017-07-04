@@ -17,8 +17,8 @@ package org.mp4parser.muxer;
 
 import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
-import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.samplegrouping.GroupEntry;
 
 import java.io.Closeable;
@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public interface Track extends Closeable {
 
-    SampleDescriptionBox getSampleDescriptionBox();
+    List<SampleEntry> getSampleEntries();
 
     /**
      * Each samples is covers a small time span in a video. This method

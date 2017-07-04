@@ -15,7 +15,11 @@
  */
 package org.mp4parser.muxer.tracks;
 
-import org.mp4parser.boxes.iso14496.part12.*;
+import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
+import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
+import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
+import org.mp4parser.boxes.iso14496.part12.TimeToSampleBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.AbstractTrack;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.Track;
@@ -36,7 +40,7 @@ import java.util.ListIterator;
  * </ul>
  */
 public class ClippedTrack extends AbstractTrack {
-    Track origTrack;
+    private Track origTrack;
     private int fromSample;
     private int toSample;
 
@@ -131,8 +135,8 @@ public class ClippedTrack extends AbstractTrack {
         return origTrack.getSamples().subList(fromSample, toSample);
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return origTrack.getSampleDescriptionBox();
+    public List<SampleEntry> getSampleEntries() {
+        return origTrack.getSampleEntries();
     }
 
     public synchronized long[] getSampleDurations() {

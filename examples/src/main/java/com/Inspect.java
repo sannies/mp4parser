@@ -3,7 +3,7 @@ package com;
 
 import org.mp4parser.IsoFile;
 import org.mp4parser.muxer.FileRandomAccessSourceImpl;
-import org.mp4parser.muxer.samples.FragmentedMp4SampleList;
+import org.mp4parser.muxer.container.mp4.FragmentedMp4SampleList;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

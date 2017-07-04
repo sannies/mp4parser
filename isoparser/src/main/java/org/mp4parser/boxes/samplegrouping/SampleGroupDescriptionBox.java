@@ -138,8 +138,6 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
             groupEntry = new RollRecoveryEntry();
         } else if (RateShareEntry.TYPE.equals(groupingType)) {
             groupEntry = new RateShareEntry();
-        } else if (CencSampleEncryptionInformationGroupEntry.TYPE.equals(groupingType)) {
-            groupEntry = new CencSampleEncryptionInformationGroupEntry();
         } else if (VisualRandomAccessEntry.TYPE.equals(groupingType)) {
             groupEntry = new VisualRandomAccessEntry();
         } else if (TemporalLevelEntry.TYPE.equals(groupingType)) {

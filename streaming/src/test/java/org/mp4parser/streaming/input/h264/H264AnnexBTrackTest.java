@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.muxer.InMemRandomAccessSourceImpl;
 import org.mp4parser.muxer.Sample;
-import org.mp4parser.muxer.samples.SampleList;
+import org.mp4parser.muxer.container.mp4.Mp4SampleList;
 import org.mp4parser.streaming.StreamingTrack;
 import org.mp4parser.streaming.output.mp4.FragmentedMp4Writer;
 
@@ -16,9 +16,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Created by sannies on 16.08.2015.
- */
+
 public class H264AnnexBTrackTest {
     ExecutorService es = Executors.newCachedThreadPool();
 
@@ -34,7 +32,7 @@ public class H264AnnexBTrackTest {
         writer.close();
         IsoFile isoFile = new IsoFile(Channels.newChannel(new ByteArrayInputStream(baos.toByteArray())));
         Walk.through(isoFile);
-        List<Sample> s = new SampleList(1, isoFile, new InMemRandomAccessSourceImpl(baos.toByteArray()));
+        List<Sample> s = new Mp4SampleList(1, isoFile, new InMemRandomAccessSourceImpl(baos.toByteArray()));
         for (Sample sample : s) {
 //            System.err.println("s: " + sample.getSize());
             sample.asByteBuffer();

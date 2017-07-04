@@ -31,7 +31,6 @@ public class EC3TrackImpl extends AbstractTrack {
     private static final long MAX_FRAMES_PER_MMAP = 20;
     private final DataSource dataSource;
     TrackMetaData trackMetaData = new TrackMetaData();
-    SampleDescriptionBox sampleDescriptionBox;
     AudioSampleEntry audioSampleEntry;
 
     private int bitrate;
@@ -68,7 +67,6 @@ public class EC3TrackImpl extends AbstractTrack {
         }
         int samplerate = bitStreamInfos.get(0).samplerate;
 
-        sampleDescriptionBox = new SampleDescriptionBox();
         audioSampleEntry = new AudioSampleEntry("ec-3");
         audioSampleEntry.setChannelCount(2);  // According to  ETSI TS 102 366 Annex F
         audioSampleEntry.setSampleRate(samplerate);
@@ -104,7 +102,6 @@ public class EC3TrackImpl extends AbstractTrack {
 
         ec3.setDataRate(bitrate / 1000);
         audioSampleEntry.addBox(ec3);
-        sampleDescriptionBox.addBox(audioSampleEntry);
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
@@ -127,8 +124,8 @@ public class EC3TrackImpl extends AbstractTrack {
         return samples;
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return sampleDescriptionBox;
+    public List<SampleEntry> getSampleEntries() {
+        return Collections.<SampleEntry>singletonList(audioSampleEntry);
     }
 
     public List<CompositionTimeToSample.Entry> getCompositionTimeEntries() {

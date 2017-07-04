@@ -19,6 +19,7 @@ import org.mp4parser.*;
 import org.mp4parser.boxes.iso14496.part12.*;
 import org.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
 import org.mp4parser.boxes.iso23001.part7.SampleEncryptionBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.samplegrouping.GroupEntry;
 import org.mp4parser.boxes.samplegrouping.SampleGroupDescriptionBox;
 import org.mp4parser.boxes.samplegrouping.SampleToGroupBox;
@@ -353,7 +354,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             String type = sg.getKey().getType();
             List<GroupEntry> groupEntries = groupEntryFamilies.get(type);
             if (groupEntries == null) {
-                groupEntries = new ArrayList<GroupEntry>();
+                groupEntries = new ArrayList<>();
                 groupEntryFamilies.put(type, groupEntries);
             }
             groupEntries.add(sg.getKey());
@@ -445,7 +446,9 @@ public class DefaultMp4Builder implements Mp4Builder {
     }
 
     protected void createStsd(Track track, SampleTableBox stbl) {
-        stbl.addBox(track.getSampleDescriptionBox());
+        SampleDescriptionBox stsd = new SampleDescriptionBox();
+        stsd.setBoxes(track.getSampleEntries());
+        stbl.addBox(stsd);
     }
 
     protected void createStco(Track targetTrack, Movie movie, Map<Track, int[]> chunks, SampleTableBox stbl) {
@@ -527,15 +530,22 @@ public class DefaultMp4Builder implements Mp4Builder {
         SampleToChunkBox stsc = new SampleToChunkBox();
         stsc.setEntries(new LinkedList<SampleToChunkBox.Entry>());
         long lastChunkSize = Integer.MIN_VALUE; // to be sure the first chunks hasn't got the same size
+        long lastSampleDescriptionIndex = Integer.MIN_VALUE;
+        List<Sample> samples = track.getSamples();
+
+        int currentSampleIndex = 0;
+        List<SampleEntry> sampleEntries = track.getSampleEntries();
+
         for (int i = 0; i < tracksChunkSizes.length; i++) {
-            // The sample description index references the sample description box
-            // that describes the samples of this chunk. My Tracks cannot have more
-            // than one sample description box. Therefore 1 is always right
-            // the first chunk has the number '1'
-            if (lastChunkSize != tracksChunkSizes[i]) {
-                stsc.getEntries().add(new SampleToChunkBox.Entry(i + 1, tracksChunkSizes[i], 1));
+            Sample sample = samples.get(currentSampleIndex);
+            int currentSampleDescriptionIndex = sampleEntries.indexOf(sample.getSampleEntry()) + 1; // one base
+
+            if (lastChunkSize != tracksChunkSizes[i] || lastSampleDescriptionIndex != currentSampleDescriptionIndex) {
+                stsc.getEntries().add(new SampleToChunkBox.Entry(i + 1, tracksChunkSizes[i], currentSampleDescriptionIndex));
                 lastChunkSize = tracksChunkSizes[i];
+                lastSampleDescriptionIndex = currentSampleDescriptionIndex;
             }
+            currentSampleIndex += tracksChunkSizes[i];
         }
         stbl.addBox(stsc);
     }

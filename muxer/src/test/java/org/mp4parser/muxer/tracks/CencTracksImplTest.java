@@ -13,6 +13,7 @@ import org.mp4parser.muxer.tracks.encryption.CencDecryptingTrackImpl;
 import org.mp4parser.muxer.tracks.encryption.CencEncryptedTrack;
 import org.mp4parser.muxer.tracks.encryption.CencEncryptingTrackImpl;
 import org.mp4parser.tools.ByteBufferByteChannel;
+import org.mp4parser.tools.RangeStartMap;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -103,9 +104,8 @@ public class CencTracksImplTest {
 
         List<Track> encTracks = new LinkedList<Track>();
         for (Track track : m.getTracks()) {
-            encTracks.add(new CencEncryptingTrackImpl(track, keyId, Collections.singletonMap(keyId, key),
-                    null,
-                    "cbc1", true));
+            encTracks.add(new CencEncryptingTrackImpl(track, new RangeStartMap<>(0, keyId), Collections.singletonMap(keyId, key),
+                    "cbc1", true, false));
         }
         m.setTracks(encTracks);
 

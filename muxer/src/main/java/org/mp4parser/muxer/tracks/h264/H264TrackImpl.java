@@ -35,7 +35,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
     Map<Integer, ByteBuffer> ppsIdToPpsBytes = new HashMap<Integer, ByteBuffer>();
     Map<Integer, PictureParameterSet> ppsIdToPps = new HashMap<Integer, PictureParameterSet>();
 
-    SampleDescriptionBox sampleDescriptionBox;
     SeqParameterSet firstSeqParameterSet = null;
     PictureParameterSet firstPictureParameterSet = null;
     SeqParameterSet currentSeqParameterSet = null;
@@ -167,8 +166,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
         );
 
         visualSampleEntry.addBox(avcConfigurationBox);
-        sampleDescriptionBox = new SampleDescriptionBox();
-        sampleDescriptionBox.addBox(visualSampleEntry);
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
@@ -178,8 +175,8 @@ public class H264TrackImpl extends AbstractH26XTrack {
         trackMetaData.setHeight(height);
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return sampleDescriptionBox;
+    public List<SampleEntry> getSampleEntries() {
+        return Collections.<SampleEntry>singletonList(visualSampleEntry);
     }
 
     public String getHandler() {

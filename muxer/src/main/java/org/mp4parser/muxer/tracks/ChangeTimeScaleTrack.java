@@ -17,8 +17,8 @@ package org.mp4parser.muxer.tracks;
 
 import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
-import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.boxes.samplegrouping.GroupEntry;
 import org.mp4parser.muxer.Edit;
 import org.mp4parser.muxer.Sample;
@@ -131,8 +131,8 @@ public class ChangeTimeScaleTrack implements Track {
         source.close();
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return source.getSampleDescriptionBox();
+    public List<SampleEntry> getSampleEntries() {
+        return source.getSampleEntries();
     }
 
     public long[] getSampleDurations() {

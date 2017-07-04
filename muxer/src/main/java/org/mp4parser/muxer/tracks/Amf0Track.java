@@ -19,8 +19,8 @@ package org.mp4parser.muxer.tracks;
 import org.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
-import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.AbstractTrack;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.SampleImpl;
@@ -31,10 +31,9 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 public class Amf0Track extends AbstractTrack {
-    SortedMap<Long, byte[]> rawSamples = new TreeMap<>();
+    private SortedMap<Long, byte[]> rawSamples = new TreeMap<>();
     private TrackMetaData trackMetaData = new TrackMetaData();
-    SampleDescriptionBox stsd;
-    ActionMessageFormat0SampleEntryBox amf0;
+    private ActionMessageFormat0SampleEntryBox amf0;
 
     /**
      * Creates a new AMF0 track from
@@ -43,21 +42,19 @@ public class Amf0Track extends AbstractTrack {
      */
     public Amf0Track(Map<Long, byte[]> rawSamples) {
         super("amf0");
-        this.rawSamples = new TreeMap<Long, byte[]>(rawSamples);
+        this.rawSamples = new TreeMap<>(rawSamples);
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
         trackMetaData.setTimescale(1000); // Text tracks use millieseconds
         trackMetaData.setLanguage("eng");
 
-        stsd = new SampleDescriptionBox();
         amf0 = new ActionMessageFormat0SampleEntryBox();
         amf0.setDataReferenceIndex(1);
-        stsd.addBox(amf0);
 
     }
 
     public List<Sample> getSamples() {
-        LinkedList<Sample> samples = new LinkedList<Sample>();
+        LinkedList<Sample> samples = new LinkedList<>();
         for (byte[] bytes : rawSamples.values()) {
             samples.add(new SampleImpl(ByteBuffer.wrap(bytes), amf0));
         }
@@ -68,12 +65,12 @@ public class Amf0Track extends AbstractTrack {
         // no resources involved - doing nothing
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return stsd;
+    public List<SampleEntry> getSampleEntries() {
+        return Collections.<SampleEntry>singletonList(amf0);
     }
 
     public long[] getSampleDurations() {
-        LinkedList<Long> keys = new LinkedList<Long>(rawSamples.keySet());
+        LinkedList<Long> keys = new LinkedList<>(rawSamples.keySet());
         Collections.sort(keys);
         long[] rc = new long[keys.size()];
         long lastTimeStamp = 0;

@@ -18,7 +18,6 @@ package org.mp4parser.muxer.tracks;
 import org.mp4parser.boxes.iso14496.part1.objectdescriptors.*;
 import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
-import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
 import org.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
 import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
@@ -116,14 +115,13 @@ public class AACTrackImpl extends AbstractTrack {
     }
 
     TrackMetaData trackMetaData = new TrackMetaData();
-    SampleDescriptionBox sampleDescriptionBox;
-    AudioSampleEntry audioSampleEntry;
-    long[] decTimes;
-    AdtsHeader firstHeader;
+    private AudioSampleEntry audioSampleEntry;
+    private long[] decTimes;
+    private AdtsHeader firstHeader;
 
-    int bufferSizeDB;
-    long maxBitRate;
-    long avgBitRate;
+    private int bufferSizeDB;
+    private long maxBitRate;
+    private long avgBitRate;
 
     private DataSource dataSource;
     private List<Sample> samples;
@@ -166,7 +164,6 @@ public class AACTrackImpl extends AbstractTrack {
 
         bufferSizeDB = 1536; /* TODO: Calcultate this somehow! */
 
-        sampleDescriptionBox = new SampleDescriptionBox();
         audioSampleEntry = new AudioSampleEntry("mp4a");
         if (firstHeader.channelconfig == 7) {
             audioSampleEntry.setChannelCount(8);
@@ -203,7 +200,6 @@ public class AACTrackImpl extends AbstractTrack {
 
         esds.setEsDescriptor(descriptor);
         audioSampleEntry.addBox(esds);
-        sampleDescriptionBox.addBox(audioSampleEntry);
 
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
@@ -219,8 +215,8 @@ public class AACTrackImpl extends AbstractTrack {
         dataSource.close();
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return sampleDescriptionBox;
+    public List<SampleEntry> getSampleEntries() {
+        return Collections.<SampleEntry>singletonList(audioSampleEntry);
     }
 
     public long[] getSampleDurations() {

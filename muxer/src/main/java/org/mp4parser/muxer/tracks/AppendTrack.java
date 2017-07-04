@@ -33,7 +33,6 @@ import org.mp4parser.muxer.AbstractTrack;
 import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.Track;
 import org.mp4parser.muxer.TrackMetaData;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,25 +48,19 @@ import java.util.*;
 public class AppendTrack extends AbstractTrack {
     private static Logger LOG = LoggerFactory.getLogger(AppendTrack.class);
     Track[] tracks;
-    SampleDescriptionBox stsd;
-    List<Sample> lists;
-    long[] decodingTimes;
+
+    private List<Sample> lists = new ArrayList<>();;
+    private List<SampleEntry> sampleEntries = new ArrayList<>();
+    private long[] decodingTimes;
 
     public AppendTrack(Track... tracks) throws IOException {
         super(appendTracknames(tracks));
         this.tracks = tracks;
 
+
         for (Track track : tracks) {
-
-            if (stsd == null) {
-                stsd = new SampleDescriptionBox();
-                stsd.addBox(track.getSampleDescriptionBox().getBoxes(SampleEntry.class).get(0));
-            } else {
-                stsd = mergeStsds(stsd, track.getSampleDescriptionBox());
-
-            }
+            sampleEntries.addAll(track.getSampleEntries());
         }
-        lists = new ArrayList<Sample>();
 
         for (Track track : tracks) {
             //System.err.println("Track " + track + " is about to be appended");
@@ -394,13 +387,11 @@ public class AppendTrack extends AbstractTrack {
     }
 
     public List<Sample> getSamples() {
-
-
         return lists;
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return stsd;
+    public List<SampleEntry> getSampleEntries() {
+        return sampleEntries;
     }
 
     public synchronized long[] getSampleDurations() {

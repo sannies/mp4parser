@@ -1,6 +1,5 @@
-package org.mp4parser.muxer.samples;
+package org.mp4parser.muxer.container.mp4;
 
-import org.mp4parser.Box;
 import org.mp4parser.Container;
 import org.mp4parser.boxes.iso14496.part12.MovieBox;
 import org.mp4parser.boxes.iso14496.part12.SampleSizeBox;
@@ -28,22 +27,19 @@ import static org.mp4parser.tools.CastUtils.l2i;
 public class DefaultMp4SampleList extends AbstractList<Sample> {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultMp4SampleList.class);
 
-    Container topLevel;
-    TrackBox trackBox = null;
-    SoftReference<ByteBuffer>[] cache = null;
-    int[] chunkNumsStartSampleNum;
-    int[] chunkNumsToSampleDescriptionIndex;
-    long[] chunkOffsets;
-    long[] chunkSizes;
-    long[][] sampleOffsetsWithinChunks;
-    SampleSizeBox ssb;
-    int lastChunk = 0;
+    private TrackBox trackBox = null;
+    private SoftReference<ByteBuffer>[] cache = null;
+    private int[] chunkNumsStartSampleNum;
+    private int[] chunkNumsToSampleDescriptionIndex;
+    private long[] chunkOffsets;
+    private long[][] sampleOffsetsWithinChunks;
+    private SampleSizeBox ssb;
+    private int lastChunk = 0;
     private RandomAccessSource randomAccess;
-    ArrayList<Box> sampleEntries;
+    private ArrayList<SampleEntry> sampleEntries;
 
 
     public DefaultMp4SampleList(long track, Container topLevel, RandomAccessSource randomAccessFile) {
-        this.topLevel = topLevel;
         this.randomAccess = randomAccessFile;
         MovieBox movieBox = topLevel.getBoxes(MovieBox.class).get(0);
         List<TrackBox> trackBoxes = movieBox.getBoxes(TrackBox.class);
@@ -56,9 +52,13 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
         if (trackBox == null) {
             throw new RuntimeException("This MP4 does not contain track " + track);
         }
-        sampleEntries = new ArrayList<>(trackBox.getSampleTableBox().getSampleDescriptionBox().getBoxes());
+        sampleEntries = new ArrayList<>(trackBox.getSampleTableBox().getSampleDescriptionBox().getBoxes(SampleEntry.class));
+
+        if (sampleEntries.size() != trackBox.getSampleTableBox().getSampleDescriptionBox().getBoxes().size())
+            throw new AssertionError("stsd contains not only sample entries. Something's wrong here! Bailing out");
+
         chunkOffsets = trackBox.getSampleTableBox().getChunkOffsetBox().getChunkOffsets();
-        chunkSizes = new long[chunkOffsets.length];
+        long[] chunkSizes = new long[chunkOffsets.length];
 
         cache = new SoftReference[chunkOffsets.length];
         Arrays.fill(cache, new SoftReference<ByteBuffer>(null));
@@ -107,7 +107,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
 
         } while ((currentSampleNo += currentSamplePerChunk) <= lastSampleNo);
         chunkNumsStartSampleNum = new int[currentChunkNo + 1];
-        chunkNumsToSampleDescriptionIndex = new int[currentChunkNo + 1];
+
         // reset of algorithm
         s2cIndex = 0;
         next = entries[s2cIndex++];
@@ -151,10 +151,9 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
             sampleOffsetsWithinChunkscurrentChunkNo[i - chunkNumsStartSampleNumcurrentChunkNo] = sampleSum;
             sampleSum += ssb.getSampleSizeAtIndex(i - 1);
         }
-
     }
 
-    synchronized int getChunkForSample(int index) {
+    private synchronized int getChunkForSample(int index) {
         int sampleNum = index + 1;
         // we always look for the next chunk in the last one to make linear access fast
         if (sampleNum >= chunkNumsStartSampleNum[lastChunk] && sampleNum < chunkNumsStartSampleNum[lastChunk + 1]) {
@@ -245,7 +244,7 @@ public class DefaultMp4SampleList extends AbstractList<Sample> {
 
         @Override
         public SampleEntry getSampleEntry() {
-            return (SampleEntry) sampleEntries.get(chunkNumsToSampleDescriptionIndex[getChunkForSample(this.index)]);
+            return sampleEntries.get(chunkNumsToSampleDescriptionIndex[getChunkForSample(this.index)]-1);
         }
     }
 

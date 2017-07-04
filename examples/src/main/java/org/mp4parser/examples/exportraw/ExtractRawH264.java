@@ -5,7 +5,7 @@ import org.mp4parser.boxes.iso14496.part12.TrackBox;
 import org.mp4parser.boxes.iso14496.part15.AvcConfigurationBox;
 import org.mp4parser.muxer.FileRandomAccessSourceImpl;
 import org.mp4parser.muxer.Sample;
-import org.mp4parser.muxer.samples.SampleList;
+import org.mp4parser.muxer.container.mp4.Mp4SampleList;
 import org.mp4parser.tools.IsoTypeReaderVariable;
 import org.mp4parser.tools.Path;
 
@@ -32,7 +32,7 @@ public class ExtractRawH264 {
 
         }
 
-        SampleList sl = new SampleList(trackId, isoFile, new FileRandomAccessSourceImpl(
+        Mp4SampleList sl = new Mp4SampleList(trackId, isoFile, new FileRandomAccessSourceImpl(
                 new RandomAccessFile("D:\\downloads\\cracked.s01e01.hdtv.x264-2hd.mp4", "r")));
 
 

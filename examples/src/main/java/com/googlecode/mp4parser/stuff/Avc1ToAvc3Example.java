@@ -22,7 +22,7 @@ public class Avc1ToAvc3Example {
         Movie m2 = new Movie();
 
         for (Track track : m.getTracks()) {
-            if (track.getSampleDescriptionBox().getSampleEntry().getType().equals("avc1")) {
+            if (track.getSampleEntries().get(0).getType().equals("avc1")) {
                 m2.addTrack(new Avc1ToAvc3TrackImpl(track));
             } else {
                 m2.addTrack(track);

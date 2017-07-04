@@ -17,8 +17,8 @@ package org.mp4parser.muxer.tracks;
 
 import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
 import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
-import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
 import org.mp4parser.boxes.iso14496.part12.SubSampleInformationBox;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.*;
 
 import java.io.IOException;
@@ -55,8 +55,8 @@ public class ReplaceSampleTrack extends AbstractTrack {
         return samples;
     }
 
-    public SampleDescriptionBox getSampleDescriptionBox() {
-        return origTrack.getSampleDescriptionBox();
+    public List<SampleEntry> getSampleEntries() {
+        return origTrack.getSampleEntries();
     }
 
     public synchronized long[] getSampleDurations() {
