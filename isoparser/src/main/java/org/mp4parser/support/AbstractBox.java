@@ -40,7 +40,7 @@ import static org.mp4parser.tools.CastUtils.l2i;
  * <li>{@link #getContent(java.nio.ByteBuffer)}</li>
  * <li>{@link #getContentSize()}</li>
  * </ol>
- * additionally this new box has to be put into the <code>isoparser-default.properties</code> file so that
+ * additionally this new box has to be put into the <code>isoparser2-default.properties</code> file so that
  * it is accessible by the <code>PropertyBoxParserImpl</code>
  */
 public abstract class AbstractBox implements ParsableBox {

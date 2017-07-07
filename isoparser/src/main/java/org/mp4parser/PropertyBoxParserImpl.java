@@ -45,7 +45,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         if (BOX_MAP_CACHE != null) {
             mapping = new Properties(BOX_MAP_CACHE);
         } else {
-            InputStream is = getClass().getResourceAsStream("/isoparser-default.properties");
+            InputStream is = getClass().getResourceAsStream("/isoparser2-default.properties");
             try {
                 mapping = new Properties();
                 try {
