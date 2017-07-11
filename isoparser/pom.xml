@@ -89,9 +89,14 @@
                     <relocations>
                         <relocation>
                             <pattern>org.aspectj</pattern>
-                            <shadedPattern>org.mp4parser.aspectj</shadedPattern>
+                            <shadedPattern>org.mp4parser.aj</shadedPattern>
                         </relocation>
                     </relocations>
+                    <artifactSet>
+                        <includes>
+                            <include>org.aspectj:*</include>
+                        </includes>
+                    </artifactSet>
                 </configuration>
             </plugin>
             <plugin>

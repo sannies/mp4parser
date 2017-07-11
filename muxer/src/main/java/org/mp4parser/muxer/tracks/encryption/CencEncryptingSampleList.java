@@ -139,11 +139,6 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
                     }
                 }
                 sample.rewind();
-                if (index == 24) {
-                    System.err.println(encryptionAlgo);
-                    System.err.println(Hex.encodeHex(keyIdKeyPair.getKey().getEncoded()));
-                    System.err.println(keyIdKeyPair.getKeyId());
-                }
             } catch (IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {
                 throw new RuntimeException(e);
             }

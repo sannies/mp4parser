@@ -127,11 +127,6 @@ public class CencDecryptingSampleList extends AbstractList<Sample> {
                 throw new RuntimeException(e);
             }
             decSampleBuffer.rewind();
-            if (index == 24) {
-                System.err.println(getSchemeType(encSample.getSampleEntry()));
-                System.err.println(Hex.encodeHex(keys.get(index).getEncoded()));
-
-            }
             return new SampleImpl(decSampleBuffer, sampleEntries.get(index));
         } else {
             return parent.get(index);

@@ -14,7 +14,7 @@ public class Version {
     private static final Logger LOG = LoggerFactory.getLogger(Version.class);
 
     static {
-        LineNumberReader lnr = new LineNumberReader(new InputStreamReader(Version.class.getResourceAsStream("/version.txt")));
+        LineNumberReader lnr = new LineNumberReader(new InputStreamReader(Version.class.getResourceAsStream("/version2.txt")));
         String version;
         try {
             version = lnr.readLine();
