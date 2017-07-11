@@ -1,10 +1,9 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.mp4parser</groupId>
     <artifactId>mp4parser-project</artifactId>
     <packaging>pom</packaging>
-    <version>1.9.28-SNAPSHOT</version>
+    <version>1.9.28</version>
     <name>MP4 Parser Project</name>
     <url>https://github.com/sannies/mp4parser</url>
     <licenses>
@@ -86,6 +85,6 @@
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
         <connection>scm:git:git@github.com:sannies/mp4parser.git</connection>
-        <tag>mp4parser-project-1.9.5</tag>
+        <tag>mp4parser-project-1.9.28</tag>
     </scm>
 </project>
