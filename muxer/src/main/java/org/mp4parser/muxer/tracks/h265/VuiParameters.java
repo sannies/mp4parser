@@ -6,18 +6,18 @@ import java.io.IOException;
 
 public class VuiParameters {
     private static int EXTENDED_SAR = 255;
-    boolean aspect_ratio_info_present_flag;
-    int aspect_ratio_idc;
-    int sar_width;
-    int sar_height;
+    public boolean aspect_ratio_info_present_flag;
+    public int aspect_ratio_idc;
+    public int sar_width;
+    public int sar_height;
 
-    boolean video_signal_type_present_flag;
-    int video_format;
-    boolean video_full_range_flag;
-    boolean colour_description_present_flag;
-    int colour_primaries;
-    int transfer_characteristics;
-    int matrix_coeffs;
+    public boolean video_signal_type_present_flag;
+    public int video_format;
+    public boolean video_full_range_flag;
+    public boolean colour_description_present_flag;
+    public int colour_primaries;
+    public int transfer_characteristics;
+    public int matrix_coeffs;
 
 
     public VuiParameters(int sps_max_sub_layers_minus1, CAVLCReader bsr) throws IOException {

@@ -2,7 +2,6 @@ package org.mp4parser.muxer.tracks.h265;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mp4parser.Box;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part15.HevcConfigurationBox;
 import org.mp4parser.boxes.iso14496.part15.HevcDecoderConfigurationRecord;
@@ -10,7 +9,6 @@ import org.mp4parser.muxer.tracks.CleanInputStream;
 import org.mp4parser.tools.Hex;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
