@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class MovieCreator {
 
-    public static Movie build(String file) throws IOException {
+    public static Movie build(String file) throws IOException, NullPointerException {
         File f = new File(file);
         FileInputStream fis = new FileInputStream(f);
         Movie m = build(fis.getChannel(), new FileRandomAccessSourceImpl(new RandomAccessFile(f, "r")), file);
@@ -50,7 +50,7 @@ public class MovieCreator {
      * @return a representation of the movie
      * @throws IOException in case of I/O error during IsoFile creation
      */
-    public static Movie build(ReadableByteChannel readableByteChannel, RandomAccessSource randomAccessSource, String name) throws IOException {
+    public static Movie build(ReadableByteChannel readableByteChannel, RandomAccessSource randomAccessSource, String name) throws IOException, NullPointerException {
         IsoFile isoFile = new IsoFile(readableByteChannel);
         Movie m = new Movie();
         List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
