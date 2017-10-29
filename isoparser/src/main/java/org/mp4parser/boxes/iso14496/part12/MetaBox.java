@@ -17,6 +17,7 @@
 package org.mp4parser.boxes.iso14496.part12;
 
 import org.mp4parser.BoxParser;
+import org.mp4parser.RewindableReadableByteChannel;
 import org.mp4parser.support.AbstractContainerBox;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
@@ -36,6 +37,7 @@ public class MetaBox extends AbstractContainerBox {
 
     private int version;
     private int flags;
+    private boolean quickTimeFormat;
 
     public MetaBox() {
         super(TYPE);
@@ -76,25 +78,49 @@ public class MetaBox extends AbstractContainerBox {
 
     @Override
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(4);
-        dataSource.read(bb);
-        parseVersionAndFlags((ByteBuffer) bb.rewind());
-        initContainer(dataSource, contentSize - 4, boxParser);
+        // Read first 20 bytes to determine whether the file is formatted according to QuickTime File Format.
+        RewindableReadableByteChannel rewindableDataSource = new RewindableReadableByteChannel(dataSource, 20);
+        ByteBuffer bb = ByteBuffer.allocate(20);
+        int bytesRead = rewindableDataSource.read(bb);
+        if (bytesRead == 20) {
+            // If the second and the fifth 32-bit integers encode 'hdlr' and 'mdta' respectively then the MetaBox is
+            // formatted according to QuickTime File Format.
+            // See https://developer.apple.com/library/content/documentation/QuickTime/QTFF/Metadata/Metadata.html
+            bb.position(4);
+            String second4cc = IsoTypeReader.read4cc(bb);
+            bb.position(16);
+            String fifth4cc = IsoTypeReader.read4cc(bb);
+            if ("hdlr".equals(second4cc) && "mdta".equals(fifth4cc)) {
+                quickTimeFormat = true;
+            }
+        }
+        rewindableDataSource.rewind();
+
+        if (!quickTimeFormat) {
+            bb = ByteBuffer.allocate(4);
+            rewindableDataSource.read(bb);
+            parseVersionAndFlags((ByteBuffer) bb.rewind());
+        }
+
+        int bytesUsed = quickTimeFormat ? 0 : 4;
+        initContainer(rewindableDataSource, contentSize - bytesUsed, boxParser);
     }
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         writableByteChannel.write(getHeader());
-        ByteBuffer bb = ByteBuffer.allocate(4);
-        writeVersionAndFlags(bb);
-        writableByteChannel.write((ByteBuffer) bb.rewind());
+        if (!quickTimeFormat) {
+            ByteBuffer bb = ByteBuffer.allocate(4);
+            writeVersionAndFlags(bb);
+            writableByteChannel.write((ByteBuffer) bb.rewind());
+        }
         writeContainer(writableByteChannel);
     }
 
     @Override
     public long getSize() {
         long s = getContainerSize();
-        long t = 4; // bytes to container start
+        long t = quickTimeFormat ? 0 : 4; // bytes to container start
         return s + t + ((largeBox || (s + t) >= (1L << 32)) ? 16 : 8);
 
     }
