@@ -12,12 +12,12 @@ public class SequenceParameterSetRbsp {
     public VuiParameters vuiParameters;
     public int pic_width_in_luma_samples;
     public int pic_height_in_luma_samples;
-    public static int general_profile_space;
-    public static boolean general_tier_flag;
-    public static int general_profile_idc;
-    public static long general_profile_compatibility_flags;
-    public static long general_constraint_indicator_flags;
-    public static byte general_level_idc;
+    public int general_profile_space;
+    public boolean general_tier_flag;
+    public int general_profile_idc;
+    public long general_profile_compatibility_flags;
+    public long general_constraint_indicator_flags;
+    public byte general_level_idc;
     public int chroma_format_idc;
     public int bit_depth_luma_minus8;
     public int bit_depth_chroma_minus8;
@@ -168,7 +168,7 @@ public class SequenceParameterSetRbsp {
     }
 
 
-    private static void profile_tier_level(int maxNumSubLayersMinus1, CAVLCReader bsr) throws IOException {
+    private void profile_tier_level(int maxNumSubLayersMinus1, CAVLCReader bsr) throws IOException {
         general_profile_space = bsr.readU(2, "general_profile_space");
         general_tier_flag = bsr.readBool("general_tier_flag");
         general_profile_idc = bsr.readU(5, "general_profile_idc");
