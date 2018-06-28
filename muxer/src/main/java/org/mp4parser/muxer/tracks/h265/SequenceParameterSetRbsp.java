@@ -10,16 +10,14 @@ import java.io.InputStream;
  */
 public class SequenceParameterSetRbsp {
     public VuiParameters vuiParameters;
-    
     public int pic_width_in_luma_samples;
     public int pic_height_in_luma_samples;
+    public static int general_profile_space;
     public static boolean general_tier_flag;
-
-    public static byte spaceFlagIdc; // byte for general_profile_space, general_tier_flag, general_profile_idc
-    public static long general_profile_compatibility_flag;
-    public static long general_constraint_indicator_flag;
-    public static byte general_level_idc;
     public static int general_profile_idc;
+    public static long general_profile_compatibility_flags;
+    public static long general_constraint_indicator_flags;
+    public static byte general_level_idc;
     public int chroma_format_idc;
     public int bit_depth_luma_minus8;
     public int bit_depth_chroma_minus8;
@@ -74,7 +72,7 @@ public class SequenceParameterSetRbsp {
         boolean scaling_list_enabled_flag = bsr.readBool("scaling_list_enabled_flag");
         if (scaling_list_enabled_flag) {
             boolean sps_scaling_list_data_present_flag = bsr.readBool("sps_scaling_list_data_present_flag");
-            if (!sps_scaling_list_data_present_flag) {
+            if (sps_scaling_list_data_present_flag) {
             	skip_scaling_list_data(bsr);
             }
         }
@@ -171,19 +169,11 @@ public class SequenceParameterSetRbsp {
 
 
     private static void profile_tier_level(int maxNumSubLayersMinus1, CAVLCReader bsr) throws IOException {
-        int general_profile_space = bsr.readU(2, "general_profile_space");
-        
-        boolean general_tier_flag = bsr.readBool("general_tier_flag");
+        general_profile_space = bsr.readU(2, "general_profile_space");
+        general_tier_flag = bsr.readBool("general_tier_flag");
         general_profile_idc = bsr.readU(5, "general_profile_idc");
-
-        byte b = (byte) (general_profile_idc << 6);
-        byte b1 = (byte) (general_tier_flag ? 0x01 << 5 : 0x00 << 5);
-
-        spaceFlagIdc = (byte) (((general_profile_space << 6) | b1) | general_profile_idc);
-        
-        general_profile_compatibility_flag = bsr.readNBit(32);
-        general_constraint_indicator_flag = bsr.readNBit(48);
-        
+        general_profile_compatibility_flags = bsr.readNBit(32);
+        general_constraint_indicator_flags = bsr.readNBit(48);
         general_level_idc = (byte) bsr.readByte();
         boolean[] sub_layer_profile_present_flag = new boolean[maxNumSubLayersMinus1];
         boolean[] sub_layer_level_present_flag = new boolean[maxNumSubLayersMinus1];
