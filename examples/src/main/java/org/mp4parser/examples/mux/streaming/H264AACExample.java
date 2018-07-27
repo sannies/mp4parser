@@ -5,6 +5,7 @@ import org.mp4parser.streaming.input.aac.AdtsAacStreamingTrack;
 import org.mp4parser.streaming.input.h264.H264AnnexBTrack;
 import org.mp4parser.streaming.output.mp4.FragmentedMp4Writer;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URI;
 import java.nio.channels.WritableByteChannel;
@@ -18,12 +19,11 @@ import java.util.logging.LogManager;
 public class H264AACExample {
     public static void main(String[] args) throws Exception {
         LogManager.getLogManager().readConfiguration(H264AACExample.class.getResourceAsStream("/log.properties"));
-        AdtsAacStreamingTrack aac = new AdtsAacStreamingTrack(
+        /*AdtsAacStreamingTrack aac = new AdtsAacStreamingTrack(
                 new URI("http://org.mp4parser.s3.amazonaws.com/examples/Cosmos%20Laundromat%20small.aac").
-                        toURL().openStream(), 48000, 64000); // How should I know avg bitrate in advance?
+                        toURL().openStream(), 48000, 64000); // How should I know avg bitrate in advance?*/
         H264AnnexBTrack h264 = new H264AnnexBTrack(
-                new URI("http://org.mp4parser.s3.amazonaws.com/examples/Cosmos%20Laundromat%20small.264").
-                        toURL().openStream());
+                new FileInputStream("/Users/sannies/dev/mp4parser/1532667754113.h264"));
         /*InputStream aacInputStream = new FileInputStream("c:\\dev\\mp4parser\\843D111F-E839-4597-B60C-3B8114E0AA72_AU01.aac");
         AdtsAacStreamingTrack aac = new AdtsAacStreamingTrack(
                 aacInputStream, 48000, 64000); // How should I know avg bitrate in advance?
@@ -34,16 +34,16 @@ public class H264AACExample {
         CompletionService<Void> ecs
                 = new ExecutorCompletionService<>(es);
 
-        FileOutputStream fos = new FileOutputStream("c:\\dev\\mp4parser\\output.mp4");
+        FileOutputStream fos = new FileOutputStream("/Users/sannies/dev/mp4parser/1532667754113-meins2.mp4");
         WritableByteChannel wbc = fos.getChannel();
         //AsyncWritableByteChannel asyncWritableByteChannel = new AsyncWritableByteChannel(wbc);
         FragmentedMp4Writer multiTrackFragmentedMp4Writer =
-                new FragmentedMp4Writer(Arrays.<StreamingTrack>asList(aac, h264), wbc);
+                new FragmentedMp4Writer(Arrays.<StreamingTrack>asList( h264), wbc);
 
 
         final List<Future<Void>> allFutures = new ArrayList<>();
         List<Callable<Void>> allCallables = new ArrayList<>();
-        allCallables.add(aac);
+       // allCallables.add(aac);
         allCallables.add(h264);
 
         for (Callable<Void> callable : allCallables) {
