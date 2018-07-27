@@ -24,12 +24,16 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This BoxParser handles the basic stuff like reading size and extracting box type.
  */
 public abstract class AbstractBoxParser implements BoxParser {
 
+    private List<String> skippedTypes;
+    
     private static Logger LOG = LoggerFactory.getLogger(AbstractBoxParser.class.getName());
     ThreadLocal<ByteBuffer> header = new ThreadLocal<ByteBuffer>() {
         @Override
@@ -95,8 +99,15 @@ public abstract class AbstractBoxParser implements BoxParser {
             }
             contentSize -= 16;
         }
-        LOG.trace("Creating box {} {}", type, usertype);
-        ParsableBox parsableBox = createBox(type, usertype, parentType);
+        ParsableBox parsableBox = null;
+        if( skippedTypes != null && skippedTypes.contains(type) ) {
+            LOG.trace("Skipping box {} {} {}", type, usertype, parentType);
+            parsableBox = new SkipBox(type, usertype, parentType);
+        }
+        else {
+            LOG.trace("Creating box {} {} {}", type, usertype, parentType);
+            parsableBox = createBox(type, usertype, parentType);
+        }
         //LOG.finest("Parsing " + box.getType());
         // System.out.println("parsing " + Mp4Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
         header.get().rewind();
@@ -105,5 +116,8 @@ public abstract class AbstractBoxParser implements BoxParser {
         return parsableBox;
     }
 
-
+    public AbstractBoxParser skippingBoxes(String... types) {
+        skippedTypes = Arrays.asList(types);
+        return this;
+    }
 }
