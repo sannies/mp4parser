@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.mp4parser</groupId>
-    <version>1.9.36-SNAPSHOT</version>
+    <version>1.9.35-SNAPSHOT</version>
     <artifactId>muxer</artifactId>
     <name>File Muxer</name>
     <url>https://github.com/sannies/mp4parser</url>

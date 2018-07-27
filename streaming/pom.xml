@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.mp4parser</groupId>
     <artifactId>streaming</artifactId>
-    <version>1.9.36-SNAPSHOT</version>
+    <version>1.9.35-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>org.mp4parser</groupId>
