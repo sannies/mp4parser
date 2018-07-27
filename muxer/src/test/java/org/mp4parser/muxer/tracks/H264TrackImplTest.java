@@ -45,7 +45,7 @@ public class H264TrackImplTest {
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
         Container c = mp4Builder.build(m);
 
-//        c.writeContainer(new FileOutputStream("C:\\dev\\mp4parser\\muxer\\src\\test\\resources\\org\\mp4parser\\muxer\\tracks\\h264-sample.mp4").getChannel());
+      // c.writeContainer(new FileOutputStream("/Users/sannies/dev/mp4parser/muxer/src/test/resources/org/mp4parser/muxer/tracks/h264-sample.mp4").getChannel());
 
 
         IsoFile isoFileReference = new IsoFile(getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "org/mp4parser/muxer/tracks/h264-sample.mp4");
