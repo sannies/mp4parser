@@ -78,6 +78,10 @@ public class RoundTripTest extends TestCase {
         testRoundTrip_1(defaultTestFileDir + "/test-pod.m4a");
     }
 
+    public void testRoundTrip_QuickTimeFormat() throws Exception {
+        testRoundTrip_1(defaultTestFileDir + "/QuickTimeFormat.mp4");
+    }
+
 
     public void testRoundTrip_1(String originalFile) throws Exception {
 
