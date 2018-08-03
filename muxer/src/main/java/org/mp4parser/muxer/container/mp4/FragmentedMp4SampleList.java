@@ -188,7 +188,10 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                     // System.err.println("sNo. " + index + " offset: " + finalOffset + " size: " + sampleSize);
                     Sample sample = new Sample() {
                         public void writeTo(WritableByteChannel channel) throws IOException {
-                            channel.write(asByteBuffer());
+                            ByteBuffer bb = asByteBuffer();
+                            System.err.println(bb.position() + "/" + bb.limit());
+                            int a = channel.write(bb);
+                            System.err.println(a + " with " + bb.position() + "/" + bb.limit());
                         }
 
                         public long getSize() {
@@ -201,7 +204,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
 
                         @Override
                         public SampleEntry getSampleEntry() {
-                            return sampleEntries.get(l2i(Math.max(0, tfhd.getSampleDescriptionIndex()-1)));
+                            return sampleEntries.size() == 1 ? sampleEntries.get(0) : sampleEntries.get(l2i(Math.max(0, tfhd.getSampleDescriptionIndex()-1)));
                         }
                     };
                     sampleCache[index] = new SoftReference<>(sample);

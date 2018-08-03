@@ -123,16 +123,6 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
     private void parse(LookAhead la) throws IOException {
 
-
-        samples = new ArrayList<Sample>();
-        if (!readSamples(la)) {
-            throw new IOException();
-        }
-
-        if (!readVariables()) {
-            throw new IOException();
-        }
-
         visualSampleEntry = new VisualSampleEntry("avc1");
         visualSampleEntry.setDataReferenceIndex(1);
         visualSampleEntry.setDepth(24);
@@ -142,6 +132,16 @@ public class H264TrackImpl extends AbstractH26XTrack {
         visualSampleEntry.setWidth(width);
         visualSampleEntry.setHeight(height);
         visualSampleEntry.setCompressorname("AVC Coding");
+
+        samples = new ArrayList<>();
+        if (!readSamples(la)) {
+            throw new IOException();
+        }
+
+        if (!readVariables()) {
+            throw new IOException();
+        }
+
 
         AvcConfigurationBox avcConfigurationBox = new AvcConfigurationBox();
 

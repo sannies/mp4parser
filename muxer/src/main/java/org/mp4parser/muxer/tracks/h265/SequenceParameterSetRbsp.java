@@ -9,6 +9,9 @@ import java.io.InputStream;
  * Created by sannies on 03.02.2015.
  */
 public class SequenceParameterSetRbsp {
+    public VuiParameters vuiParameters;
+
+
     public SequenceParameterSetRbsp(InputStream is) throws IOException {
         CAVLCReader bsr = new CAVLCReader(is);
 
@@ -20,16 +23,17 @@ public class SequenceParameterSetRbsp {
         int chroma_format_idc = bsr.readUE("chroma_format_idc");
         if (chroma_format_idc == 3) {
             int separate_colour_plane_flag = bsr.read1Bit();
-            int pic_width_in_luma_samples = bsr.readUE("pic_width_in_luma_samples");
-            int pic_height_in_luma_samples = bsr.readUE("pic_width_in_luma_samples");
-            boolean conformance_window_flag = bsr.readBool("conformance_window_flag");
-            if (conformance_window_flag) {
-                int conf_win_left_offset = bsr.readUE("conf_win_left_offset");
-                int conf_win_right_offset = bsr.readUE("conf_win_right_offset");
-                int conf_win_top_offset = bsr.readUE("conf_win_top_offset");
-                int conf_win_bottom_offset = bsr.readUE("conf_win_bottom_offset");
-            }
         }
+        int pic_width_in_luma_samples = bsr.readUE("pic_width_in_luma_samples");
+        int pic_height_in_luma_samples = bsr.readUE("pic_width_in_luma_samples");
+        boolean conformance_window_flag = bsr.readBool("conformance_window_flag");
+        if (conformance_window_flag) {
+            int conf_win_left_offset = bsr.readUE("conf_win_left_offset");
+            int conf_win_right_offset = bsr.readUE("conf_win_right_offset");
+            int conf_win_top_offset = bsr.readUE("conf_win_top_offset");
+            int conf_win_bottom_offset = bsr.readUE("conf_win_bottom_offset");
+        }
+
         int bit_depth_luma_minus8 = bsr.readUE("bit_depth_luma_minus8");
         int bit_depth_chroma_minus8 = bsr.readUE("bit_depth_chroma_minus8");
         int log2_max_pic_order_cnt_lsb_minus4 = bsr.readUE("log2_max_pic_order_cnt_lsb_minus4");
@@ -68,7 +72,67 @@ public class SequenceParameterSetRbsp {
             int pcm_sample_bit_depth_luma_minus1 = (int) bsr.readNBit(4, "pcm_sample_bit_depth_luma_minus1");
             int pcm_sample_bit_depth_chroma_minus1 = (int) bsr.readNBit(4, "pcm_sample_bit_depth_chroma_minus1");
             int log2_min_pcm_luma_coding_block_size_minus3 = bsr.readUE("log2_min_pcm_luma_coding_block_size_minus3");
+            int log2_diff_max_min_pcm_luma_coding_block_size = bsr.readUE("log2_diff_max_min_pcm_luma_coding_block_size");
+            boolean pcm_loop_filter_disabled_flag = bsr.readBool("pcm_loop_filter_disabled_flag");
         }
+        int num_short_term_ref_pic_sets = bsr.readUE("num_short_term_ref_pic_sets");
+        for (int i = 0; i < num_short_term_ref_pic_sets; i++) {
+            short_term_ref_pic_set(i, num_short_term_ref_pic_sets, bsr);
+        }
+        boolean long_term_ref_pics_present_flag = bsr.readBool("long_term_ref_pics_present_flag");
+        if (long_term_ref_pics_present_flag) {
+            int num_long_term_ref_pics_sps = bsr.readUE("num_long_term_ref_pics_sps");
+            int lt_ref_pic_poc_lsb_sps[] = new int[num_long_term_ref_pics_sps];
+            boolean used_by_curr_pic_lt_sps_flag[] = new boolean[num_long_term_ref_pics_sps];
+            for (int i = 0; i < num_long_term_ref_pics_sps; i++) {
+                lt_ref_pic_poc_lsb_sps[i] = bsr.readU(log2_max_pic_order_cnt_lsb_minus4 + 4, "lt_ref_pic_poc_lsb_sps[" + i + "]");
+                used_by_curr_pic_lt_sps_flag[i] = bsr.readBool("used_by_curr_pic_lt_sps_flag[" + i + "]");
+            }
+        }
+        boolean sps_temporal_mvp_enabled_flag = bsr.readBool("sps_temporal_mvp_enabled_flag");
+        boolean strong_intra_smoothing_enabled_flag = bsr.readBool("strong_intra_smoothing_enabled_flag");
+        boolean vui_parameters_present_flag = bsr.readBool("vui_parameters_present_flag");
+        if (vui_parameters_present_flag) {
+            vuiParameters = new VuiParameters(sps_max_sub_layers_minus1, bsr);
+        }
+    }
+
+
+
+    private static void short_term_ref_pic_set(int stRpsIdx, int num_short_term_ref_pic_sets, CAVLCReader bsr) throws IOException {
+      /*  boolean inter_ref_pic_set_prediction_flag = false;
+        if (stRpsIdx != 0)
+            inter_ref_pic_set_prediction_flag = bsr.readBool("inter_ref_pic_set_prediction_flag");
+        if (inter_ref_pic_set_prediction_flag) {
+            if (stRpsIdx == num_short_term_ref_pic_sets) {
+                int delta_idx_minus1 = bsr.readUE("delta_idx_minus1");
+            }
+            int delta_rps_sign = bsr.read1Bit();
+            int abs_delta_rps_minus1 = bsr.readUE("abs_delta_rps_minus1");
+            boolean used_by_curr_pic_flag[] = new boolean[NumDeltaPocs[RefRpsIdx] + 1];
+            boolean use_delta_flag[] = new boolean[NumDeltaPocs[RefRpsIdx] + 1];
+            for (int j = 0; j <= NumDeltaPocs[RefRpsIdx]; j++) {
+                used_by_curr_pic_flag[j] =bsr.readBool("used_by_curr_pic_flag[" + j + "]");
+                if (!used_by_curr_pic_flag[j])
+                    use_delta_flag[j]=bsr.readBool("use_delta_flag[" + j + "]");
+            }
+        } else {
+            int num_negative_pics = bsr.readUE ("num_negative_pics");
+            int num_positive_pics = bsr.readUE ("num_positive_pics");
+            int delta_poc_s0_minus1[] = new int[num_negative_pics];
+            boolean used_by_curr_pic_s0_flag[] = new boolean[num_negative_pics];
+            for (int i = 0; i < num_negative_pics; i++) {
+                delta_poc_s0_minus1[i] = bsr.readUE("delta_poc_s0_minus1[" + i + "]");
+                used_by_curr_pic_s0_flag[i] = bsr.readBool("used_by_curr_pic_s0_flag[" + i +"]");
+            }
+            int delta_poc_s1_minus1[] = new int[num_positive_pics];
+            boolean used_by_curr_pic_s1_flag[] = new boolean[num_positive_pics];
+            for (int i = 0; i < num_positive_pics; i++) {
+                delta_poc_s1_minus1[i] = bsr.readUE("delta_poc_s1_minus1[" + i + "]");
+                used_by_curr_pic_s1_flag[i] = bsr.readBool("used_by_curr_pic_s1_flag[" + i +"]");
+            }
+        }*/
+        throw new RuntimeException("short_term_ref_pic_set not implemented");
     }
 
     private static void scaling_list_data(CAVLCReader bsr) throws IOException {

@@ -5,27 +5,27 @@
 
     <artifactId>examples</artifactId>
     <name>ISO Parser Examples</name>
-    <version>1.9.30-SNAPSHOT</version>
+    <version>1.9.37-SNAPSHOT</version>
     <parent>
         <groupId>org.mp4parser</groupId>
         <artifactId>mp4parser-project</artifactId>
-        <version>1.9.30-SNAPSHOT</version>
+        <version>1.9.37-SNAPSHOT</version>
     </parent>
     <dependencies>
         <dependency>
             <groupId>org.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.9.30-SNAPSHOT</version>
+            <version>1.9.37-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.mp4parser</groupId>
             <artifactId>muxer</artifactId>
-            <version>1.9.30-SNAPSHOT</version>
+            <version>1.9.37-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.mp4parser</groupId>
             <artifactId>streaming</artifactId>
-            <version>1.9.30-SNAPSHOT</version>
+            <version>1.9.37-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>xom</groupId>
@@ -66,8 +66,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.2</version>
                 <configuration>
-                    <source>7</source>
-                    <target>7</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -89,7 +89,7 @@
     <scm>
         <url>http://code.google.com/p/mp4parser/source/browse/</url>
         <connection>scm:svn:https://mp4parser.googlecode.com/svn/trunk/examples</connection>
-        <tag>mp4parser-project-1.9.5</tag>
+        <tag>mp4parser-project-1.9.35</tag>
   </scm>
     <repositories>
         <repository>
