@@ -204,7 +204,7 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
 
                         @Override
                         public SampleEntry getSampleEntry() {
-                            return sampleEntries.size() == 1 ? sampleEntries.get(0) : sampleEntries.get(l2i(tfhd.getSampleDescriptionIndex() - 1));
+                            return sampleEntries.size() == 1 ? sampleEntries.get(0) : sampleEntries.get(l2i(Math.max(0, tfhd.getSampleDescriptionIndex()-1)));
                         }
                     };
                     sampleCache[index] = new SoftReference<>(sample);
