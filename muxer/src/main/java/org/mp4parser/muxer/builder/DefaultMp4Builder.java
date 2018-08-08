@@ -40,9 +40,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
-import org.mp4parser.muxer.builder.DefaultFragmenterImpl;
-import org.mp4parser.muxer.builder.Fragmenter;
-import org.mp4parser.muxer.builder.Mp4Builder;
 
 import static org.mp4parser.tools.CastUtils.l2i;
 import static org.mp4parser.tools.Mp4Math.lcm;
@@ -102,7 +99,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     /**
      * Indicates if the track duration should be used in the segment duration of <i>edit list</i>.
-     * This applies if there is only one entry in the <i>edit list</i>
+     * This applies if there is only one entry in the <i>edit list</i> and the<i>segment duration</i> field is zero
      * @return 
      */
     public boolean isExplicitElstSegmentDuration() {
@@ -111,7 +108,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     /**
      * Indicates if the track duration should be used in the segment duration of <i>edit list</i>.
-     * This applies if there is only one entry in the <i>edit list</i>
+     * This applies if there is only one entry in the <i>edit list</i> and the <i>segment duration</i> field is zero
      * @param explicit <code>false</code> the original entry will be used
      */
     public void setExplicitElstSegmentDuration(boolean explicit) {
@@ -369,7 +366,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                         edit.getMediaRate()));
             }
             
-            if (explicitElstSegmentDuration && entries.size() == 1) {
+            if (explicitElstSegmentDuration && entries.size() == 1 && entries.get(0).getSegmentDuration() == 0) {
                 entries.get(0).setSegmentDuration(trackDuration); // required for thumbnail providers
             }
 
