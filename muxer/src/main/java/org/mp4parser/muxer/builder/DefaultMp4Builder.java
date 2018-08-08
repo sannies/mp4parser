@@ -40,6 +40,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
+import org.mp4parser.muxer.builder.DefaultFragmenterImpl;
+import org.mp4parser.muxer.builder.Fragmenter;
+import org.mp4parser.muxer.builder.Mp4Builder;
 
 import static org.mp4parser.tools.CastUtils.l2i;
 import static org.mp4parser.tools.Mp4Math.lcm;
@@ -50,12 +53,15 @@ import static org.mp4parser.tools.Mp4Math.lcm;
 public class DefaultMp4Builder implements Mp4Builder {
 
     private static Logger LOG = LoggerFactory.getLogger(DefaultMp4Builder.class);
-    Map<Track, StaticChunkOffsetBox> chunkOffsetBoxes = new HashMap<Track, StaticChunkOffsetBox>();
-    Set<SampleAuxiliaryInformationOffsetsBox> sampleAuxiliaryInformationOffsetsBoxes = new HashSet<SampleAuxiliaryInformationOffsetsBox>();
-    HashMap<Track, List<Sample>> track2Sample = new HashMap<Track, List<Sample>>();
-    HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
-    private Fragmenter fragmenter;
-
+    Map<Track, StaticChunkOffsetBox> chunkOffsetBoxes = new HashMap<>();
+    Set<SampleAuxiliaryInformationOffsetsBox> sampleAuxiliaryInformationOffsetsBoxes = new HashSet<>();
+    HashMap<Track, List<Sample>> track2Sample = new HashMap<>();
+    HashMap<Track, long[]> track2SampleSizes = new HashMap<>();
+    private Fragmenter fragmenter;   
+    private boolean useLongestTrackTimeScale = false;
+    private boolean explicitElstSegmentDuration = true;
+    
+    
     private static long sum(int[] ls) {
         long rc = 0;
         for (long l : ls) {
@@ -76,11 +82,44 @@ public class DefaultMp4Builder implements Mp4Builder {
     public void setFragmenter(Fragmenter fragmenter) {
         this.fragmenter = fragmenter;
     }
-
+    
+    
+    /** 
+     * Indicates if the longest track time scale is used in the <code>Movie</code>
+     * @return 
+     */
+    public boolean useLongestTrackTimeScale() {
+        return useLongestTrackTimeScale;
+    }
 
     /**
-     * {@inheritDoc}
+     * Indicates if the longest track time scale should be used in the <code>Movie</code>
+     * @param use <code>true</code> for longest track time scale, otherwise, a resolution of 1000 milliseconds will be used.
      */
+    public void setLongestTrackTimeScale(boolean use) {
+        useLongestTrackTimeScale = use;
+    }
+
+    /**
+     * Indicates if the track duration should be used in the segment duration of <i>edit list</i>.
+     * This applies if there is only one entry in the <i>edit list</i>
+     * @return 
+     */
+    public boolean isExplicitElstSegmentDuration() {
+        return explicitElstSegmentDuration;
+    }
+
+    /**
+     * Indicates if the track duration should be used in the segment duration of <i>edit list</i>.
+     * This applies if there is only one entry in the <i>edit list</i>
+     * @param explicit <code>false</code> the original entry will be used
+     */
+    public void setExplicitElstSegmentDuration(boolean explicit) {
+        this.explicitElstSegmentDuration = explicit;
+    }
+
+
+    @Override
     public Container build(Movie movie) {
         if (fragmenter == null) {
             fragmenter = new DefaultFragmenterImpl(2);
@@ -176,42 +215,33 @@ public class DefaultMp4Builder implements Mp4Builder {
         mvhd.setCreationTime(new Date());
         mvhd.setModificationTime(new Date());
         mvhd.setMatrix(movie.getMatrix());
-        long movieTimeScale = getTimescale(movie);
-        long duration = 0;
-
-        for (Track track : movie.getTracks()) {
-            long tracksDuration;
-
-            if (track.getEdits() == null || track.getEdits().isEmpty()) {
-                tracksDuration = (track.getDuration() * movieTimeScale / track.getTrackMetaData().getTimescale());
-            } else {
-                double d = 0;
-                for (Edit edit : track.getEdits()) {
-                    d += (long) edit.getSegmentDuration();
-                }
-                tracksDuration = (long) (d * movieTimeScale);
-            }
-
-
-            if (tracksDuration > duration) {
-                duration = tracksDuration;
-            }
-
-
-        }
-
-        mvhd.setDuration(duration);
-        mvhd.setTimescale(movieTimeScale);
-        // find the next available trackId
+        long timeScale = useLongestTrackTimeScale ? getTimescale(movie) : 1000;
+        long[] trackDurations = new long[chunks.size()];
+        int i = 0;
+        
+        long longestTrack = 0;
         long nextTrackId = 0;
-        for (Track track : movie.getTracks()) {
+
+        for ( ; i< trackDurations.length ; i++) {
+            Track track = movie.getTracks().get(i);
+            trackDurations[i] = (long)Math.ceil(calculateTrackDuration(track) * timeScale);
+            
+            if (trackDurations[i] > longestTrack) {
+                longestTrack = trackDurations[i];
+            }
+            
+            // find the next available trackId
             nextTrackId = nextTrackId < track.getTrackMetaData().getTrackId() ? track.getTrackMetaData().getTrackId() : nextTrackId;
         }
+
+        mvhd.setDuration(longestTrack);
+        mvhd.setTimescale(timeScale);
+
         mvhd.setNextTrackId(++nextTrackId);
 
         movieBox.addBox(mvhd);
-        for (Track track : movie.getTracks()) {
-            movieBox.addBox(createTrackBox(track, movie, chunks));
+        for (i=0 ; i<trackDurations.length; i++) {
+            movieBox.addBox(createTrackBox(movie.getTracks().get(i), movie, chunks, trackDurations[i]));
         }
         // metadata here
         ParsableBox udta = createUdta(movie);
@@ -222,6 +252,25 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     }
 
+    /***
+     * Calculte the duration of the given track in seconds
+     * @param track the desired track
+     * @return the amount of seconds (aprox.)
+     */
+    protected double calculateTrackDuration(Track track) {
+        List<Edit> edits = track.getEdits();
+        if (edits == null || edits.isEmpty() || edits.size() == 1 && edits.get(0).getSegmentDuration() < 1) {
+            return track.getDuration() / (double)track.getTrackMetaData().getTimescale();
+        }
+        
+        double d = 0;
+        for (Edit edit : edits) {
+            d += edit.getSegmentDuration();
+        }
+        
+        return d * track.getTrackMetaData().getTimescale();
+    }
+    
     /**
      * Override to create a user data box that may contain metadata.
      *
@@ -232,7 +281,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         return null;
     }
 
-    protected TrackBox createTrackBox(Track track, Movie movie, Map<Track, int[]> chunks) {
+    protected TrackBox createTrackBox(Track track, Movie movie, Map<Track, int[]> chunks, long duration) {
 
         TrackBox trackBox = new TrackBox();
         TrackHeaderBox tkhd = new TrackHeaderBox();
@@ -246,16 +295,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
         tkhd.setCreationTime(track.getTrackMetaData().getCreationTime());
 
-        if (track.getEdits() == null || track.getEdits().isEmpty()) {
-            tkhd.setDuration(track.getDuration() * getTimescale(movie) / track.getTrackMetaData().getTimescale());
-        } else {
-            long d = 0;
-            for (Edit edit : track.getEdits()) {
-                d += (long) edit.getSegmentDuration();
-            }
-            tkhd.setDuration(d * track.getTrackMetaData().getTimescale());
-        }
-
+        tkhd.setDuration(duration);
 
         tkhd.setHeight(track.getTrackMetaData().getHeight());
         tkhd.setWidth(track.getTrackMetaData().getWidth());
@@ -266,7 +306,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         trackBox.addBox(tkhd);
 
-        trackBox.addBox(createEdts(track, movie));
+        trackBox.addBox(createEdts(track, movie, duration));
 
         MediaBox mdia = new MediaBox();
         trackBox.addBox(mdia);
@@ -284,8 +324,10 @@ public class DefaultMp4Builder implements Mp4Builder {
         MediaInformationBox minf = new MediaInformationBox();
         if (track.getHandler().equals("vide")) {
             minf.addBox(new VideoMediaHeaderBox());
+            hdlr.setName("VideoHandler");
         } else if (track.getHandler().equals("soun")) {
             minf.addBox(new SoundMediaHeaderBox());
+            hdlr.setName("AudioHandler");
         } else if (track.getHandler().equals("text")) {
             minf.addBox(new NullMediaHeaderBox());
         } else if (track.getHandler().equals("subt")) {
@@ -314,17 +356,21 @@ public class DefaultMp4Builder implements Mp4Builder {
         return trackBox;
     }
 
-    protected ParsableBox createEdts(Track track, Movie movie) {
+    protected ParsableBox createEdts(Track track, Movie movie, long trackDuration) {
         if (track.getEdits() != null && track.getEdits().size() > 0) {
             EditListBox elst = new EditListBox();
             elst.setVersion(0); // quicktime won't play file when version = 1
-            List<EditListBox.Entry> entries = new ArrayList<EditListBox.Entry>();
+            List<EditListBox.Entry> entries = new ArrayList<>();
 
             for (Edit edit : track.getEdits()) {
                 entries.add(new EditListBox.Entry(elst,
                         Math.round(edit.getSegmentDuration() * movie.getTimescale()),
                         edit.getMediaTime() * track.getTrackMetaData().getTimescale() / edit.getTimeScale(),
                         edit.getMediaRate()));
+            }
+            
+            if (explicitElstSegmentDuration && entries.size() == 1) {
+                entries.get(0).setSegmentDuration(trackDuration); // required for thumbnail providers
             }
 
             elst.setEntries(entries);
