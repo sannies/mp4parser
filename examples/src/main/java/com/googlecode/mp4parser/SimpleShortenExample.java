@@ -48,6 +48,7 @@ public class SimpleShortenExample {
                 }
                 startTime1 = correctTimeToSyncSample(track, startTime1, false);
                 endTime1 = correctTimeToSyncSample(track, endTime1, true);
+                //the endTime1 maybe 0,it will cause crop fail
                 timeCorrected = true;
             }
         }
@@ -67,10 +68,19 @@ public class SimpleShortenExample {
                     // current sample is still before the new starttime
                     startSample1 = currentSample;
                 }
-                if (currentTime > lastTime && currentTime <= endTime1) {
-                    // current sample is after the new start time and still before the new endtime
-                    endSample1 = currentSample;
+                if (currentTime>lastTime){
+                    if (endTime1>0){
+                        if (currentTime <= endTime1){
+                            endSample1 = currentSample;
+                        }
+                    }else if (endTime1==0){
+                        endSample1 = currentSample;
+                    }
                 }
+//                 if (currentTime > lastTime && currentTime <= endTime1) {
+//                     // current sample is after the new start time and still before the new endtime
+//                     endSample1 = currentSample;
+//                 }
                 lastTime = currentTime;
                 currentTime += (double) delta / (double) track.getTrackMetaData().getTimescale();
                 currentSample++;
