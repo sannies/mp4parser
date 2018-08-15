@@ -71,7 +71,11 @@ public class DataReferenceBox extends AbstractContainerBox implements FullBox {
     @Override
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer versionFlagNumOfChildBoxes = ByteBuffer.allocate(8);
-        dataSource.read(versionFlagNumOfChildBoxes);
+        int required = versionFlagNumOfChildBoxes.limit();
+        while (required > 0){
+            int read = dataSource.read(versionFlagNumOfChildBoxes);
+            required -= read;
+        }
         versionFlagNumOfChildBoxes.rewind();
         version = IsoTypeReader.readUInt8(versionFlagNumOfChildBoxes);
         flags = IsoTypeReader.readUInt24(versionFlagNumOfChildBoxes);
