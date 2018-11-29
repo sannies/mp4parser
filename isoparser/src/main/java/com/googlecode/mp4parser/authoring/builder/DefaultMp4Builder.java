@@ -655,10 +655,12 @@ public class DefaultMp4Builder implements Mp4Builder {
             Map<Track, Integer> trackToChunk = new HashMap<Track, Integer>();
             Map<Track, Integer> trackToSample = new HashMap<Track, Integer>();
             Map<Track, Double> trackToTime = new HashMap<Track, Double>();
+            Map<Track, long[]> trackToDurations = new HashMap<Track, long[]>();
             for (Track track : tracks) {
                 trackToChunk.put(track, 0);
                 trackToSample.put(track, 0);
                 trackToTime.put(track, 0.0);
+                trackToDurations.put(track, null);
             }
 
             while (true) {
@@ -680,8 +682,13 @@ public class DefaultMp4Builder implements Mp4Builder {
                 int numberOfSampleInNextChunk = chunks.get(nextChunksTrack)[nextChunksIndex];
                 int startSample = trackToSample.get(nextChunksTrack);
                 double time = trackToTime.get(nextChunksTrack);
+                long[] sampleDurations = trackToDurations.get(nextChunksTrack);
+                if (sampleDurations == null) {
+                    sampleDurations = nextChunksTrack.getSampleDurations();
+                    trackToDurations.put(nextChunksTrack, sampleDurations);
+                }
                 for (int j = startSample; j < startSample + numberOfSampleInNextChunk; j++) {
-                    time += (double) nextChunksTrack.getSampleDurations()[j] / nextChunksTrack.getTrackMetaData().getTimescale();
+                    time += (double) sampleDurations[j] / nextChunksTrack.getTrackMetaData().getTimescale();
                 }
                 chunkList.add(nextChunksTrack.getSamples().subList(startSample, startSample + numberOfSampleInNextChunk));
 
