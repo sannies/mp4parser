@@ -76,6 +76,9 @@ public final class MediaDataBox implements ParsableBox {
     @DoNotParseDetail
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         dataFile = File.createTempFile("MediaDataBox", super.toString());
+        
+        // make sure to clean up temp file
+        dataFile.deleteOnExit();
 
         this.header = ByteBuffer.allocate(header.limit());
         this.header.put(header);
