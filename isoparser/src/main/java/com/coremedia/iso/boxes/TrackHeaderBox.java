@@ -218,7 +218,7 @@ public class TrackHeaderBox extends AbstractFullBox {
     public void setDuration(long duration) {
         this.duration = duration;
         if (duration >= (1l << 32)) {
-            setFlags(1);
+            setVersion(1);
         }
     }
 
