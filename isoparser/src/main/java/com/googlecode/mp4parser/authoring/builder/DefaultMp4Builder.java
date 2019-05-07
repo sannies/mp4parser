@@ -259,14 +259,15 @@ public class DefaultMp4Builder implements Mp4Builder {
         tkhd.setAlternateGroup(track.getTrackMetaData().getGroup());
         tkhd.setCreationTime(track.getTrackMetaData().getCreationTime());
 
+        long movieTimescale = getTimescale(movie);
         if (track.getEdits() == null || track.getEdits().isEmpty()) {
-            tkhd.setDuration(track.getDuration() * getTimescale(movie) / track.getTrackMetaData().getTimescale());
+            tkhd.setDuration(track.getDuration() * movieTimescale / track.getTrackMetaData().getTimescale());
         } else {
             long d = 0;
             for (Edit edit : track.getEdits()) {
                 d += (long) edit.getSegmentDuration();
             }
-            tkhd.setDuration(d * track.getTrackMetaData().getTimescale());
+            tkhd.setDuration(d * movieTimescale);
         }
 
 
@@ -335,7 +336,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
             for (Edit edit : track.getEdits()) {
                 entries.add(new EditListBox.Entry(elst,
-                        Math.round(edit.getSegmentDuration() * movie.getTimescale()),
+                        Math.round(edit.getSegmentDuration() * getTimescale(movie)),
                         edit.getMediaTime() * track.getTrackMetaData().getTimescale() / edit.getTimeScale(),
                         edit.getMediaRate()));
             }
@@ -631,7 +632,8 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         long timescale = movie.getTracks().iterator().next().getTrackMetaData().getTimescale();
         for (Track track : movie.getTracks()) {
-            timescale = lcm(timescale, track.getTrackMetaData().getTimescale());
+            long timescale1 = track.getTrackMetaData().getTimescale();
+            timescale = timescale1 > timescale ? timescale1 : timescale;
         }
         return timescale;
     }
