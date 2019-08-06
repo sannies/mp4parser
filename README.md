@@ -16,7 +16,7 @@ The library is published to Maven repositories. Each release is pushed to a stag
 
 Gradle:
 ```gradle
-  compile 'com.mp4parser:isoparser:1.9.27'
+  compile 'org.mp4parser:isoparser:1.9.27'
 ```
 Maven:
 ```xml
