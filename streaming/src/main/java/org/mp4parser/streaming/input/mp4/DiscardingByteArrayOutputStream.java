@@ -156,7 +156,7 @@ public class DiscardingByteArrayOutputStream extends OutputStream {
 
     /**
      * Converts the buffer's contents into a string decoding bytes using the
-     * platform's default character set. The length of the new <tt>String</tt>
+     * platform's default character set. The length of the new String
      * is a function of the character set, and hence may not be equal to the
      * size of the buffer.
      * This method always replaces malformed-input and unmappable-character
@@ -174,9 +174,9 @@ public class DiscardingByteArrayOutputStream extends OutputStream {
 
 
     /**
-     * Closing a <tt>ByteArrayOutputStream</tt> has no effect. The methods in
+     * Closing a ByteArrayOutputStream has no effect. The methods in
      * this class can be called after the stream has been closed without
-     * generating an <tt>IOException</tt>.
+     * generating an IOException.
      */
     public void close() throws IOException {
     }
