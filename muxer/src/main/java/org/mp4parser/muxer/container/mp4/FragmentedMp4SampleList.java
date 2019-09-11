@@ -191,7 +191,6 @@ public class FragmentedMp4SampleList extends AbstractList<Sample> {
                             ByteBuffer bb = asByteBuffer();
                             System.err.println(bb.position() + "/" + bb.limit());
                             int a = channel.write(bb);
-                            System.err.println(a + " with " + bb.position() + "/" + bb.limit());
                         }
 
                         public long getSize() {
