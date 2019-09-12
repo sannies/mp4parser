@@ -23,6 +23,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -66,7 +67,7 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer content = ByteBuffer.allocate(CastUtils.l2i(contentSize));
         dataSource.read(content);
-        content.position(6);
+        ((Buffer)content).position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
         displayFlags = content.getInt();
         textJustification = content.getInt();
@@ -108,7 +109,7 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
         writableByteChannel.write(getHeader());
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(52 + (fontName != null ? fontName.length() : 0));
-        byteBuffer.position(6);
+        ((Buffer)byteBuffer).position(6);
         IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
         byteBuffer.putInt(displayFlags);
         byteBuffer.putInt(textJustification);
@@ -129,7 +130,7 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
             IsoTypeWriter.writeUInt8(byteBuffer, fontName.length());
             byteBuffer.put(fontName.getBytes());
         }
-        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writableByteChannel.write((ByteBuffer) ((Buffer)byteBuffer).rewind());
         // writeContainer(writableByteChannel); there are no child boxes!?
     }
 

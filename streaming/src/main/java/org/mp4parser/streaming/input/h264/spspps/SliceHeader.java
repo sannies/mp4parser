@@ -2,6 +2,7 @@ package org.mp4parser.streaming.input.h264.spspps;
 
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
@@ -24,7 +25,7 @@ public class SliceHeader {
 
     public SliceHeader(ByteBuffer in, Map<Integer, SeqParameterSet> spss, Map<Integer, PictureParameterSet> ppss, boolean IdrPicFlag) {
         try {
-            in.position(1);
+            ((Buffer)in).position(1);
             ByteBufferBitreader reader = new ByteBufferBitreader(in);
             first_mb_in_slice = reader.readUE();
             int sliceTypeInt = reader.readUE();

@@ -34,6 +34,7 @@ import org.mp4parser.tools.Path;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
@@ -195,7 +196,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 ByteBuffer header = ByteBuffer.allocate(8);
                 IsoTypeWriter.writeUInt32(header, l2i(getSize()));
                 header.put(IsoFile.fourCCtoBytes(getType()));
-                header.rewind();
+                ((Buffer)header).rewind();
                 writableByteChannel.write(header);
 
                 List<Sample> samples = getSamples(startSample, endSample, track);

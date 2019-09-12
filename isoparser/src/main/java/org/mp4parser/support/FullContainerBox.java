@@ -23,6 +23,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -66,7 +67,7 @@ public abstract class FullContainerBox extends AbstractContainerBox implements F
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer versionAndFlags = ByteBuffer.allocate(4);
         dataSource.read(versionAndFlags);
-        parseVersionAndFlags((ByteBuffer) versionAndFlags.rewind());
+        parseVersionAndFlags((ByteBuffer) ((Buffer)versionAndFlags).rewind());
         super.parse(dataSource, header, contentSize, boxParser);
     }
 
@@ -101,16 +102,16 @@ public abstract class FullContainerBox extends AbstractContainerBox implements F
         ByteBuffer header;
         if (largeBox || getSize() >= (1L << 32)) {
             header = ByteBuffer.wrap(new byte[]{0, 0, 0, 1, type.getBytes()[0], type.getBytes()[1], type.getBytes()[2], type.getBytes()[3], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
-            header.position(8);
+            ((Buffer)header).position(8);
             IsoTypeWriter.writeUInt64(header, getSize());
             writeVersionAndFlags(header);
         } else {
             header = ByteBuffer.wrap(new byte[]{0, 0, 0, 0, type.getBytes()[0], type.getBytes()[1], type.getBytes()[2], type.getBytes()[3], 0, 0, 0, 0});
             IsoTypeWriter.writeUInt32(header, getSize());
-            header.position(8);
+            ((Buffer)header).position(8);
             writeVersionAndFlags(header);
         }
-        header.rewind();
+        ((Buffer)header).rewind();
         return header;
 
     }

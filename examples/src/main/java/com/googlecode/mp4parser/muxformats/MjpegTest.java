@@ -14,13 +14,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.Arrays;
 
 public class MjpegTest {
     public static void main(String[] args) throws IOException {
         IsoFile isofile = new IsoFile("C:\\content\\bbb-small\\output_320x180-mjpeg.mp4");
         ESDescriptorBox esDescriptorBox = Path.getPath(isofile, "/moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stsd[0]/mp4v[0]/esds[0]");
-        byte[] d = new byte[esDescriptorBox.getData().rewind().remaining()];
+        byte[] d = new byte[((Buffer)esDescriptorBox.getData()).rewind().remaining()];
         esDescriptorBox.getData().get(d);
         System.err.println(Hex.encodeHex(d));
 

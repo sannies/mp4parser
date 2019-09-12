@@ -5,6 +5,7 @@ import org.mp4parser.IsoFile;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
@@ -20,7 +21,7 @@ public class VTTEmptyCueBox implements Box {
         ByteBuffer header = ByteBuffer.allocate(8);
         IsoTypeWriter.writeUInt32(header, getSize());
         header.put(IsoFile.fourCCtoBytes(getType()));
-        writableByteChannel.write((ByteBuffer) header.rewind());
+        writableByteChannel.write((ByteBuffer)((Buffer) header).rewind());
     }
 
     public String getType() {

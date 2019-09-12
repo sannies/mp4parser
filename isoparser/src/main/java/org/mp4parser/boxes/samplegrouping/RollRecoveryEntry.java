@@ -16,6 +16,7 @@
 
 package org.mp4parser.boxes.samplegrouping;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -54,7 +55,7 @@ public class RollRecoveryEntry extends GroupEntry {
     public ByteBuffer get() {
         ByteBuffer content = ByteBuffer.allocate(2);
         content.putShort(rollDistance);
-        content.rewind();
+        ((Buffer)content).rewind();
         return content;
     }
 

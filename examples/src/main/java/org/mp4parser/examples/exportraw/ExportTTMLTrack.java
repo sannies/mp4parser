@@ -16,6 +16,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
 import java.io.*;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.*;
 
@@ -56,7 +57,7 @@ public class ExportTTMLTrack {
                             if (subsampleIter.hasNext()) {
                                 SubSampleInformationBox.SubSampleEntry.SubsampleEntry xmlSubSampleEntry = subsampleIter.next();
                                 ByteBuffer sample = track.getSamples().get(i).asByteBuffer();
-                                xmlSamplePart = (ByteBuffer) sample.slice().limit(l2i(xmlSubSampleEntry.getSubsampleSize()));
+                                xmlSamplePart = (ByteBuffer) ((Buffer) sample.slice()).limit(l2i(xmlSubSampleEntry.getSubsampleSize()));
                                 raf.getChannel().write(xmlSamplePart);
                                 raf.close();
                                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -104,12 +105,12 @@ public class ExportTTMLTrack {
                                 System.out.println(document.getFirstChild().getTextContent());
 
 
-                                sample = ((ByteBuffer) sample.position(l2i(xmlSubSampleEntry.getSubsampleSize()))).slice();
+                                sample = ((ByteBuffer) ((Buffer)sample).position(l2i(xmlSubSampleEntry.getSubsampleSize()))).slice();
                                 int p = 0;
                                 while (subsampleIter.hasNext()) {
                                     SubSampleInformationBox.SubSampleEntry.SubsampleEntry picSubSampleEntry = subsampleIter.next();
-                                    ByteBuffer pic = (ByteBuffer) sample.slice().limit(l2i(picSubSampleEntry.getSubsampleSize()));
-                                    sample = ((ByteBuffer) sample.position(l2i(picSubSampleEntry.getSubsampleSize()))).slice();
+                                    ByteBuffer pic = (ByteBuffer) ((Buffer) sample.slice()).limit(l2i(picSubSampleEntry.getSubsampleSize()));
+                                    sample = ((ByteBuffer) ((Buffer) sample).position(l2i(picSubSampleEntry.getSubsampleSize()))).slice();
                                     FileOutputStream fosPic = new FileOutputStream(
                                             "subtitle_" + track.getTrackMetaData().getTrackId() + "_" + i + "_" + imageNames.get(p++).replace(":", "_"));
                                     fosPic.getChannel().write(pic);

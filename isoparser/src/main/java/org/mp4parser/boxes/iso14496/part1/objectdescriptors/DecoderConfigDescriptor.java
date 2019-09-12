@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -130,7 +131,7 @@ public class DecoderConfigDescriptor extends BaseDescriptor {
         for (ProfileLevelIndicationDescriptor profileLevelIndicationDescriptor : profileLevelIndicationDescriptors) {
             out.put(profileLevelIndicationDescriptor.serialize());
         }
-        return (ByteBuffer) out.rewind();
+        return (ByteBuffer) ((Buffer)out).rewind();
     }
 
     public DecoderSpecificInfo getDecoderSpecificInfo() {

@@ -23,6 +23,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.Collections;
@@ -71,7 +72,7 @@ public class TimeCodeBox extends AbstractBox implements SampleEntry, Container {
 
     @Override
     protected void _parseDetails(ByteBuffer content) {
-        content.position(6);// ignore 6 reserved bytes;
+        ((Buffer)content).position(6);// ignore 6 reserved bytes;
         dataReferenceIndex = IsoTypeReader.readUInt16(content);   // 8
         reserved1 = content.getInt();
         flags = IsoTypeReader.readUInt32(content);

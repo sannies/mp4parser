@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mp4parser.tools.Hex;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 public class HevcDecoderConfigurationRecordTest {
@@ -21,7 +22,7 @@ public class HevcDecoderConfigurationRecordTest {
         h1.write(confRecordWritten);
 
         HevcDecoderConfigurationRecord h2 = new HevcDecoderConfigurationRecord();
-        h2.parse((ByteBuffer) confRecordWritten.rewind());
+        h2.parse((ByteBuffer) ((Buffer)confRecordWritten).rewind());
 
         Assert.assertEquals(confRecordOrig, confRecordWritten);
         Assert.assertEquals(h1, h2);

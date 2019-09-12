@@ -16,6 +16,7 @@
 
 package org.mp4parser.boxes.samplegrouping;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -53,7 +54,7 @@ public class TemporalLevelEntry extends GroupEntry {
     public ByteBuffer get() {
         ByteBuffer content = ByteBuffer.allocate(1);
         content.put((byte) (levelIndependentlyDecodable ? 0x80 : 0x00));
-        content.rewind();
+        ((Buffer)content).rewind();
         return content;
     }
 

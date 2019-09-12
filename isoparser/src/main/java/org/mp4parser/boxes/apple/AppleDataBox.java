@@ -5,6 +5,7 @@ import org.mp4parser.support.DoNotParseDetail;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Locale;
@@ -186,7 +187,7 @@ public abstract class AppleDataBox extends AbstractBox {
             dataLanguage += (1 << 16);
         }
         ByteBuffer data = (ByteBuffer) content.duplicate().slice().limit(dataLength - 16);
-        content.position(dataLength - 16 + content.position());
+        ((Buffer)content).position(dataLength - 16 + content.position());
         return data;
     }
 

@@ -6,6 +6,7 @@ import org.mp4parser.tools.IsoTypeWriter;
 import org.mp4parser.tools.Utf8;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
@@ -36,7 +37,7 @@ public abstract class AbstractCueBox implements Box {
         IsoTypeWriter.writeUInt32(header, getSize());
         header.put(IsoFile.fourCCtoBytes(getType()));
         header.put(Utf8.convert(content));
-        writableByteChannel.write((ByteBuffer) header.rewind());
+        writableByteChannel.write((ByteBuffer)((Buffer)header).rewind());
     }
 
     public String getType() {

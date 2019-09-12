@@ -12,6 +12,7 @@ import org.mp4parser.tools.Path;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
@@ -39,7 +40,7 @@ public class ExtractRawH264 {
         FileChannel fc = new FileOutputStream("out.h264").getChannel();
         ByteBuffer separator = ByteBuffer.wrap(new byte[]{0, 0, 0, 1});
 
-        fc.write((ByteBuffer) separator.rewind());
+        fc.write((ByteBuffer) ((Buffer)separator).rewind());
         // Write SPS
         fc.write((
                 ((AvcConfigurationBox) Path.getPath(trackBox, "mdia/minf/stbl/stsd/avc1/avcC")
@@ -47,7 +48,7 @@ public class ExtractRawH264 {
         // Warning:
         // There might be more than one SPS (I've never seen that but it is possible)
 
-        fc.write((ByteBuffer) separator.rewind());
+        fc.write((ByteBuffer) ((Buffer)separator).rewind());
         // Write PPS
         fc.write((
                 ((AvcConfigurationBox) Path.getPath(trackBox, "mdia/minf/stbl/stsd/avc1/avcC")
@@ -60,9 +61,9 @@ public class ExtractRawH264 {
             ByteBuffer bb = sample.asByteBuffer();
             while (bb.remaining() > 0) {
                 int length = (int) IsoTypeReaderVariable.read(bb, lengthSize);
-                fc.write((ByteBuffer) separator.rewind());
-                fc.write((ByteBuffer) bb.slice().limit(length));
-                bb.position(bb.position() + length);
+                fc.write((ByteBuffer) ((Buffer)separator).rewind());
+                fc.write((ByteBuffer) ((Buffer)bb.slice()).limit(length));
+                ((Buffer)bb).position(bb.position() + length);
             }
 
 

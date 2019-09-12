@@ -18,6 +18,7 @@ package org.mp4parser.boxes.samplegrouping;
 
 import org.mp4parser.tools.Hex;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -41,12 +42,12 @@ public class UnknownEntry extends GroupEntry {
     }
 
     public void setContent(ByteBuffer content) {
-        this.content = (ByteBuffer) content.duplicate().rewind();
+        this.content = (ByteBuffer) ((Buffer)content.duplicate()).rewind();
     }
 
     @Override
     public void parse(ByteBuffer byteBuffer) {
-        this.content = (ByteBuffer) byteBuffer.duplicate().rewind();
+        this.content = (ByteBuffer) ((Buffer)byteBuffer.duplicate()).rewind();
     }
 
     @Override
@@ -57,7 +58,7 @@ public class UnknownEntry extends GroupEntry {
     @Override
     public String toString() {
         ByteBuffer bb = content.duplicate();
-        bb.rewind();
+        ((Buffer)bb).rewind();
         byte[] b = new byte[bb.limit()];
         bb.get(b);
         return "UnknownEntry{" +

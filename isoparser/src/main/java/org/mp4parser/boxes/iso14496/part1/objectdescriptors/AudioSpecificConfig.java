@@ -19,6 +19,7 @@ import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -526,13 +527,13 @@ public class AudioSpecificConfig extends BaseDescriptor {
     public void parseDetail(ByteBuffer bb) throws IOException {
         parsed = true;
         ByteBuffer configBytes = bb.slice();
-        configBytes.limit(sizeOfInstance);
-        bb.position(bb.position() + sizeOfInstance);
+        ((Buffer)configBytes).limit(sizeOfInstance);
+        ((Buffer)bb).position(bb.position() + sizeOfInstance);
 
         //copy original bytes to internal array for constructing codec config strings (todo until writing of the config is supported)
         this.configBytes = new byte[sizeOfInstance];
         configBytes.get(this.configBytes);
-        configBytes.rewind();
+        ((Buffer)configBytes).rewind();
 
         BitReaderBuffer bitReaderBuffer = new BitReaderBuffer(configBytes);
         originalAudioObjectType = audioObjectType = getAudioObjectType(bitReaderBuffer);
@@ -812,7 +813,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
         IsoTypeWriter.writeUInt8(out, tag);
         writeSize(out, getContentSize());
         out.put(serializeConfigBytes());
-        return (ByteBuffer) out.rewind();
+        return (ByteBuffer) ((Buffer)out).rewind();
     }
 
     protected ByteBuffer serializeConfigBytes() {
@@ -990,7 +991,7 @@ public class AudioSpecificConfig extends BaseDescriptor {
             }
         }
 
-        return (ByteBuffer) out.rewind();
+        return (ByteBuffer)((Buffer)out).rewind();
     }
 
     private static void writeAudioObjectType(int audioObjectType, BitWriterBuffer bitWriterBuffer) {

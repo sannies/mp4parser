@@ -177,9 +177,9 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
         public ByteBuffer getNal() {
             if (start >= bufferStartPos) {
 
-                buffer.position((int) (start - bufferStartPos));
+                ((Buffer)buffer).position((int) (start - bufferStartPos));
                 Buffer sample = buffer.slice();
-                sample.limit((int) (inBufferPos - (start - bufferStartPos)));
+                ((Buffer)sample).limit((int) (inBufferPos - (start - bufferStartPos)));
                 return (ByteBuffer) sample;
             } else {
                 throw new RuntimeException("damn! NAL exceeds buffer");

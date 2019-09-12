@@ -8,6 +8,7 @@ import org.mp4parser.tools.Mp4Arrays;
 import org.mp4parser.tools.Utf8;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -35,8 +36,8 @@ public class XMLSubtitleSampleEntry extends AbstractSampleEntry {
     @Override
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer byteBuffer = ByteBuffer.allocate(8);
-        dataSource.read((ByteBuffer) byteBuffer.rewind());
-        byteBuffer.position(6);
+        dataSource.read((ByteBuffer) ((Buffer)byteBuffer).rewind());
+        ((Buffer)byteBuffer).position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(byteBuffer);
 
 
@@ -70,12 +71,12 @@ public class XMLSubtitleSampleEntry extends AbstractSampleEntry {
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         writableByteChannel.write(getHeader());
         ByteBuffer byteBuffer = ByteBuffer.allocate(8 + namespace.length() + schemaLocation.length() + auxiliaryMimeTypes.length() + 3);
-        byteBuffer.position(6);
+        ((Buffer)byteBuffer).position(6);
         IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
         IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, namespace);
         IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, schemaLocation);
         IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, auxiliaryMimeTypes);
-        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writableByteChannel.write((ByteBuffer) ((Buffer)byteBuffer).rewind());
         writeContainer(writableByteChannel);
     }
 

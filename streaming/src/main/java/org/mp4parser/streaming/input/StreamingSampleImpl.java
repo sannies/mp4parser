@@ -3,6 +3,7 @@ package org.mp4parser.streaming.input;
 import org.mp4parser.streaming.SampleExtension;
 import org.mp4parser.streaming.StreamingSample;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +38,7 @@ public class StreamingSampleImpl implements StreamingSample {
             s.put((byte) ((nal.limit() & 0xff0000) >> 16));
             s.put((byte) ((nal.limit() & 0xff00) >> 8));
             s.put((byte) ((nal.limit() & 0xff)));
-            s.put((ByteBuffer) nal.rewind());
+            s.put((ByteBuffer) ((Buffer)nal).rewind());
         }
 
 

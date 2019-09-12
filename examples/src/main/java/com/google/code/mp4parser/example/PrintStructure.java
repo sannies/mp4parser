@@ -5,6 +5,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
@@ -59,7 +60,7 @@ public class PrintStructure {
             long begin = fc.position();
             ByteBuffer bb = ByteBuffer.allocate(8);
             fc.read(bb);
-            bb.rewind();
+            ((Buffer)bb).rewind();
             long size = IsoTypeReader.readUInt32(bb);
             String type = IsoTypeReader.read4cc(bb);
             long fin = begin + size;

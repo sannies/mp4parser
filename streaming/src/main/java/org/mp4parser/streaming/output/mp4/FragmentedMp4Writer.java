@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
@@ -599,10 +600,10 @@ public class FragmentedMp4Writer extends DefaultBoxes implements SampleSink {
                 ByteBuffer bb = ByteBuffer.allocate(8);
                 IsoTypeWriter.writeUInt32(bb, l);
                 bb.put(IsoFile.fourCCtoBytes(getType()));
-                writableByteChannel.write((ByteBuffer) bb.rewind());
+                writableByteChannel.write((ByteBuffer) ((Buffer)bb).rewind());
 
                 for (StreamingSample streamingSample : samples) {
-                    writableByteChannel.write((ByteBuffer) streamingSample.getContent().rewind());
+                    writableByteChannel.write((ByteBuffer) ((Buffer)streamingSample.getContent()).rewind());
                 }
             }
 

@@ -13,6 +13,7 @@ import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.TrackMetaData;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
@@ -503,7 +504,7 @@ public class AC3TrackImpl extends AbstractTrack {
             int frameSize = getFrameSize(frmsizecode, fscod);
             mysamples.add(new SampleImpl(dataSource.position() - 5, frameSize, dataSource));
             dataSource.position(dataSource.position() - 5 + frameSize);
-            header.rewind();
+            ((Buffer)header).rewind();
 
         }
         duration = new long[mysamples.size()];

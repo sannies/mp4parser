@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mp4parser.tools.IsoTypeReader;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -44,7 +45,7 @@ public class BitWriterBufferTest {
         ByteBuffer bb = ByteBuffer.allocate(4);
         BitWriterBuffer bitWriterBuffer = new BitWriterBuffer(bb);
         bitWriterBuffer.writeBits(15, 4);
-        bb.rewind();
+        ((Buffer)bb).rewind();
         int test = IsoTypeReader.readUInt8(bb);
         Assert.assertEquals(15 << 4, test);
     }
@@ -56,7 +57,7 @@ public class BitWriterBufferTest {
         bitWriterBuffer.writeBits(15, 4);
         bitWriterBuffer.writeBits(15, 4);
         bitWriterBuffer.writeBits(15, 4);
-        bb.rewind();
+        ((Buffer)bb).rewind();
         int test = IsoTypeReader.readUInt8(bb);
         Assert.assertEquals(255, test);
         test = IsoTypeReader.readUInt8(bb);
@@ -81,7 +82,7 @@ public class BitWriterBufferTest {
         BitWriterBuffer bitWriterBuffer = new BitWriterBuffer(bb);
         bitWriterBuffer.writeBits(0, 1);
         bitWriterBuffer.writeBits(65535, 16);
-        bb.rewind();
+        ((Buffer)bb).rewind();
         int test = IsoTypeReader.readUInt8(bb);
         Assert.assertEquals(127, test);
         test = IsoTypeReader.readUInt8(bb);
@@ -112,7 +113,7 @@ public class BitWriterBufferTest {
         bwb.writeBits(1, 4);
         bwb.writeBits(1, 5);
         bwb.writeBits(7, 6);
-        b.rewind();
+        ((Buffer)b).rewind();
 
         Assert.assertEquals("101001000100001000111000", toString(b));
 

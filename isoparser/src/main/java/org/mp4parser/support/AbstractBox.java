@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -102,7 +103,7 @@ public abstract class AbstractBox implements ParsableBox {
             }
         }
 
-        content.position(0);
+        ((Buffer)content).position(0);
         isParsed = false;
     }
 
@@ -112,17 +113,17 @@ public abstract class AbstractBox implements ParsableBox {
             getHeader(bb);
             getContent(bb);
             if (deadBytes != null) {
-                deadBytes.rewind();
+                ((Buffer)deadBytes).rewind();
                 while (deadBytes.remaining() > 0) {
                     bb.put(deadBytes);
                 }
             }
-            os.write((ByteBuffer) bb.rewind());
+            os.write((ByteBuffer) ((Buffer)bb).rewind());
         } else {
             ByteBuffer header = ByteBuffer.allocate((isSmallBox() ? 8 : 16) + (UserBox.TYPE.equals(getType()) ? 16 : 0));
             getHeader(header);
-            os.write((ByteBuffer) header.rewind());
-            os.write((ByteBuffer) content.position(0));
+            os.write((ByteBuffer) ((Buffer)header).rewind());
+            os.write((ByteBuffer) ((Buffer)content).position(0));
         }
     }
 
@@ -136,7 +137,7 @@ public abstract class AbstractBox implements ParsableBox {
         if (content != null) {
             ByteBuffer content = this.content;
             isParsed = true;
-            content.rewind();
+            ((Buffer)content).rewind();
             _parseDetails(content);
             if (content.remaining() > 0) {
                 deadBytes = content.slice();
@@ -191,13 +192,13 @@ public abstract class AbstractBox implements ParsableBox {
         ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize() + (deadBytes != null ? deadBytes.limit() : 0)));
         getContent(bb);
         if (deadBytes != null) {
-            deadBytes.rewind();
+            ((Buffer)deadBytes).rewind();
             while (deadBytes.remaining() > 0) {
                 bb.put(deadBytes);
             }
         }
-        content.rewind();
-        bb.rewind();
+        ((Buffer)content).rewind();
+        ((Buffer)bb).rewind();
 
 
         if (content.remaining() != bb.remaining()) {

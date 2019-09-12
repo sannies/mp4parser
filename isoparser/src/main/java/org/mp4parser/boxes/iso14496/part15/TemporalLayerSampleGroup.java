@@ -4,6 +4,7 @@ import org.mp4parser.boxes.samplegrouping.GroupEntry;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -147,7 +148,7 @@ public class TemporalLayerSampleGroup extends GroupEntry {
         IsoTypeWriter.writeUInt16(byteBuffer, tlAvgBitRate);
         IsoTypeWriter.writeUInt8(byteBuffer, tlConstantFrameRate);
         IsoTypeWriter.writeUInt16(byteBuffer, tlAvgFrameRate);
-        return (ByteBuffer) byteBuffer.rewind();
+        return (ByteBuffer) ((Buffer)byteBuffer).rewind();
     }
 
     @Override

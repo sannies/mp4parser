@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
@@ -53,7 +54,7 @@ public abstract class AbstractBoxParser implements BoxParser {
      * @throws java.io.IOException if reading from <code>in</code> fails
      */
     public ParsableBox parseBox(ReadableByteChannel byteChannel, String parentType) throws IOException {
-        header.get().rewind().limit(8);
+        ((Buffer)header.get()).rewind().limit(8);
 
         int bytesRead = 0;
         int b;
@@ -64,7 +65,7 @@ public abstract class AbstractBoxParser implements BoxParser {
                 bytesRead += b;
             }
         }
-        header.get().rewind();
+        ((Buffer)header.get()).rewind();
 
         long size = IsoTypeReader.readUInt32(header.get());
         // do plausibility check
@@ -110,7 +111,7 @@ public abstract class AbstractBoxParser implements BoxParser {
         }
         //LOG.finest("Parsing " + box.getType());
         // System.out.println("parsing " + Mp4Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
-        header.get().rewind();
+        ((Buffer)header.get()).rewind();
 
         parsableBox.parse(byteChannel, header.get(), contentSize, this);
         return parsableBox;

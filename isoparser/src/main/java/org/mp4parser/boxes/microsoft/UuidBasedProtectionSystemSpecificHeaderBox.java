@@ -6,6 +6,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 import org.mp4parser.tools.UUIDConverter;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
@@ -48,7 +49,7 @@ public class UuidBasedProtectionSystemSpecificHeaderBox extends AbstractFullBox 
         IsoTypeWriter.writeUInt64(byteBuffer, systemId.getMostSignificantBits());
         IsoTypeWriter.writeUInt64(byteBuffer, systemId.getLeastSignificantBits());
         ByteBuffer data = protectionSpecificHeader.getData();
-        data.rewind();
+        ((Buffer)data).rewind();
         IsoTypeWriter.writeUInt32(byteBuffer, data.limit());
         byteBuffer.put(data);
     }

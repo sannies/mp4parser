@@ -20,6 +20,7 @@ import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -57,7 +58,7 @@ public class DecoderSpecificInfo extends BaseDescriptor {
         IsoTypeWriter.writeUInt8(out, tag);
         writeSize(out, getContentSize());
         out.put(bytes);
-        return (ByteBuffer) out.rewind();
+        return (ByteBuffer) ((Buffer)out).rewind();
     }
 
     @Override

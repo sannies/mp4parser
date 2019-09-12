@@ -28,6 +28,7 @@ import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.TrackMetaData;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
@@ -260,7 +261,7 @@ public class AACTrackImpl extends AbstractTrack {
             }
         }
 
-        BitReaderBuffer brb = new BitReaderBuffer((ByteBuffer) bb.rewind());
+        BitReaderBuffer brb = new BitReaderBuffer((ByteBuffer) ((Buffer)bb).rewind());
         int syncword = brb.readBits(12); // A
         if (syncword != 0xfff) {
             throw new IOException("Expected Start Word 0xfff");

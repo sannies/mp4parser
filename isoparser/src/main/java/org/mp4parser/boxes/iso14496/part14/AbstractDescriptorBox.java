@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -50,7 +51,7 @@ public class AbstractDescriptorBox extends AbstractFullBox {
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
         writeVersionAndFlags(byteBuffer);
-        data.rewind(); // has been fforwarded by parsing
+        ((Buffer)data).rewind(); // has been fforwarded by parsing
         byteBuffer.put(data);
     }
 
@@ -75,9 +76,9 @@ public class AbstractDescriptorBox extends AbstractFullBox {
     public void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
         data = content.slice();
-        content.position(content.position() + content.remaining());
+        ((Buffer)content).position(content.position() + content.remaining());
         try {
-            data.rewind();
+            ((Buffer)data).rewind();
             descriptor = ObjectDescriptorFactory.createFrom(-1, data.duplicate());
         } catch (IOException e) {
             LOG.warn("Error parsing ObjectDescriptor", e);

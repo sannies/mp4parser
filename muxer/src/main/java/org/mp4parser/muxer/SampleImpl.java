@@ -3,6 +3,7 @@ package org.mp4parser.muxer;
 import org.mp4parser.boxes.sampleentry.SampleEntry;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
@@ -60,7 +61,7 @@ public class SampleImpl implements Sample {
         for (ByteBuffer b : data) {
             copy.put(b.duplicate());
         }
-        copy.rewind();
+        ((Buffer)copy).rewind();
         return copy;
     }
 

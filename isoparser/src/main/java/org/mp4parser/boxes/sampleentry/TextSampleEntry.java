@@ -21,6 +21,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -70,7 +71,7 @@ public class TextSampleEntry extends AbstractSampleEntry {
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer content = ByteBuffer.allocate(38);
         dataSource.read(content);
-        content.position(6);
+        ((Buffer)content).position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
         displayFlags = IsoTypeReader.readUInt32(content);
         horizontalJustification = IsoTypeReader.readUInt8(content);
@@ -92,7 +93,7 @@ public class TextSampleEntry extends AbstractSampleEntry {
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         writableByteChannel.write(getHeader());
         ByteBuffer byteBuffer = ByteBuffer.allocate(38);
-        byteBuffer.position(6);
+        ((Buffer)byteBuffer).position(6);
         IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
         IsoTypeWriter.writeUInt32(byteBuffer, displayFlags);
         IsoTypeWriter.writeUInt8(byteBuffer, horizontalJustification);
@@ -103,7 +104,7 @@ public class TextSampleEntry extends AbstractSampleEntry {
         IsoTypeWriter.writeUInt8(byteBuffer, backgroundColorRgba[3]);
         boxRecord.getContent(byteBuffer);
         styleRecord.getContent(byteBuffer);
-        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writableByteChannel.write((ByteBuffer) ((Buffer)byteBuffer).rewind());
         writeContainer(writableByteChannel);
     }
 

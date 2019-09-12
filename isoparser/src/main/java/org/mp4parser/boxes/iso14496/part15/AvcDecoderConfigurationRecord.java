@@ -6,6 +6,7 @@ import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,12 +104,12 @@ public class AvcDecoderConfigurationRecord {
         bwb.writeBits(pictureParameterSets.size(), 5);
         for (ByteBuffer sequenceParameterSetNALUnit : sequenceParameterSets) {
             IsoTypeWriter.writeUInt16(byteBuffer, sequenceParameterSetNALUnit.limit());
-            byteBuffer.put((ByteBuffer) sequenceParameterSetNALUnit.rewind());
+            byteBuffer.put((ByteBuffer) ((Buffer)sequenceParameterSetNALUnit).rewind());
         }
         IsoTypeWriter.writeUInt8(byteBuffer, pictureParameterSets.size());
         for (ByteBuffer pictureParameterSetNALUnit : pictureParameterSets) {
             IsoTypeWriter.writeUInt16(byteBuffer, pictureParameterSetNALUnit.limit());
-            byteBuffer.put((ByteBuffer) pictureParameterSetNALUnit.rewind());
+            byteBuffer.put((ByteBuffer) ((Buffer)pictureParameterSetNALUnit).rewind());
         }
         if (hasExts && (avcProfileIndication == 100 || avcProfileIndication == 110 || avcProfileIndication == 122 || avcProfileIndication == 144)) {
 

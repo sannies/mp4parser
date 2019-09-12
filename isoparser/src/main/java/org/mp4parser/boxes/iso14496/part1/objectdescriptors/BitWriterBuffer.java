@@ -1,5 +1,6 @@
 package org.mp4parser.boxes.iso14496.part1.objectdescriptors;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 public class BitWriterBuffer {
@@ -33,7 +34,7 @@ public class BitWriterBuffer {
             writeBits(i >> bitsSecondWrite, left);
             writeBits(i & (1 << bitsSecondWrite) - 1, bitsSecondWrite);
         }
-        buffer.position(initialPos + position / 8 + ((position % 8 > 0) ? 1 : 0));
+        ((Buffer)buffer).position(initialPos + position / 8 + ((position % 8 > 0) ? 1 : 0));
     }
 
 

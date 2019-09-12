@@ -23,6 +23,7 @@ import org.mp4parser.ParsableBox;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -60,13 +61,13 @@ public class AbstractContainerBox extends BasicContainer implements ParsableBox 
         ByteBuffer header;
         if (largeBox || getSize() >= (1L << 32)) {
             header = ByteBuffer.wrap(new byte[]{0, 0, 0, 1, type.getBytes()[0], type.getBytes()[1], type.getBytes()[2], type.getBytes()[3], 0, 0, 0, 0, 0, 0, 0, 0});
-            header.position(8);
+            ((Buffer)header).position(8);
             IsoTypeWriter.writeUInt64(header, getSize());
         } else {
             header = ByteBuffer.wrap(new byte[]{0, 0, 0, 0, type.getBytes()[0], type.getBytes()[1], type.getBytes()[2], type.getBytes()[3]});
             IsoTypeWriter.writeUInt32(header, getSize());
         }
-        header.rewind();
+        ((Buffer)header).rewind();
         return header;
     }
 

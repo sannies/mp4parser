@@ -8,6 +8,7 @@ import org.mp4parser.boxes.samplegrouping.GroupEntry;
 import org.mp4parser.muxer.*;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -37,9 +38,9 @@ public class SilenceTrackImpl implements Track {
             Arrays.fill(decodingTimes, getTrackMetaData().getTimescale() * ms / numFrames / 1000);
 
             while (numFrames-- > 0) {
-                samples.add(new SampleImpl((ByteBuffer) ByteBuffer.wrap(new byte[]{
+                samples.add(new SampleImpl((ByteBuffer) ((Buffer)ByteBuffer.wrap(new byte[]{
                         0x21, 0x10, 0x04, 0x60, (byte) 0x8c, 0x1c,
-                }).rewind(), ofType.getSampleEntries().get(0)));
+                })).rewind(), ofType.getSampleEntries().get(0)));
             }
         } else {
             throw new RuntimeException("Tracks of type " + ofType.getClass().getSimpleName() + " are not supported");

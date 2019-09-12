@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -61,7 +62,7 @@ public class ExtensionDescriptor extends BaseDescriptor {
     @Override
     public void parseDetail(ByteBuffer bb) throws IOException {
         data = bb.slice();
-        bb.position(bb.position() + data.remaining());
+        ((Buffer)bb).position(bb.position() + data.remaining());
     }
 
     @Override

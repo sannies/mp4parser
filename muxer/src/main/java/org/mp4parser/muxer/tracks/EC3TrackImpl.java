@@ -14,6 +14,7 @@ import org.mp4parser.muxer.Sample;
 import org.mp4parser.muxer.TrackMetaData;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
@@ -109,7 +110,7 @@ public class EC3TrackImpl extends AbstractTrack {
         trackMetaData.setTimescale(samplerate); // Audio tracks always use samplerate as timescale
         trackMetaData.setVolume(1);
 
-        dataSource.position(0);
+        ((Buffer)dataSource).position(0);
         samples = readSamples();
         this.decodingTimes = new long[samples.size()];
         Arrays.fill(decodingTimes, 1536);
@@ -160,7 +161,7 @@ public class EC3TrackImpl extends AbstractTrack {
         long startPosition = dataSource.position();
         ByteBuffer bb = ByteBuffer.allocate(200);
         dataSource.read(bb);
-        bb.rewind();
+        ((Buffer)bb).rewind();
 
         BitReaderBuffer brb = new BitReaderBuffer(bb);
         int syncword = brb.readBits(16);

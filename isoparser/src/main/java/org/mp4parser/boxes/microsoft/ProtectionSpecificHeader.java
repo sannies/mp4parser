@@ -4,6 +4,7 @@ package org.mp4parser.boxes.microsoft;
 import org.mp4parser.boxes.microsoft.contentprotection.GenericHeader;
 import org.mp4parser.tools.Hex;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +54,7 @@ public abstract class ProtectionSpecificHeader {
         sb.append("ProtectionSpecificHeader");
         sb.append("{data=");
         ByteBuffer data = getData().duplicate();
-        data.rewind();
+        ((Buffer)data).rewind();
         byte[] bytes = new byte[data.limit()];
         data.get(bytes);
         sb.append(Hex.encodeHex(bytes));

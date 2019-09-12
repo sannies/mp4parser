@@ -1,6 +1,7 @@
 package org.mp4parser.muxer;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
@@ -27,7 +28,7 @@ public class MemoryDataSourceImpl implements DataSource {
         int size = Math.min(byteBuffer.remaining(), data.remaining());
         if (byteBuffer.hasArray()) {
             byteBuffer.put(data.array(), data.position(), size);
-            data.position(data.position() + size);
+            ((Buffer)data).position(data.position() + size);
         } else {
             byte[] buf = new byte[size];
             data.get(buf);
@@ -45,19 +46,19 @@ public class MemoryDataSourceImpl implements DataSource {
     }
 
     public void position(long nuPos) throws IOException {
-        data.position(l2i(nuPos));
+        ((Buffer)data).position(l2i(nuPos));
     }
 
     public long transferTo(long position, long count, WritableByteChannel target) throws IOException {
-        return target.write((ByteBuffer) ((ByteBuffer) data.position(l2i(position))).slice().limit(l2i(count)));
+        return target.write((ByteBuffer) ((Buffer)((ByteBuffer)((Buffer)data).position(l2i(position))).slice()).limit(l2i(count)));
     }
 
     public ByteBuffer map(long startPosition, long size) throws IOException {
         int oldPosition = data.position();
-        data.position(l2i(startPosition));
+        ((Buffer)data).position(l2i(startPosition));
         ByteBuffer result = data.slice();
-        result.limit(l2i(size));
-        data.position(oldPosition);
+        ((Buffer)result).limit(l2i(size));
+        ((Buffer)data).position(oldPosition);
         return result;
     }
 

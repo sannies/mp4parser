@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -59,7 +60,7 @@ public final class MediaDataBox implements ParsableBox {
 
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        writableByteChannel.write((ByteBuffer) header.rewind());
+        writableByteChannel.write((ByteBuffer) ((Buffer)header).rewind());
         FileChannel fc = new FileInputStream(dataFile).getChannel();
 
         fc.transferTo(0, dataFile.lastModified(), writableByteChannel);

@@ -5,6 +5,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,7 +70,7 @@ public class PlayReadyHeader extends ProtectionSpecificHeader {
         int size = 4 + 2;
         for (PlayReadyRecord record : records) {
             size += 2 + 2;
-            size += record.getValue().rewind().limit();
+            size += ((Buffer)record.getValue()).rewind().limit();
         }
         ByteBuffer byteBuffer = ByteBuffer.allocate(size);
 
@@ -133,7 +134,7 @@ public class PlayReadyHeader extends ProtectionSpecificHeader {
                         record = new DefaulPlayReadyRecord(type);
                 }
                 record.parse((ByteBuffer) byteBuffer.slice().limit(length));
-                byteBuffer.position(byteBuffer.position() + length);
+                ((Buffer)byteBuffer).position(byteBuffer.position() + length);
                 records.add(record);
             }
 

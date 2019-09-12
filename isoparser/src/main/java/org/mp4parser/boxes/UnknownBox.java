@@ -19,6 +19,7 @@ package org.mp4parser.boxes;
 
 import org.mp4parser.support.AbstractBox;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -40,12 +41,12 @@ public class UnknownBox extends AbstractBox {
     @Override
     public void _parseDetails(ByteBuffer content) {
         data = content;
-        content.position(content.position() + content.remaining());
+        ((Buffer)content).position(content.position() + content.remaining());
     }
 
     @Override
     protected void getContent(ByteBuffer byteBuffer) {
-        data.rewind();
+        ((Buffer)data).rewind();
         byteBuffer.put(data);
     }
 

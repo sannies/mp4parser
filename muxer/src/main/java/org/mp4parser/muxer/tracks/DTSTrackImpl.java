@@ -391,7 +391,7 @@ public class DTSTrackImpl extends AbstractTrack {
                             brb.readBits(4);
                             break;
                     }
-                    bb.position(offset + fsize + 1);
+                    ((Buffer)bb).position(offset + fsize + 1);
                 }
             } else if (sync == 0x64582025) { // DTS_SYNCWORD_SUBSTREAM
                 if (corePresent == -1) {
@@ -411,7 +411,7 @@ public class DTSTrackImpl extends AbstractTrack {
                 }
                 int nuExtSSHeaderSize = brb.readBits(nuBits4Header) + 1;
                 int nuExtSSFsize = brb.readBits(nuBits4ExSSFsize) + 1;
-                bb.position(offset + nuExtSSHeaderSize);
+                ((Buffer)bb).position(offset + nuExtSSHeaderSize);
                 int extSync = bb.getInt();
                 if (extSync == 0x5a5a5a5a) {
                     if (extXch == 1) {
@@ -452,7 +452,7 @@ public class DTSTrackImpl extends AbstractTrack {
                 if (!done) {
                     frameSize += nuExtSSFsize;
                 }
-                bb.position(offset + nuExtSSFsize);
+                ((Buffer)bb).position(offset + nuExtSSFsize);
             } else {
                 throw new IOException("No DTS_SYNCWORD_* found at " + bb.position());
             }
@@ -650,11 +650,11 @@ public class DTSTrackImpl extends AbstractTrack {
             final ByteBuffer finalSample = sample;
             mySamples.add(new Sample() {
                 public void writeTo(WritableByteChannel channel) throws IOException {
-                    channel.write((ByteBuffer) finalSample.rewind());
+                    channel.write((ByteBuffer) ((Buffer)finalSample).rewind());
                 }
 
                 public long getSize() {
-                    return finalSample.rewind().remaining();
+                    return ((Buffer)finalSample).rewind().remaining();
                 }
 
                 public ByteBuffer asByteBuffer() {
@@ -946,9 +946,9 @@ public class DTSTrackImpl extends AbstractTrack {
 
         private ByteBuffer getSample() {
             if (start >= bufferStartPos) {
-                buffer.position((int) (start - bufferStartPos));
+                ((Buffer)buffer).position((int) (start - bufferStartPos));
                 Buffer sample = buffer.slice();
-                sample.limit((int) (inBufferPos - (start - bufferStartPos)));
+                ((Buffer)sample).limit((int) (inBufferPos - (start - bufferStartPos)));
                 return (ByteBuffer) sample;
             } else {
                 throw new RuntimeException("damn! NAL exceeds buffer");

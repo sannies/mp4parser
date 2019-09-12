@@ -26,6 +26,7 @@ import org.mp4parser.tools.CastUtils;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -124,10 +125,10 @@ public class SampleGroupDescriptionBox extends AbstractFullBox {
                 length = content.limit() - content.position(); 
             }
             ByteBuffer parseMe = content.slice();
-            parseMe.limit(length);
+            ((Buffer)parseMe).limit(length);
             groupEntries.add(parseGroupEntry(parseMe, groupingType));
-            int parsedBytes = this.getVersion() == 1 ? length : parseMe.position(); 
-            content.position(content.position() + parsedBytes);
+            int parsedBytes = this.getVersion() == 1 ? length : parseMe.position();
+            ((Buffer)content).position(content.position() + parsedBytes);
         }
 
     }

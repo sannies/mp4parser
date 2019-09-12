@@ -25,6 +25,7 @@ import org.mp4parser.tools.Utf8;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -154,7 +155,7 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
 
         ByteBuffer content = ByteBuffer.allocate(78);
         dataSource.read(content);
-        content.position(6);
+        ((Buffer)content).position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
 
         long tmp = IsoTypeReader.readUInt16(content);
@@ -198,7 +199,7 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         writableByteChannel.write(getHeader());
         ByteBuffer byteBuffer = ByteBuffer.allocate(78);
-        byteBuffer.position(6);
+        ((Buffer)byteBuffer).position(6);
         IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
         IsoTypeWriter.writeUInt16(byteBuffer, 0);
         IsoTypeWriter.writeUInt16(byteBuffer, 0);
@@ -225,7 +226,7 @@ public final class VisualSampleEntry extends AbstractSampleEntry implements Cont
         IsoTypeWriter.writeUInt16(byteBuffer, getDepth());
         IsoTypeWriter.writeUInt16(byteBuffer, 0xFFFF);
 
-        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writableByteChannel.write((ByteBuffer) ((Buffer)byteBuffer).rewind());
 
         writeContainer(writableByteChannel);
 

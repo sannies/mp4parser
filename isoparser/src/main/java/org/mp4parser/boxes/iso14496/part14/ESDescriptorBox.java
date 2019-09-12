@@ -18,6 +18,7 @@ package org.mp4parser.boxes.iso14496.part14;
 
 import org.mp4parser.boxes.iso14496.part1.objectdescriptors.ESDescriptor;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -70,7 +71,7 @@ public class ESDescriptorBox extends AbstractDescriptorBox {
         writeVersionAndFlags(byteBuffer);
         ESDescriptor esd = getEsDescriptor();
         if (esd != null) {
-            byteBuffer.put((ByteBuffer) esd.serialize().rewind());
+            byteBuffer.put((ByteBuffer)((Buffer)esd.serialize()).rewind());
         } else {
             byteBuffer.put(data.duplicate());
         }

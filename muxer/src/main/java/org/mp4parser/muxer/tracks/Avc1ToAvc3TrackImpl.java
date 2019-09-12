@@ -12,6 +12,7 @@ import org.mp4parser.tools.IsoTypeWriterVariable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -87,18 +88,18 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
                     public void writeTo(WritableByteChannel channel) throws IOException {
 
                         for (ByteBuffer bytes : avcC.getSequenceParameterSets()) {
-                            IsoTypeWriterVariable.write(bytes.limit(), (ByteBuffer) buf.rewind(), len);
-                            channel.write((ByteBuffer) buf.rewind());
+                            IsoTypeWriterVariable.write(bytes.limit(), (ByteBuffer) ((Buffer)buf).rewind(), len);
+                            channel.write((ByteBuffer) ((Buffer)buf).rewind());
                             channel.write(bytes);
                         }
                         for (ByteBuffer bytes : avcC.getSequenceParameterSetExts()) {
-                            IsoTypeWriterVariable.write(bytes.limit(), (ByteBuffer) buf.rewind(), len);
-                            channel.write((ByteBuffer) buf.rewind());
+                            IsoTypeWriterVariable.write(bytes.limit(), (ByteBuffer) ((Buffer)buf).rewind(), len);
+                            channel.write((ByteBuffer) ((Buffer)buf).rewind());
                             channel.write((bytes));
                         }
                         for (ByteBuffer bytes : avcC.getPictureParameterSets()) {
-                            IsoTypeWriterVariable.write(bytes.limit(), (ByteBuffer) buf.rewind(), len);
-                            channel.write((ByteBuffer) buf.rewind());
+                            IsoTypeWriterVariable.write(bytes.limit(), (ByteBuffer) ((Buffer)buf).rewind(), len);
+                            channel.write((ByteBuffer) ((Buffer)buf).rewind());
                             channel.write((bytes));
                         }
                         orignalSample.writeTo(channel);
@@ -147,7 +148,7 @@ public class Avc1ToAvc3TrackImpl extends WrappingTrack {
                             data.put(bytes);
                         }
                         data.put(orignalSample.asByteBuffer());
-                        return (ByteBuffer) data.rewind();
+                        return (ByteBuffer) ((Buffer)data).rewind();
                     }
                 };
 

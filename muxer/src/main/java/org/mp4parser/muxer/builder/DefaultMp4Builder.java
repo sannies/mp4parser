@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
@@ -716,7 +717,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             } else {
                 IsoTypeWriter.writeUInt64(bb, size);
             }
-            bb.rewind();
+            ((Buffer)bb).rewind();
             writableByteChannel.write(bb);
             long writtenBytes = 0;
             long writtenMegaBytes = 0;

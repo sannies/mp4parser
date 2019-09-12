@@ -6,6 +6,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -33,7 +34,7 @@ public class Ovc1VisualSampleEntryImpl extends AbstractSampleEntry {
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer byteBuffer = ByteBuffer.allocate(CastUtils.l2i(contentSize));
         dataSource.read(byteBuffer);
-        byteBuffer.position(6);
+        ((Buffer)byteBuffer).position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(byteBuffer);
         vc1Content = new byte[byteBuffer.remaining()];
         byteBuffer.get(vc1Content);
@@ -44,9 +45,9 @@ public class Ovc1VisualSampleEntryImpl extends AbstractSampleEntry {
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         writableByteChannel.write(getHeader());
         ByteBuffer byteBuffer = ByteBuffer.allocate(8);
-        byteBuffer.position(6);
+        ((Buffer)byteBuffer).position(6);
         IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
-        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writableByteChannel.write((ByteBuffer) ((Buffer)byteBuffer).rewind());
         writableByteChannel.write(ByteBuffer.wrap(vc1Content));
     }
 

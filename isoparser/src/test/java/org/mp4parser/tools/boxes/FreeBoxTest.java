@@ -7,6 +7,7 @@ import org.mp4parser.boxes.iso14496.part12.FreeBox;
 import org.mp4parser.boxes.iso14496.part12.FreeSpaceBox;
 
 import java.io.*;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -17,7 +18,7 @@ public class FreeBoxTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FreeBox fb = new FreeBox(1000);
         ByteBuffer data = fb.getData();
-        data.rewind();
+        ((Buffer)data).rewind();
         data.put(new byte[]{1, 2, 3, 4, 5, 6});
         fb.getBox(Channels.newChannel(baos));
         Assert.assertEquals(baos.toByteArray()[8], 1);
@@ -32,7 +33,7 @@ public class FreeBoxTest {
         FreeBox fb = new FreeBox(1000);
         long startSize = fb.getSize();
         ByteBuffer data = fb.getData();
-        data.position(994);
+        ((Buffer)data).position(994);
         data.put(new byte[]{1, 2, 3, 4, 5, 6});
         FreeSpaceBox fsb = new FreeSpaceBox();
         fsb.setData(new byte[100]);

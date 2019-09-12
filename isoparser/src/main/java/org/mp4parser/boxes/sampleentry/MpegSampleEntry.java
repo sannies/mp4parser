@@ -5,6 +5,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -23,7 +24,7 @@ public class MpegSampleEntry extends AbstractSampleEntry {
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer bb = ByteBuffer.allocate(8);
         dataSource.read(bb);
-        bb.position(6);// ignore 6 reserved bytes;
+        ((Buffer)bb).position(6);// ignore 6 reserved bytes;
         dataReferenceIndex = IsoTypeReader.readUInt16(bb);
         initContainer(dataSource, contentSize - 8, boxParser);
     }
@@ -32,9 +33,9 @@ public class MpegSampleEntry extends AbstractSampleEntry {
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         writableByteChannel.write(getHeader());
         ByteBuffer bb = ByteBuffer.allocate(8);
-        bb.position(6);
+        ((Buffer)bb).position(6);
         IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
-        writableByteChannel.write((ByteBuffer) bb.rewind());
+        writableByteChannel.write((ByteBuffer) ((Buffer)bb).rewind());
         writeContainer(writableByteChannel);
     }
 

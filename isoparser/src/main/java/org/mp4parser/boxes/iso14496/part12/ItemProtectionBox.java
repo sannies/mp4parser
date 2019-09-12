@@ -23,6 +23,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -73,7 +74,7 @@ public class ItemProtectionBox extends AbstractContainerBox implements FullBox {
 
         ByteBuffer versionFlagNumOfChildBoxes = ByteBuffer.allocate(6);
         dataSource.read(versionFlagNumOfChildBoxes);
-        versionFlagNumOfChildBoxes.rewind();
+        ((Buffer)versionFlagNumOfChildBoxes).rewind();
         version = IsoTypeReader.readUInt8(versionFlagNumOfChildBoxes);
         flags = IsoTypeReader.readUInt24(versionFlagNumOfChildBoxes);
         // number of child boxes is not required
@@ -87,7 +88,7 @@ public class ItemProtectionBox extends AbstractContainerBox implements FullBox {
         IsoTypeWriter.writeUInt8(versionFlagNumOfChildBoxes, version);
         IsoTypeWriter.writeUInt24(versionFlagNumOfChildBoxes, flags);
         IsoTypeWriter.writeUInt16(versionFlagNumOfChildBoxes, getBoxes().size());
-        writableByteChannel.write((ByteBuffer) versionFlagNumOfChildBoxes.rewind());
+        writableByteChannel.write((ByteBuffer) ((Buffer)versionFlagNumOfChildBoxes).rewind());
         writeContainer(writableByteChannel);
     }
 

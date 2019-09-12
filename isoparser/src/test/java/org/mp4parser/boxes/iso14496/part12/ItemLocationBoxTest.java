@@ -6,6 +6,7 @@ import org.mp4parser.IsoFile;
 import org.mp4parser.tools.ByteBufferByteChannel;
 
 import java.io.*;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -164,7 +165,7 @@ public class ItemLocationBoxTest {
         ByteBuffer bb = ByteBuffer.allocate(e1.getSize());
         e1.getContent(bb);
         Assert.assertTrue(bb.remaining() == 0);
-        bb.rewind();
+        ((Buffer)bb).rewind();
         ItemLocationBox.Extent e2 = iloc.createExtent(bb);
 
         Assert.assertEquals(e1, e2);
@@ -191,7 +192,7 @@ public class ItemLocationBoxTest {
         ByteBuffer bb = ByteBuffer.allocate(e1.getSize());
         e1.getContent(bb);
         Assert.assertTrue(bb.remaining() == 0);
-        bb.rewind();
+        ((Buffer)bb).rewind();
         ItemLocationBox.Item e2 = iloc.createItem(bb);
 
         Assert.assertEquals(e1, e2);
@@ -218,7 +219,7 @@ public class ItemLocationBoxTest {
         ByteBuffer bb = ByteBuffer.allocate(e1.getSize());
         e1.getContent(bb);
         Assert.assertTrue(bb.remaining() == 0);
-        bb.rewind();
+        ((Buffer)bb).rewind();
         ItemLocationBox.Item e2 = iloc.createItem(bb);
 
         Assert.assertEquals(e1, e2);

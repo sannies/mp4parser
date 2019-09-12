@@ -15,6 +15,7 @@
 package org.mp4parser;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 
@@ -42,18 +43,18 @@ public class RewindableReadableByteChannel implements ReadableByteChannel {
     public int read(ByteBuffer dst) throws IOException {
         int initialDstPosition = dst.position();
         // Read data from |readableByteChannel| into |buffer|.
-        buffer.limit(buffer.capacity());
-        buffer.position(nextBufferWritePosition);
+        ((Buffer)buffer).limit(buffer.capacity());
+        ((Buffer)buffer).position(nextBufferWritePosition);
         if (buffer.capacity() > 0) {
             readableByteChannel.read(buffer);
             nextBufferWritePosition = buffer.position();
         }
 
         // Read data from |buffer| into |dst|.
-        buffer.position(nextBufferReadPosition);
-        buffer.limit(nextBufferWritePosition);
+        ((Buffer)buffer).position(nextBufferReadPosition);
+        ((Buffer)buffer).limit(nextBufferWritePosition);
         if (buffer.remaining() > dst.remaining()) {
-            buffer.limit(buffer.position() + dst.remaining());
+            ((Buffer)buffer).limit(buffer.position() + dst.remaining());
         }
         dst.put(buffer);
         nextBufferReadPosition = buffer.position();

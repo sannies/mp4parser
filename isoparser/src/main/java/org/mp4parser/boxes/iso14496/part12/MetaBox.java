@@ -23,6 +23,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -86,9 +87,9 @@ public class MetaBox extends AbstractContainerBox {
             // If the second and the fifth 32-bit integers encode 'hdlr' and 'mdta' respectively then the MetaBox is
             // formatted according to QuickTime File Format.
             // See https://developer.apple.com/library/content/documentation/QuickTime/QTFF/Metadata/Metadata.html
-            bb.position(4);
+            ((Buffer)bb).position(4);
             String second4cc = IsoTypeReader.read4cc(bb);
-            bb.position(16);
+            ((Buffer)bb).position(16);
             String fifth4cc = IsoTypeReader.read4cc(bb);
             if ("hdlr".equals(second4cc) && "mdta".equals(fifth4cc)) {
                 quickTimeFormat = true;
@@ -99,7 +100,7 @@ public class MetaBox extends AbstractContainerBox {
         if (!quickTimeFormat) {
             bb = ByteBuffer.allocate(4);
             rewindableDataSource.read(bb);
-            parseVersionAndFlags((ByteBuffer) bb.rewind());
+            parseVersionAndFlags((ByteBuffer) ((Buffer)bb).rewind());
         }
 
         int bytesUsed = quickTimeFormat ? 0 : 4;
@@ -112,7 +113,7 @@ public class MetaBox extends AbstractContainerBox {
         if (!quickTimeFormat) {
             ByteBuffer bb = ByteBuffer.allocate(4);
             writeVersionAndFlags(bb);
-            writableByteChannel.write((ByteBuffer) bb.rewind());
+            writableByteChannel.write((ByteBuffer) ((Buffer)bb).rewind());
         }
         writeContainer(writableByteChannel);
     }

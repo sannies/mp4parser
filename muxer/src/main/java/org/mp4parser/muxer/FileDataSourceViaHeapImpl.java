@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
@@ -66,7 +67,7 @@ public class FileDataSourceViaHeapImpl implements DataSource {
     public synchronized ByteBuffer map(long startPosition, long size) throws IOException {
         ByteBuffer bb = ByteBuffer.allocate(l2i(size));
         fc.read(bb, startPosition);
-        return (ByteBuffer) bb.rewind();
+        return (ByteBuffer) ((Buffer)bb).rewind();
     }
 
     public void close() throws IOException {

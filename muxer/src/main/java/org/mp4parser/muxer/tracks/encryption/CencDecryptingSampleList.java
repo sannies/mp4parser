@@ -12,6 +12,7 @@ import org.mp4parser.tools.RangeStartMap;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -79,7 +80,7 @@ public class CencDecryptingSampleList extends AbstractList<Sample> {
         if (keys.get(index) != null) {
             Sample encSample = parent.get(index);
             final ByteBuffer encSampleBuffer = encSample.asByteBuffer();
-            encSampleBuffer.rewind();
+            ((Buffer)encSampleBuffer).rewind();
             final ByteBuffer decSampleBuffer = ByteBuffer.allocate(encSampleBuffer.limit());
             final CencSampleAuxiliaryDataFormat sencEntry = sencInfo.get(index);
             Cipher cipher = getCipher(keys.get(index), sencEntry.iv, encSample.getSampleEntry());
@@ -122,11 +123,11 @@ public class CencDecryptingSampleList extends AbstractList<Sample> {
                         throw new RuntimeException("unknown encryption algo");
                     }
                 }
-                encSampleBuffer.rewind();
+                ((Buffer)encSampleBuffer).rewind();
             } catch (IllegalBlockSizeException | BadPaddingException e) {
                 throw new RuntimeException(e);
             }
-            decSampleBuffer.rewind();
+            ((Buffer)decSampleBuffer).rewind();
             return new SampleImpl(decSampleBuffer, sampleEntries.get(index));
         } else {
             return parent.get(index);

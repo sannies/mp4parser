@@ -16,6 +16,7 @@
 
 package org.mp4parser.boxes.samplegrouping;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -73,7 +74,7 @@ public class VisualRandomAccessEntry extends GroupEntry {
     public ByteBuffer get() {
         ByteBuffer content = ByteBuffer.allocate(1);
         content.put((byte) ((numLeadingSamplesKnown ? 0x80 : 0x00) | (numLeadingSamples & 0x7f)));
-        content.rewind();
+        ((Buffer)content).rewind();
         return content;
     }
 

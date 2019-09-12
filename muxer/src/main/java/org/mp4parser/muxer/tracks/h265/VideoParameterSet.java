@@ -4,6 +4,7 @@ import org.mp4parser.muxer.tracks.h264.parsing.read.CAVLCReader;
 import org.mp4parser.tools.ByteBufferByteChannel;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 
@@ -14,7 +15,7 @@ public class VideoParameterSet {
 
     public VideoParameterSet(ByteBuffer vps) throws IOException {
         this.vps = vps;
-        CAVLCReader r = new CAVLCReader(Channels.newInputStream(new ByteBufferByteChannel((ByteBuffer) vps.position(0))));
+        CAVLCReader r = new CAVLCReader(Channels.newInputStream(new ByteBufferByteChannel((ByteBuffer) ((Buffer)vps).position(0))));
         vps_parameter_set_id = r.readU(4, "vps_parameter_set_id");
         int vps_reserved_three_2bits = r.readU(2, "vps_reserved_three_2bits");
         int vps_max_layers_minus1 = r.readU(6, "vps_max_layers_minus1");

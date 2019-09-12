@@ -1,5 +1,6 @@
 package org.mp4parser.boxes.iso14496.part1.objectdescriptors;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 public class BitReaderBuffer {
@@ -32,7 +33,7 @@ public class BitReaderBuffer {
             rc = rc << then;
             rc += readBits(then);
         }
-        buffer.position(initialPos + (int) Math.ceil((double) position / 8));
+        ((Buffer)buffer).position(initialPos + (int) Math.ceil((double) position / 8));
         return rc;
     }
 

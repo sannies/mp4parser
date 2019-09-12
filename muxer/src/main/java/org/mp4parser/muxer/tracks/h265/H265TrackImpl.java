@@ -15,6 +15,7 @@ import org.mp4parser.tools.IsoTypeReader;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
@@ -82,19 +83,19 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
             // collect sps/vps/pps
             switch (unitHeader.nalUnitType) {
                 case NAL_TYPE_PPS_NUT:
-                    nal.position(2);
+                    ((Buffer)nal).position(2);
                     pps.add(nal.slice());
                     System.err.println("Stored PPS");
                     break;
                 case NAL_TYPE_VPS_NUT:
-                    nal.position(2);
+                    ((Buffer)nal).position(2);
                     vps.add(nal.slice());
                     System.err.println("Stored VPS");
                     break;
                 case NAL_TYPE_SPS_NUT:
-                    nal.position(2);
+                    ((Buffer)nal).position(2);
                     sps.add(nal.slice());
-                    nal.position(1);
+                    ((Buffer)nal).position(1);
                     new SequenceParameterSetRbsp(Channels.newInputStream(new ByteBufferByteChannel(nal.slice())));
                     System.err.println("Stored SPS");
                     break;
@@ -145,7 +146,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
     }
 
     public static H265NalUnitHeader getNalUnitHeader(ByteBuffer nal) {
-        nal.position(0);
+        ((Buffer)nal).position(0);
         int nal_unit_header = IsoTypeReader.readUInt16(nal);
 
 

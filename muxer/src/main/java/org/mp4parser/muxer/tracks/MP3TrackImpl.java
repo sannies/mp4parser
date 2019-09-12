@@ -11,6 +11,7 @@ import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.mp4parser.muxer.*;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.*;
 
@@ -149,7 +150,7 @@ public class MP3TrackImpl extends AbstractTrack {
             channel.position(pos);
             ByteBuffer data = ByteBuffer.allocate(hdr.getFrameLength());
             channel.read(data);
-            data.rewind();
+            ((Buffer)data).rewind();
             samples.add(new SampleImpl(data, audioSampleEntry));
         }
         return first;
@@ -168,7 +169,7 @@ public class MP3TrackImpl extends AbstractTrack {
             return null;
         }
 
-        BitReaderBuffer brb = new BitReaderBuffer((ByteBuffer) bb.rewind());
+        BitReaderBuffer brb = new BitReaderBuffer((ByteBuffer) ((Buffer)bb).rewind());
         int sync = brb.readBits(11); // A
         if (sync != 0x7ff)
             throw new IOException("Expected Start Word 0x7ff");

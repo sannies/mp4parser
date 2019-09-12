@@ -6,6 +6,7 @@ import org.mp4parser.boxes.iso14496.part12.SampleFlags;
 import org.mp4parser.tools.IsoTypeReader;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -18,7 +19,7 @@ public class SampleFlagsTest {
         SampleFlags sf = new SampleFlags(ByteBuffer.wrap(new byte[]{0x11, 0x22, 0x33, 0x44}));
         ByteBuffer b = ByteBuffer.allocate(4);
         sf.getContent(b);
-        b.rewind();
+        ((Buffer)b).rewind();
         Assert.assertEquals(l, IsoTypeReader.readUInt32(b));
     }
 
@@ -34,7 +35,7 @@ public class SampleFlagsTest {
         sf.setSamplePaddingValue(3);
         ByteBuffer bb = ByteBuffer.allocate(4);
         sf.getContent(bb);
-        bb.rewind();
+        ((Buffer)bb).rewind();
         //System.err.println(BitWriterBufferTest.toString(bb));
         SampleFlags sf2 = new SampleFlags(bb);
 

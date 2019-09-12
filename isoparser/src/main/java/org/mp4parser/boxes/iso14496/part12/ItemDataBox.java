@@ -2,6 +2,7 @@ package org.mp4parser.boxes.iso14496.part12;
 
 import org.mp4parser.support.AbstractBox;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -33,7 +34,7 @@ public class ItemDataBox extends AbstractBox {
     @Override
     public void _parseDetails(ByteBuffer content) {
         data = content.slice();
-        content.position(content.position() + content.remaining());
+        ((Buffer)content).position(content.position() + content.remaining());
     }
 
     @Override

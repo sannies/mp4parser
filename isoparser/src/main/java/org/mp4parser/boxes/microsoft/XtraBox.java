@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Date;
@@ -170,7 +171,7 @@ public class XtraBox extends AbstractBox {
         } catch (Exception e) {
             successfulParse = false;
             LOG.error("Malformed Xtra Tag detected: {}", e.toString());
-            content.position(content.position() + content.remaining());
+            ((Buffer)content).position(content.position() + content.remaining());
         } finally {
             content.order(ByteOrder.BIG_ENDIAN); //Just in case we bailed out mid-parse we don't want to leave the byte order in MS land
         }
@@ -183,7 +184,7 @@ public class XtraBox extends AbstractBox {
                 tags.elementAt(i).getContent(byteBuffer);
             }
         } else {
-            data.rewind();
+            ((Buffer)data).rewind();
             byteBuffer.put(data);
         }
     }

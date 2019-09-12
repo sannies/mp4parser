@@ -15,6 +15,7 @@
  */
 package org.mp4parser.muxer.builder;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class ByteBufferHelper {
             if (lastIndex >= 0 && buffer.hasArray() && nuSamples.get(lastIndex).hasArray() && buffer.array() == nuSamples.get(lastIndex).array() &&
                     nuSamples.get(lastIndex).arrayOffset() + nuSamples.get(lastIndex).limit() == buffer.arrayOffset()) {
                 ByteBuffer oldBuffer = nuSamples.remove(lastIndex);
-                ByteBuffer nu = ByteBuffer.wrap(buffer.array(), oldBuffer.arrayOffset(), oldBuffer.limit() + buffer.limit()).slice();
+                ByteBuffer nu = ByteBuffer.wrap(buffer.array(), oldBuffer.arrayOffset(), ((Buffer)oldBuffer).limit() + ((Buffer)buffer).limit()).slice();
                 // We need to slice here since wrap([], offset, length) just sets position and not the arrayOffset.
                 nuSamples.add(nu);
             } else if (lastIndex >= 0 &&
@@ -39,7 +40,7 @@ public class ByteBufferHelper {
                     nuSamples.get(lastIndex).limit() == nuSamples.get(lastIndex).capacity() - buffer.capacity()) {
                 // This can go wrong - but will it?
                 ByteBuffer oldBuffer = nuSamples.get(lastIndex);
-                oldBuffer.limit(buffer.limit() + oldBuffer.limit());
+                ((Buffer)oldBuffer).limit(buffer.limit() + oldBuffer.limit());
             } else {
                 buffer.reset();
                 nuSamples.add(buffer);

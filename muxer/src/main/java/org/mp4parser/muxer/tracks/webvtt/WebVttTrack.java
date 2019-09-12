@@ -17,6 +17,7 @@ import org.mp4parser.tools.ByteBufferByteChannel;
 import org.mp4parser.tools.Mp4Arrays;
 
 import java.io.*;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -55,7 +56,7 @@ public class WebVttTrack extends AbstractTrack {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            vtte.rewind();
+            ((Buffer)vtte).rewind();
         }
 
 

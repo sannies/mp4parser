@@ -24,6 +24,7 @@ import org.mp4parser.tools.CastUtils;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -51,7 +52,7 @@ public class FreeBox implements ParsableBox {
 
     public ByteBuffer getData() {
         if (data != null) {
-            return (ByteBuffer) data.duplicate().rewind();
+            return (ByteBuffer) ((Buffer)data.duplicate()).rewind();
         } else {
             return null;
         }
@@ -68,12 +69,12 @@ public class FreeBox implements ParsableBox {
         ByteBuffer header = ByteBuffer.allocate(8);
         IsoTypeWriter.writeUInt32(header, 8 + data.limit());
         header.put(TYPE.getBytes());
-        header.rewind();
+        ((Buffer)header).rewind();
         os.write(header);
-        header.rewind();
-        data.rewind();
+        ((Buffer)header).rewind();
+        ((Buffer)data).rewind();
         os.write(data);
-        data.rewind();
+        ((Buffer)data).rewind();
 
     }
 
@@ -102,7 +103,7 @@ public class FreeBox implements ParsableBox {
 
 
     public void addAndReplace(ParsableBox parsableBox) {
-        data.position(CastUtils.l2i(parsableBox.getSize()));
+        ((Buffer)data).position(CastUtils.l2i(parsableBox.getSize()));
         data = data.slice();
         replacers.add(parsableBox);
     }

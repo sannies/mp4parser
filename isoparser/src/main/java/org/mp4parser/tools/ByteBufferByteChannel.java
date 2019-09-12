@@ -16,6 +16,7 @@
 package org.mp4parser.tools;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 
@@ -38,8 +39,8 @@ public class ByteBufferByteChannel implements ByteChannel {
         if (byteBuffer.remaining() <= 0) {
             return -1;
         }
-        dst.put((ByteBuffer) byteBuffer.duplicate().limit(byteBuffer.position() + dst.remaining()));
-        byteBuffer.position(byteBuffer.position() + rem);
+        dst.put((ByteBuffer) ((Buffer)byteBuffer.duplicate()).limit(byteBuffer.position() + dst.remaining()));
+        ((Buffer)byteBuffer).position(byteBuffer.position() + rem);
         return rem;
     }
 

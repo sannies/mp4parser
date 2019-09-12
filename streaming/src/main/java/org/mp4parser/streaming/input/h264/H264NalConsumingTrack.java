@@ -384,7 +384,7 @@ public abstract class H264NalConsumingTrack extends AbstractH264Track {
     }
 
     protected void handlePPS(ByteBuffer nal) {
-        nal.position(1);
+        ((ByteBuffer)nal).position(1);
         PictureParameterSet _pictureParameterSet = null;
         try {
             _pictureParameterSet = PictureParameterSet.read(nal);
@@ -408,7 +408,7 @@ public abstract class H264NalConsumingTrack extends AbstractH264Track {
     }
 
     protected void handleSPS(ByteBuffer data) {
-        data.position(1);
+        ((ByteBuffer)data).position(1);
         try {
             SeqParameterSet _seqParameterSet = SeqParameterSet.read(data);
 

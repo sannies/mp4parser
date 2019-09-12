@@ -6,6 +6,7 @@ import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -50,19 +51,19 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
         entries = parseEntries(parseEight, numOfEntries, 8);
         if (entries != null) {
-            content.position(content.position() + content.remaining() - parseEight.remaining());
+            ((Buffer)content).position(content.position() + content.remaining() - parseEight.remaining());
             return;
         }
 
         entries = parseEntries(parseSixteen, numOfEntries, 16);
         if (entries != null) {
-            content.position(content.position() + content.remaining() - parseSixteen.remaining());
+            ((Buffer)content).position(content.position() + content.remaining() - parseSixteen.remaining());
             return;
         }
 
         entries = parseEntries(parseZero, numOfEntries, 0);
         if (entries != null) {
-            content.position(content.position() + content.remaining() - parseZero.remaining());
+            ((Buffer)content).position(content.position() + content.remaining() - parseZero.remaining());
             return;
         }
 

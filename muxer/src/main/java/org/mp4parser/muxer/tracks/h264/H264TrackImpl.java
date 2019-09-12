@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.*;
 
@@ -318,7 +319,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                     }
                     fvnd = current;
                     //System.err.println("" + nalUnitHeader.nal_unit_type);
-                    buffered.add((ByteBuffer) nal.rewind());
+                    buffered.add((ByteBuffer) ((Buffer)nal).rewind());
                     //log.finer("NAL Unit Type: " + nalUnitHeader.nal_unit_type + " " + fvnd.frame_num);
                     break;
 
@@ -348,7 +349,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                         createSample(buffered);
                         fvnd = null;
                     }
-                    handleSPS((ByteBuffer) nal.rewind());
+                    handleSPS((ByteBuffer) ((Buffer)nal).rewind());
                     break;
                 case 8:
                     if (fvnd != null) {
@@ -356,7 +357,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
                         createSample(buffered);
                         fvnd = null;
                     }
-                    handlePPS((ByteBuffer) nal.rewind());
+                    handlePPS((ByteBuffer) ((Buffer)nal).rewind());
                     break;
                 case H264NalUnitTypes.END_OF_SEQUENCE:
                 case H264NalUnitTypes.END_OF_STREAM:
@@ -542,7 +543,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
 
         ByteBuffer oldPpsSameId = ppsIdToPpsBytes.get(_pictureParameterSet.pic_parameter_set_id);
 
-        data.rewind();
+        ((Buffer)data).rewind();
         if (oldPpsSameId != null && !oldPpsSameId.equals(data)) {
             throw new RuntimeException("OMG - I got two SPS with same ID but different settings! (AVC3 is the solution)");
         } else {
@@ -566,7 +567,7 @@ public class H264TrackImpl extends AbstractH26XTrack {
         }
         currentSeqParameterSet = _seqParameterSet;
 
-        data.rewind();
+        ((Buffer)data).rewind();
         ByteBuffer oldSpsSameId = spsIdToSpsBytes.get(_seqParameterSet.seq_parameter_set_id);
         if (oldSpsSameId != null && !oldSpsSameId.equals(data)) {
             throw new RuntimeException("OMG - I got two SPS with same ID but different settings!");

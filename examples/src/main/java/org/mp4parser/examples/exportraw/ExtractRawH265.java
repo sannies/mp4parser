@@ -15,6 +15,7 @@ import org.mp4parser.tools.Path;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
@@ -44,7 +45,7 @@ public class ExtractRawH265 {
 
         s.stream().filter(a -> a.nal_unit_type == 32).flatMap(a -> a.nalUnits.stream()).forEach(a -> {
             try {
-                fc.write((ByteBuffer) separator.rewind());
+                fc.write((ByteBuffer) ((Buffer)separator).rewind());
                 fc.write(ByteBuffer.wrap(a));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -53,7 +54,7 @@ public class ExtractRawH265 {
         });
         s.stream().filter(a -> a.nal_unit_type == 33).flatMap(a -> a.nalUnits.stream()).forEach(a -> {
             try {
-                fc.write((ByteBuffer) separator.rewind());
+                fc.write((ByteBuffer) ((Buffer)separator).rewind());
                 fc.write(ByteBuffer.wrap(a));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -62,7 +63,7 @@ public class ExtractRawH265 {
         });
         s.stream().filter(a -> a.nal_unit_type == 34).flatMap(a -> a.nalUnits.stream()).forEach(a -> {
             try {
-                fc.write((ByteBuffer) separator.rewind());
+                fc.write((ByteBuffer) ((Buffer)separator).rewind());
                 fc.write(ByteBuffer.wrap(a));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -75,9 +76,9 @@ public class ExtractRawH265 {
             ByteBuffer bb = sample.asByteBuffer();
             while (bb.remaining() > 0) {
                 int length = (int) IsoTypeReaderVariable.read(bb, hevc.getLengthSizeMinusOne() + 1);
-                fc.write((ByteBuffer) separator.rewind());
-                fc.write((ByteBuffer) bb.slice().limit(length));
-                bb.position(bb.position() + length);
+                fc.write((ByteBuffer) ((Buffer)separator).rewind());
+                fc.write((ByteBuffer) ((Buffer)bb.slice()).limit(length));
+                ((Buffer)bb).position(bb.position() + length);
             }
 
 

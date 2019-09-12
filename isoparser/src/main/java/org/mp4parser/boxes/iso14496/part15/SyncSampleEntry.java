@@ -4,6 +4,7 @@ import org.mp4parser.boxes.samplegrouping.GroupEntry;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -26,7 +27,7 @@ public class SyncSampleEntry extends GroupEntry {
     public ByteBuffer get() {
         ByteBuffer b = ByteBuffer.allocate(1);
         IsoTypeWriter.writeUInt8(b, (nalUnitType + (reserved << 6)));
-        return (ByteBuffer) b.rewind();
+        return (ByteBuffer) ((Buffer)b).rewind();
     }
 
     @Override

@@ -18,6 +18,7 @@ import org.mp4parser.tools.RangeStartMap;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.security.InvalidAlgorithmParameterException;
@@ -100,7 +101,7 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
 
         public void writeTo(WritableByteChannel channel) throws IOException {
 
-            ByteBuffer sample = (ByteBuffer) clearSample.asByteBuffer().rewind();
+            ByteBuffer sample = (ByteBuffer)((Buffer)clearSample.asByteBuffer()).rewind();
             SampleEntry se = sampleEntries.get(index);
             KeyIdKeyPair keyIdKeyPair = keys.get(index);
             CencSampleAuxiliaryDataFormat entry = auxiliaryDataFormats.get(index);
@@ -138,7 +139,7 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
                         channel.write(ByteBuffer.wrap(cipher.doFinal(fullyEncryptedSample)));
                     }
                 }
-                sample.rewind();
+                ((Buffer)sample).rewind();
             } catch (IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {
                 throw new RuntimeException(e);
             }
@@ -150,7 +151,7 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
         }
 
         public ByteBuffer asByteBuffer() {
-            ByteBuffer sample = (ByteBuffer) clearSample.asByteBuffer().rewind();
+            ByteBuffer sample = (ByteBuffer) ((Buffer)clearSample.asByteBuffer()).rewind();
             ByteBuffer encSample = ByteBuffer.allocate(sample.limit());
 
             SampleEntry se = sampleEntries.get(index);
@@ -189,11 +190,11 @@ public class CencEncryptingSampleList extends AbstractList<Sample> {
                         encSample.put(cipher.doFinal(fullyEncryptedSample));
                     }
                 }
-                sample.rewind();
+                ((Buffer)sample).rewind();
             } catch (IllegalBlockSizeException | BadPaddingException e) {
                 throw new RuntimeException(e);
             }
-            encSample.rewind();
+            ((Buffer)encSample).rewind();
             return encSample;
         }
 

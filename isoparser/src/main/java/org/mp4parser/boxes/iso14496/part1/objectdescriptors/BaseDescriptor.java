@@ -19,6 +19,7 @@ package org.mp4parser.boxes.iso14496.part1.objectdescriptors;
 import org.mp4parser.tools.IsoTypeReader;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /*
@@ -63,7 +64,7 @@ public abstract class BaseDescriptor {
 
         }
 
-        bb.position(pos + getSizeSize());
+        ((Buffer)bb).position(pos + getSizeSize());
 
     }
 
@@ -97,10 +98,10 @@ public abstract class BaseDescriptor {
         }
         sizeBytes = i;
         ByteBuffer detailSource = bb.slice();
-        detailSource.limit(sizeOfInstance);
+        ((Buffer)detailSource).limit(sizeOfInstance);
         parseDetail(detailSource);
         assert detailSource.remaining() == 0 : this.getClass().getSimpleName() + " has not been fully parsed";
-        bb.position(bb.position() + sizeOfInstance);
+        ((Buffer)bb).position(bb.position() + sizeOfInstance);
     }
 
     public abstract void parseDetail(ByteBuffer bb) throws IOException;

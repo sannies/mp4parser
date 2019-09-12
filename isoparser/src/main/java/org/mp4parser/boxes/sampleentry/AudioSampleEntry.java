@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -194,7 +195,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         ByteBuffer content = ByteBuffer.allocate(28);
         dataSource.read(content);
-        content.position(6);
+        ((Buffer)content).position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
 
         // 8 bytes already parsed
@@ -222,7 +223,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
         if (soundVersion == 1) {
             ByteBuffer appleStuff = ByteBuffer.allocate(16);
             dataSource.read(appleStuff);
-            appleStuff.rewind();
+            ((Buffer)appleStuff).rewind();
             samplesPerPacket = IsoTypeReader.readUInt32(appleStuff);
             bytesPerPacket = IsoTypeReader.readUInt32(appleStuff);
             bytesPerFrame = IsoTypeReader.readUInt32(appleStuff);
@@ -231,7 +232,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
         if (soundVersion == 2) {
             ByteBuffer appleStuff = ByteBuffer.allocate(36);
             dataSource.read(appleStuff);
-            appleStuff.rewind();
+            ((Buffer)appleStuff).rewind();
             samplesPerPacket = IsoTypeReader.readUInt32(appleStuff);
             bytesPerPacket = IsoTypeReader.readUInt32(appleStuff);
             bytesPerFrame = IsoTypeReader.readUInt32(appleStuff);
@@ -259,7 +260,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
                 }
 
                 public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-                    owmaSpecifics.rewind();
+                    ((Buffer)owmaSpecifics).rewind();
                     writableByteChannel.write(owmaSpecifics);
                 }
 
@@ -278,7 +279,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
         ByteBuffer byteBuffer = ByteBuffer.allocate(28
                 + (soundVersion == 1 ? 16 : 0)
                 + (soundVersion == 2 ? 36 : 0));
-        byteBuffer.position(6);
+        ((Buffer)byteBuffer).position(6);
         IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
         IsoTypeWriter.writeUInt16(byteBuffer, soundVersion);
         IsoTypeWriter.writeUInt16(byteBuffer, reserved1);
@@ -308,7 +309,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
             IsoTypeWriter.writeUInt32(byteBuffer, bytesPerSample);
             byteBuffer.put(soundVersion2Data);
         }
-        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writableByteChannel.write((ByteBuffer) ((Buffer)byteBuffer).rewind());
         writeContainer(writableByteChannel);
     }
 

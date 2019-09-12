@@ -20,6 +20,7 @@ import org.mp4parser.tools.Path;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -184,7 +185,7 @@ public class ClassicMp4ContainerSource implements Callable<Void> {
                             break;
                         }
                         avail = baos.available();
-                        BUFFER.rewind();
+                        ((Buffer)BUFFER).rewind();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

@@ -1,6 +1,7 @@
 package org.mp4parser.muxer;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 import static org.mp4parser.tools.CastUtils.l2i;
@@ -20,8 +21,8 @@ public class InMemRandomAccessSourceImpl implements RandomAccessSource {
     }
 
     public synchronized ByteBuffer get(long offset, long size) throws IOException {
-        buffer.position(l2i(offset));
-        return (ByteBuffer) buffer.slice().limit(l2i(size));
+        ((Buffer)buffer).position(l2i(offset));
+        return (ByteBuffer) ((Buffer)buffer.slice()).limit(l2i(size));
     }
 
     public void close() throws IOException {

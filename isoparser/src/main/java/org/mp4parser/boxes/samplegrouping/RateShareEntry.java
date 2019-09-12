@@ -21,6 +21,7 @@ import org.mp4parser.tools.CastUtils;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -88,7 +89,7 @@ public class RateShareEntry extends GroupEntry {
         buf.putInt(maximumBitrate);
         buf.putInt(minimumBitrate);
         IsoTypeWriter.writeUInt8(buf, discardPriority);
-        buf.rewind();
+        ((Buffer)buf).rewind();
         return buf;
     }
 
