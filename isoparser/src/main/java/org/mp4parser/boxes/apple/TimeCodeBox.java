@@ -168,7 +168,7 @@ public class TimeCodeBox extends AbstractBox implements SampleEntry, Container {
     }
 
     public void setBoxes(List<? extends Box> boxes) {
-        throw new RuntimeException("Time Code Box doesn't accept any children");
+        throw new UnsupportedOperationException("Time Code Box doesn't accept any children");
     }
 
     public <T extends Box> List<T> getBoxes(Class<T> clazz) {
@@ -180,5 +180,10 @@ public class TimeCodeBox extends AbstractBox implements SampleEntry, Container {
     }
 
     public void writeContainer(WritableByteChannel bb) throws IOException {
+    }
+
+    @Override
+    public void close() throws IOException {
+        // no-op
     }
 }
