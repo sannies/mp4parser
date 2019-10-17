@@ -101,7 +101,7 @@ public class AvcDecoderConfigurationRecord {
         bwb.writeBits(lengthSizeMinusOnePaddingBits, 6);
         bwb.writeBits(lengthSizeMinusOne, 2);
         bwb.writeBits(numberOfSequenceParameterSetsPaddingBits, 3);
-        bwb.writeBits(pictureParameterSets.size(), 5);
+        bwb.writeBits(sequenceParameterSets.size(), 5);
         for (ByteBuffer sequenceParameterSetNALUnit : sequenceParameterSets) {
             IsoTypeWriter.writeUInt16(byteBuffer, sequenceParameterSetNALUnit.limit());
             byteBuffer.put((ByteBuffer) ((Buffer)sequenceParameterSetNALUnit).rewind());
