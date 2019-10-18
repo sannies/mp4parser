@@ -1,5 +1,6 @@
 package org.mp4parser;
 
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -117,7 +118,16 @@ public class BasicContainer implements Container {
         }
     }
 
+    @Override
+    public void close() throws IOException {
+        for (Box box : boxes) {
+            if (box instanceof Closeable) {
+                ((Closeable) box).close();
+            }
+        }
+    }
 
+    @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
 
@@ -126,7 +136,7 @@ public class BasicContainer implements Container {
             if (i > 0) {
                 buffer.append(";");
             }
-            buffer.append(boxes.get(i).toString());
+            buffer.append(boxes.get(i));
         }
         buffer.append("]");
         return buffer.toString();
