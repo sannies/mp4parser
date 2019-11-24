@@ -329,7 +329,9 @@ public class SeqParameterSet extends BitstreamElement {
         writer.writeBool(constraint_set_1_flag, "SPS: constraint_set_1_flag");
         writer.writeBool(constraint_set_2_flag, "SPS: constraint_set_2_flag");
         writer.writeBool(constraint_set_3_flag, "SPS: constraint_set_3_flag");
-        writer.writeNBit(0, 4, "SPS: reserved");
+        writer.writeBool(constraint_set_4_flag, "SPS: constraint_set_4_flag");
+        writer.writeBool(constraint_set_5_flag, "SPS: constraint_set_5_flag");
+        writer.writeNBit(0, 2, "SPS: reserved");
         writer.writeNBit(level_idc, 8, "SPS: level_idc");
         writer.writeUE(seq_parameter_set_id, "SPS: seq_parameter_set_id");
 
