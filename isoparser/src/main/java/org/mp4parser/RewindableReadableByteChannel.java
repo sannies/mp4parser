@@ -78,6 +78,12 @@ public class RewindableReadableByteChannel implements ReadableByteChannel {
         nextBufferReadPosition = 0;
     }
 
+    // for isoviewer
+    public ReadableByteChannel underlyingChannel()
+    {
+        return readableByteChannel;
+    }
+
     /**
      * @see ReadableByteChannel#isOpen()
      */
