@@ -133,8 +133,8 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
         IsoTypeWriter.writeUInt32(byteBuffer, getNonEmptyEntriesNum());
         for (CencSampleAuxiliaryDataFormat entry : entries) {
             if (entry.getSize() > 0) {
-                if (entry.iv.length != 8 && entry.iv.length != 16) {
-                    throw new RuntimeException("IV must be either 8 or 16 bytes");
+                if (entry.iv.length != 0 && entry.iv.length != 8 && entry.iv.length != 16) {
+                    throw new RuntimeException("IV must be either 0, 8 or 16 bytes");
                 }
                 byteBuffer.put(entry.iv);
                 if (isSubSampleEncryption()) {
