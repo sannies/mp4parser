@@ -75,7 +75,10 @@ public class CencSampleAuxiliaryDataFormat {
 
         CencSampleAuxiliaryDataFormat entry = (CencSampleAuxiliaryDataFormat) o;
 
-        if (!new BigInteger(iv).equals(new BigInteger(entry.iv))) {
+        BigInteger iv = this.iv.length == 0 ? BigInteger.ZERO : new BigInteger(this.iv);
+        BigInteger entryIv = entry.iv.length == 0 ? BigInteger.ZERO : new BigInteger(entry.iv);
+        if (!(iv.equals(entryIv)))
+        {
             return false;
         }
         if (pairs != null ? !Arrays.equals(pairs, entry.pairs) : entry.pairs != null) {
