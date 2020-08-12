@@ -81,9 +81,9 @@ public abstract class AbstractBoxParser implements BoxParser {
         long contentSize;
 
         if (size == 1) {
-            header.get().limit(16);
+            ((Buffer)header.get()).limit(16);
             byteChannel.read(header.get());
-            header.get().position(8);
+            ((Buffer)header.get()).position(8);
             size = IsoTypeReader.readUInt64(header.get());
             contentSize = size - 16;
         } else if (size == 0) {
@@ -92,11 +92,11 @@ public abstract class AbstractBoxParser implements BoxParser {
             contentSize = size - 8;
         }
         if (UserBox.TYPE.equals(type)) {
-            header.get().limit(header.get().limit() + 16);
+            ((Buffer)header.get()).limit(((Buffer)header.get()).limit() + 16);
             byteChannel.read(header.get());
             usertype = new byte[16];
-            for (int i = header.get().position() - 16; i < header.get().position(); i++) {
-                usertype[i - (header.get().position() - 16)] = header.get().get(i);
+            for (int i = ((Buffer)header.get()).position() - 16; i < ((Buffer)header.get()).position(); i++) {
+                usertype[i - (((Buffer)header.get()).position() - 16)] = header.get().get(i);
             }
             contentSize -= 16;
         }
