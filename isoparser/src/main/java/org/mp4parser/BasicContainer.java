@@ -1,6 +1,5 @@
 package org.mp4parser;
 
-import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -9,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class BasicContainer implements Container, Closeable {
+public class BasicContainer implements Container {
     private List<Box> boxes = new ArrayList<Box>();
 
     public BasicContainer() {
@@ -114,15 +113,6 @@ public class BasicContainer implements Container, Closeable {
                 } else {
                     throw e;
                 }
-            }
-        }
-    }
-
-    @Override
-    public void close() throws IOException {
-        for (Box box : boxes) {
-            if (box instanceof Closeable) {
-                ((Closeable) box).close();
             }
         }
     }

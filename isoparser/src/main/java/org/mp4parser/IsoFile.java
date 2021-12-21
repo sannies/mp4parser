@@ -29,7 +29,7 @@ import java.nio.charset.StandardCharsets;
  * Uses IsoBufferWrapper  to access the underlying file.
  */
 @DoNotParseDetail
-public class IsoFile extends BasicContainer {
+public class IsoFile extends BasicContainer implements Closeable {
     private final ReadableByteChannel readableByteChannel;
 
     private FileInputStream fis;
@@ -107,7 +107,11 @@ public class IsoFile extends BasicContainer {
         if (this.fis != null) {
             this.fis.close();
         }
-        super.close();
+        for (Box box : getBoxes()) {
+            if (box instanceof Closeable) {
+                ((Closeable) box).close();
+            }
+        }
     }
 
     @Override
