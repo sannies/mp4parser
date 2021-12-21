@@ -181,9 +181,4 @@ public class TimeCodeBox extends AbstractBox implements SampleEntry, Container {
 
     public void writeContainer(WritableByteChannel bb) throws IOException {
     }
-
-    @Override
-    public void close() throws IOException {
-        // no-op
-    }
 }

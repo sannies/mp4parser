@@ -1,6 +1,5 @@
 package org.mp4parser;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
@@ -8,7 +7,7 @@ import java.util.List;
 /**
  * Interface for all ISO boxes that may contain other boxes.
  */
-public interface Container extends Closeable {
+public interface Container {
 
     /**
      * Gets all child boxes. May not return <code>null</code>.

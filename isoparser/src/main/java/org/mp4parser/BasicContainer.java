@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class BasicContainer implements Container {
+public class BasicContainer implements Container, Closeable {
     private List<Box> boxes = new ArrayList<Box>();
 
     public BasicContainer() {
