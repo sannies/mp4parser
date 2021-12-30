@@ -10,6 +10,7 @@ import org.mp4parser.tools.Hex;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -149,9 +150,8 @@ public class DefaultMp4SampleListTest {
     );
 
     @Test
-    public void checkSampleList() throws IOException, NoSuchAlgorithmException {
-        String filename = this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() +
-                "/org/mp4parser/muxer/samples/1365070268951.mp4";
+    public void checkSampleList() throws IOException, NoSuchAlgorithmException, URISyntaxException {
+        String filename = this.getClass().getClassLoader().getResource("org/mp4parser/muxer/samples/1365070268951.mp4").toURI().getPath();
         IsoFile isoFile = new IsoFile(new FileInputStream(filename).getChannel());
         Mp4SampleList sl = new Mp4SampleList(1, isoFile, new FileRandomAccessSourceImpl(new RandomAccessFile(filename, "r")));
         MessageDigest md5 = MessageDigest.getInstance("MD5");

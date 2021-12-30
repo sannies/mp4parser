@@ -32,8 +32,7 @@ public class CencTracksImplTest {
     public void testEncryptDecryptDefaultMp4() throws Exception {
         SecretKey sk = new SecretKeySpec(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, "AES");
         Movie m = MovieCreator.build(
-                CencTracksImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() +
-                        "/org/mp4parser/muxer/samples/1365070268951.mp4");
+                CencTracksImplTest.class.getClassLoader().getResource("org/mp4parser/muxer/samples/1365070268951.mp4").toURI().getPath());
 
         List<Track> encTracks = new LinkedList<Track>();
         for (Track track : m.getTracks()) {
@@ -66,8 +65,7 @@ public class CencTracksImplTest {
     public void testEncryptDecryptFragmentedMp4() throws Exception {
         SecretKey sk = new SecretKeySpec(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, "AES");
         Movie m = MovieCreator.build(
-                CencTracksImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() +
-                        "/org/mp4parser/muxer/samples/1365070268951.mp4");
+                CencTracksImplTest.class.getClassLoader().getResource("org/mp4parser/muxer/samples/1365070268951.mp4").toURI().getPath());
 
         List<Track> encTracks = new LinkedList<Track>();
         for (Track track : m.getTracks()) {
@@ -99,8 +97,7 @@ public class CencTracksImplTest {
         UUID keyId = UUID.randomUUID();
         SecretKey key = new SecretKeySpec(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, "AES");
         Movie m = MovieCreator.build(
-                CencTracksImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() +
-                        "/org/mp4parser/muxer/samples/1365070268951.mp4");
+                CencTracksImplTest.class.getClassLoader().getResource("org/mp4parser/muxer/samples/1365070268951.mp4").toURI().getPath());
 
         List<Track> encTracks = new LinkedList<Track>();
         for (Track track : m.getTracks()) {

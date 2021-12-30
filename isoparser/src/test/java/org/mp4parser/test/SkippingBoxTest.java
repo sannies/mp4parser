@@ -6,6 +6,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,9 +27,9 @@ public class SkippingBoxTest {
     
     @Before
     public void setup() throws IOException {
-        FileInputStream fis = new FileInputStream(PathTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/test.m4p");
-        isoFile = new IsoFile(fis.getChannel(), new PropertyBoxParserImpl().skippingBoxes("mdat", "mvhd"));
-        fis.close();
+        try (FileInputStream fis = new FileInputStream(getClass().getClassLoader().getResource("test.m4p").getPath())) {
+            isoFile = new IsoFile(fis.getChannel(), new PropertyBoxParserImpl().skippingBoxes("mdat", "mvhd"));
+        }
     }
 
 

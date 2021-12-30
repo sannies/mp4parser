@@ -1,22 +1,23 @@
 package org.mp4parser.muxer.builder;
 
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.mp4parser.muxer.InTestMovieCreator;
 import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.Track;
 
-import java.io.IOException;
-
 public class SyncSampleIntersectFinderImplTest {
 
 
     @Test
-    public void testFindSameFrameRate() throws IOException {
+    public void testFindSameFrameRate() throws IOException, URISyntaxException {
         Movie m = InTestMovieCreator.createMovieOnlyVideo(
-                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_150.mp4",
-                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_200.mp4"
+                "BBB_qpfile_10sec/BBB_fixedres_B_180x320_150.mp4",
+                "BBB_qpfile_10sec/BBB_fixedres_B_180x320_200.mp4"
         );
 
         SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl(m, null, -1);
@@ -62,7 +63,7 @@ public class SyncSampleIntersectFinderImplTest {
     }
 
     @Test
-    public void testFindDifferentFrameRates() throws IOException {
+    public void testFindDifferentFrameRates() throws IOException, URISyntaxException {
 
         /*Movie m = createMovieOnlyVideo(
                 "/working_now/FBW_fixedres_B_640x360_200.mp4",
@@ -72,11 +73,11 @@ public class SyncSampleIntersectFinderImplTest {
                 "/working_now/FBW_fixedres_B_640x360_2400.mp4"
         );    */
         Movie m = InTestMovieCreator.createMovieOnlyVideo(
-                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4",
-                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_100.mp4",
-                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_120.mp4",
-                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_150.mp4",
-                "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_200.mp4"
+                "BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4",
+                "BBB_qpfile_10sec/BBB_fixedres_B_180x320_100.mp4",
+                "BBB_qpfile_10sec/BBB_fixedres_B_180x320_120.mp4",
+                "BBB_qpfile_10sec/BBB_fixedres_B_180x320_150.mp4",
+                "BBB_qpfile_10sec/BBB_fixedres_B_180x320_200.mp4"
         );
         SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl(m, null, -1);
         long[] fragmentStartSamplesRef = null;
