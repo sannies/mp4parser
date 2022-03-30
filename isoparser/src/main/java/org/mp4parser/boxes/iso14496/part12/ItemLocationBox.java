@@ -160,7 +160,7 @@ public class ItemLocationBox extends AbstractFullBox {
         return new Item(itemId, constructionMethod, dataReferenceIndex, baseOffset, extents);
     }
 
-    Item createItem(ByteBuffer bb) {
+    public Item createItem(ByteBuffer bb) {
         return new Item(bb);
     }
 
@@ -168,7 +168,7 @@ public class ItemLocationBox extends AbstractFullBox {
         return new Extent(extentOffset, extentLength, extentIndex);
     }
 
-    Extent createExtent(ByteBuffer bb) {
+    public Extent createExtent(ByteBuffer bb) {
         return new Extent(bb);
     }
 

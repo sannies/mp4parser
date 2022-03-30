@@ -1,6 +1,5 @@
 package org.mp4parser.support;
 
-import org.junit.Assert;
 import org.mp4parser.Box;
 import org.mp4parser.Container;
 import org.mp4parser.tools.Path;
@@ -8,6 +7,7 @@ import org.mp4parser.tools.Path;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
+import java.util.Base64;
 import java.util.Iterator;
 
 /**
@@ -28,11 +28,10 @@ public class BoxComparator {
 
     public static void check(Container root1, Box b1, Container root2, Box b2, String... ignores) throws IOException {
         //System.err.println(b1.getType() + " - " + b2.getType());
-        Assert.assertEquals(b1.getType(), b2.getType());
+        assert b1.getType().equals(b2.getType());
         if (!isIgnore(root1, b1, ignores)) {
             //    System.err.println(b1.getType());
-            Assert.assertEquals("Type differs. \ntypetrace ref : " + b1 + "\ntypetrace new : " + b2,
-                    b1.getType(), b2.getType());
+            assert b1.getType().equals(b2.getType()) : "Type differs. \ntypetrace ref : " + b1 + "\ntypetrace new : " + b2;
             if (b1 instanceof Container ^ !(b2 instanceof Container)) {
                 if (b1 instanceof Container) {
                     check(root1, (Container) b1, root2, (Container) b2, ignores);
@@ -40,7 +39,7 @@ public class BoxComparator {
                     checkBox(root1, b1, root2, b2, ignores);
                 }
             } else {
-                Assert.fail("Either both boxes are container boxes or none");
+                assert false : "Either both boxes are container boxes or none";
             }
         }
     }
@@ -56,7 +55,7 @@ public class BoxComparator {
             baos1.close();
             baos2.close();
 
-            Assert.assertArrayEquals("Box at " + b1 + " differs from reference\n\n" + b1.toString() + "\n" + b2.toString(), baos1.toByteArray(), baos2.toByteArray());
+            assert Base64.getEncoder().encodeToString(baos1.toByteArray()).equals(Base64.getEncoder().encodeToString(baos2.toByteArray())) : "Box at " + b1 + " differs from reference\n\n" + b1.toString() + "\n" + b2.toString();
         }
     }
 
@@ -75,12 +74,8 @@ public class BoxComparator {
 
             check(root1, b1, root2, b2, ignores);
         }
-        if (it1.hasNext()) {
-            Assert.fail("There is a box missing in the current output of the tool: " + it1.next());
-        }
-        if (it2.hasNext()) {
-            Assert.fail("There is a box too much in the current output of the tool: " + it2.next());
-        }
+        assert !it1.hasNext() : "There is a box missing in the current output of the tool: " + it1.next();
+        assert !it2.hasNext() : "There is a box too much in the current output of the tool: " + it2.next();
 
     }
 

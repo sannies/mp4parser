@@ -23,9 +23,32 @@
         <defaultGoal>install</defaultGoal>
         <plugins>
             <plugin>
-                <groupId>com.nickwongdev</groupId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/alternateLocation</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <stripVersion>true</stripVersion>
+                            <showWeaveInfo>true</showWeaveInfo>
+                            <verbose>true</verbose>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.12.1</version>
+                <version>1.14.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -38,14 +61,19 @@
                     <dependency>
                         <groupId>org.aspectj</groupId>
                         <artifactId>aspectjtools</artifactId>
-                        <version>1.9.1</version>
+                        <version>1.9.7</version>
                     </dependency>
 
                 </dependencies>
                 <configuration>
-                    <complianceLevel>7</complianceLevel>
-                    <source>7</source>
-                    <target>7</target>
+                    <complianceLevel>9</complianceLevel>
+                    <source>9</source>
+                    <target>9</target>
+                    <additionalCompilerArgs>
+                        <arg>--module-path</arg>
+                        <arg>${project.build.directory}/alternateLocation/slf4-api.jar</arg>
+                    </additionalCompilerArgs>
+
                 </configuration>
             </plugin>
 
@@ -64,9 +92,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
-                    <release>8</release>
+                    <source>9</source>
+                    <target>9</target>
+                    <release>9</release>
                 </configuration>
             </plugin>
             <plugin>
@@ -77,9 +105,9 @@
                     <source>8</source>
                 </configuration>
             </plugin>
-            <plugin>
+      <!--      <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -88,6 +116,17 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>module-info.class</exclude>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
                     <createSourcesJar>true</createSourcesJar>
                     <relocations>
                         <relocation>
@@ -101,14 +140,13 @@
                         </includes>
                     </artifactSet>
                 </configuration>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
                 <configuration>
-                    <includes>
-                        <include>**/*Test*.java</include>
-                    </includes>
+                    <useModulePath>false</useModulePath>
                 </configuration>
             </plugin>
         </plugins>
@@ -118,17 +156,17 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.1</version>
+            <version>1.9.7</version>
         </dependency>
         <dependency>
         <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.24</version>
+            <version>2.0.0-alpha7</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.24</version>
+            <version>2.0.0-alpha7</version>
             <scope>test</scope>
         </dependency>
         <dependency>

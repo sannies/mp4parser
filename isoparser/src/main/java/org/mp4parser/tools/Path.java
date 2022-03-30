@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 
 public class Path {
 
-    static Pattern component = Pattern.compile("(....|\\.\\.)(\\[(.*)\\])?");
+    public static Pattern component = Pattern.compile("(....|\\.\\.)(\\[(.*)\\])?");
 
     private Path() {
     }
