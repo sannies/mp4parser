@@ -31,10 +31,10 @@ import java.util.regex.Pattern;
  * A Property file based BoxFactory
  */
 public class PropertyBoxParserImpl extends AbstractBoxParser {
-    static Properties BOX_MAP_CACHE = null;
+    public static Properties BOX_MAP_CACHE = null;
+    public Properties mapping;
 
     static String[] EMPTY_STRING_ARRAY = new String[0];
-    Properties mapping;
     Pattern constuctorPattern = Pattern.compile("(.*)\\((.*?)\\)");
     StringBuilder buildLookupStrings = new StringBuilder();
     ThreadLocal<String> clazzName = new ThreadLocal<String>();
@@ -45,7 +45,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         if (BOX_MAP_CACHE != null) {
             mapping = new Properties(BOX_MAP_CACHE);
         } else {
-            InputStream is = getClass().getResourceAsStream("/isoparser2-default.properties");
+            InputStream is = ClassLoader.getSystemResourceAsStream("isoparser2-default.properties");
             try {
                 mapping = new Properties();
                 try {
@@ -115,7 +115,8 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
                 Constructor<ParsableBox> constructorObject = clazz.getConstructor(constructorArgsClazz);
                 return constructorObject.newInstance(constructorArgs);
             } else {
-                return clazz.newInstance();
+                System.err.println(clazz);
+                return clazz.getDeclaredConstructor().newInstance();
             }
 
         } catch (ClassNotFoundException e) {

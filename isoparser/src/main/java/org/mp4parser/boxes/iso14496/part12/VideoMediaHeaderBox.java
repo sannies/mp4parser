@@ -33,7 +33,7 @@ public class VideoMediaHeaderBox extends AbstractMediaHeaderBox {
 
     public VideoMediaHeaderBox() {
         super(TYPE);
-        setFlags(1); // 1 is default.
+        this.flags = 1;
     }
 
     public int getGraphicsmode() {

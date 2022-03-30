@@ -49,9 +49,10 @@ public class RequiresParseDetailAspect {
             "execution(* setUserType(*))) && " +
             "!@annotation(org.mp4parser.support.DoNotParseDetail)) || @annotation(org.mp4parser.support.ParseDetail))")
     public void before(JoinPoint joinPoint) {
+      //  System.err.println("JoinPoint");
         if (joinPoint.getTarget() instanceof AbstractBox) {
             if (!((AbstractBox) joinPoint.getTarget()).isParsed()) {
-                //System.err.println(String.format("parsed detail %s", joinPoint.getTarget().getClass().getSimpleName()));
+//                System.err.printf("parsed detail %s%n", joinPoint.getTarget().getClass().getSimpleName());
                 ((AbstractBox) joinPoint.getTarget()).parseDetails();
             }
         } else {

@@ -1,0 +1,26 @@
+module org.mp4parser {
+    requires org.slf4j;
+    requires org.aspectj.runtime;
+    exports org.mp4parser.tools;
+    exports org.mp4parser.support;
+    exports org.mp4parser.boxes;
+    exports org.mp4parser.boxes.apple;
+    exports org.mp4parser.boxes.oma;
+    exports org.mp4parser.boxes.sampleentry;
+    exports org.mp4parser.boxes.iso23001.part7;
+    exports org.mp4parser.boxes.microsoft;
+    exports org.mp4parser.boxes.microsoft.contentprotection;
+    exports org.mp4parser.boxes.iso23009.part1;
+    exports org.mp4parser.boxes.adobe;
+    exports org.mp4parser.boxes.dolby;
+    exports org.mp4parser.boxes.iso14496.part14;
+    exports org.mp4parser.boxes.iso14496.part12;
+    exports org.mp4parser.boxes.iso14496.part15;
+    exports org.mp4parser.boxes.iso14496.part30;
+    exports org.mp4parser.boxes.iso14496.part1.objectdescriptors;
+    exports org.mp4parser.boxes.samplegrouping;
+    exports org.mp4parser.boxes.threegpp.ts26244;
+    exports org.mp4parser.boxes.threegpp.ts26245;
+    exports org.mp4parser.boxes.dece;
+    exports org.mp4parser;
+}
