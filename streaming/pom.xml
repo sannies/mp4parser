@@ -25,7 +25,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.24</version>
+            <version>1.8.0-beta4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
