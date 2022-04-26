@@ -3,7 +3,7 @@
     <groupId>org.mp4parser</groupId>
     <artifactId>mp4parser-project</artifactId>
     <packaging>pom</packaging>
-    <version>1.9.42-SNAPSHOT</version>
+    <version>1.9.42</version>
     <name>MP4 Parser Project</name>
     <url>https://github.com/sannies/mp4parser</url>
     <licenses>
@@ -93,6 +93,6 @@
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
         <connection>scm:git:git@github.com:sannies/mp4parser.git</connection>
-        <tag>mp4parser-project-1.9.35</tag>
+        <tag>mp4parser-project-1.9.42</tag>
     </scm>
 </project>
