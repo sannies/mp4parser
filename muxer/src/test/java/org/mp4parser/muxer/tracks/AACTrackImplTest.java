@@ -29,6 +29,7 @@ import org.mp4parser.tools.Path;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.channels.Channels;
 
 /**
@@ -49,9 +50,9 @@ public class AACTrackImplTest {
     }
 
     @Test
-    public void freeze() throws IOException {
-        Track t = new AACTrackImpl(new FileDataSourceImpl(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/org/mp4parser/muxer/tracks/aac-sample.aac"));
-        //Track t = new AACTrackImpl2(new FileInputStream(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/com/googlecode/mp4parser/authoring/tracks/aac-sample.aac"));
+    public void freeze() throws IOException, URISyntaxException {
+        Track t = new AACTrackImpl(new FileDataSourceImpl(this.getClass().getClassLoader().getResource("org/mp4parser/muxer/tracks/aac-sample.aac").toURI().getPath()));
+        //Track t = new AACTrackImpl2(new FileInputStream(this.getClass().getClassLoader().getResource("com/googlecode/mp4parser/authoring/tracks/aac-sample.aac").toURI().getPath()));
         Movie m = new Movie();
         m.addTrack(t);
 
@@ -59,7 +60,7 @@ public class AACTrackImplTest {
         Container c = mp4Builder.build(m);
         //c.writeContainer(new FileOutputStream("C:\\dev\\mp4parser\\isoparser\\src\\test\\resources\\com\\googlecode\\mp4parser\\authoring\\tracks\\aac-sample.mp4").getChannel());
 
-        IsoFile isoFileReference = new IsoFile(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/org/mp4parser/muxer/tracks/aac-sample.mp4");
+        IsoFile isoFileReference = new IsoFile(this.getClass().getClassLoader().getResource("org/mp4parser/muxer/tracks/aac-sample.mp4").toURI().getPath());
         BoxComparator.check(c, isoFileReference, "moov[0]/mvhd[0]", "moov[0]/trak[0]/tkhd[0]", "moov[0]/trak[0]/mdia[0]/mdhd[0]", "moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stco[0]");
     }
 }

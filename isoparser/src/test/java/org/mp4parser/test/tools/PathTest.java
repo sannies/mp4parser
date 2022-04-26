@@ -15,7 +15,9 @@ public class PathTest {
 
     @Before
     public void setup() throws IOException {
-        isoFile = new IsoFile(new FileInputStream(PathTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/multiTrack.3gp").getChannel());
+        try (FileInputStream fis = new FileInputStream(getClass().getClassLoader().getResource("multiTrack.3gp").getPath())) {
+            isoFile = new IsoFile(fis.getChannel());
+        }
     }
 
 

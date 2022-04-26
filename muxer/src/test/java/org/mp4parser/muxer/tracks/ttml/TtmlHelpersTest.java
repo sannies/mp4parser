@@ -40,7 +40,7 @@ public class TtmlHelpersTest {
     public void testDeepCopyDocument() throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, URISyntaxException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = documentBuilderFactory.newDocumentBuilder();
-        Document ttml = db.parse(new InputSource(TtmlHelpersTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/org/mp4parser/muxer/tracks/ttml/tos-chapters-en.xml"));
+        Document ttml = db.parse(new InputSource(TtmlHelpersTest.class.getClassLoader().getResource("org/mp4parser/muxer/tracks/ttml/tos-chapters-en.xml").toURI().getPath()));
         //Document ttml = db.parse(new InputSource("http://localhost/mp4parser/isoparser/src/test/resources/com/googlecode/mp4parser/authoring/tracks/ttml/tos-chapters-en.xml"));
         File master = File.createTempFile("TtmlHelpersTest", "testDeepCopyDocument");
         master.delete();

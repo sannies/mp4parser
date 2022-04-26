@@ -16,8 +16,8 @@ public class FragmentedMp4BuilderTest {
     @Test
     public void testSimpleMuxing() throws Exception {
         Movie m = new Movie();
-        Movie v = MovieCreator.build(FragmentedMp4BuilderTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4");
-        Movie a = MovieCreator.build(FragmentedMp4BuilderTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/BBB_qpfile_10sec/output_audio-2ch-20s.mp4");
+        Movie v = MovieCreator.build(FragmentedMp4BuilderTest.class.getClassLoader().getResource("BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4").toURI().getPath());
+        Movie a = MovieCreator.build(FragmentedMp4BuilderTest.class.getClassLoader().getResource("BBB_qpfile_10sec/output_audio-2ch-20s.mp4").toURI().getPath());
 
         m.addTrack(v.getTracks().get(0));
         m.addTrack(a.getTracks().get(0));

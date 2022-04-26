@@ -11,11 +11,12 @@ import org.mp4parser.support.BoxComparator;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class AC3TrackImplTest {
     @Test
-    public void freeze() throws IOException {
-        Track t = new AC3TrackImpl(new FileDataSourceImpl(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/org/mp4parser/muxer/tracks/ac3-sample.ac3"));
+    public void freeze() throws IOException, URISyntaxException {
+        Track t = new AC3TrackImpl(new FileDataSourceImpl(this.getClass().getClassLoader().getResource("org/mp4parser/muxer/tracks/ac3-sample.ac3").toURI().getPath()));
         Movie m = new Movie();
         m.addTrack(t);
 
@@ -24,7 +25,7 @@ public class AC3TrackImplTest {
         //WritableByteChannel fc = new FileOutputStream("ac3-sample.mp4").getChannel();
         //isoFile.writeContainer(fc);
         //fc.close();
-        IsoFile isoFileReference = new IsoFile(new FileInputStream(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/org/mp4parser/muxer/tracks/ac3-sample.mp4").getChannel());
+        IsoFile isoFileReference = new IsoFile(new FileInputStream(this.getClass().getClassLoader().getResource("org/mp4parser/muxer/tracks/ac3-sample.mp4").toURI().getPath()).getChannel());
         BoxComparator.check(isoFile, isoFileReference, "moov[0]/mvhd[0]", "moov[0]/trak[0]/tkhd[0]", "moov[0]/trak[0]/mdia[0]/mdhd[0]");
     }
 }
