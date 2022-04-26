@@ -5,12 +5,7 @@
 
     <artifactId>examples</artifactId>
     <name>ISO Parser Examples</name>
-    <version>1.9.56-SNAPSHOT</version>
-    <parent>
-        <groupId>org.mp4parser</groupId>
-        <artifactId>mp4parser-project</artifactId>
-        <version>1.9.56-SNAPSHOT</version>
-    </parent>
+    <version>1-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>org.mp4parser</groupId>
@@ -59,45 +54,5 @@
         </dependency>
 
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
-                <configuration>
-                    <skipSource>true</skipSource>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <skipIfEmpty>true</skipIfEmpty>
-                    <excludes>
-                        <exclude>**/*</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.1.1</version>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

@@ -5,6 +5,13 @@
     <packaging>pom</packaging>
     <version>1.9.56-SNAPSHOT</version>
     <name>MP4 Parser Project</name>
+    <description>MP4 Parser Project (parent) </description>
+    <developers>
+        <developer>
+            <name>Sebastian Annies</name>
+            <email>Sebastian.Annies@gmail.com</email>
+        </developer>
+    </developers>
     <url>https://github.com/sannies/mp4parser</url>
     <licenses>
         <license>
@@ -20,7 +27,6 @@
     </distributionManagement>
     <modules>
         <module>isoparser</module>
-        <module>examples</module>
         <module>muxer</module>
         <module>streaming</module>
     </modules>
@@ -186,6 +192,10 @@
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
