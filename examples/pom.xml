@@ -66,8 +66,7 @@
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
                 <configuration>
-                    <skip>true</skip>
-                    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+                    <skipStaging>true</skipStaging>
                 </configuration>
             </plugin>
         </plugins>
