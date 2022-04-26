@@ -7,11 +7,11 @@
     <description>A generic parser and writer for all ISO 14496 based files (MP4, Quicktime, DCF, PDCF, ...)
     </description>
     <url>https://github.com/sannies/mp4parser</url>
-    <version>1.9.52-SNAPSHOT</version>
+    <version>1.9.52</version>
     <parent>
         <artifactId>mp4parser-project</artifactId>
         <groupId>org.mp4parser</groupId>
-        <version>1.9.52-SNAPSHOT</version>
+        <version>1.9.52</version>
     </parent>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -148,7 +148,7 @@
 
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
-        <tag>mp4parser-project-1.9.43</tag>
+        <tag>mp4parser-project-1.9.52</tag>
   </scm>
 
     <licenses>
