@@ -37,13 +37,7 @@
 
 
         <profile>
-            <id>release-sign-artifacts</id>
-            <activation>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
+            <id>release</id>
             <build>
                 <pluginManagement>
                     <plugins>
@@ -147,6 +141,7 @@
                     <configuration>
                         <localCheckout>true</localCheckout>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <releaseProfiles>release</releaseProfiles>
                     </configuration>
                 </plugin>
                 <plugin>
