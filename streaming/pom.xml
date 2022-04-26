@@ -35,6 +35,11 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    <parent>
+        <artifactId>mp4parser-project</artifactId>
+        <groupId>org.mp4parser</groupId>
+        <version>1.9.47-SNAPSHOT</version>
+    </parent>
     <profiles>
         <profile>
             <id>release-sign-artifacts</id>
