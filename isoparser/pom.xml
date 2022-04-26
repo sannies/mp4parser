@@ -8,7 +8,11 @@
     </description>
     <url>https://github.com/sannies/mp4parser</url>
     <version>1.9.47-SNAPSHOT</version>
-
+    <parent>
+        <artifactId>mp4parser-project</artifactId>
+        <groupId>org.mp4parser</groupId>
+        <version>1.9.47-SNAPSHOT</version>
+    </parent>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -39,8 +43,6 @@
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
                             <stripVersion>true</stripVersion>
-                            <showWeaveInfo>true</showWeaveInfo>
-                            <verbose>true</verbose>
                         </configuration>
                     </execution>
                 </executions>
@@ -77,79 +79,6 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.1.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>9</source>
-                    <target>9</target>
-                    <release>9</release>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.0</version>
-                <configuration>
-                    <source>8</source>
-                    <failOnError>false</failOnError>
-                </configuration>
-            </plugin>
-      <!--      <plugin>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>module-info.class</exclude>
-                                <exclude>META-INF/*.SF</exclude>
-                                <exclude>META-INF/*.DSA</exclude>
-                                <exclude>META-INF/*.RSA</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                    <createSourcesJar>true</createSourcesJar>
-                    <relocations>
-                        <relocation>
-                            <pattern>org.aspectj</pattern>
-                            <shadedPattern>org.mp4parser.aj</shadedPattern>
-                        </relocation>
-                    </relocations>
-                    <artifactSet>
-                        <includes>
-                            <include>org.aspectj:*</include>
-                        </includes>
-                    </artifactSet>
-                </configuration>
-            </plugin>-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M5</version>
-                <configuration>
-                    <useModulePath>false</useModulePath>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
@@ -192,39 +121,6 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>release-sign-artifacts</id>
-            <activation>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>2.8.2</version>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <ciManagement>
         <system>jenkins</system>
@@ -246,22 +142,9 @@
     <developers>
         <developer>
             <id>sannies</id>
-            <email>Sebastian.Annies@googlemail.com</email>
+            <email>Sebastian.Annies@gmail.com</email>
         </developer>
     </developers>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>release</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://repository.castlabs.com/content/repositories/snapshots/</url>
-        </snapshotRepository>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
 
     <scm>
         <url>https://github.com/sannies/mp4parser</url>

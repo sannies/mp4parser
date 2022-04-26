@@ -63,18 +63,8 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>8</source>
-                    <target>8</target>
-                    <release>8</release>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -82,21 +72,4 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>localfs</id>
-            <url>file://${project.basedir}/target/release</url>
-        </repository>
-    </distributionManagement>
-    <scm>
-        <url>http://code.google.com/p/mp4parser/source/browse/</url>
-        <connection>scm:svn:https://mp4parser.googlecode.com/svn/trunk/examples</connection>
-        <tag>mp4parser-project-1.9.43</tag>
-  </scm>
-    <repositories>
-        <repository>
-            <id>aaa</id>
-            <url>https://oss.sonatype.org/content/repositories/comgooglecodemp4parser-919/</url>
-        </repository>
-    </repositories>
 </project>
