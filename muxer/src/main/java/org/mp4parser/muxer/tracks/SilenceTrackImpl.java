@@ -34,6 +34,9 @@ public class SilenceTrackImpl implements Track {
         assert ofType.getSampleEntries().size() == 1: "";
         if ("mp4a".equals(ofType.getSampleEntries().get(0).getType())) {
             int numFrames = l2i(getTrackMetaData().getTimescale() * ms / 1000 / 1024);
+            if (numFrames <= 0) {
+                return;
+            }
             decodingTimes = new long[numFrames];
             Arrays.fill(decodingTimes, getTrackMetaData().getTimescale() * ms / numFrames / 1000);
 
