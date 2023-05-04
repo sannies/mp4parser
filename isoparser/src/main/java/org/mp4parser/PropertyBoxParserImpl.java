@@ -53,7 +53,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
                     if (cl == null) {
                         cl = ClassLoader.getSystemClassLoader();
                     }
-                    if (null == is) {
+                    if (is == null) {
                         is = cl.getResourceAsStream("isoparser2-default.properties");
                     }
                     mapping.load(is);
