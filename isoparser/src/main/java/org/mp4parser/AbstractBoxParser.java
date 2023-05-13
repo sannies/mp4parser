@@ -17,6 +17,7 @@ package org.mp4parser;
 
 import org.mp4parser.boxes.UserBox;
 import org.mp4parser.tools.IsoTypeReader;
+import org.mp4parser.support.AbstractBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,6 +115,12 @@ public abstract class AbstractBoxParser implements BoxParser {
         ((Buffer)header.get()).rewind();
 
         parsableBox.parse(byteChannel, header.get(), contentSize, this);
+
+        if (parsableBox instanceof AbstractBox)
+        {
+            ((AbstractBox)parsableBox).parseDetails();
+        }
+
         return parsableBox;
     }
 
