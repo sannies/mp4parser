@@ -444,7 +444,7 @@ public class FragmentedMp4Writer extends DefaultBoxes implements SampleSink {
 
         for (StreamingSample streamingSample : samples) {
             TrackRunBox.Entry entry = new TrackRunBox.Entry();
-            entry.setSampleSize(streamingSample.getContent().remaining());
+            entry.setSampleSize(streamingSample.getContent().capacity());
             if (defaultSampleFlagsTrackExtension == null) {
                 SampleFlagsSampleExtension sampleFlagsSampleExtension = streamingSample.getSampleExtension(SampleFlagsSampleExtension.class);
                 assert sampleFlagsSampleExtension != null : "SampleDependencySampleExtension missing even though SampleDependencyTrackExtension was present";
