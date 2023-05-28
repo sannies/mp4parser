@@ -201,7 +201,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
 
         HevcDecoderConfigurationRecord.Array vpsArray = new HevcDecoderConfigurationRecord.Array();
         vpsArray.array_completeness = true;
-        vpsArray.nal_unit_type = NAL_TYPE_PPS_NUT;
+        vpsArray.nal_unit_type = NAL_TYPE_VPS_NUT;
         vpsArray.nalUnits = new ArrayList<byte[]>();
         for (ByteBuffer vp : vps) {
             vpsArray.nalUnits.add(toArray(vp));
