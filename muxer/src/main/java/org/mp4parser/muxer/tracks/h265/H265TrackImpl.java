@@ -18,9 +18,7 @@ import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Takes a raw H265 stream and muxes into an MP4.
@@ -42,6 +40,15 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
         boolean[] vclNalUnitSeenInAU = new boolean[]{false};
         boolean[] isIdr = new boolean[]{true};
 
+        visualSampleEntry = new VisualSampleEntry("hvc1");
+        visualSampleEntry.setDataReferenceIndex(1);
+        visualSampleEntry.setDepth(24);
+        visualSampleEntry.setFrameCount(1);
+        visualSampleEntry.setHorizresolution(72);
+        visualSampleEntry.setVertresolution(72);
+        visualSampleEntry.setWidth(640);
+        visualSampleEntry.setHeight(480);
+        visualSampleEntry.setCompressorname("HEVC Coding");
 
         while ((nal = findNextNal(la)) != null) {
 
@@ -95,7 +102,6 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
                 case NAL_TYPE_SPS_NUT:
                     ((Buffer)nal).position(2);
                     sps.add(nal.slice());
-                    ((Buffer)nal).position(1);
                     new SequenceParameterSetRbsp(Channels.newInputStream(new ByteBufferByteChannel(nal.slice())));
                     System.err.println("Stored SPS");
                     break;
@@ -133,7 +139,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
             vclNalUnitSeenInAU[0] |= isVcl(unitHeader);
 
         }
-        visualSampleEntry = createSampleEntry();
+        visualSampleEntry = fillSampleEntry();
         decodingTimes = new long[samples.size()];
         getTrackMetaData().setTimescale(25);
         Arrays.fill(decodingTimes, 1);
@@ -168,18 +174,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
 
     }
 
-    private VisualSampleEntry createSampleEntry() {
-
-
-        VisualSampleEntry visualSampleEntry = new VisualSampleEntry("hvc1");
-        visualSampleEntry.setDataReferenceIndex(1);
-        visualSampleEntry.setDepth(24);
-        visualSampleEntry.setFrameCount(1);
-        visualSampleEntry.setHorizresolution(72);
-        visualSampleEntry.setVertresolution(72);
-        visualSampleEntry.setWidth(640);
-        visualSampleEntry.setHeight(480);
-        visualSampleEntry.setCompressorname("HEVC Coding");
+    private VisualSampleEntry fillSampleEntry() {
 
         HevcConfigurationBox hevcConfigurationBox = new HevcConfigurationBox();
 
