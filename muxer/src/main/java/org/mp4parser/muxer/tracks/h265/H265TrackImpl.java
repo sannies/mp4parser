@@ -228,7 +228,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
     }
 
     public List<SampleEntry> getSampleEntries() {
-        return null;
+        return Collections.<SampleEntry>singletonList(visualSampleEntry);
     }
 
     public String getHandler() {
