@@ -132,7 +132,15 @@ public abstract class AbstractH26XTrack extends AbstractTrack {
             fillBuffer();
         }
 
+        long lastBufferStartPos = -1;
+
         public void fillBuffer() throws IOException {
+            if(lastBufferStartPos == bufferStartPos)
+            {
+                BUFFER = BUFFER * 2;
+            }
+
+            lastBufferStartPos = bufferStartPos;
             buffer = dataSource.map(bufferStartPos, Math.min(dataSource.size() - bufferStartPos, BUFFER));
         }
 
