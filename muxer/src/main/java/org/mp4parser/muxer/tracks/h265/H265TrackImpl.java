@@ -18,9 +18,7 @@ import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Takes a raw H265 stream and muxes into an MP4.
@@ -42,6 +40,15 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
         boolean[] vclNalUnitSeenInAU = new boolean[]{false};
         boolean[] isIdr = new boolean[]{true};
 
+        visualSampleEntry = new VisualSampleEntry("hvc1");
+        visualSampleEntry.setDataReferenceIndex(1);
+        visualSampleEntry.setDepth(24);
+        visualSampleEntry.setFrameCount(1);
+        visualSampleEntry.setHorizresolution(72);
+        visualSampleEntry.setVertresolution(72);
+        visualSampleEntry.setWidth(640);
+        visualSampleEntry.setHeight(480);
+        visualSampleEntry.setCompressorname("HEVC Coding");
 
         while ((nal = findNextNal(la)) != null) {
 
@@ -83,32 +90,37 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
             // collect sps/vps/pps
             switch (unitHeader.nalUnitType) {
                 case NAL_TYPE_PPS_NUT:
-                    ((Buffer)nal).position(2);
+                    ((Buffer)nal).position(0);
                     pps.add(nal.slice());
+                    // TODO: skip 2 bytes, remove emulation prevention bytes, add PPS parser, parse PPS
                     System.err.println("Stored PPS");
                     break;
                 case NAL_TYPE_VPS_NUT:
-                    ((Buffer)nal).position(2);
+                    ((Buffer)nal).position(0);
                     vps.add(nal.slice());
+                    // TODO: skip 2 bytes, remove emulation prevention bytes, parse VPS
+                    // parsedVPS = new VideoParemeterSet(Channels.newInputStream(new ByteBufferByteChannel(nal.slice())));
                     System.err.println("Stored VPS");
                     break;
                 case NAL_TYPE_SPS_NUT:
-                    ((Buffer)nal).position(2);
+                    ((Buffer)nal).position(0);
                     sps.add(nal.slice());
-                    ((Buffer)nal).position(1);
-                    new SequenceParameterSetRbsp(Channels.newInputStream(new ByteBufferByteChannel(nal.slice())));
+                    // TODO: skip 2 bytes, remove emulation prevention bytes, parse SPS
+                    // parsedSPS = new SequenceParameterSetRbsp(Channels.newInputStream(new ByteBufferByteChannel(nal.slice())));
                     System.err.println("Stored SPS");
                     break;
                 case NAL_TYPE_PREFIX_SEI_NUT:
+                    ((Buffer)nal).position(2);
                     new SEIMessage(new BitReaderBuffer(nal.slice()));
                     break;
             }
 
 
             switch (unitHeader.nalUnitType) {
-                case NAL_TYPE_SPS_NUT:
-                case NAL_TYPE_VPS_NUT:
-                case NAL_TYPE_PPS_NUT:
+                // for hvc1 these must be in mdat!!! Otherwise the video is not playable.
+                // case NAL_TYPE_SPS_NUT:
+                // case NAL_TYPE_VPS_NUT:
+                // case NAL_TYPE_PPS_NUT:
                 case NAL_TYPE_EOB_NUT:
                 case NAL_TYPE_EOS_NUT:
                 case NAL_TYPE_AUD_NUT:
@@ -117,6 +129,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
                     break;
                 default:
                     System.err.println("Adding " + unitHeader.nalUnitType);
+                    nal.position(0);
                     nals.add(nal);
             }
             if (isVcl(unitHeader)) {
@@ -133,7 +146,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
             vclNalUnitSeenInAU[0] |= isVcl(unitHeader);
 
         }
-        visualSampleEntry = createSampleEntry();
+        visualSampleEntry = fillSampleEntry();
         decodingTimes = new long[samples.size()];
         getTrackMetaData().setTimescale(25);
         Arrays.fill(decodingTimes, 1);
@@ -168,21 +181,13 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
 
     }
 
-    private VisualSampleEntry createSampleEntry() {
-
-
-        VisualSampleEntry visualSampleEntry = new VisualSampleEntry("hvc1");
-        visualSampleEntry.setDataReferenceIndex(1);
-        visualSampleEntry.setDepth(24);
-        visualSampleEntry.setFrameCount(1);
-        visualSampleEntry.setHorizresolution(72);
-        visualSampleEntry.setVertresolution(72);
-        visualSampleEntry.setWidth(640);
-        visualSampleEntry.setHeight(480);
-        visualSampleEntry.setCompressorname("HEVC Coding");
+    private VisualSampleEntry fillSampleEntry() {
 
         HevcConfigurationBox hevcConfigurationBox = new HevcConfigurationBox();
-
+        hevcConfigurationBox.getHevcDecoderConfigurationRecord().setConfigurationVersion(1);
+        hevcConfigurationBox.getHevcDecoderConfigurationRecord().setLengthSizeMinusOne(3); // 4 bytes size block inserted in between NAL units
+        // TODO: fill in other metadata from parsed VPS/SPS
+        
         HevcDecoderConfigurationRecord.Array spsArray = new HevcDecoderConfigurationRecord.Array();
         spsArray.array_completeness = true;
         spsArray.nal_unit_type = NAL_TYPE_SPS_NUT;
@@ -201,15 +206,23 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
 
         HevcDecoderConfigurationRecord.Array vpsArray = new HevcDecoderConfigurationRecord.Array();
         vpsArray.array_completeness = true;
-        vpsArray.nal_unit_type = NAL_TYPE_PPS_NUT;
+        vpsArray.nal_unit_type = NAL_TYPE_VPS_NUT;
         vpsArray.nalUnits = new ArrayList<byte[]>();
         for (ByteBuffer vp : vps) {
             vpsArray.nalUnits.add(toArray(vp));
         }
 
-        hevcConfigurationBox.getArrays().addAll(Arrays.asList(spsArray, vpsArray, ppsArray));
+        // correct order is VPS, SPS, PPS. Other order produced ffmpeg errors such as "VPS 0 does not exist" and "SPS 0 does not exist."
+        hevcConfigurationBox.getArrays().addAll(Arrays.asList(vpsArray, spsArray, ppsArray));
 
         visualSampleEntry.addBox(hevcConfigurationBox);
+
+        trackMetaData.setCreationTime(new Date());
+        trackMetaData.setModificationTime(new Date());
+        trackMetaData.setLanguage("enu");
+        trackMetaData.setTimescale(25);
+        // TODO: fill in other metadata from parsed VPS/SPS
+
         return visualSampleEntry;
     }
 
@@ -228,7 +241,7 @@ public class H265TrackImpl extends AbstractH26XTrack implements H265NalUnitTypes
     }
 
     public List<SampleEntry> getSampleEntries() {
-        return null;
+        return Collections.<SampleEntry>singletonList(visualSampleEntry);
     }
 
     public String getHandler() {
