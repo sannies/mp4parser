@@ -3,12 +3,17 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.mp4parser</groupId>
-    <version>1.9.42-SNAPSHOT</version>
+    <version>1.9.57-SNAPSHOT</version>
     <artifactId>muxer</artifactId>
     <name>File Muxer</name>
     <url>https://github.com/sannies/mp4parser</url>
     <description>This package has a focus on file operation. It can read A/V data from Random Access Datasources
     </description>
+    <parent>
+        <artifactId>mp4parser-project</artifactId>
+        <groupId>org.mp4parser</groupId>
+        <version>1.9.57-SNAPSHOT</version>
+    </parent>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -16,7 +21,7 @@
         <dependency>
             <groupId>org.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.9.42-SNAPSHOT</version>
+            <version>1.9.57-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -26,91 +31,26 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.24</version>
+            <version>1.8.0-beta4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>release-sign-artifacts</id>
-            <activation>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>3.0.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>8</source>
-                    <target>8</target>
-                    <release>8</release>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.0.0-M1</version>
+                <artifactId>maven-source-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.1.1</version>
-                <configuration>
-                    <source>8</source>
-                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
-    <distributionManagement>
-        <snapshotRepository>
-            <id>release</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://repository.castlabs.com/content/repositories/snapshots/</url>
-        </snapshotRepository>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
     <licenses>
         <license>
             <name>Apache Software License - Version 2.0</name>
@@ -122,11 +62,11 @@
     <developers>
         <developer>
             <id>sannies</id>
-            <email>Sebastian.Annies@googlemail.com</email>
+            <email>Sebastian.Annies@gmail.com</email>
         </developer>
     </developers>
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
-        <tag>mp4parser-project-1.9.35</tag>
+        <tag>mp4parser-project-1.9.43</tag>
     </scm>
 </project>

@@ -1,0 +1,13 @@
+module org.mp4parser.test {
+    requires org.mp4parser;
+    requires java.desktop;
+    requires commons.codec;
+    requires org.slf4j.simple;
+    requires org.aspectj.runtime;
+    requires junit;
+    exports org.mp4parser.test.tools.boxes to junit;
+    exports com.googlecode.mp4parser.boxes to junit;
+    exports org.mp4parser.test.boxes.iso14496.part15 to junit;
+    exports org.mp4parser.test.tools to junit;
+    exports com.coremedia.drm.packager.isoparser to junit;
+}

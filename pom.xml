@@ -3,8 +3,15 @@
     <groupId>org.mp4parser</groupId>
     <artifactId>mp4parser-project</artifactId>
     <packaging>pom</packaging>
-    <version>1.9.42-SNAPSHOT</version>
+    <version>1.9.57-SNAPSHOT</version>
     <name>MP4 Parser Project</name>
+    <description>MP4 Parser Project (parent) </description>
+    <developers>
+        <developer>
+            <name>Sebastian Annies</name>
+            <email>Sebastian.Annies@gmail.com</email>
+        </developer>
+    </developers>
     <url>https://github.com/sannies/mp4parser</url>
     <licenses>
         <license>
@@ -12,10 +19,14 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
     <modules>
         <module>isoparser</module>
-        <!--<module>androidtest</module>-->
-        <module>examples</module>
         <module>muxer</module>
         <module>streaming</module>
     </modules>
@@ -29,6 +40,59 @@
                 <module>androidtest</module>
             </modules>
         </profile>
+
+
+        <profile>
+            <id>release</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-source-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>attach-sources</id>
+                                    <phase>verify</phase>
+                                    <goals>
+                                        <goal>jar-no-fork</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-javadoc-plugin</artifactId>
+
+                            <executions>
+                                <execution>
+                                    <id>attach-javadocs</id>
+                                    <phase>verify</phase>
+                                    <goals>
+                                        <goal>jar</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-gpg-plugin</artifactId>
+                            <version>1.5</version>
+                            <executions>
+                                <execution>
+                                    <id>sign-artifacts</id>
+                                    <phase>verify</phase>
+                                    <goals>
+                                        <goal>sign</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
     </profiles>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -39,10 +103,16 @@
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.0.0-M1</version>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.1.1</version>
                     <configuration>
-                        <skip>true</skip>
+                        <source>8</source>
+                        <failOnError>false</failOnError>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -73,26 +143,65 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.4.0</version>
                     <configuration>
                         <source>8</source>
+                        <failOnError>false</failOnError>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
+                    <version>3.0.0-M5</version>
                     <configuration>
                         <localCheckout>true</localCheckout>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <releaseProfiles>release</releaseProfiles>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.13</version>
+                    <extensions>true</extensions>
+                    <executions>
+                        <execution>
+                            <id>default-deploy</id>
+                            <phase>deploy</phase>
+                            <goals>
+                                <goal>deploy</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
     <scm>
         <url>https://github.com/sannies/mp4parser</url>
         <connection>scm:git:git@github.com:sannies/mp4parser.git</connection>
-        <tag>mp4parser-project-1.9.35</tag>
+        <tag>mp4parser-project-1.9.43</tag>
     </scm>
 </project>

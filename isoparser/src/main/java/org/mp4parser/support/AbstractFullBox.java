@@ -27,8 +27,8 @@ import java.nio.ByteBuffer;
  * Base class for all ISO Full boxes.
  */
 public abstract class AbstractFullBox extends AbstractBox implements FullBox {
-    private int version;
-    private int flags;
+    protected int version;
+    protected int flags;
 
     protected AbstractFullBox(String type) {
         super(type);

@@ -117,7 +117,7 @@ public class BasicContainer implements Container {
         }
     }
 
-
+    @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
 
@@ -126,7 +126,7 @@ public class BasicContainer implements Container {
             if (i > 0) {
                 buffer.append(";");
             }
-            buffer.append(boxes.get(i).toString());
+            buffer.append(boxes.get(i));
         }
         buffer.append("]");
         return buffer.toString();

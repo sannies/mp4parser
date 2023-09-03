@@ -19,12 +19,10 @@ package org.mp4parser;
 import org.mp4parser.boxes.iso14496.part12.MovieBox;
 import org.mp4parser.support.DoNotParseDetail;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.*;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 
 /**
  * The most upper container for ISO Boxes. It is a container box that is a file.
@@ -32,16 +30,19 @@ import java.nio.channels.WritableByteChannel;
  */
 @DoNotParseDetail
 public class IsoFile extends BasicContainer implements Closeable {
-    private static Logger LOG = LoggerFactory.getLogger(IsoFile.class);
-    private ReadableByteChannel readableByteChannel;
+    private final ReadableByteChannel readableByteChannel;
+
+    private FileInputStream fis;
 
 
     public IsoFile(String file) throws IOException {
-        this(new FileInputStream(file).getChannel(), new PropertyBoxParserImpl());
+        this(new File(file));
     }
 
     public IsoFile(File file) throws IOException {
-        this(new FileInputStream(file).getChannel(), new PropertyBoxParserImpl());
+        this.fis = new FileInputStream(file);
+        this.readableByteChannel = fis.getChannel();
+        initContainer(readableByteChannel, -1, new PropertyBoxParserImpl());
     }
 
     /**
@@ -72,11 +73,7 @@ public class IsoFile extends BasicContainer implements Closeable {
         if (type != null) {
             System.arraycopy(type, 0, result, 0, Math.min(type.length, 4));
         }
-        try {
-            return new String(result, "ISO-8859-1");
-        } catch (UnsupportedEncodingException e) {
-            throw new Error("Required character encoding is missing", e);
-        }
+        return new String(result, StandardCharsets.ISO_8859_1);
     }
 
 
@@ -104,12 +101,21 @@ public class IsoFile extends BasicContainer implements Closeable {
         writeContainer(os);
     }
 
+    @Override
     public void close() throws IOException {
         this.readableByteChannel.close();
+        if (this.fis != null) {
+            this.fis.close();
+        }
+        for (Box box : getBoxes()) {
+            if (box instanceof Closeable) {
+                ((Closeable) box).close();
+            }
+        }
     }
 
     @Override
     public String toString() {
-        return "model(" + readableByteChannel.toString() + ")";
+        return "model(" + readableByteChannel + ")";
     }
 }

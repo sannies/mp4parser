@@ -31,21 +31,21 @@ import java.util.regex.Pattern;
  * A Property file based BoxFactory
  */
 public class PropertyBoxParserImpl extends AbstractBoxParser {
-    static Properties BOX_MAP_CACHE = null;
+    public static Properties BOX_MAP_CACHE = null;
+    public Properties mapping;
 
     static String[] EMPTY_STRING_ARRAY = new String[0];
-    Properties mapping;
     Pattern constuctorPattern = Pattern.compile("(.*)\\((.*?)\\)");
     StringBuilder buildLookupStrings = new StringBuilder();
-    ThreadLocal<String> clazzName = new ThreadLocal<String>();
-    ThreadLocal<String[]> param = new ThreadLocal<String[]>();
+    ThreadLocal<String> clazzName = new ThreadLocal<>();
+    ThreadLocal<String[]> param = new ThreadLocal<>();
 
     public PropertyBoxParserImpl(String... customProperties) {
 
         if (BOX_MAP_CACHE != null) {
             mapping = new Properties(BOX_MAP_CACHE);
         } else {
-            InputStream is = getClass().getResourceAsStream("/isoparser2-default.properties");
+            InputStream is = ClassLoader.getSystemResourceAsStream("isoparser2-default.properties");
             try {
                 mapping = new Properties();
                 try {
@@ -58,11 +58,8 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
 
                     while (enumeration.hasMoreElements()) {
                         URL url = enumeration.nextElement();
-                        InputStream customIS = url.openStream();
-                        try {
+                        try (InputStream customIS = url.openStream()) {
                             mapping.load(customIS);
-                        } finally {
-                            customIS.close();
                         }
                     }
                     for (String customProperty : customProperties) {
@@ -74,7 +71,9 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
                 }
             } finally {
                 try {
-                    is.close();
+                    if (is != null) {
+                        is.close();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                     // ignore - I can't help
@@ -115,18 +114,10 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
                 Constructor<ParsableBox> constructorObject = clazz.getConstructor(constructorArgsClazz);
                 return constructorObject.newInstance(constructorArgs);
             } else {
-                return clazz.newInstance();
+                return clazz.getDeclaredConstructor().newInstance();
             }
 
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
     }
