@@ -174,6 +174,14 @@ public class TrackRunBox extends AbstractFullBox {
         return entries.size();
     }
 
+    public long getSampleSizeTotal() {
+        long r = 0;
+        for (Entry e : entries)
+            r += e.getSampleSize();
+
+        return r;
+    }
+
     public boolean isDataOffsetPresent() {
         return (getFlags() & 0x1) == 1;
     }
