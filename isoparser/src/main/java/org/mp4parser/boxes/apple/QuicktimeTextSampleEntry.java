@@ -57,6 +57,7 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
     int foregroundB = 65535;
 
     String fontName = "";
+    boolean rawFontName; // Is fontName in raw format or in pascal-string format.
     int dataReferenceIndex;
 
     public QuicktimeTextSampleEntry() {
@@ -85,6 +86,11 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
         foregroundB = IsoTypeReader.readUInt16(content);
         if (content.remaining() > 0) {
             int length = IsoTypeReader.readUInt8(content);
+            if (length != content.remaining()) {
+                content.position(content.position() - 1);
+                length = content.remaining();
+                rawFontName = true;
+            }
             byte[] myFontName = new byte[length];
             content.get(myFontName);
             fontName = new String(myFontName);
@@ -108,7 +114,8 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         writableByteChannel.write(getHeader());
 
-        ByteBuffer byteBuffer = ByteBuffer.allocate(52 + (fontName != null ? fontName.length() : 0));
+        ByteBuffer byteBuffer = ByteBuffer.allocate(51 + (rawFontName ? 0 : 1) +
+                (fontName != null ? fontName.length() : 0));
         ((Buffer)byteBuffer).position(6);
         IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
         byteBuffer.putInt(displayFlags);
@@ -127,8 +134,13 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
         IsoTypeWriter.writeUInt16(byteBuffer, foregroundG);
         IsoTypeWriter.writeUInt16(byteBuffer, foregroundB);
         if (fontName != null) {
-            IsoTypeWriter.writeUInt8(byteBuffer, fontName.length());
-            byteBuffer.put(fontName.getBytes());
+            if (rawFontName) {
+                byteBuffer.put(fontName.getBytes());
+            }
+            else {
+                IsoTypeWriter.writeUInt8(byteBuffer, fontName.length());
+                byteBuffer.put(fontName.getBytes());
+            }
         }
         writableByteChannel.write((ByteBuffer) ((Buffer)byteBuffer).rewind());
         // writeContainer(writableByteChannel); there are no child boxes!?
@@ -136,7 +148,7 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
 
     @Override
     public long getSize() {
-        long s = getContainerSize() + 52 + (fontName != null ? fontName.length() : 0);
+        long s = getContainerSize() + 51 + (rawFontName ? 0 : 1) + (fontName != null ? fontName.length() : 0);
         s += ((largeBox || (s + 8) >= (1L << 32)) ? 16 : 8);
         return s;
     }
