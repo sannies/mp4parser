@@ -45,15 +45,15 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         if (BOX_MAP_CACHE != null) {
             mapping = new Properties(BOX_MAP_CACHE);
         } else {
-            InputStream is = ClassLoader.getSystemResourceAsStream("isoparser2-default.properties");
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            if (cl == null) {
+                cl = ClassLoader.getSystemClassLoader();
+            }
+            InputStream is = cl.getResourceAsStream("isoparser2-default.properties");
             try {
                 mapping = new Properties();
                 try {
                     mapping.load(is);
-                    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                    if (cl == null) {
-                        cl = ClassLoader.getSystemClassLoader();
-                    }
                     Enumeration<URL> enumeration = cl.getResources("isoparser-custom.properties");
 
                     while (enumeration.hasMoreElements()) {
