@@ -30,6 +30,7 @@ public class TrackReferenceTypeBox extends AbstractBox {
     // 'hind'  this track depends on the referenced hint track, i.e., it should only be used if the referenced hint track is used.
     // 'vdep'  this track contains auxiliary depth video information for the referenced video track
     // 'vplx'  this track contains auxiliary parallax video information for the referenced video track
+    // 'tmcd'  this track uses time code information in the referenced track
 
     public TrackReferenceTypeBox(String type) {
         super(type);

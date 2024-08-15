@@ -6,6 +6,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +26,7 @@ public class SkippingBoxTest {
     
     @Before
     public void setup() throws IOException {
-        FileInputStream fis = new FileInputStream(PathTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/test.m4p");
+        FileInputStream fis = new FileInputStream(URLDecoder.decode(PathTest.class.getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name()) + "/test.m4p");
         isoFile = new IsoFile(fis.getChannel(), new PropertyBoxParserImpl().skippingBoxes("mdat", "mvhd"));
         fis.close();
     }

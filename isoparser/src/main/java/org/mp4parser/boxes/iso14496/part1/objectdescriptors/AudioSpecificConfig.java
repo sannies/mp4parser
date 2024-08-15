@@ -805,7 +805,14 @@ public class AudioSpecificConfig extends BaseDescriptor {
                 }
             }
         }
-        return (int) Math.ceil(((double) sizeInBits) / 8);
+
+        int requiredBytes = (int) Math.ceil(((double) sizeInBits) / 8);
+
+        if (sizeOfInstance > requiredBytes) {
+            return sizeOfInstance;
+        } else {
+            return requiredBytes;
+        }
     }
 
     public ByteBuffer serialize() {

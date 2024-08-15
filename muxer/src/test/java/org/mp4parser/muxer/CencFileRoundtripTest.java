@@ -19,15 +19,20 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.nio.channels.Channels;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class CencFileRoundtripTest {
-    private String baseDir = CencFileRoundtripTest.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+    private String baseDir = URLDecoder.decode(CencFileRoundtripTest.class.getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name());
     private Map<UUID, SecretKey> keys;
     private RangeStartMap<Integer, UUID> keyRotation1;
     private RangeStartMap<Integer, UUID> keyRotation2;
     private RangeStartMap<Integer, UUID> keyRotation3;
+
+    public CencFileRoundtripTest() throws Exception {
+    }
 
 
     @Before

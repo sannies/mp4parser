@@ -23,7 +23,9 @@ import org.mp4parser.tools.ByteBufferByteChannel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.net.URLDecoder;
 import java.nio.channels.Channels;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Tests ISO Roundtrip.
@@ -34,7 +36,7 @@ public class RoundTripTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        defaultTestFileDir = this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
+        defaultTestFileDir = URLDecoder.decode(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name());
 /*        Logger.getLogger("").setLevel(Level.ALL);
     Handler[] handlers = Logger.getLogger("").getHandlers();
     for (Handler handler : handlers) {

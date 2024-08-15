@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import static org.mp4parser.muxer.tracks.ttml.TtmlHelpers.toTime;
 import static org.mp4parser.muxer.tracks.ttml.TtmlHelpers.toTimeExpression;
@@ -40,7 +42,7 @@ public class TtmlHelpersTest {
     public void testDeepCopyDocument() throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, URISyntaxException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = documentBuilderFactory.newDocumentBuilder();
-        Document ttml = db.parse(new InputSource(TtmlHelpersTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/org/mp4parser/muxer/tracks/ttml/tos-chapters-en.xml"));
+        Document ttml = db.parse(new InputSource(URLDecoder.decode(TtmlHelpersTest.class.getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name()) + "/org/mp4parser/muxer/tracks/ttml/tos-chapters-en.xml"));
         //Document ttml = db.parse(new InputSource("http://localhost/mp4parser/isoparser/src/test/resources/com/googlecode/mp4parser/authoring/tracks/ttml/tos-chapters-en.xml"));
         File master = File.createTempFile("TtmlHelpersTest", "testDeepCopyDocument");
         master.delete();

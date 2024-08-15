@@ -5,6 +5,9 @@ import org.junit.Test;
 import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.container.mp4.MovieCreator;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Just check it works.
  */
@@ -13,7 +16,7 @@ public class DefaultFragmenterTest {
 
     @Test
     public void testSampleNumbers() throws Exception {
-        String f = DefaultFragmenterTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/Beethoven - Bagatelle op.119 no.11 i.m4a";
+        String f = URLDecoder.decode(DefaultFragmenterTest.class.getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name()) + "/Beethoven - Bagatelle op.119 no.11 i.m4a";
         Movie m = MovieCreator.build(f);
         DefaultFragmenterImpl intersectionFinder = new DefaultFragmenterImpl(2);
         long[] s = intersectionFinder.sampleNumbers(m.getTracks().get(0));

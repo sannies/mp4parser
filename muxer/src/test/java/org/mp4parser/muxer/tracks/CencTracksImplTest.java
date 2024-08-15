@@ -19,7 +19,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.net.URLDecoder;
 import java.nio.channels.Channels;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,7 +34,7 @@ public class CencTracksImplTest {
     public void testEncryptDecryptDefaultMp4() throws Exception {
         SecretKey sk = new SecretKeySpec(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, "AES");
         Movie m = MovieCreator.build(
-                CencTracksImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() +
+                URLDecoder.decode(CencTracksImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name()) +
                         "/org/mp4parser/muxer/samples/1365070268951.mp4");
 
         List<Track> encTracks = new LinkedList<Track>();
@@ -66,7 +68,7 @@ public class CencTracksImplTest {
     public void testEncryptDecryptFragmentedMp4() throws Exception {
         SecretKey sk = new SecretKeySpec(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, "AES");
         Movie m = MovieCreator.build(
-                CencTracksImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() +
+                URLDecoder.decode(CencTracksImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile()) +
                         "/org/mp4parser/muxer/samples/1365070268951.mp4");
 
         List<Track> encTracks = new LinkedList<Track>();
@@ -99,7 +101,7 @@ public class CencTracksImplTest {
         UUID keyId = UUID.randomUUID();
         SecretKey key = new SecretKeySpec(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, "AES");
         Movie m = MovieCreator.build(
-                CencTracksImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() +
+                URLDecoder.decode(CencTracksImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile()) +
                         "/org/mp4parser/muxer/samples/1365070268951.mp4");
 
         List<Track> encTracks = new LinkedList<Track>();

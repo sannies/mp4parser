@@ -7,7 +7,9 @@ import org.mp4parser.muxer.builder.FragmentedMp4Builder;
 import org.mp4parser.muxer.container.mp4.MovieCreator;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URLDecoder;
 import java.nio.channels.Channels;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Not really a test but at least makes sure muxing kind of works
@@ -16,8 +18,8 @@ public class FragmentedMp4BuilderTest {
     @Test
     public void testSimpleMuxing() throws Exception {
         Movie m = new Movie();
-        Movie v = MovieCreator.build(FragmentedMp4BuilderTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4");
-        Movie a = MovieCreator.build(FragmentedMp4BuilderTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/BBB_qpfile_10sec/output_audio-2ch-20s.mp4");
+        Movie v = MovieCreator.build(URLDecoder.decode(FragmentedMp4BuilderTest.class.getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name()) + "/BBB_qpfile_10sec/BBB_fixedres_B_180x320_80.mp4");
+        Movie a = MovieCreator.build(URLDecoder.decode(FragmentedMp4BuilderTest.class.getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name()) + "/BBB_qpfile_10sec/output_audio-2ch-20s.mp4");
 
         m.addTrack(v.getTracks().get(0));
         m.addTrack(a.getTracks().get(0));

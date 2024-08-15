@@ -27,6 +27,8 @@ import org.mp4parser.muxer.tracks.h264.H264TrackImpl;
 import org.mp4parser.support.BoxComparator;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Simple test to make sure nothing breaks.
@@ -35,7 +37,7 @@ public class H264TrackImplTest {
 
     @Test
     public void freeze() throws IOException {
-        DataSource fc = new FileDataSourceImpl(getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "/org/mp4parser/muxer/tracks/h264-sample.h264");
+        DataSource fc = new FileDataSourceImpl(URLDecoder.decode(getClass().getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name()) + "/org/mp4parser/muxer/tracks/h264-sample.h264");
         H264TrackImpl.BUFFER = 65535; // make sure we are not just in one buffer
         Track t = new H264TrackImpl(fc);
         Movie m = new Movie();
@@ -47,7 +49,7 @@ public class H264TrackImplTest {
       // c.writeContainer(new FileOutputStream("/Users/sannies/dev/mp4parser/muxer/src/test/resources/org/mp4parser/muxer/tracks/h264-sample.mp4").getChannel());
 
 
-        IsoFile isoFileReference = new IsoFile(getClass().getProtectionDomain().getCodeSource().getLocation().getFile() + "org/mp4parser/muxer/tracks/h264-sample.mp4");
+        IsoFile isoFileReference = new IsoFile(URLDecoder.decode(getClass().getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name()) + "org/mp4parser/muxer/tracks/h264-sample.mp4");
         BoxComparator.check(c, isoFileReference, "moov[0]/mvhd[0]", "moov[0]/trak[0]/tkhd[0]", "moov[0]/trak[0]/mdia[0]/mdhd[0]", "moov[0]/trak[0]/mdia[0]/minf[0]/stbl[0]/stco[0]");
     }
 }

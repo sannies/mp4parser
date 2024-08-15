@@ -13,14 +13,16 @@ import org.mp4parser.support.BoxComparator;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.net.URLDecoder;
 import java.nio.channels.Channels;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 public class DTSTrackImplTest {
     @Test
     public void checkOutputIsStable() throws Exception {
         Movie m = new Movie();
-        DTSTrackImpl dts = new DTSTrackImpl(new FileDataSourceImpl(DTSTrackImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/org/mp4parser/muxer/tracks/dts-sample.dtshd"));
+        DTSTrackImpl dts = new DTSTrackImpl(new FileDataSourceImpl(URLDecoder.decode(DTSTrackImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name()) + "/org/mp4parser/muxer/tracks/dts-sample.dtshd"));
         m.addTrack(dts);
         Fragmenter fif = new StaticFragmentIntersectionFinderImpl(Collections.singletonMap((Track) dts, new long[]{1}));
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();
@@ -31,7 +33,7 @@ public class DTSTrackImplTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         c.writeContainer(Channels.newChannel(baos));
         IsoFile ref = new IsoFile(
-                new FileInputStream(DTSTrackImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/org/mp4parser/muxer/tracks/dts-sample.mp4").getChannel());
+                new FileInputStream(URLDecoder.decode(DTSTrackImplTest.class.getProtectionDomain().getCodeSource().getLocation().getFile(), StandardCharsets.UTF_8.name()) + "/org/mp4parser/muxer/tracks/dts-sample.mp4").getChannel());
         BoxComparator.check(ref, c, "moov[0]/mvhd[0]", "moov[0]/trak[0]/tkhd[0]", "moov[0]/trak[0]/mdia[0]/mdhd[0]");
 
 
