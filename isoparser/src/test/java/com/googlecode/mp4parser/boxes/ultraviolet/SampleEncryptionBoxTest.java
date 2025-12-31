@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso23001.part7.AbstractSampleEncryptionBox;
 import org.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
@@ -37,17 +37,17 @@ public class SampleEncryptionBoxTest  {
         FileChannel fc = new FileOutputStream(f).getChannel();
         senc.getBox(fc);
         fc.close();
-        Assert.assertEquals(f.length(), senc.getSize());
+        Assertions.assertEquals(f.length(), senc.getSize());
 
 
         IsoFile iso = new IsoFile(new FileInputStream(f).getChannel());
 
 
-        Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
+        Assertions.assertInstanceOf(AbstractSampleEncryptionBox.class, iso.getBoxes().get(0));
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);
-        Assert.assertEquals(0, senc2.getFlags());
-        Assert.assertTrue(senc.equals(senc2));
-        Assert.assertTrue(senc2.equals(senc));
+        Assertions.assertEquals(0, senc2.getFlags());
+        Assertions.assertEquals(senc, senc2);
+        Assertions.assertEquals(senc2, senc);
 
     }
 
@@ -76,11 +76,11 @@ public class SampleEncryptionBoxTest  {
 
         IsoFile iso = new IsoFile(new FileInputStream(f).getChannel());
 
-        Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
+        Assertions.assertInstanceOf(AbstractSampleEncryptionBox.class, iso.getBoxes().get(0));
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);
-        Assert.assertEquals(2, senc2.getFlags());
-        Assert.assertTrue(senc.equals(senc2));
-        Assert.assertTrue(senc2.equals(senc));
+        Assertions.assertEquals(2, senc2.getFlags());
+        Assertions.assertEquals(senc, senc2);
+        Assertions.assertEquals(senc2, senc);
 
     }
 

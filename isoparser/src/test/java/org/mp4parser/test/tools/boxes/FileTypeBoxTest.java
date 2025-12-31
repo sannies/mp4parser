@@ -1,8 +1,8 @@
 package org.mp4parser.test.tools.boxes;
 
 import com.googlecode.mp4parser.boxes.BoxRoundtripTest;
-import org.junit.runners.Parameterized;
-import org.mp4parser.ParsableBox;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mp4parser.boxes.iso14496.part12.FileTypeBox;
 
 import java.util.Arrays;
@@ -10,12 +10,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+@ParameterizedClass
+@MethodSource("data")
 public class FileTypeBoxTest extends BoxRoundtripTest {
-    public FileTypeBoxTest(ParsableBox parsableBoxUnderTest, Map.Entry<String, Object>... properties) {
-        super(parsableBoxUnderTest, properties);
-    }
 
-    @Parameterized.Parameters
     public static Collection<Object[]> data() {
 
 

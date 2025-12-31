@@ -1,6 +1,6 @@
 package org.mp4parser.muxer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.Container;
 import org.mp4parser.muxer.builder.DefaultFragmenterImpl;
 import org.mp4parser.muxer.builder.FragmentedMp4Builder;

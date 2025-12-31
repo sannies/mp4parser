@@ -1,22 +1,18 @@
 package org.mp4parser.test.boxes.iso14496.part15;
 
 import com.googlecode.mp4parser.boxes.BoxRoundtripTest;
-import org.junit.runners.Parameterized;
-import org.mp4parser.ParsableBox;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mp4parser.boxes.iso14496.part15.TierBitRateBox;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+@ParameterizedClass
+@MethodSource("data")
 public class TierBitRateBoxTest extends BoxRoundtripTest {
 
-
-    public TierBitRateBoxTest(ParsableBox parsableBoxUnderTest, Map.Entry<String, Object>... properties) {
-        super(parsableBoxUnderTest, properties);
-    }
-
-    @Parameterized.Parameters
     public static Collection<Object[]> data() {
 
 

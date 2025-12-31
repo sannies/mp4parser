@@ -1,7 +1,7 @@
 package org.mp4parser.streaming.containersource;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.streaming.input.mp4.DiscardingByteArrayOutputStream;
 
 /**
@@ -21,17 +21,17 @@ public class DiscardingByteArrayOutputStreamTest {
         dbaos.write(6);
         dbaos.write(7);
         byte[] b = dbaos.get(3, 3);
-        Assert.assertArrayEquals(new byte[]{3, 4, 5}, b);
+        Assertions.assertArrayEquals(new byte[]{3, 4, 5}, b);
         dbaos.discardTo(3);
         b = dbaos.get(3, 3);
-        Assert.assertArrayEquals(new byte[]{3, 4, 5}, b);
+        Assertions.assertArrayEquals(new byte[]{3, 4, 5}, b);
         dbaos.discardTo(3);
         b = dbaos.get(3, 3);
-        Assert.assertArrayEquals(new byte[]{3, 4, 5}, b);
+        Assertions.assertArrayEquals(new byte[]{3, 4, 5}, b);
 
         dbaos.discardTo(4);
         b = dbaos.get(4, 3);
-        Assert.assertArrayEquals(new byte[]{4, 5, 6}, b);
+        Assertions.assertArrayEquals(new byte[]{4, 5, 6}, b);
 
     }
 }

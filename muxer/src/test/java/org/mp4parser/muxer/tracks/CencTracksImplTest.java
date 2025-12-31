@@ -1,6 +1,6 @@
 package org.mp4parser.muxer.tracks;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.Container;
 import org.mp4parser.muxer.InMemRandomAccessSourceImpl;
 import org.mp4parser.muxer.Movie;

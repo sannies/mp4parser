@@ -1,9 +1,9 @@
 package org.mp4parser.muxer;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -16,7 +16,7 @@ public class MultiFileDataSourceImplTest {
     File b;
     File c;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         a = File.createTempFile("MultiFileDataSourceImplTest", "aaa");
         write(a, "aaaaaaaaaa");
@@ -30,14 +30,14 @@ public class MultiFileDataSourceImplTest {
     public void testWithIn() throws Exception {
         DataSource ds = new MultiFileDataSourceImpl(a, b, c);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Assert.assertEquals("a", check(ds, 0, 1));
-        Assert.assertEquals("aa", check(ds, 0, 2));
-        Assert.assertEquals("a", check(ds, 1, 1));
-        Assert.assertEquals("aa", check(ds, 1, 2));
-        Assert.assertEquals("aaaaaaaaaa", check(ds, 0, 10));
-        Assert.assertEquals("aaaaaaaaaab", check(ds, 0, 11));
-        Assert.assertEquals("aaaaaaab", check(ds, 3, 8));
-        Assert.assertEquals("aaaaabbbbbbbbbbccccc", check(ds, 5, 20));
+        Assertions.assertEquals("a", check(ds, 0, 1));
+        Assertions.assertEquals("aa", check(ds, 0, 2));
+        Assertions.assertEquals("a", check(ds, 1, 1));
+        Assertions.assertEquals("aa", check(ds, 1, 2));
+        Assertions.assertEquals("aaaaaaaaaa", check(ds, 0, 10));
+        Assertions.assertEquals("aaaaaaaaaab", check(ds, 0, 11));
+        Assertions.assertEquals("aaaaaaab", check(ds, 3, 8));
+        Assertions.assertEquals("aaaaabbbbbbbbbbccccc", check(ds, 5, 20));
     }
 
     public String check(DataSource ds, int a, int b) throws IOException {
@@ -48,7 +48,7 @@ public class MultiFileDataSourceImplTest {
         return result;
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         a.deleteOnExit();
         b.deleteOnExit();

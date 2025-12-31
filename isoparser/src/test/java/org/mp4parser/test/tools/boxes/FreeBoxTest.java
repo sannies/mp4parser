@@ -1,7 +1,7 @@
 package org.mp4parser.test.tools.boxes;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.FreeBox;
 import org.mp4parser.boxes.iso14496.part12.FreeSpaceBox;
@@ -21,10 +21,10 @@ public class FreeBoxTest {
         ((Buffer)data).rewind();
         data.put(new byte[]{1, 2, 3, 4, 5, 6});
         fb.getBox(Channels.newChannel(baos));
-        Assert.assertEquals(baos.toByteArray()[8], 1);
-        Assert.assertEquals(baos.toByteArray()[9], 2);
-        Assert.assertEquals(baos.toByteArray()[10], 3);
-        Assert.assertEquals(baos.toByteArray()[11], 4);
+        Assertions.assertEquals(1, baos.toByteArray()[8]);
+        Assertions.assertEquals(2, baos.toByteArray()[9]);
+        Assertions.assertEquals(3, baos.toByteArray()[10]);
+        Assertions.assertEquals(4, baos.toByteArray()[11]);
     }
 
     @Test
@@ -45,9 +45,9 @@ public class FreeBoxTest {
         fc.close();
 
         IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
-        Assert.assertEquals(2, isoFile.getBoxes().size());
-        Assert.assertEquals(FreeSpaceBox.TYPE, isoFile.getBoxes().get(0).getType());
-        Assert.assertEquals(FreeBox.TYPE, isoFile.getBoxes().get(1).getType());
-        Assert.assertEquals(startSize, isoFile.getBoxes().get(0).getSize() + isoFile.getBoxes().get(1).getSize());
+        Assertions.assertEquals(2, isoFile.getBoxes().size());
+        Assertions.assertEquals(FreeSpaceBox.TYPE, isoFile.getBoxes().get(0).getType());
+        Assertions.assertEquals(FreeBox.TYPE, isoFile.getBoxes().get(1).getType());
+        Assertions.assertEquals(startSize, isoFile.getBoxes().get(0).getSize() + isoFile.getBoxes().get(1).getSize());
     }
 }

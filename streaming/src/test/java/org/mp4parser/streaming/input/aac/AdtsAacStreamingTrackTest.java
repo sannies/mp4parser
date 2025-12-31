@@ -1,6 +1,6 @@
 package org.mp4parser.streaming.input.aac;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.muxer.InMemRandomAccessSourceImpl;
 import org.mp4parser.muxer.Sample;

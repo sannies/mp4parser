@@ -1,6 +1,7 @@
 package org.mp4parser.test.boxes.iso14496.part15;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part15.HevcConfigurationBox;
 import org.mp4parser.tools.ByteBufferByteChannel;
@@ -9,8 +10,6 @@ import org.mp4parser.tools.Path;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.channels.Channels;
-
-import static org.junit.Assert.assertArrayEquals;
 
 public class HevcConfigurationBoxTest {
 
@@ -24,6 +23,6 @@ public class HevcConfigurationBoxTest {
         hevC.parseDetails();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         isoFile.getBox(Channels.newChannel(baos));
-        assertArrayEquals(in, baos.toByteArray());
+        Assertions.assertArrayEquals(in, baos.toByteArray());
     }
 }

@@ -1,8 +1,8 @@
 package org.mp4parser.test.boxes.iso14496.part15;
 
 import com.googlecode.mp4parser.boxes.BoxRoundtripTest;
-import org.junit.runners.Parameterized;
-import org.mp4parser.ParsableBox;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mp4parser.boxes.iso14496.part15.StepwiseTemporalLayerEntry;
 import org.mp4parser.boxes.iso14496.part15.SyncSampleEntry;
 import org.mp4parser.boxes.iso14496.part15.TemporalLayerSampleGroup;
@@ -13,13 +13,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
+@ParameterizedClass
+@MethodSource("data")
 public class Part15GroupDescriptionBoxesTest extends BoxRoundtripTest {
 
-    public Part15GroupDescriptionBoxesTest(ParsableBox parsableBoxUnderTest, Map.Entry<String, Object>... properties) {
-        super(parsableBoxUnderTest, properties);
-    }
-
-    @Parameterized.Parameters
     public static Collection<Object[]> data() {
         StepwiseTemporalLayerEntry stsa = new StepwiseTemporalLayerEntry();
         SyncSampleEntry sync = new SyncSampleEntry();
@@ -39,7 +36,6 @@ public class Part15GroupDescriptionBoxesTest extends BoxRoundtripTest {
         tscl.setTlprofile_space(1);
         tscl.setTltier_flag(true);
         TemporalSubLayerSampleGroup tsas = new TemporalSubLayerSampleGroup();
-
 
         return Arrays.asList(
                 new Object[]{new SampleGroupDescriptionBox(),

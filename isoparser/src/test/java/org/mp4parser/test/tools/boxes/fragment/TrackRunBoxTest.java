@@ -1,7 +1,7 @@
 package org.mp4parser.test.tools.boxes.fragment;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.SampleFlags;
 import org.mp4parser.boxes.iso14496.part12.TrackRunBox;
@@ -68,15 +68,15 @@ public class TrackRunBoxTest {
         IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
         TrackRunBox trun2 = (TrackRunBox) isoFile.getBoxes().get(0);
 
-        Assert.assertEquals(trun.isDataOffsetPresent(), trun2.isDataOffsetPresent());
-        Assert.assertEquals(trun.isSampleCompositionTimeOffsetPresent(), trun2.isSampleCompositionTimeOffsetPresent());
-        Assert.assertEquals(trun.isSampleDurationPresent(), trun2.isSampleDurationPresent());
-        Assert.assertEquals(trun.isSampleFlagsPresent(), trun2.isSampleFlagsPresent());
-        Assert.assertEquals(trun.isSampleSizePresent(), trun2.isSampleSizePresent());
-        Assert.assertEquals(trun.getDataOffset(), trun2.getDataOffset());
+        Assertions.assertEquals(trun.isDataOffsetPresent(), trun2.isDataOffsetPresent());
+        Assertions.assertEquals(trun.isSampleCompositionTimeOffsetPresent(), trun2.isSampleCompositionTimeOffsetPresent());
+        Assertions.assertEquals(trun.isSampleDurationPresent(), trun2.isSampleDurationPresent());
+        Assertions.assertEquals(trun.isSampleFlagsPresent(), trun2.isSampleFlagsPresent());
+        Assertions.assertEquals(trun.isSampleSizePresent(), trun2.isSampleSizePresent());
+        Assertions.assertEquals(trun.getDataOffset(), trun2.getDataOffset());
 
-        Assert.assertEquals(trun.getDataOffset(), trun2.getDataOffset());
-        Assert.assertEquals(trun.getFirstSampleFlags(), trun2.getFirstSampleFlags());
+        Assertions.assertEquals(trun.getDataOffset(), trun2.getDataOffset());
+        Assertions.assertEquals(trun.getFirstSampleFlags(), trun2.getFirstSampleFlags());
 
 
     }

@@ -1,7 +1,7 @@
 package org.mp4parser.test.boxes.apple;
 
 import com.googlecode.mp4parser.boxes.BoxWriteReadBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.apple.Apple_geIDBox;
 import org.mp4parser.tools.ByteBufferByteChannel;

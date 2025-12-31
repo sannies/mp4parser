@@ -1,8 +1,8 @@
 package org.mp4parser.test.tools.boxes;
 
 import org.apache.commons.codec.binary.Base64;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 
 import java.io.*;
@@ -68,6 +68,6 @@ public class MetaBoxTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         isoFile.getBox(Channels.newChannel(baos));
-        Assert.assertArrayEquals(metaBox, baos.toByteArray());
+        Assertions.assertArrayEquals(metaBox, baos.toByteArray());
     }
 }

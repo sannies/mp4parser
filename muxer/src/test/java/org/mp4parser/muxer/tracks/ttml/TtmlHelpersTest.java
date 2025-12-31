@@ -1,7 +1,7 @@
 package org.mp4parser.muxer.tracks.ttml;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -26,14 +26,14 @@ import static org.mp4parser.muxer.tracks.ttml.TtmlHelpers.toTimeExpression;
 public class TtmlHelpersTest {
     @Test
     public void testToTime() throws Exception {
-        Assert.assertEquals(-3599000, toTime("-00:59:59.000"));
-        Assert.assertEquals(3599000, toTime("00:59:59.000"));
+        Assertions.assertEquals(-3599000, toTime("-00:59:59.000"));
+        Assertions.assertEquals(3599000, toTime("00:59:59.000"));
     }
 
     @Test
     public void testToTimeExpression() throws Exception {
-        Assert.assertEquals("-00:59:59.009", toTimeExpression(-3599009));
-        Assert.assertEquals("00:59:59.010", toTimeExpression(3599010));
+        Assertions.assertEquals("-00:59:59.009", toTimeExpression(-3599009));
+        Assertions.assertEquals("00:59:59.010", toTimeExpression(3599010));
     }
 
     @Test
@@ -64,13 +64,13 @@ public class TtmlHelpersTest {
             Node backgroundImage = nl.item(i);
             URI backgroundImageUri = URI.create(backgroundImage.getNodeValue());
             File bgImg = new File(new URI(copy.getDocumentURI()).resolve(backgroundImageUri));
-            Assert.assertTrue(bgImg.exists());
-            Assert.assertTrue(bgImg.delete());
+            Assertions.assertTrue(bgImg.exists());
+            Assertions.assertTrue(bgImg.delete());
             bgImg.getParentFile().delete();
         }
-        Assert.assertTrue(targetFile.delete());
-        Assert.assertTrue(f.delete());
-        Assert.assertTrue(master.delete());
+        Assertions.assertTrue(targetFile.delete());
+        Assertions.assertTrue(f.delete());
+        Assertions.assertTrue(master.delete());
 
 
     }

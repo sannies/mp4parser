@@ -1,7 +1,7 @@
 package org.mp4parser.test.boxes.iso14496.part12;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.ItemLocationBox;
 import org.mp4parser.tools.ByteBufferByteChannel;
@@ -51,11 +51,11 @@ public class ItemLocationBoxTest {
 
         ItemLocationBox iloc = (ItemLocationBox) isoFile.getBoxes().get(0);
 
-        Assert.assertEquals(ilocOrig.getBaseOffsetSize(), iloc.getBaseOffsetSize());
-        Assert.assertEquals(ilocOrig.getIndexSize(), iloc.getIndexSize());
-        Assert.assertEquals(ilocOrig.getLengthSize(), iloc.getLengthSize());
-        Assert.assertEquals(ilocOrig.getOffsetSize(), iloc.getOffsetSize());
-        Assert.assertEquals(ilocOrig.getItems(), iloc.getItems());
+        Assertions.assertEquals(ilocOrig.getBaseOffsetSize(), iloc.getBaseOffsetSize());
+        Assertions.assertEquals(ilocOrig.getIndexSize(), iloc.getIndexSize());
+        Assertions.assertEquals(ilocOrig.getLengthSize(), iloc.getLengthSize());
+        Assertions.assertEquals(ilocOrig.getOffsetSize(), iloc.getOffsetSize());
+        Assertions.assertEquals(ilocOrig.getItems(), iloc.getItems());
 
 
     }
@@ -90,11 +90,11 @@ public class ItemLocationBoxTest {
 
         ItemLocationBox iloc = (ItemLocationBox) isoFile.getBoxes().get(0);
 
-        Assert.assertEquals(ilocOrig.getBaseOffsetSize(), iloc.getBaseOffsetSize());
-        Assert.assertEquals(ilocOrig.getIndexSize(), iloc.getIndexSize());
-        Assert.assertEquals(ilocOrig.getLengthSize(), iloc.getLengthSize());
-        Assert.assertEquals(ilocOrig.getOffsetSize(), iloc.getOffsetSize());
-        Assert.assertEquals(ilocOrig.getItems(), iloc.getItems());
+        Assertions.assertEquals(ilocOrig.getBaseOffsetSize(), iloc.getBaseOffsetSize());
+        Assertions.assertEquals(ilocOrig.getIndexSize(), iloc.getIndexSize());
+        Assertions.assertEquals(ilocOrig.getLengthSize(), iloc.getLengthSize());
+        Assertions.assertEquals(ilocOrig.getOffsetSize(), iloc.getOffsetSize());
+        Assertions.assertEquals(ilocOrig.getItems(), iloc.getItems());
 
 
     }
@@ -135,11 +135,11 @@ public class ItemLocationBoxTest {
 
         ItemLocationBox iloc = (ItemLocationBox) isoFile.getBoxes().get(0);
 
-        Assert.assertEquals(ilocOrig.getBaseOffsetSize(), iloc.getBaseOffsetSize());
-        Assert.assertEquals(ilocOrig.getIndexSize(), iloc.getIndexSize());
-        Assert.assertEquals(ilocOrig.getLengthSize(), iloc.getLengthSize());
-        Assert.assertEquals(ilocOrig.getOffsetSize(), iloc.getOffsetSize());
-        Assert.assertEquals(ilocOrig.getItems(), iloc.getItems());
+        Assertions.assertEquals(ilocOrig.getBaseOffsetSize(), iloc.getBaseOffsetSize());
+        Assertions.assertEquals(ilocOrig.getIndexSize(), iloc.getIndexSize());
+        Assertions.assertEquals(ilocOrig.getLengthSize(), iloc.getLengthSize());
+        Assertions.assertEquals(ilocOrig.getOffsetSize(), iloc.getOffsetSize());
+        Assertions.assertEquals(ilocOrig.getItems(), iloc.getItems());
 
 
     }
@@ -162,11 +162,11 @@ public class ItemLocationBoxTest {
         ItemLocationBox.Extent e1 = iloc.createExtent(123, 124, 125);
         ByteBuffer bb = ByteBuffer.allocate(e1.getSize());
         e1.getContent(bb);
-        Assert.assertTrue(bb.remaining() == 0);
+        Assertions.assertEquals(0, bb.remaining());
         ((Buffer)bb).rewind();
         ItemLocationBox.Extent e2 = iloc.createExtent(bb);
 
-        Assert.assertEquals(e1, e2);
+        Assertions.assertEquals(e1, e2);
 
 
     }
@@ -189,11 +189,11 @@ public class ItemLocationBoxTest {
         ItemLocationBox.Item e1 = iloc.createItem(65, 1, 0, 66, Collections.<ItemLocationBox.Extent>emptyList());
         ByteBuffer bb = ByteBuffer.allocate(e1.getSize());
         e1.getContent(bb);
-        Assert.assertTrue(bb.remaining() == 0);
+        Assertions.assertEquals(0, bb.remaining());
         ((Buffer)bb).rewind();
         ItemLocationBox.Item e2 = iloc.createItem(bb);
 
-        Assert.assertEquals(e1, e2);
+        Assertions.assertEquals(e1, e2);
 
 
     }
@@ -216,11 +216,11 @@ public class ItemLocationBoxTest {
         ItemLocationBox.Item e1 = iloc.createItem(65, 0, 1, 66, Collections.<ItemLocationBox.Extent>emptyList());
         ByteBuffer bb = ByteBuffer.allocate(e1.getSize());
         e1.getContent(bb);
-        Assert.assertTrue(bb.remaining() == 0);
+        Assertions.assertEquals(0, bb.remaining());
         ((Buffer)bb).rewind();
         ItemLocationBox.Item e2 = iloc.createItem(bb);
 
-        Assert.assertEquals(e1, e2);
+        Assertions.assertEquals(e1, e2);
 
 
     }

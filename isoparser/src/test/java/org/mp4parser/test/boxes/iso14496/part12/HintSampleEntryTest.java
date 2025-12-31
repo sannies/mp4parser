@@ -1,8 +1,8 @@
 package org.mp4parser.test.boxes.iso14496.part12;
 
 import com.googlecode.mp4parser.boxes.BoxRoundtripTest;
-import org.junit.runners.Parameterized;
-import org.mp4parser.ParsableBox;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mp4parser.boxes.iso14496.part12.HintSampleEntry;
 
 import java.util.Collection;
@@ -12,12 +12,10 @@ import java.util.Map;
 /**
  * Created by sannies on 14.07.2015.
  */
+@ParameterizedClass
+@MethodSource("data")
 public class HintSampleEntryTest extends BoxRoundtripTest {
-    public HintSampleEntryTest(ParsableBox parsableBoxUnderTest, Map.Entry<String, Object>... properties) {
-        super(parsableBoxUnderTest, properties);
-    }
 
-    @Parameterized.Parameters
     public static Collection<Object[]> data() {
 
 

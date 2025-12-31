@@ -1,10 +1,9 @@
 package com.googlecode.mp4parser.boxes;
 
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
 import org.mp4parser.Box;
 import org.mp4parser.IsoFile;
 import org.mp4parser.ParsableBox;
@@ -22,7 +21,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@RunWith(Parameterized.class)
 public abstract class BoxRoundtripTest {
 
     /*
@@ -56,20 +54,29 @@ public abstract class BoxRoundtripTest {
             "type",
             "userType",
             "version");
-    String dummyParent = null;
-    ParsableBox parsableBoxUnderTest;
-    Map<String, Object> props;
 
-    public BoxRoundtripTest(ParsableBox parsableBoxUnderTest, Map.Entry<String, Object>... properties) {
-        this.parsableBoxUnderTest = parsableBoxUnderTest;
-        this.props = new HashMap<String, Object>();
-        for (Map.Entry<String, Object> property : properties) {
-            props.put(property.getKey(), property.getValue());
+    String dummyParent = null;
+
+    @Parameter(0)
+    protected ParsableBox parsableBoxUnderTest;
+
+    @Parameter(1)
+    protected Map.Entry<String, Object>[] properties;
+
+    protected Map<String, Object> props;
+
+    @BeforeEach
+    void setUp() {
+        this.props = new HashMap<>();
+        if (properties != null) {
+            for (Map.Entry<String, Object> property : properties) {
+                props.put(property.getKey(), property.getValue());
+            }
         }
     }
 
     @Test
-    public void roundtrip() throws Exception {
+    void roundtrip() throws Exception {
 
         BeanInfo beanInfo = Introspector.getBeanInfo(parsableBoxUnderTest.getClass());
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
@@ -81,22 +88,19 @@ public abstract class BoxRoundtripTest {
                     try {
                         propertyDescriptor.getWriteMethod().invoke(parsableBoxUnderTest, props.get(property));
                     } catch (IllegalArgumentException e) {
-
                         System.err.println(propertyDescriptor.getWriteMethod().getName() + "(" + propertyDescriptor.getWriteMethod().getParameterTypes()[0].getSimpleName() + ");");
                         System.err.println("Called with " + props.get(property).getClass());
-
-
                         throw e;
                     }
                     // do the next assertion on string level to not trap into the long vs java.lang.Long pitfall
-                    Assert.assertEquals("The symmetry between getter/setter of " + property + " is not given.", props.get(property), propertyDescriptor.getReadMethod().invoke(parsableBoxUnderTest));
+                    Assertions.assertEquals(props.get(property), propertyDescriptor.getReadMethod().invoke(parsableBoxUnderTest),
+                            "The symmetry between getter/setter of " + property + " is not given.");
                 }
             }
             if (!found) {
-                Assert.fail("Could not find any property descriptor for " + property);
+                Assertions.fail("Could not find any property descriptor for " + property);
             }
         }
-
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         WritableByteChannel wbc = Channels.newChannel(baos);
@@ -106,12 +110,14 @@ public abstract class BoxRoundtripTest {
 
         IsoFile singleBoxIsoFile = new IsoFile(new ByteBufferByteChannel(baos.toByteArray()));
 
-        Assert.assertEquals("Expected box and file size to be the same", parsableBoxUnderTest.getSize(), baos.size());
-        Assert.assertEquals("Expected a single box in the IsoFile structure", 1, singleBoxIsoFile.getBoxes().size());
-        Assert.assertEquals("Expected to find a box of different type ", parsableBoxUnderTest.getClass(), singleBoxIsoFile.getBoxes().get(0).getClass());
+        Assertions.assertEquals(parsableBoxUnderTest.getSize(), baos.size(),
+                "Expected box and file size to be the same");
+        Assertions.assertEquals(1, singleBoxIsoFile.getBoxes().size(),
+                "Expected a single box in the IsoFile structure");
+        Assertions.assertEquals(parsableBoxUnderTest.getClass(), singleBoxIsoFile.getBoxes().get(0).getClass(),
+                "Expected to find a box of different type ");
 
         Box parsedBox = singleBoxIsoFile.getBoxes().get(0);
-
 
         for (String property : props.keySet()) {
             boolean found = false;
@@ -119,22 +125,27 @@ public abstract class BoxRoundtripTest {
                 if (property.equals(propertyDescriptor.getName())) {
                     found = true;
                     if (props.get(property) instanceof int[]) {
-                        Assert.assertArrayEquals("Writing and parsing changed the value of " + property, (int[]) props.get(property), (int[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
+                        Assertions.assertArrayEquals((int[]) props.get(property), (int[]) propertyDescriptor.getReadMethod().invoke(parsedBox),
+                                "Writing and parsing changed the value of " + property);
                     } else if (props.get(property) instanceof byte[]) {
-                        Assert.assertArrayEquals("Writing and parsing changed the value of " + property, (byte[]) props.get(property), (byte[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
+                        Assertions.assertArrayEquals((byte[]) props.get(property), (byte[]) propertyDescriptor.getReadMethod().invoke(parsedBox),
+                                "Writing and parsing changed the value of " + property);
                     } else if (props.get(property) instanceof long[]) {
-                        Assert.assertArrayEquals("Writing and parsing changed the value of " + property, (long[]) props.get(property), (long[]) propertyDescriptor.getReadMethod().invoke(parsedBox));
+                        Assertions.assertArrayEquals((long[]) props.get(property), (long[]) propertyDescriptor.getReadMethod().invoke(parsedBox),
+                                "Writing and parsing changed the value of " + property);
                     } else {
-                        Assert.assertEquals("Writing and parsing changed the value of " + property, props.get(property), propertyDescriptor.getReadMethod().invoke(parsedBox));
+                        Assertions.assertEquals(props.get(property), propertyDescriptor.getReadMethod().invoke(parsedBox),
+                                "Writing and parsing changed the value of " + property);
                     }
                 }
             }
             if (!found) {
-                Assert.fail("Could not find any property descriptor for " + property);
+                Assertions.fail("Could not find any property descriptor for " + property);
             }
         }
 
-        Assert.assertEquals("Writing and parsing should not change the box size.", parsableBoxUnderTest.getSize(), parsedBox.getSize());
+        Assertions.assertEquals(parsableBoxUnderTest.getSize(), parsedBox.getSize(),
+                "Writing and parsing should not change the box size.");
 
         boolean output = false;
         for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
@@ -148,7 +159,6 @@ public abstract class BoxRoundtripTest {
                 }
             }
         }
-
     }
 
     protected static class E implements Map.Entry<String,Object> {

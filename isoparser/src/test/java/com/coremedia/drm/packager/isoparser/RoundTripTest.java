@@ -16,7 +16,8 @@
 
 package com.coremedia.drm.packager.isoparser;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.support.BoxComparator;
 import org.mp4parser.tools.ByteBufferByteChannel;
@@ -28,12 +29,12 @@ import java.nio.channels.Channels;
 /**
  * Tests ISO Roundtrip.
  */
-public class RoundTripTest extends TestCase {
+class RoundTripTest {
+
     String defaultTestFileDir;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    void setUp() {
         defaultTestFileDir = this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
 /*        Logger.getLogger("").setLevel(Level.ALL);
     Handler[] handlers = Logger.getLogger("").getHandlers();
@@ -42,48 +43,58 @@ public class RoundTripTest extends TestCase {
     }*/
     }
 
-    /*    public void testRoundDeleteMe() throws Exception {
+    /*
+    @Test
+    void testRoundDeleteMe() throws Exception {
         testRoundTrip_1("/suckerpunch-distantplanet_h1080p.mov");
     }*/
-    public void testRoundTrip_TinyExamples_Old() throws Exception {
+
+    @Test
+    void testRoundTrip_TinyExamples_Old() throws Exception {
         testRoundTrip_1(defaultTestFileDir + "/Tiny Sample - OLD.mp4");
     }
 
-    public void testRoundTrip_TinyExamples_Metaxed() throws Exception {
+    @Test
+    void testRoundTrip_TinyExamples_Metaxed() throws Exception {
         testRoundTrip_1(defaultTestFileDir + "/Tiny Sample - NEW - Metaxed.mp4");
     }
 
-    public void testRoundTrip_TinyExamples_Untouched() throws Exception {
+    @Test
+    void testRoundTrip_TinyExamples_Untouched() throws Exception {
         testRoundTrip_1(defaultTestFileDir + "/Tiny Sample - NEW - Untouched.mp4");
     }
 
-
-    public void testRoundTrip_1a() throws Exception {
+    @Test
+    void testRoundTrip_1a() throws Exception {
         testRoundTrip_1(defaultTestFileDir + "/multiTrack.3gp");
     }
 
-    public void testRoundTrip_1b() throws Exception {
+    @Test
+    void testRoundTrip_1b() throws Exception {
         testRoundTrip_1(defaultTestFileDir + "/MOV00006.3gp");
     }
 
-    public void testRoundTrip_1c() throws Exception {
+    @Test
+    void testRoundTrip_1c() throws Exception {
         testRoundTrip_1(defaultTestFileDir + "/Beethoven - Bagatelle op.119 no.11 i.m4a");
     }
 
-    public void testRoundTrip_1d() throws Exception {
+    @Test
+    void testRoundTrip_1d() throws Exception {
         testRoundTrip_1(defaultTestFileDir + "/test.m4p");
     }
 
-    public void testRoundTrip_1e() throws Exception {
+    @Test
+    void testRoundTrip_1e() throws Exception {
         testRoundTrip_1(defaultTestFileDir + "/test-pod.m4a");
     }
 
-    public void testRoundTrip_QuickTimeFormat() throws Exception {
+    @Test
+    void testRoundTrip_QuickTimeFormat() throws Exception {
         testRoundTrip_1(defaultTestFileDir + "/QuickTimeFormat.mp4");
     }
 
-
-    public void testRoundTrip_1(String originalFile) throws Exception {
+    void testRoundTrip_1(String originalFile) throws Exception {
 
         long start1 = System.currentTimeMillis();
         long start2 = System.currentTimeMillis();
@@ -116,9 +127,5 @@ public class RoundTripTest extends TestCase {
         copyViaIsoFileReparsed.close();
         // as windows cannot delete file when something is memory mapped and the garbage collector
         // doesn't necessarily free the Buffers quickly enough we cannot delete the file here (we could but only for linux)
-
-
     }
-
-
 }

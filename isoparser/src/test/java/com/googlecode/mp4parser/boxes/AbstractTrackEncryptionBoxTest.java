@@ -1,8 +1,8 @@
 package com.googlecode.mp4parser.boxes;
 
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso23001.part7.AbstractTrackEncryptionBox;
 import org.mp4parser.tools.UUIDConverter;
@@ -31,11 +31,11 @@ public abstract class AbstractTrackEncryptionBoxTest {
         fc.close();
 
         IsoFile iso = new IsoFile(new FileInputStream(f).getChannel());
-        Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractTrackEncryptionBox);
+        Assertions.assertInstanceOf(AbstractTrackEncryptionBox.class, iso.getBoxes().get(0));
         AbstractTrackEncryptionBox tenc2 = (AbstractTrackEncryptionBox) iso.getBoxes().get(0);
-        Assert.assertEquals(0, tenc2.getFlags());
-        Assert.assertTrue(tenc.equals(tenc2));
-        Assert.assertTrue(tenc2.equals(tenc));
+        Assertions.assertEquals(0, tenc2.getFlags());
+        Assertions.assertEquals(tenc, tenc2);
+        Assertions.assertEquals(tenc2, tenc);
         iso.close();
 
     }

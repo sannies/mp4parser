@@ -1,7 +1,7 @@
 package org.mp4parser.muxer.samples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.*;
 import org.mp4parser.boxes.iso23001.part7.CencSampleAuxiliaryDataFormat;
@@ -139,12 +139,12 @@ public class CencSampleListsTest {
                         clearSamples,
                         Collections.singletonList(cencSampleAuxiliaryDataFormat));
 
-        Assert.assertEquals(1, cencSamples.size());
+        Assertions.assertEquals(1, cencSamples.size());
         Sample encSample = cencSamples.get(0);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         encSample.writeTo(Channels.newChannel(baos));
-        Assert.assertEquals(encryptedWorking, Hex.encodeHex(baos.toByteArray()));
-        Assert.assertEquals(encryptedWorking, Hex.encodeHex(encSample.asByteBuffer().array()));
+        Assertions.assertEquals(encryptedWorking, Hex.encodeHex(baos.toByteArray()));
+        Assertions.assertEquals(encryptedWorking, Hex.encodeHex(encSample.asByteBuffer().array()));
 
 
     }
@@ -217,7 +217,7 @@ public class CencSampleListsTest {
         CencEncryptingSampleList cencSamples =
                 new CencEncryptingSampleList(keys, encSampleEntries, clearSamples, auxInfos);
 
-        Assert.assertEquals(9, cencSamples.size());
+        Assertions.assertEquals(9, cencSamples.size());
         LinkedHashSet<SampleEntry> ses = new LinkedHashSet<>();
         for (int i = 0; i < cencSamples.size(); i++) {
 
@@ -229,7 +229,7 @@ public class CencSampleListsTest {
             ses.add(cencSamples.get(i).getSampleEntry());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             dec.get(0).writeTo(Channels.newChannel(baos));
-            Assert.assertArrayEquals("Sample " + i + " can not be reconstructed", new byte[1230], baos.toByteArray());
+            Assertions.assertArrayEquals(new byte[1230], baos.toByteArray(), "Sample " + i + " can not be reconstructed");
         }
 
         RangeStartMap<Integer, SecretKey> keys4Decrypt = new RangeStartMap<>();
@@ -246,7 +246,7 @@ public class CencSampleListsTest {
         for (int i = 0; i < cencSamples.size(); i++) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             decryptingSampleList.get(i).writeTo(Channels.newChannel(baos));
-            Assert.assertArrayEquals("Sample " + i + " can not be reconstructed", new byte[1230], baos.toByteArray());
+            Assertions.assertArrayEquals(new byte[1230], baos.toByteArray(), "Sample " + i + " can not be reconstructed");
         }
 
 

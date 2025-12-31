@@ -1,21 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.mp4parser</groupId>
     <artifactId>isoparser</artifactId>
     <packaging>jar</packaging>
     <name>ISO Parser</name>
     <description>A generic parser and writer for all ISO 14496 based files (MP4, Quicktime, DCF, PDCF, ...)
     </description>
-    <url>https://github.com/sannies/mp4parser</url>
-    <version>1.9.57-SNAPSHOT</version>
+
     <parent>
         <artifactId>mp4parser-project</artifactId>
         <groupId>org.mp4parser</groupId>
         <version>1.9.57-SNAPSHOT</version>
     </parent>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
     <build>
         <resources>
@@ -24,7 +19,6 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        <defaultGoal>install</defaultGoal>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -41,7 +35,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
@@ -62,7 +55,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.14.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -70,27 +62,16 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjtools</artifactId>
-                        <version>1.9.7</version>
-                    </dependency>
-
-                </dependencies>
                 <configuration>
-                    <complianceLevel>9</complianceLevel>
-                    <source>9</source>
-                    <target>9</target>
+                    <complianceLevel>1.8</complianceLevel>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <additionalCompilerArgs>
                         <arg>--module-path</arg>
-                        <arg>${project.build.directory}/alternateLocation/slf4-api.jar</arg>
+                        <arg>${project.build.directory}/alternateLocation/slf4j-api.jar</arg>
                     </additionalCompilerArgs>
-
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 
@@ -98,41 +79,37 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.7</version>
         </dependency>
         <dependency>
-        <groupId>org.slf4j</groupId>
+            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.8.0-beta4</version>
-
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.8.0-beta4</version>
-
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>provided</scope>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.5</version>
             <scope>test</scope>
         </dependency>
-       <dependency>
+        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.10</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 
     <ciManagement>
         <system>jenkins</system>
@@ -150,25 +127,4 @@
         <system>github</system>
         <url>https://github.com/sannies/mp4parser/issues</url>
     </issueManagement>
-
-    <developers>
-        <developer>
-            <id>sannies</id>
-            <email>Sebastian.Annies@gmail.com</email>
-        </developer>
-    </developers>
-
-    <scm>
-        <url>https://github.com/sannies/mp4parser</url>
-        <tag>mp4parser-project-1.9.43</tag>
-  </scm>
-
-    <licenses>
-        <license>
-            <name>Apache Software License - Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-            <comments>A business-friendly OSS license</comments>
-        </license>
-    </licenses>
 </project>

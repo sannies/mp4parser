@@ -1,7 +1,7 @@
 package org.mp4parser.test.boxes.iso14496.part12;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.SampleAuxiliaryInformationSizesBox;
 
@@ -25,8 +25,8 @@ public class SampleAuxiliaryInformationSizesBoxTest {
         IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
         SampleAuxiliaryInformationSizesBox saiz2 = (SampleAuxiliaryInformationSizesBox) isoFile.getBoxes().get(0);
 
-        Assert.assertEquals(saiz1.getDefaultSampleInfoSize(), saiz2.getDefaultSampleInfoSize());
-        Assert.assertArrayEquals(saiz1.getSampleInfoSizes(), saiz2.getSampleInfoSizes());
+        Assertions.assertEquals(saiz1.getDefaultSampleInfoSize(), saiz2.getDefaultSampleInfoSize());
+        Assertions.assertArrayEquals(saiz1.getSampleInfoSizes(), saiz2.getSampleInfoSizes());
 
 
     }
@@ -48,10 +48,10 @@ public class SampleAuxiliaryInformationSizesBoxTest {
         IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
         SampleAuxiliaryInformationSizesBox saiz2 = (SampleAuxiliaryInformationSizesBox) isoFile.getBoxes().get(0);
 
-        Assert.assertEquals(saiz1.getDefaultSampleInfoSize(), saiz2.getDefaultSampleInfoSize());
-        Assert.assertArrayEquals(saiz1.getSampleInfoSizes(), saiz2.getSampleInfoSizes());
-        Assert.assertEquals(saiz1.getAuxInfoType(), saiz2.getAuxInfoType());
-        Assert.assertEquals(saiz1.getAuxInfoTypeParameter(), saiz2.getAuxInfoTypeParameter());
+        Assertions.assertEquals(saiz1.getDefaultSampleInfoSize(), saiz2.getDefaultSampleInfoSize());
+        Assertions.assertArrayEquals(saiz1.getSampleInfoSizes(), saiz2.getSampleInfoSizes());
+        Assertions.assertEquals(saiz1.getAuxInfoType(), saiz2.getAuxInfoType());
+        Assertions.assertEquals(saiz1.getAuxInfoTypeParameter(), saiz2.getAuxInfoTypeParameter());
 
 
     }

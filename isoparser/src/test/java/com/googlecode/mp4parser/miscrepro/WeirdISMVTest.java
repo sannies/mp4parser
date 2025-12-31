@@ -1,7 +1,7 @@
 package com.googlecode.mp4parser.miscrepro;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
 import org.mp4parser.tools.ByteBufferByteChannel;
@@ -23,7 +23,7 @@ public class WeirdISMVTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         isoFile.getBox(Channels.newChannel(baos));
-        Assert.assertArrayEquals(data, baos.toByteArray());
+        Assertions.assertArrayEquals(data, baos.toByteArray());
         // List<Box> b = ((Container)isoFile.getMovieBox().getBoxes().get(1)).getBoxes().get(1).getBoxes().get(2).getBoxes().get(2).getBoxes().get(0).getBoxes();
 
     }

@@ -1,8 +1,8 @@
 package org.mp4parser.test.tools.boxes.fragment;
 
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.TrackFragmentRandomAccessBox;
 
@@ -67,11 +67,11 @@ public class TrackFragmentRandomAccessBoxTest {
 
         IsoFile isoFile = new IsoFile(new FileInputStream(f).getChannel());
         TrackFragmentRandomAccessBox traf2 = (TrackFragmentRandomAccessBox) isoFile.getBoxes().get(0);
-        Assert.assertEquals(traf.getNumberOfEntries(), traf2.getNumberOfEntries());
-        Assert.assertEquals(traf.getReserved(), traf2.getReserved());
-        Assert.assertEquals(traf.getTrackId(), traf2.getTrackId());
+        Assertions.assertEquals(traf.getNumberOfEntries(), traf2.getNumberOfEntries());
+        Assertions.assertEquals(traf.getReserved(), traf2.getReserved());
+        Assertions.assertEquals(traf.getTrackId(), traf2.getTrackId());
         //System.err.println("" + sizeOfSampleNum + " " + lengthSizeOfTrafNum + " " + lengthSizeOfTrunNum);
-        Assert.assertEquals(traf.getEntries(), traf2.getEntries());
+        Assertions.assertEquals(traf.getEntries(), traf2.getEntries());
 
     }
 

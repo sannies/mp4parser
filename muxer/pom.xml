@@ -2,39 +2,35 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.mp4parser</groupId>
-    <version>1.9.57-SNAPSHOT</version>
     <artifactId>muxer</artifactId>
     <name>File Muxer</name>
-    <url>https://github.com/sannies/mp4parser</url>
     <description>This package has a focus on file operation. It can read A/V data from Random Access Datasources
     </description>
+
     <parent>
         <artifactId>mp4parser-project</artifactId>
         <groupId>org.mp4parser</groupId>
         <version>1.9.57-SNAPSHOT</version>
     </parent>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.9.57-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.8.0-beta4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -51,22 +47,4 @@
             </plugin>
         </plugins>
     </build>
-    <licenses>
-        <license>
-            <name>Apache Software License - Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-            <comments>A business-friendly OSS license</comments>
-        </license>
-    </licenses>
-    <developers>
-        <developer>
-            <id>sannies</id>
-            <email>Sebastian.Annies@gmail.com</email>
-        </developer>
-    </developers>
-    <scm>
-        <url>https://github.com/sannies/mp4parser</url>
-        <tag>mp4parser-project-1.9.43</tag>
-    </scm>
 </project>

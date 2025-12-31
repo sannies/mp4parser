@@ -1,7 +1,7 @@
 package org.mp4parser.test.boxes.iso14496.part15;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.boxes.iso14496.part15.HevcDecoderConfigurationRecord;
 import org.mp4parser.tools.Hex;
 
@@ -25,8 +25,8 @@ public class HevcDecoderConfigurationRecordTest {
         HevcDecoderConfigurationRecord h2 = new HevcDecoderConfigurationRecord();
         h2.parse((ByteBuffer) ((Buffer)confRecordWritten).rewind());
 
-        Assert.assertEquals(confRecordOrig, confRecordWritten);
-        Assert.assertEquals(h1, h2);
+        Assertions.assertEquals(confRecordOrig, confRecordWritten);
+        Assertions.assertEquals(h1, h2);
 
 
     }

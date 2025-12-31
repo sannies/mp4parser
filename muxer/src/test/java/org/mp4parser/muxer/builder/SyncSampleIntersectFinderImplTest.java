@@ -1,8 +1,8 @@
 package org.mp4parser.muxer.builder;
 
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.muxer.InTestMovieCreator;
 import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.Track;
@@ -21,14 +21,14 @@ public class SyncSampleIntersectFinderImplTest {
 
         SyncSampleIntersectFinderImpl syncSampleIntersectFinder = new SyncSampleIntersectFinderImpl(m, null, -1);
         long[] fragmentStartSamplesRef = null;
-        Assert.assertTrue(m.getTracks().size() > 1);
+        Assertions.assertTrue(m.getTracks().size() > 1);
         for (Track track : m.getTracks()) {
             long[] fragmentStartSamples = syncSampleIntersectFinder.sampleNumbers(track);
-            Assert.assertNotNull(fragmentStartSamples);
+            Assertions.assertNotNull(fragmentStartSamples);
             if (fragmentStartSamplesRef == null) {
                 fragmentStartSamplesRef = fragmentStartSamples;
             } else {
-                Assert.assertArrayEquals(fragmentStartSamplesRef, fragmentStartSamples);
+                Assertions.assertArrayEquals(fragmentStartSamplesRef, fragmentStartSamples);
             }
 
         }
@@ -47,7 +47,7 @@ public class SyncSampleIntersectFinderImplTest {
 //        long[] b_1 = new long[]{10, 20, 26, 30, 40, 80};
 //        long[] b_2 = new long[]{10, 20, 25, 30, 40, 80};
 //        long[] a_2 = SyncSampleIntersectFinderImpl.getCommonIndices(a_sample, a_times, 10, b_1, b_2);
-        Assert.assertArrayEquals(new long[]{20, 40, 60, 80}, a_2);
+        Assertions.assertArrayEquals(new long[]{20, 40, 60, 80}, a_2);
     }
 
     @Test
@@ -58,7 +58,7 @@ public class SyncSampleIntersectFinderImplTest {
         long[] b_1 = new long[]{10, 20, 26, 30, 40, 80, 81, 100};
         long[] b_2 = new long[]{10, 20, 25, 30, 40, 80, 90, 100};
         long[] a_2 = syncSampleIntersectFinder.getCommonIndices(a_sample, a_times, 10, b_1, b_2);
-        Assert.assertArrayEquals(new long[]{20, 60, 90}, a_2);
+        Assertions.assertArrayEquals(new long[]{20, 60, 90}, a_2);
     }
 
     @Test
@@ -82,13 +82,13 @@ public class SyncSampleIntersectFinderImplTest {
         long[] fragmentStartSamplesRef = null;
         for (Track track : m.getTracks()) {
             long[] fragmentStartSamples = syncSampleIntersectFinder.sampleNumbers(track);
-            Assert.assertNotNull(fragmentStartSamples);
+            Assertions.assertNotNull(fragmentStartSamples);
             if (fragmentStartSamplesRef == null) {
                 fragmentStartSamplesRef = fragmentStartSamples;
             } else {
                 // this is all I can do here now.
                 // we should verify that all samples in the array are at the same times.
-                Assert.assertEquals(fragmentStartSamplesRef.length, fragmentStartSamples.length);
+                Assertions.assertEquals(fragmentStartSamplesRef.length, fragmentStartSamples.length);
             }
 
         }

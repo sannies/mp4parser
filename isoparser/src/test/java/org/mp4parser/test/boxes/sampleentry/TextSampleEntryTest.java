@@ -1,8 +1,8 @@
 package org.mp4parser.test.boxes.sampleentry;
 
 import com.googlecode.mp4parser.boxes.BoxWriteReadBase;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.boxes.iso14496.part12.FreeBox;
 import org.mp4parser.boxes.sampleentry.TextSampleEntry;
 
@@ -15,9 +15,9 @@ public class TextSampleEntryTest extends BoxWriteReadBase<TextSampleEntry> {
     public void testBitSetters() {
         TextSampleEntry tx3g = new TextSampleEntry();
         tx3g.setContinuousKaraoke(true);
-        Assert.assertTrue(tx3g.isContinuousKaraoke());
+        Assertions.assertTrue(tx3g.isContinuousKaraoke());
         tx3g.setContinuousKaraoke(false);
-        Assert.assertFalse(tx3g.isContinuousKaraoke());
+        Assertions.assertFalse(tx3g.isContinuousKaraoke());
     }
 
     @Override

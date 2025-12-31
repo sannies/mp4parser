@@ -1,7 +1,7 @@
 package org.mp4parser.muxer.tracks.h265;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part15.HevcConfigurationBox;
 import org.mp4parser.boxes.iso14496.part15.HevcDecoderConfigurationRecord;
@@ -25,10 +25,10 @@ public class SequenceParameterSetRbspTest {
                     bais.read(); // nal unit header
                     bais.read(); // nal unit header
                     SequenceParameterSetRbsp sps = new SequenceParameterSetRbsp(bais);
-                    Assert.assertTrue(sps.vuiParameters.colour_description_present_flag);
-                    Assert.assertEquals(9,sps.vuiParameters.colour_primaries);
-                    Assert.assertEquals(16,sps.vuiParameters.transfer_characteristics);
-                    Assert.assertEquals(9,sps.vuiParameters.matrix_coeffs);
+                    Assertions.assertTrue(sps.vuiParameters.colour_description_present_flag);
+                    Assertions.assertEquals(9,sps.vuiParameters.colour_primaries);
+                    Assertions.assertEquals(16,sps.vuiParameters.transfer_characteristics);
+                    Assertions.assertEquals(9,sps.vuiParameters.matrix_coeffs);
                 }
             }
         }

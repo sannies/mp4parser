@@ -1,7 +1,7 @@
 package org.mp4parser.test.boxes.iso14496.part1.objectdescriptors;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.boxes.iso14496.part1.objectdescriptors.BitWriterBuffer;
 import org.mp4parser.tools.IsoTypeReader;
 
@@ -37,7 +37,7 @@ public class BitWriterBufferTest {
         b.put((byte) 0);
         BitWriterBuffer bwb = new BitWriterBuffer(b);
         bwb.writeBits(15, 4);
-        Assert.assertEquals("0000000011110000", toString(b));
+        Assertions.assertEquals("0000000011110000", toString(b));
 
     }
 
@@ -48,7 +48,7 @@ public class BitWriterBufferTest {
         bitWriterBuffer.writeBits(15, 4);
         ((Buffer)bb).rewind();
         int test = IsoTypeReader.readUInt8(bb);
-        Assert.assertEquals(15 << 4, test);
+        Assertions.assertEquals(15 << 4, test);
     }
 
     @Test
@@ -60,9 +60,9 @@ public class BitWriterBufferTest {
         bitWriterBuffer.writeBits(15, 4);
         ((Buffer)bb).rewind();
         int test = IsoTypeReader.readUInt8(bb);
-        Assert.assertEquals(255, test);
+        Assertions.assertEquals(255, test);
         test = IsoTypeReader.readUInt8(bb);
-        Assert.assertEquals(15 << 4, test);
+        Assertions.assertEquals(15 << 4, test);
     }
 
     @Test
@@ -74,7 +74,7 @@ public class BitWriterBufferTest {
         bitWriterBuffer.writeBits(1, 5);
         bitWriterBuffer.writeBits(1, 3);
 
-        Assert.assertEquals("0001000010010000", toString(bb));
+        Assertions.assertEquals("0001000010010000", toString(bb));
     }
 
     @Test
@@ -85,11 +85,11 @@ public class BitWriterBufferTest {
         bitWriterBuffer.writeBits(65535, 16);
         ((Buffer)bb).rewind();
         int test = IsoTypeReader.readUInt8(bb);
-        Assert.assertEquals(127, test);
+        Assertions.assertEquals(127, test);
         test = IsoTypeReader.readUInt8(bb);
-        Assert.assertEquals(255, test);
+        Assertions.assertEquals(255, test);
         test = IsoTypeReader.readUInt8(bb);
-        Assert.assertEquals(1 << 7, test);
+        Assertions.assertEquals(1 << 7, test);
     }
 
     @Test
@@ -101,7 +101,7 @@ public class BitWriterBufferTest {
         bwb.writeBits(1, 3);
         bwb.writeBits(1, 2);
 
-        Assert.assertEquals("10100101", toString(bb));
+        Assertions.assertEquals("10100101", toString(bb));
     }
 
     @Test
@@ -116,7 +116,7 @@ public class BitWriterBufferTest {
         bwb.writeBits(7, 6);
         ((Buffer)b).rewind();
 
-        Assert.assertEquals("101001000100001000111000", toString(b));
+        Assertions.assertEquals("101001000100001000111000", toString(b));
 
 
     }

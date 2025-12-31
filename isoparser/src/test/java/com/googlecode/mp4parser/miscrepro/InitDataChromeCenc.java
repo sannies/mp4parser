@@ -2,7 +2,7 @@ package com.googlecode.mp4parser.miscrepro;
 
 
 import com.coremedia.drm.packager.isoparser.Walk;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.tools.ByteBufferByteChannel;
 import org.mp4parser.tools.Hex;

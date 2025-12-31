@@ -1,7 +1,7 @@
 package org.mp4parser.test.tools.boxes.fragment;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.boxes.iso14496.part12.SampleFlags;
 import org.mp4parser.tools.IsoTypeReader;
 
@@ -20,7 +20,7 @@ public class SampleFlagsTest {
         ByteBuffer b = ByteBuffer.allocate(4);
         sf.getContent(b);
         ((Buffer)b).rewind();
-        Assert.assertEquals(l, IsoTypeReader.readUInt32(b));
+        Assertions.assertEquals(l, IsoTypeReader.readUInt32(b));
     }
 
     @Test
@@ -40,14 +40,14 @@ public class SampleFlagsTest {
         SampleFlags sf2 = new SampleFlags(bb);
 
 
-        Assert.assertEquals(sf.getReserved(), sf2.getReserved());
-        Assert.assertEquals(sf.getSampleDependsOn(), sf2.getSampleDependsOn());
-        Assert.assertEquals(sf.isSampleIsDifferenceSample(), sf2.isSampleIsDifferenceSample());
-        Assert.assertEquals(sf.getSamplePaddingValue(), sf2.getSamplePaddingValue());
+        Assertions.assertEquals(sf.getReserved(), sf2.getReserved());
+        Assertions.assertEquals(sf.getSampleDependsOn(), sf2.getSampleDependsOn());
+        Assertions.assertEquals(sf.isSampleIsDifferenceSample(), sf2.isSampleIsDifferenceSample());
+        Assertions.assertEquals(sf.getSamplePaddingValue(), sf2.getSamplePaddingValue());
 
-        Assert.assertEquals(sf.getSampleDegradationPriority(), sf2.getSampleDegradationPriority());
-        Assert.assertEquals(sf.getSampleHasRedundancy(), sf2.getSampleHasRedundancy());
-        Assert.assertEquals(sf.getSampleIsDependedOn(), sf2.getSampleIsDependedOn());
+        Assertions.assertEquals(sf.getSampleDegradationPriority(), sf2.getSampleDegradationPriority());
+        Assertions.assertEquals(sf.getSampleHasRedundancy(), sf2.getSampleHasRedundancy());
+        Assertions.assertEquals(sf.getSampleIsDependedOn(), sf2.getSampleIsDependedOn());
 
     }
 

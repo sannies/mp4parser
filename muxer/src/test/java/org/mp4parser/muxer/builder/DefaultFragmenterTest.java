@@ -1,7 +1,7 @@
 package org.mp4parser.muxer.builder;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.muxer.Movie;
 import org.mp4parser.muxer.container.mp4.MovieCreator;
 
@@ -22,6 +22,6 @@ public class DefaultFragmenterTest {
             sss += l + ", ";
         }
         System.err.println(sss);
-        Assert.assertArrayEquals(samples, s);
+        Assertions.assertArrayEquals(samples, s);
     }
 }

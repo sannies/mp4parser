@@ -1,8 +1,8 @@
 package org.mp4parser.muxer;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.Container;
 import org.mp4parser.muxer.builder.DefaultMp4Builder;
 import org.mp4parser.muxer.builder.FragmentedMp4Builder;
@@ -30,7 +30,7 @@ public class CencFileRoundtripTest {
     private RangeStartMap<Integer, UUID> keyRotation3;
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         UUID uuid1 = UUID.randomUUID();
         UUID uuid2 = UUID.randomUUID();
@@ -185,7 +185,7 @@ public class CencFileRoundtripTest {
             ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
             origIter.next().writeTo(Channels.newChannel(baos1));
             roundTrippedIter.next().writeTo(Channels.newChannel(baos2));
-            Assert.assertArrayEquals("Sample " + i + " differs", baos1.toByteArray(), baos2.toByteArray());
+            Assertions.assertArrayEquals(baos1.toByteArray(), baos2.toByteArray(), "Sample " + i + " differs");
             i++;
         }
 

@@ -1,7 +1,7 @@
 package org.mp4parser.muxer.samples;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.muxer.FileRandomAccessSourceImpl;
 import org.mp4parser.muxer.container.mp4.Mp4SampleList;
@@ -159,7 +159,7 @@ public class DefaultMp4SampleListTest {
             //System.err.println("\"" + Hex.encodeHex(md5.digest(sl.get(i).asByteBuffer().array())) + "\",");
             byte[] sampleBytes = new byte[(int) sl.get(i).getSize()];
             sl.get(i).asByteBuffer().get(sampleBytes);
-            Assert.assertEquals(sampleChecksum.get(i), Hex.encodeHex(md5.digest(sampleBytes)));
+            Assertions.assertEquals(sampleChecksum.get(i), Hex.encodeHex(md5.digest(sampleBytes)));
         }
     }
 }

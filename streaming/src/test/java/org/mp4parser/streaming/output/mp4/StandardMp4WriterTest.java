@@ -1,6 +1,6 @@
 package org.mp4parser.streaming.output.mp4;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.streaming.StreamingTrack;
 import org.mp4parser.streaming.input.h264.H264AnnexBTrack;
 

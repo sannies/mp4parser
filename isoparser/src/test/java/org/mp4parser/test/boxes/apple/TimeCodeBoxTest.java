@@ -3,7 +3,7 @@ package org.mp4parser.test.boxes.apple;
 import com.googlecode.mp4parser.boxes.BoxWriteReadBase;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.apple.TimeCodeBox;
 

@@ -1,19 +1,16 @@
 package org.mp4parser.test.boxes.dece;
 
 import com.googlecode.mp4parser.boxes.BoxRoundtripTest;
-import org.junit.runners.Parameterized;
-import org.mp4parser.ParsableBox;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mp4parser.boxes.dece.ContentInformationBox;
 
 import java.util.*;
 
+@ParameterizedClass
+@MethodSource("data")
 public class ContentInformationBoxTest extends BoxRoundtripTest {
 
-    public ContentInformationBoxTest(ParsableBox parsableBoxUnderTest, Map.Entry<String, Object>... properties) {
-        super(parsableBoxUnderTest, properties);
-    }
-
-    @Parameterized.Parameters
     public static Collection<Object[]> data() {
         Map<String, String> aBrandEntries = new LinkedHashMap<String, String>();
         aBrandEntries.put("abcd", "561326");
